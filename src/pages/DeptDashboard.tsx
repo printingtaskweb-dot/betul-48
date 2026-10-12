@@ -771,15 +771,14 @@ export default function DeptDashboard() {
       const [{ data: depts }, { data: staff }] = await Promise.all([dq, sq]);
       if (depts) {
         setAllDepartments(depts);
-        if (!selectedDeptDetailId && depts.length > 0) {
-          setSelectedDeptDetailId(profile.linked_department_id || depts[0].id);
-        }
+        // Only set default once – do NOT include selectedDeptDetailId in deps to avoid infinite loop
+        setSelectedDeptDetailId(prev => prev || profile.linked_department_id || depts[0]?.id || '');
       }
       if (staff) setStaffList(staff as StaffMember[]);
     } catch (e) {
       console.warn('Error loading depts/staff:', e);
     }
-  }, [profile, noDept, orgLevel, selectedDeptDetailId]);
+  }, [profile, noDept, orgLevel]);
 
   useEffect(() => { loadDepartmentsAndStaff(); }, [loadDepartmentsAndStaff]);
 

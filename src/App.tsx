@@ -13,6 +13,7 @@ import { AdminDashboard } from './pages/admin/AdminDashboard';
 import DeptLogin from './pages/DeptLogin';
 import DeptDashboard from './pages/DeptDashboard';
 import MunicipalAdministratorDashboard from './pages/admin/MunicipalAdministratorDashboard';
+import ProfilePage from './pages/ProfilePage';
 import { FloatingNewsWidget } from './components/FloatingNewsWidget';
 
 interface ErrorBoundaryProps {
@@ -104,6 +105,7 @@ const AppRoutes: React.FC = () => (
     {/* Citizen routes */}
     <Route path="/" element={<Home />} />
     <Route path="/auth" element={<AuthPage />} />
+    <Route path="/profile" element={<ProfilePage />} />
     <Route path="/complaint/new" element={<ComplaintForm />} />
     <Route path="/track" element={<TrackComplaint />} />
 

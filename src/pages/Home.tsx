@@ -142,7 +142,8 @@ export const Home: React.FC = () => {
             {/* User Avatar / Login */}
             {user ? (
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div
+                <Link
+                  to="/profile"
                   style={{
                     width: 34,
                     height: 34,
@@ -155,11 +156,13 @@ export const Home: React.FC = () => {
                     fontSize: '0.85rem',
                     fontWeight: 700,
                     boxShadow: 'var(--shadow-sm)',
+                    textDecoration: 'none',
+                    cursor: 'pointer',
                   }}
                   title={user.email || 'User Profile'}
                 >
                   {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
-                </div>
+                </Link>
                 <button
                   onClick={handleLogout}
                   style={{

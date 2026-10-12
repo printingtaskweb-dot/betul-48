@@ -24,9 +24,9 @@ export const BottomNav: React.FC = () => {
         ]
       : [
           {
-            path: user ? '/track' : '/auth',
+            path: user ? '/profile' : '/auth',
             icon: <User size={21} />,
-            label: user ? (language === 'hi' ? 'मेरी स्थिति' : 'Status') : t(language, 'login'),
+            label: user ? (language === 'hi' ? 'प्रोफ़ाइल' : 'Profile') : t(language, 'login'),
             isAdminBadge: false,
           },
         ]),

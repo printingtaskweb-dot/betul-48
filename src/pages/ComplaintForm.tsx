@@ -728,6 +728,7 @@ export const ComplaintForm: React.FC = () => {
               loading={loc.loading}
               error={loc.error}
               onDetect={loc.detectLocation}
+              language={language}
             />
           </div>
 
