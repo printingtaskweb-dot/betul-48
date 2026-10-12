@@ -54,14 +54,7 @@ export const ComplaintForm: React.FC = () => {
     }
   }, [searchParams, departments]);
 
-  useEffect(() => {
-    if (!locationReady && originalFile) {
-      setOriginalFile(null);
-      setPhotoFile(null);
-      setPreview(null);
-    }
-  }, [locationReady, originalFile]);
-
+  // Close dept dropdown on outside click / Esc
   useEffect(() => {
     if (!deptOpen) return;
     const onDocClick = (e: MouseEvent) => {
@@ -90,12 +83,11 @@ export const ComplaintForm: React.FC = () => {
     );
   }, [departments, deptQuery]);
 
-  const handleFileSelected = async (file: File) => {
-    if (!locationReady) return;
-    setOriginalFile(file);
-    setWatermarking(true);
-    setError(null);
-
+  /* ─────────────────────────────────────────────
+     Watermark helper — single source of truth
+     ───────────────────────────────────────────── */
+  const stampPhoto = async (file: File) => {
+    if (!locationReady) return null;
     try {
       const stamped = await watermarkPhoto(file, {
         latitude: loc.latitude,
@@ -106,15 +98,31 @@ export const ComplaintForm: React.FC = () => {
         appName: 'Swachh 311 · IMC',
         departmentName: selectedDept?.name ?? null,
       });
+      return stamped;
+    } catch (err) {
+      console.warn('Watermark failed, using original photo', err);
+      return file;
+    }
+  };
+
+  /* ─────────────────────────────────────────────
+     Photo captured → immediately show preview,
+     stamp now if GPS ready, otherwise stamp on GPS lock
+     ───────────────────────────────────────────── */
+  const handleFileSelected = async (file: File) => {
+    setOriginalFile(file);
+    setError(null);
+    setPreview(URL.createObjectURL(file)); // instant feedback
+
+    if (!locationReady) return; // will be stamped by effect below
+
+    setWatermarking(true);
+    const stamped = await stampPhoto(file);
+    if (stamped) {
       setPhotoFile(stamped);
       setPreview(URL.createObjectURL(stamped));
-    } catch (err) {
-      setPhotoFile(file);
-      setPreview(URL.createObjectURL(file));
-      console.warn('Watermark failed, using original photo', err);
-    } finally {
-      setWatermarking(false);
     }
+    setWatermarking(false);
   };
 
   const handleClearPhoto = () => {
@@ -123,33 +131,34 @@ export const ComplaintForm: React.FC = () => {
     setPreview(null);
   };
 
+  /* ─────────────────────────────────────────────
+     Auto re-stamp when GPS arrives or dept changes
+     ───────────────────────────────────────────── */
   useEffect(() => {
     if (!originalFile || !locationReady) return;
     let cancelled = false;
+
     (async () => {
-      try {
-        const stamped = await watermarkPhoto(originalFile, {
-          latitude: loc.latitude,
-          longitude: loc.longitude,
-          accuracy: loc.accuracy,
-          address: loc.address,
-          timestamp: new Date(),
-          appName: 'Swachh 311 · IMC',
-          departmentName: selectedDept?.name ?? null,
-        });
-        if (cancelled) return;
-        setPhotoFile(stamped);
-        setPreview(URL.createObjectURL(stamped));
-      } catch {
-        /* keep existing */
+      setWatermarking(true);
+      const stamped = await stampPhoto(originalFile);
+      if (cancelled || !stamped) {
+        setWatermarking(false);
+        return;
       }
+      setPhotoFile(stamped);
+      setPreview(URL.createObjectURL(stamped));
+      setWatermarking(false);
     })();
+
     return () => {
       cancelled = true;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedDept?.id]);
+  }, [selectedDept?.id, locationReady, loc.latitude, loc.longitude]);
 
+  /* ─────────────────────────────────────────────
+     Submit
+     ───────────────────────────────────────────── */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -163,15 +172,15 @@ export const ComplaintForm: React.FC = () => {
     if (!locationReady) {
       return setError(
         language === 'hi'
-          ? 'कृपया पहले अपना स्थान स्वतः दर्ज होने दें।'
-          : 'Please wait for your location to be auto-detected.'
+          ? 'कृपया GPS लॉक होने की प्रतीक्षा करें…'
+          : 'Please wait for GPS lock…'
       );
     }
     if (!photoFile) {
       return setError(
         language === 'hi'
-          ? 'कृपया समस्या का फोटो अपलोड करें।'
-          : 'Please attach a photo.'
+          ? 'फोटो तैयार हो रहा है, कृपया प्रतीक्षा करें…'
+          : 'Your photo is being prepared, please wait…'
       );
     }
     if (!description.trim()) {
@@ -207,6 +216,9 @@ export const ComplaintForm: React.FC = () => {
     setSubmitting(false);
   };
 
+  /* ─────────────────────────────────────────────
+     Success screen
+     ───────────────────────────────────────────── */
   if (ticket) {
     return (
       <div
@@ -315,6 +327,9 @@ export const ComplaintForm: React.FC = () => {
     );
   }
 
+  /* ─────────────────────────────────────────────
+     Main form
+     ───────────────────────────────────────────── */
   return (
     <div
       style={{
@@ -657,69 +672,69 @@ export const ComplaintForm: React.FC = () => {
             />
           </div>
 
-          {/* Photo */}
+          {/* Photo — GPS camera style */}
           <div style={{ marginBottom: 18 }}>
             <label style={labelStyle}>
               📷 {language === 'hi' ? 'फोटो अपलोड करें' : 'Upload Photo'} *
             </label>
+
             <PhotoUploader
               onFileSelected={handleFileSelected}
               preview={preview}
               onClear={handleClearPhoto}
-              disabled={!locationReady || watermarking}
+              disabled={watermarking}
             />
 
+            {/* Quiet stamping caption */}
             {watermarking && (
               <p
                 style={{
-                  marginTop: 6,
-                  fontSize: '0.78rem',
-                  color: 'var(--theme-primary, #660033)',
-                  fontWeight: 600,
-                }}
-              >
-                {language === 'hi'
-                  ? 'फोटो पर GPS वॉटरमार्क लगाया जा रहा है…'
-                  : 'Adding GPS watermark to photo…'}
-              </p>
-            )}
-
-            {!locationReady && (
-              <p
-                style={{
-                  marginTop: 6,
-                  fontSize: '0.78rem',
+                  marginTop: 8,
+                  fontSize: '0.75rem',
                   color: 'var(--gray-500)',
+                  textAlign: 'center',
+                  fontStyle: 'italic',
                 }}
               >
-                {language === 'hi'
-                  ? 'स्थान दर्ज होने के बाद ही फोटो अपलोड कर सकते हैं।'
-                  : 'Photo can be uploaded only after location is detected.'}
+                {language === 'hi' ? 'स्टैम्प लगाया जा रहा है…' : 'Stamping…'}
               </p>
             )}
 
-            {photoFile && !watermarking && (
-              <p
+            {/* GPS location strip below the preview — echoes what's on the image */}
+            {preview && !watermarking && locationReady && (
+              <div
                 style={{
-                  marginTop: 6,
-                  fontSize: '0.78rem',
-                  color: 'var(--green-700)',
-                  fontWeight: 600,
+                  marginTop: 10,
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  background: 'rgba(0,0,0,0.05)',
+                  border: '1px solid var(--theme-component-border, #bfbfbf)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  fontSize: '0.75rem',
+                  color: 'var(--gray-600, #4b5563)',
                 }}
               >
-                ✓{' '}
-                {language === 'hi'
-                  ? 'फोटो पर GPS वॉटरमार्क लग गया है।'
-                  : 'GPS watermark applied to photo.'}
-              </p>
+                <span style={{ fontSize: 13 }}>📍</span>
+                <span
+                  style={{
+                    flex: 1,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    fontWeight: 600,
+                  }}
+                >
+                  {loc.address ||
+                    `${loc.latitude?.toFixed(4)}, ${loc.longitude?.toFixed(4)}`}
+                </span>
+              </div>
             )}
           </div>
 
-          {/* Location */}
+          {/* Silent GPS indicator — only visible while GPS is locking */}
           <div style={{ marginBottom: 22 }}>
-            <label style={labelStyle}>
-              📍 {language === 'hi' ? 'स्थान' : 'Location'} *
-            </label>
             <LocationPicker
               latitude={loc.latitude}
               longitude={loc.longitude}
@@ -751,23 +766,21 @@ export const ComplaintForm: React.FC = () => {
 
           <button
             type="submit"
-            disabled={
-              submitting || uploading || watermarking || !locationReady
-            }
+            disabled={submitting || uploading || watermarking}
             style={{
               width: '100%',
               padding: '14px 0',
               borderRadius: 'var(--radius-md)',
               border: 'none',
               background:
-                submitting || uploading || watermarking || !locationReady
+                submitting || uploading || watermarking
                   ? 'var(--gray-300)'
                   : 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
               color: '#fff',
               fontWeight: 800,
               fontSize: '1rem',
               cursor:
-                submitting || uploading || watermarking || !locationReady
+                submitting || uploading || watermarking
                   ? 'not-allowed'
                   : 'pointer',
               boxShadow: '0 4px 16px rgba(102,0,51,0.3)',
@@ -778,12 +791,8 @@ export const ComplaintForm: React.FC = () => {
               ? 'Submitting…'
               : watermarking
               ? language === 'hi'
-                ? 'वॉटरमार्क लगाया जा रहा है…'
-                : 'Adding watermark…'
-              : !locationReady
-              ? language === 'hi'
-                ? 'स्थान दर्ज होने की प्रतीक्षा…'
-                : 'Waiting for location…'
+                ? 'फोटो तैयार हो रहा है…'
+                : 'Preparing photo…'
               : `📤 ${t(language, 'submit')}`}
           </button>
         </form>
@@ -794,6 +803,7 @@ export const ComplaintForm: React.FC = () => {
   );
 };
 
+/* ─── Shared styles ─── */
 
 const labelStyle: React.CSSProperties = {
   display: 'block',
