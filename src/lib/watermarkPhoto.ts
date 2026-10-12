@@ -10,13 +10,21 @@ export interface WatermarkOptions {
   appName?: string;
 }
 
-const MAX_DIMENSION = 1600;
-const JPEG_QUALITY = 0.88;
+/**
+ * Max long-edge dimension. 1280 is plenty for a complaint photo,
+ * keeps file size small so we never have to silently downgrade to
+ * the un-watermarked original.
+ */
+const MAX_DIMENSION = 1280;
+const JPEG_QUALITY = 0.82;
 const MAX_OUTPUT_BYTES = 4 * 1024 * 1024; // 4 MB hard cap
+const MIN_QUALITY = 0.5;
 
 /**
  * Burns a GPS-camera style watermark into the photo.
- * Returns the ORIGINAL file if anything fails, so uploads never break.
+ * Always returns a JPEG File. If absolutely everything fails,
+ * returns the ORIGINAL file so the upload never breaks — but this
+ * is logged loudly so you can spot it in the console.
  */
 export async function watermarkPhoto(
   file: File,
@@ -26,8 +34,8 @@ export async function watermarkPhoto(
     const img = await loadImage(file);
     const canvas = drawWatermarked(img, opts);
 
-    // Try toBlob first, then fall back to toDataURL
-    let blob = await canvasToBlob(canvas);
+    // First attempt at default quality
+    let blob = await canvasToBlob(canvas, JPEG_QUALITY);
 
     if (!blob) {
       // Fallback for iOS Safari where toBlob can be flaky
@@ -39,23 +47,54 @@ export async function watermarkPhoto(
       return file;
     }
 
-    // Size guard — if the watermarked image is huge, fall back
-    if (blob.size > MAX_OUTPUT_BYTES) {
+    // If output is too large, re-encode at progressively lower quality.
+    // We never silently return the un-watermarked original unless even
+    // MIN_QUALITY can't get us under the cap.
+    let finalBlob = blob;
+    let quality = JPEG_QUALITY;
+
+    while (finalBlob.size > MAX_OUTPUT_BYTES && quality > MIN_QUALITY) {
+      quality = Math.max(MIN_QUALITY, quality - 0.1);
+      const retry = await canvasToBlob(canvas, quality);
+      if (retry && retry.size > 0) {
+        finalBlob = retry;
+      } else {
+        try {
+          finalBlob = dataUrlToBlob(
+            canvas.toDataURL('image/jpeg', quality)
+          );
+        } catch {
+          break;
+        }
+      }
+    }
+
+    if (!finalBlob || finalBlob.size === 0) {
+      console.warn('[watermark] empty final blob — using original');
+      return file;
+    }
+
+    if (finalBlob.size > MAX_OUTPUT_BYTES) {
       console.warn(
-        `[watermark] output too large (${blob.size} bytes) — using original`
+        `[watermark] still ${finalBlob.size} bytes after quality reduction — using original`
       );
       return file;
     }
 
-    // ✅ Preserve the SAME name so Supabase paths stay predictable
+    // ✅ Always output as .jpg so upload MIME + extension match
     const safeName = sanitizeName(file.name || 'photo.jpg');
-    const out = new File([blob], safeName, {
+    const jpgName = safeName.replace(/\.(png|webp|heic|heif|gif)$/i, '.jpg');
+    const finalName = jpgName.toLowerCase().endsWith('.jpg')
+      ? jpgName
+      : `${jpgName}.jpg`;
+
+    const out = new File([finalBlob], finalName, {
       type: 'image/jpeg',
       lastModified: Date.now(),
     });
 
     console.log(
-      `[watermark] ok: ${file.name} (${file.size}b) → ${out.name} (${out.size}b)`
+      `[watermark] ok: ${file.name} (${file.size}b) → ${out.name} (${out.size}b @ q=${quality.toFixed(2)})`
     );
     return out;
   } catch (err) {
@@ -95,7 +134,7 @@ function drawWatermarked(
 
   const ts = opts.timestamp ?? new Date();
   const pad = Math.round(width * 0.028);
-  const mainSize = Math.max(16, Math.round(width * 0.036));
+  const mainSize = Math.max(16, Math.round(width * 0.038));
   const smallSize = Math.max(12, Math.round(mainSize * 0.72));
   const lineGap = Math.round(mainSize * 1.35);
 
@@ -206,10 +245,13 @@ function loadImage(file: File): Promise<HTMLImageElement> {
   });
 }
 
-function canvasToBlob(canvas: HTMLCanvasElement): Promise<Blob | null> {
+function canvasToBlob(
+  canvas: HTMLCanvasElement,
+  quality: number = JPEG_QUALITY
+): Promise<Blob | null> {
   return new Promise((resolve) => {
     // Some browsers callback with null — we resolve it, caller handles fallback
-    canvas.toBlob((b) => resolve(b), 'image/jpeg', JPEG_QUALITY);
+    canvas.toBlob((b) => resolve(b), 'image/jpeg', quality);
   });
 }
 
@@ -251,4 +293,4 @@ function wrapText(
   }
   if (current) out.push(current);
   return out;
-      }
+}
