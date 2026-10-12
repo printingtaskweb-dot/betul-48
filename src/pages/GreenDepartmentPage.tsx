@@ -9,7 +9,8 @@ import { PhotoUploader } from '../components/common/PhotoUploader';
 import { LocationPicker } from '../components/common/LocationPicker';
 import { ComplaintCard } from '../components/common/ComplaintCard';
 import { BottomNav } from '../components/BottomNav';
-import { ArrowLeft, Recycle, Info, MapPin, Loader2 } from 'lucide-react';
+import { watermarkPhoto } from '../lib/watermarkPhoto';
+import { ArrowLeft, Recycle, Info } from 'lucide-react';
 
 const WASTE_TYPES = [
   { id: 'leaves', label: 'Fallen Leaves', hi: 'गिरे पत्ते', icon: '🍂' },
@@ -32,62 +33,164 @@ export const GreenDepartmentPage: React.FC = () => {
   const [description, setDescription] = useState('');
   const [citizenName, setCitizenName] = useState('');
   const [citizenPhone, setCitizenPhone] = useState('');
+
+  // Photo state — originalFile is the raw capture, photoFile is the stamped one
+  const [originalFile, setOriginalFile] = useState<File | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
+  const [watermarking, setWatermarking] = useState(false);
+
   const [submitting, setSubmitting] = useState(false);
   const [ticket, setTicket] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [tab, setTab] = useState<'report' | 'status'>('report');
 
   const greenDept = departments.find((d) => d.slug === 'green');
-
-  // Location is only "ready" when we have coordinates
   const locationReady = !!gps.latitude && !!gps.longitude;
 
-  // 🔹 Auto-detect location on mount (no manual button press)
+  // 🔹 Auto-detect location on mount (silent)
   useEffect(() => {
     gps.detectLocation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 🔹 If location gets cleared, drop any attached photo
-  useEffect(() => {
-    if (!locationReady && photoFile) {
-      setPhotoFile(null);
-      setPreview(null);
+  /* ─────────────────────────────────────────────
+     Watermark helper — single source of truth
+     ───────────────────────────────────────────── */
+  const stampPhoto = async (file: File): Promise<File | null> => {
+    if (!locationReady) return null;
+    try {
+      return await watermarkPhoto(file, {
+        latitude: gps.latitude,
+        longitude: gps.longitude,
+        accuracy: gps.accuracy,
+        address: gps.address,
+        timestamp: new Date(),
+        appName: 'Swachh 311 · IMC',
+        departmentName: greenDept?.name ?? 'Green Waste',
+      });
+    } catch (err) {
+      console.warn('Watermark failed, using original photo', err);
+      return file;
     }
-  }, [locationReady, photoFile]);
-
-  const handleFileSelected = (file: File) => {
-    if (!locationReady) return; // guard
-    setPhotoFile(file);
-    setPreview(URL.createObjectURL(file));
   };
 
+  /* ─────────────────────────────────────────────
+     Photo captured → preview instantly, stamp when GPS ready
+     ───────────────────────────────────────────── */
+  const handleFileSelected = async (file: File) => {
+    setOriginalFile(file);
+    setError(null);
+    setPreview(URL.createObjectURL(file)); // instant feedback
+
+    if (!locationReady) return; // will be stamped by effect below
+
+    setWatermarking(true);
+    const stamped = await stampPhoto(file);
+    if (stamped) {
+      setPhotoFile(stamped);
+      setPreview(URL.createObjectURL(stamped));
+    }
+    setWatermarking(false);
+  };
+
+  const handleClearPhoto = () => {
+    setOriginalFile(null);
+    setPhotoFile(null);
+    setPreview(null);
+  };
+
+  /* ─────────────────────────────────────────────
+     Auto re-stamp when GPS arrives or dept changes
+     ───────────────────────────────────────────── */
+  useEffect(() => {
+    if (!originalFile || !locationReady) return;
+    let cancelled = false;
+
+    (async () => {
+      setWatermarking(true);
+      const stamped = await stampPhoto(originalFile);
+      if (cancelled || !stamped) {
+        setWatermarking(false);
+        return;
+      }
+      setPhotoFile(stamped);
+      setPreview(URL.createObjectURL(stamped));
+      setWatermarking(false);
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [locationReady, gps.latitude, gps.longitude]);
+
+  /* ─────────────────────────────────────────────
+     Submit — always re-stamp from originalFile before upload
+     ───────────────────────────────────────────── */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedType)
-      return setError(language === 'hi' ? 'कृपया कचरे का प्रकार चुनें।' : 'Please select waste type.');
 
-    // Location check BEFORE photo check
+    if (!selectedType)
+      return setError(
+        language === 'hi'
+          ? 'कृपया कचरे का प्रकार चुनें।'
+          : 'Please select waste type.'
+      );
+
     if (!locationReady)
       return setError(
         language === 'hi'
-          ? 'कृपया पहले अपना स्थान स्वतः दर्ज होने दें।'
-          : 'Please wait for your location to be auto-detected.'
+          ? 'कृपया GPS लॉक होने की प्रतीक्षा करें…'
+          : 'Please wait for GPS lock…'
       );
 
-    if (!photoFile)
-      return setError(language === 'hi' ? 'कृपया कचरे की तस्वीर अपलोड करें।' : 'Please attach a photo of the waste.');
+    if (!originalFile)
+      return setError(
+        language === 'hi'
+          ? 'कृपया कचरे की तस्वीर अपलोड करें।'
+          : 'Please attach a photo of the waste.'
+      );
 
     if (!greenDept)
-      return setError('Department not found. Please ensure database is initialized.');
+      return setError(
+        'Department not found. Please ensure database is initialized.'
+      );
 
     setSubmitting(true);
     setError(null);
+
     try {
-      const photoUrl = await uploadPhoto(photoFile);
-      const wasteLabel = WASTE_TYPES.find((w) => w.id === selectedType)?.label || selectedType;
+      // 🔑 Re-stamp right before upload so the file we ship is ALWAYS
+      //    watermarked with the current GPS + dept values.
+      const stampedForUpload = await watermarkPhoto(originalFile, {
+        latitude: gps.latitude,
+        longitude: gps.longitude,
+        accuracy: gps.accuracy,
+        address: gps.address,
+        timestamp: new Date(),
+        appName: 'Swachh 311 · IMC',
+        departmentName: greenDept.name,
+      });
+
+      if (stampedForUpload === originalFile) {
+        console.warn(
+          '[GreenDept] watermark returned original file — uploading un-watermarked photo'
+        );
+      }
+
+      const photoUrl = await uploadPhoto(stampedForUpload);
+
+      if (!photoUrl) {
+        throw new Error(
+          language === 'hi'
+            ? 'फोटो अपलोड नहीं हो पाया। कृपया पुनः प्रयास करें।'
+            : 'Photo upload failed. Please try again.'
+        );
+      }
+
+      const wasteLabel =
+        WASTE_TYPES.find((w) => w.id === selectedType)?.label || selectedType;
       const fullDesc = `[${wasteLabel}] ${description}`.trim();
 
       const result = await submitComplaint({
@@ -100,14 +203,18 @@ export const GreenDepartmentPage: React.FC = () => {
         address: gps.address ?? null,
         photo_url: photoUrl,
       });
+
       setTicket(result.ticket_number);
     } catch (err: any) {
       setError(err.message || 'Error submitting complaint');
     }
+
     setSubmitting(false);
   };
 
-  // Success view
+  /* ─────────────────────────────────────────────
+     Success view
+     ───────────────────────────────────────────── */
   if (ticket) {
     return (
       <div
@@ -121,12 +228,37 @@ export const GreenDepartmentPage: React.FC = () => {
         }}
       >
         <div style={{ textAlign: 'center', maxWidth: 420, width: '100%' }}>
-          <div style={{ fontSize: 64, animation: 'bounceIn 0.5s ease', marginBottom: 12 }}>✅</div>
-          <h2 style={{ color: 'var(--green-900)', marginBottom: 8, fontSize: 'var(--text-xl)', fontWeight: 800 }}>
-            {language === 'hi' ? 'हरित कचरा शिकायत दर्ज हुई!' : 'Green Waste Request Submitted!'}
+          <div
+            style={{
+              fontSize: 64,
+              animation: 'bounceIn 0.5s ease',
+              marginBottom: 12,
+            }}
+          >
+            ✅
+          </div>
+          <h2
+            style={{
+              color: 'var(--green-900)',
+              marginBottom: 8,
+              fontSize: 'var(--text-xl)',
+              fontWeight: 800,
+            }}
+          >
+            {language === 'hi'
+              ? 'हरित कचरा शिकायत दर्ज हुई!'
+              : 'Green Waste Request Submitted!'}
           </h2>
-          <p style={{ color: 'var(--gray-500)', marginBottom: 8, fontSize: '0.88rem' }}>
-            {language === 'hi' ? 'आपका ट्रैकिंग टिकट नंबर:' : 'Your tracking ticket number:'}
+          <p
+            style={{
+              color: 'var(--gray-500)',
+              marginBottom: 8,
+              fontSize: '0.88rem',
+            }}
+          >
+            {language === 'hi'
+              ? 'आपका ट्रैकिंग टिकट नंबर:'
+              : 'Your tracking ticket number:'}
           </p>
           <div
             style={{
@@ -150,7 +282,14 @@ export const GreenDepartmentPage: React.FC = () => {
               {ticket}
             </span>
           </div>
-          <p style={{ color: 'var(--gray-500)', fontSize: '0.82rem', marginBottom: 24, lineHeight: 1.6 }}>
+          <p
+            style={{
+              color: 'var(--gray-500)',
+              fontSize: '0.82rem',
+              marginBottom: 24,
+              lineHeight: 1.6,
+            }}
+          >
             {language === 'hi'
               ? 'नगर निगम की हरित कचरा टीम जल्द ही कचरा उठाने पहुंचेगी। समाधान के बाद आप इसे सत्यापित कर सकेंगे।'
               : 'The municipal green waste collection team has received your ticket and location. You will verify once completed.'}
@@ -173,11 +312,11 @@ export const GreenDepartmentPage: React.FC = () => {
             <button
               onClick={() => {
                 setTicket(null);
+                setOriginalFile(null);
                 setPhotoFile(null);
                 setPreview(null);
                 setDescription('');
                 setSelectedType('');
-                // re-trigger location detection for the next request
                 gps.detectLocation();
               }}
               style={{
@@ -199,18 +338,35 @@ export const GreenDepartmentPage: React.FC = () => {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--gray-50)', paddingBottom: 90 }}>
+    <div
+      style={{
+        minHeight: '100vh',
+        background: 'var(--gray-50)',
+        paddingBottom: 90,
+      }}
+    >
       {/* Header */}
       <header
         style={{
-          background: 'var(--header-gradient, linear-gradient(135deg, #4d0026 0%, #660033 50%, #800040 100%))',
+          background:
+            'var(--header-gradient, linear-gradient(135deg, #4d0026 0%, #660033 50%, #800040 100%))',
           padding: '16px 20px 24px',
           color: '#fff',
           boxShadow: 'var(--shadow-sm)',
         }}
       >
-        <div className="app-container" style={{ paddingLeft: 0, paddingRight: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+        <div
+          className="app-container"
+          style={{ paddingLeft: 0, paddingRight: 0 }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 12,
+              marginBottom: 16,
+            }}
+          >
             <button
               onClick={() => navigate(-1)}
               style={{
@@ -229,10 +385,23 @@ export const GreenDepartmentPage: React.FC = () => {
               <ArrowLeft size={18} color="#fff" />
             </button>
             <div>
-              <h1 style={{ margin: 0, fontSize: 'var(--text-lg)', fontWeight: 800, color: '#fff' }}>
+              <h1
+                style={{
+                  margin: 0,
+                  fontSize: 'var(--text-lg)',
+                  fontWeight: 800,
+                  color: '#fff',
+                }}
+              >
                 🌿 {t(language, 'greenDeptTitle')}
               </h1>
-              <p style={{ margin: 0, fontSize: '0.78rem', color: 'rgba(255,255,255,0.85)' }}>
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: '0.78rem',
+                  color: 'rgba(255,255,255,0.85)',
+                }}
+              >
                 {t(language, 'greenDeptSubtitle')}
               </p>
             </div>
@@ -241,8 +410,20 @@ export const GreenDepartmentPage: React.FC = () => {
           {/* Tabs */}
           <div style={{ display: 'flex', gap: 8 }}>
             {[
-              { id: 'report', label: language === 'hi' ? '📸 शिकायत दर्ज करें' : '📸 Request Pickup' },
-              { id: 'status', label: language === 'hi' ? '📋 हाल की स्थिति' : '📋 Recent Green Status' },
+              {
+                id: 'report',
+                label:
+                  language === 'hi'
+                    ? '📸 शिकायत दर्ज करें'
+                    : '📸 Request Pickup',
+              },
+              {
+                id: 'status',
+                label:
+                  language === 'hi'
+                    ? '📋 हाल की स्थिति'
+                    : '📋 Recent Green Status',
+              },
             ].map((tb) => (
               <button
                 key={tb.id}
@@ -252,7 +433,8 @@ export const GreenDepartmentPage: React.FC = () => {
                   borderRadius: 'var(--radius-full)',
                   border: 'none',
                   cursor: 'pointer',
-                  background: tab === tb.id ? '#fff' : 'rgba(255,255,255,0.2)',
+                  background:
+                    tab === tb.id ? '#fff' : 'rgba(255,255,255,0.2)',
                   color: tab === tb.id ? 'var(--green-900)' : '#fff',
                   fontWeight: 700,
                   fontSize: '0.82rem',
@@ -291,8 +473,19 @@ export const GreenDepartmentPage: React.FC = () => {
                 marginBottom: 20,
               }}
             >
-              <Info size={18} color="var(--green-600)" style={{ flexShrink: 0, marginTop: 2 }} />
-              <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--green-800)', lineHeight: 1.5 }}>
+              <Info
+                size={18}
+                color="var(--green-600)"
+                style={{ flexShrink: 0, marginTop: 2 }}
+              />
+              <p
+                style={{
+                  margin: 0,
+                  fontSize: '0.82rem',
+                  color: 'var(--green-800)',
+                  lineHeight: 1.5,
+                }}
+              >
                 {t(language, 'greenDeptTip')}
               </p>
             </div>
@@ -300,12 +493,16 @@ export const GreenDepartmentPage: React.FC = () => {
             {/* Waste type selection */}
             <div style={{ marginBottom: 22 }}>
               <label style={labelStyle}>
-                🗂️ {language === 'hi' ? 'कचरे का प्रकार चुनें *' : 'Select Waste Category *'}
+                🗂️{' '}
+                {language === 'hi'
+                  ? 'कचरे का प्रकार चुनें *'
+                  : 'Select Waste Category *'}
               </label>
               <div
                 style={{
                   display: 'grid',
-                  gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))',
+                  gridTemplateColumns:
+                    'repeat(auto-fill, minmax(130px, 1fr))',
                   gap: 8,
                   marginTop: 10,
                 }}
@@ -323,7 +520,9 @@ export const GreenDepartmentPage: React.FC = () => {
                         gap: 8,
                         padding: '10px 10px',
                         borderRadius: 'var(--radius-sm)',
-                        border: isSelected ? '2px solid var(--green-600)' : '1.5px solid var(--gray-200)',
+                        border: isSelected
+                          ? '2px solid var(--green-600)'
+                          : '1.5px solid var(--gray-200)',
                         background: isSelected ? 'var(--green-50)' : '#fff',
                         cursor: 'pointer',
                         textAlign: 'left',
@@ -336,7 +535,9 @@ export const GreenDepartmentPage: React.FC = () => {
                         style={{
                           fontSize: '0.78rem',
                           fontWeight: isSelected ? 800 : 600,
-                          color: isSelected ? 'var(--green-900)' : 'var(--gray-800)',
+                          color: isSelected
+                            ? 'var(--green-900)'
+                            : 'var(--gray-800)',
                           lineHeight: 1.25,
                         }}
                       >
@@ -365,101 +566,93 @@ export const GreenDepartmentPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Location — moved ABOVE photo, auto-detected on mount */}
+            {/* Photo — GPS camera style (moved above location, no gating) */}
             <div style={{ marginBottom: 22 }}>
               <label style={labelStyle}>
-                📍 {t(language, 'detectLocation')} *
-              </label>
-              <div style={{ marginTop: 8 }}>
-                <LocationPicker
-                  latitude={gps.latitude}
-                  longitude={gps.longitude}
-                  accuracy={gps.accuracy}
-                  address={gps.address}
-                  loading={gps.loading}
-                  error={gps.error}
-                  onDetect={gps.detectLocation}
-                />
-              </div>
-              {locationReady && !gps.loading && (
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    marginTop: 8,
-                    fontSize: '0.78rem',
-                    color: 'var(--green-700)',
-                    fontWeight: 600,
-                  }}
-                >
-                  <MapPin size={12} />
-                  {language === 'hi'
-                    ? 'स्थान सफलतापूर्वक दर्ज हो गया'
-                    : 'Location detected successfully'}
-                </div>
-              )}
-            </div>
-
-            {/* Photo Upload — disabled until location ready */}
-            <div style={{ marginBottom: 22 }}>
-              <label style={{ ...labelStyle, opacity: locationReady ? 1 : 0.5 }}>
                 📸 {t(language, 'uploadPhoto')} *
               </label>
-              <div style={{ marginTop: 8, position: 'relative' }}>
-                <div
-                  style={{
-                    opacity: locationReady ? 1 : 0.5,
-                    pointerEvents: locationReady ? 'auto' : 'none',
-                  }}
-                >
-                  <PhotoUploader
-                    onFileSelected={handleFileSelected}
-                    preview={preview}
-                    onClear={() => {
-                      setPhotoFile(null);
-                      setPreview(null);
-                    }}
-                    uploading={uploading}
-                  />
-                </div>
 
-                {!locationReady && (
-                  <div
+              <div style={{ marginTop: 8 }}>
+                <PhotoUploader
+                  onFileSelected={handleFileSelected}
+                  preview={preview}
+                  onClear={handleClearPhoto}
+                  uploading={uploading}
+                  disabled={watermarking}
+                />
+
+                {watermarking && (
+                  <p
                     style={{
                       marginTop: 8,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 6,
-                      fontSize: '0.78rem',
-                      color: 'var(--gray-600)',
-                      fontWeight: 600,
+                      fontSize: '0.75rem',
+                      color: 'var(--gray-500)',
+                      textAlign: 'center',
+                      fontStyle: 'italic',
                     }}
                   >
-                    {gps.loading ? (
-                      <>
-                        <Loader2 size={12} className="spin" />
-                        {language === 'hi'
-                          ? 'स्थान का पता लगाया जा रहा है… फोटो अपलोड करने के लिए कृपया प्रतीक्षा करें'
-                          : 'Detecting location… please wait before uploading a photo'}
-                      </>
-                    ) : (
-                      <>
-                        <MapPin size={12} />
-                        {language === 'hi'
-                          ? 'फोटो अपलोड करने के लिए पहले स्थान दर्ज होना आवश्यक है'
-                          : 'Location must be detected before uploading a photo'}
-                      </>
-                    )}
+                    {language === 'hi'
+                      ? 'स्टैम्प लगाया जा रहा है…'
+                      : 'Stamping…'}
+                  </p>
+                )}
+
+                {/* GPS location strip below the preview */}
+                {preview && !watermarking && locationReady && (
+                  <div
+                    style={{
+                      marginTop: 10,
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      background: 'rgba(0,0,0,0.05)',
+                      border:
+                        '1px solid var(--theme-component-border, #bfbfbf)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 8,
+                      fontSize: '0.75rem',
+                      color: 'var(--gray-600, #4b5563)',
+                    }}
+                  >
+                    <span style={{ fontSize: 13 }}>📍</span>
+                    <span
+                      style={{
+                        flex: 1,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        fontWeight: 600,
+                      }}
+                    >
+                      {gps.address ||
+                        `${gps.latitude?.toFixed(4)}, ${gps.longitude?.toFixed(4)}`}
+                    </span>
                   </div>
                 )}
               </div>
             </div>
 
+            {/* Silent GPS indicator — only visible while locking */}
+            <div style={{ marginBottom: 22 }}>
+              <LocationPicker
+                latitude={gps.latitude}
+                longitude={gps.longitude}
+                accuracy={gps.accuracy}
+                address={gps.address}
+                loading={gps.loading}
+                error={gps.error}
+                onDetect={gps.detectLocation}
+              />
+            </div>
+
             {/* Description */}
             <div style={{ marginBottom: 22 }}>
               <label style={labelStyle}>
-                📝 {language === 'hi' ? 'अतिरिक्त विवरण' : 'Additional Details'} ({t(language, 'optional')})
+                📝{' '}
+                {language === 'hi'
+                  ? 'अतिरिक्त विवरण'
+                  : 'Additional Details'}{' '}
+                ({t(language, 'optional')})
               </label>
               <textarea
                 placeholder={
@@ -514,20 +707,23 @@ export const GreenDepartmentPage: React.FC = () => {
 
             <button
               type="submit"
-              disabled={submitting || uploading || !locationReady}
+              disabled={submitting || uploading || watermarking}
               style={{
                 width: '100%',
                 padding: '14px 0',
                 borderRadius: 'var(--radius-md)',
                 border: 'none',
                 background:
-                  submitting || uploading || !locationReady
+                  submitting || uploading || watermarking
                     ? 'var(--gray-300)'
                     : 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
                 color: '#fff',
                 fontWeight: 800,
                 fontSize: '1rem',
-                cursor: submitting || uploading || !locationReady ? 'not-allowed' : 'pointer',
+                cursor:
+                  submitting || uploading || watermarking
+                    ? 'not-allowed'
+                    : 'pointer',
                 boxShadow: '0 6px 20px rgba(102,0,51,0.3)',
                 display: 'flex',
                 alignItems: 'center',
@@ -538,10 +734,10 @@ export const GreenDepartmentPage: React.FC = () => {
               <Recycle size={18} />
               {submitting
                 ? 'Submitting…'
-                : !locationReady
+                : watermarking
                 ? language === 'hi'
-                  ? 'स्थान दर्ज होने की प्रतीक्षा…'
-                  : 'Waiting for location…'
+                  ? 'फोटो तैयार हो रहा है…'
+                  : 'Preparing photo…'
                 : language === 'hi'
                 ? '📤 हरित कचरा उठाने हेतु अनुरोध भेजें'
                 : '📤 Request Green Waste Pickup'}
@@ -553,8 +749,17 @@ export const GreenDepartmentPage: React.FC = () => {
       {/* ── TAB: STATUS ──────────────────────────────────────── */}
       {tab === 'status' && (
         <div className="content-container-sm" style={{ paddingTop: 20 }}>
-          <h3 style={{ marginBottom: 14, fontSize: 'var(--text-lg)', fontWeight: 800, color: 'var(--gray-900)' }}>
-            {language === 'hi' ? 'हाल की हरित कचरा शिकायतें' : 'Recent Green Waste Complaints'}
+          <h3
+            style={{
+              marginBottom: 14,
+              fontSize: 'var(--text-lg)',
+              fontWeight: 800,
+              color: 'var(--gray-900)',
+            }}
+          >
+            {language === 'hi'
+              ? 'हाल की हरित कचरा शिकायतें'
+              : 'Recent Green Waste Complaints'}
           </h3>
           {complaints.length === 0 && (
             <div
@@ -563,17 +768,22 @@ export const GreenDepartmentPage: React.FC = () => {
                 padding: '48px 20px',
                 background: 'var(--theme-component, #d9d9d9)',
                 borderRadius: 'var(--radius-md)',
-                border: '1.5px dashed var(--theme-component-border, #bfbfbf)',
+                border:
+                  '1.5px dashed var(--theme-component-border, #bfbfbf)',
                 color: 'var(--gray-600)',
               }}
             >
               <p style={{ fontSize: 36, marginBottom: 8 }}>🌿</p>
               <p style={{ fontWeight: 600 }}>
-                {language === 'hi' ? 'अभी कोई शिकायत नहीं है' : 'No green complaints recorded yet'}
+                {language === 'hi'
+                  ? 'अभी कोई शिकायत नहीं है'
+                  : 'No green complaints recorded yet'}
               </p>
             </div>
           )}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div
+            style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
+          >
             {complaints.map((c) => (
               <ComplaintCard
                 key={c.id}
@@ -589,6 +799,8 @@ export const GreenDepartmentPage: React.FC = () => {
     </div>
   );
 };
+
+/* ─── Shared styles ─── */
 
 const labelStyle: React.CSSProperties = {
   display: 'block',
