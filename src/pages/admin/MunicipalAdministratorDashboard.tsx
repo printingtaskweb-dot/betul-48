@@ -1,35 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { useDeptComplaints } from '../../hooks/useDeptComplaints';
+import { AllotModal, HierarchyFlow } from '../../components/dept/AllotModal';
+import type { AllotTarget } from '../../components/dept/AllotModal';
+import { getTier, roleLabel, canAllotComplaint, canViewComplaint } from '../../lib/hierarchy';
+import type { StaffMember, Viewer } from '../../lib/hierarchy';
 import {
-  Building2,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  Search,
-  MapPin,
-  Compass,
-  RefreshCw,
-  Eye,
-  X,
-  FileText,
+  CheckCircle2, Clock, AlertCircle, Search, MapPin, Compass,
+  RefreshCw, Eye, X, FileText, Briefcase, UserCheck
 } from 'lucide-react';
-
-interface DepartmentSummary {
-  id: string;
-  name: string;
-  slug: string;
-  icon: string;
-  color: string;
-  headName: string | null;
-  headPhone: string | null;
-  headStaffCode: string | null;
-  totalComplaints: number;
-  resolvedComplaints: number;
-  pendingComplaints: number;
-  inProgressComplaints: number;
-}
 
 interface ComplaintRecord {
   id: string;
@@ -44,7 +25,16 @@ interface ComplaintRecord {
   photo_url: string | null;
   status: string;
   created_at: string;
+  assigned_to: string | null;
+  assignment_notes: string | null;
   department?: { name: string; icon: string } | null;
+}
+
+interface DepartmentRow {
+  id: string;
+  name: string;
+  slug: string;
+  icon: string;
 }
 
 interface NearbyComplaint {
@@ -54,850 +44,361 @@ interface NearbyComplaint {
   address: string | null;
   status: string;
   distance_meters: number;
-  latitude: number | null;
-  longitude: number | null;
 }
 
-const COMMON_AREAS = [
-  'All Areas',
-  'Kothi Bazar',
-  'Ganj',
-  'Civil Lines',
-  'Sadar Bazar',
-  'Badora',
-  'Nehru Park',
-  'Railway Colony',
+const STAFF_ROLES = [
+  'dept_staff', 'admin', 'department_head', 'supervisor', 'control_room',
+  'management_viewer', 'field_employee', 'municipal_administrator',
 ];
 
-const DEPT_TIER_NAMES: Record<string, string[]> = {
-  sanitation: ['Health / Sanitation Officer', 'Zone / Ward Sanitary Inspector', 'Sanitation Supervisor', 'Collection Crew'],
-  water: ['Water / Sewerage Head', 'Area Assistant Engineer', 'Pipeline / Pump Supervisor', 'Plumbers & Sewer Crew'],
-  roads: ['Public Works Head', 'Assistant Engineer (Civil)', 'Site Supervisor', 'Repair Crew & Masons'],
-  electricity: ['Electrical Dept Head', 'Area Electrical Engineer', 'Electrical Supervisor', 'Lineworkers & Electricians'],
-  parks: ['Horticulture Head', 'Area Horticulture Officer', 'Garden Supervisor', 'Gardeners & Maintenance'],
-  encroachment: ['Enforcement Head', 'Building Inspector', 'Enforcement Supervisor', 'Field Survey Crew'],
-  revenue: ['Revenue Officer', 'Area Revenue Inspector', 'Tax Supervisor', 'Billing & Collection Staff'],
-  accounts: ['Finance / Accounts Head', 'Stores In-charge', 'Accountant / Storekeeper', 'Accounts Assistants'],
-  administration: ['Administration Head', 'Personnel Officer', 'Office Coordinator', 'Clerks & Support Staff'],
-  it_control_room: ['IT Services Head', 'Control Room In-charge', 'Shift Supervisor', 'Helpline Operators'],
-  fleet: ['Fleet / Workshop Head', 'Workshop In-charge', 'Route Supervisor', 'Drivers & Mechanics'],
-  fire: ['Fire Services Head', 'Station / Shift In-charge', 'Crew Leader', 'Frontline Firefighters'],
+const COMMON_AREAS = [
+  'All Areas', 'Kothi Bazar', 'Ganj', 'Civil Lines', 'Sadar Bazar', 'Badora', 'Nehru Park', 'Railway Colony'
+];
+
+const BORDER = '1.5px solid var(--theme-component-border, #bfbfbf)';
+const PRIMARY = 'var(--theme-primary, #660033)';
+
+const card: React.CSSProperties = {
+  background: 'var(--theme-component, #d9d9d9)',
+  border: BORDER,
+  borderRadius: 'var(--radius-lg)',
 };
+const field: React.CSSProperties = {
+  padding: '9px 12px',
+  borderRadius: 'var(--radius-md)',
+  border: BORDER,
+  background: 'var(--theme-bg, #fff4e7)',
+  fontSize: '0.84rem',
+  boxSizing: 'border-box',
+};
+const primaryBtn: React.CSSProperties = {
+  background: 'var(--primary-gradient)', color: '#fff', border: 'none',
+  borderRadius: 'var(--radius-sm)', padding: '6px 12px', fontSize: '0.76rem',
+  fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4,
+};
+const outlineBtn: React.CSSProperties = {
+  ...primaryBtn,
+  background: 'var(--theme-bg, #fff4e7)',
+  color: PRIMARY,
+  border: `1.5px solid ${PRIMARY}`,
+};
+
+const isDone = (s: string) => s === 'resolved' || s === 'verified';
+
+const statusStyle = (s: string) =>
+  isDone(s)
+    ? { bg: '#dcfce7', fg: '#15803d' }
+    : s === 'pending'
+    ? { bg: '#fef3c7', fg: '#b45309' }
+    : { bg: '#e0e7ff', fg: '#3730a3' };
 
 export const MunicipalAdministratorDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isAdmin, loading: authLoading } = useAuth();
+  const { user, profile, isAdmin, loading: authLoading } = useAuth();
 
-  // Auth guard when accessed directly
   useEffect(() => {
-    if (!authLoading && (!user || !isAdmin)) {
-      navigate('/admin', { replace: true });
-    }
+    if (!authLoading && (!user || !isAdmin)) navigate('/admin', { replace: true });
   }, [user, isAdmin, authLoading, navigate]);
 
-  // Primary data states
-  const [departments, setDepartments] = useState<DepartmentSummary[]>([]);
-  const [allComplaints, setAllComplaints] = useState<ComplaintRecord[]>([]);
+  const { assignComplaint } = useDeptComplaints('all');
+
+  const [departments, setDepartments] = useState<DepartmentRow[]>([]);
+  const [complaints, setComplaints] = useState<ComplaintRecord[]>([]);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Active filter states triggered by clicking card divs
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [selectedDeptId, setSelectedDeptId] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedArea, setSelectedArea] = useState('All Areas');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [deptFilter, setDeptFilter] = useState('all');
+  const [area, setArea] = useState('All Areas');
+  const [query, setQuery] = useState('');
 
-  // Selected complaint detail modal
-  const [selectedComplaint, setSelectedComplaint] = useState<ComplaintRecord | null>(null);
+  const [detail, setDetail] = useState<ComplaintRecord | null>(null);
+  const [allotting, setAllotting] = useState<ComplaintRecord | null>(null);
 
-  // PostGIS Nearby Radar states
-  const [userLat, setUserLat] = useState<number>(21.9015); // Default Betul
-  const [userLon, setUserLon] = useState<number>(77.9018);
-  const [radiusMeters, setRadiusMeters] = useState<number>(5000);
+  // Radar
+  const [showRadar, setShowRadar] = useState(false);
+  const [lat, setLat] = useState(21.9015);
+  const [lon, setLon] = useState(77.9018);
+  const [radius, setRadius] = useState(5000);
   const [radarLoading, setRadarLoading] = useState(false);
-  const [nearbyComplaints, setNearbyComplaints] = useState<NearbyComplaint[]>([]);
-  const [radarError, setRadarError] = useState<string | null>(null);
-  const [showRadarSection, setShowRadarSection] = useState(false);
+  const [nearby, setNearby] = useState<NearbyComplaint[]>([]);
+  const [radarMsg, setRadarMsg] = useState<string | null>(null);
 
-  // Fetch full dashboard data
-  const fetchDashboardData = async () => {
+  // Viewer tier & permissions
+  const viewer: Viewer = useMemo(() => {
+    const isMunicipalAdmin = !profile?.linked_department_id || profile?.role === 'admin' || profile?.role === 'municipal_administrator';
+    return {
+      id: user?.id || '',
+      role: isMunicipalAdmin ? 'municipal_administrator' : (profile?.role || 'dept_staff'),
+      linked_department_id: isMunicipalAdmin ? null : (profile?.linked_department_id || null),
+    };
+  }, [user, profile]);
+
+  const myTier = getTier(viewer.role);
+  const isHigherDesignation = myTier <= 2;
+
+  const fetchData = async () => {
     setLoading(true);
     try {
-      // 1. Fetch departments
-      const { data: deptData, error: deptError } = await supabase
-        .from('departments')
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
+      const [{ data: depts }, { data: comps }, { data: people }] = await Promise.all([
+        supabase.from('departments').select('id, name, slug, icon').eq('is_active', true).order('name'),
+        supabase
+          .from('complaints')
+          .select(`id, ticket_number, department_id, citizen_name, citizen_phone,
+            description, latitude, longitude, address, photo_url, status, created_at,
+            assigned_to, assignment_notes, department:department_id(name, icon)`)
+          .order('created_at', { ascending: false }),
+        supabase
+          .from('user_profiles')
+          .select('id, full_name, phone, email, role, staff_code, linked_department_id, ward_number')
+          .in('role', STAFF_ROLES)
+          .order('full_name'),
+      ]);
 
-      if (deptError) throw deptError;
-
-      // 2. Fetch all complaints
-      const { data: complaintsData, error: compError } = await supabase
-        .from('complaints')
-        .select(`
-          id, ticket_number, department_id, citizen_name, citizen_phone,
-          description, latitude, longitude, address, photo_url, status, created_at,
-          department:department_id(name, icon)
-        `)
-        .order('created_at', { ascending: false });
-
-      if (compError) throw compError;
-
-      const complaintsList: ComplaintRecord[] = (complaintsData || []).map((c: any) => ({
-        ...c,
-        department: Array.isArray(c.department) ? c.department[0] : c.department,
-      }));
-      setAllComplaints(complaintsList);
-
-      // 3. Fetch department heads / staff from user_profiles
-      const { data: headsData } = await supabase
-        .from('user_profiles')
-        .select('id, full_name, phone, staff_code, linked_department_id, role')
-        .or('role.eq.department_head,role.eq.supervisor');
-
-      // Map summary per department
-      const summaries: DepartmentSummary[] = (deptData || []).map((d) => {
-        const deptComplaints = complaintsList.filter((c) => c.department_id === d.id);
-        const total = deptComplaints.length;
-        const resolved = deptComplaints.filter((c) => c.status === 'resolved' || c.status === 'verified').length;
-        const pending = deptComplaints.filter((c) => c.status === 'pending').length;
-        const inProgress = deptComplaints.filter((c) => c.status === 'in_progress').length;
-
-        const head = (headsData || []).find((h) => h.linked_department_id === d.id);
-
-        return {
-          id: d.id,
-          name: d.name,
-          slug: d.slug,
-          icon: d.icon || '🏢',
-          color: d.color || '#660033',
-          headName: head?.full_name || null,
-          headPhone: head?.phone || null,
-          headStaffCode: head?.staff_code || null,
-          totalComplaints: total,
-          resolvedComplaints: resolved,
-          pendingComplaints: pending,
-          inProgressComplaints: inProgress,
-        };
-      });
-
-      setDepartments(summaries);
-    } catch (err: any) {
-      console.error('Failed to load municipal dashboard data:', err);
+      setDepartments((depts || []).map((d: any) => ({ ...d, icon: d.icon || '🏢' })));
+      setComplaints(
+        (comps || []).map((c: any) => ({
+          ...c,
+          department: Array.isArray(c.department) ? c.department[0] : c.department,
+        }))
+      );
+      setStaff((people || []) as StaffMember[]);
+    } catch (e) {
+      console.error('Municipal dashboard load failed:', e);
     } finally {
       setLoading(false);
     }
   };
 
-  useEffect(() => {
-    fetchDashboardData();
-  }, []);
+  useEffect(() => { fetchData(); }, []);
 
-  // PostGIS Nearby Complaints trigger
-  const runNearbyRadar = async () => {
+  const staffById = useMemo(() => {
+    const m: Record<string, StaffMember> = {};
+    staff.forEach((s) => { m[s.id] = s; });
+    return m;
+  }, [staff]);
+
+  const headOf = (deptId: string) =>
+    staff.find((s) => s.linked_department_id === deptId && getTier(s.role) === 1);
+
+  // Department Isolation: If user has a linked department, strictly isolate to their department!
+  const scopedComplaints = useMemo(() => {
+    if (myTier === 0) return complaints;
+    return complaints.filter((c) => canViewComplaint(viewer, c));
+  }, [complaints, viewer, myTier]);
+
+  // Counts
+  const total = scopedComplaints.length;
+  const pending = scopedComplaints.filter((c) => c.status === 'pending').length;
+  const inProgress = scopedComplaints.filter((c) => c.status === 'in_progress').length;
+  const resolved = scopedComplaints.filter((c) => isDone(c.status)).length;
+
+  const filtered = scopedComplaints.filter((c) => {
+    const okStatus = statusFilter === 'all' || (statusFilter === 'resolved' ? isDone(c.status) : c.status === statusFilter);
+    const okDept = deptFilter === 'all' || c.department_id === deptFilter;
+    const okArea =
+      area === 'All Areas' ||
+      !!c.address?.toLowerCase().includes(area.toLowerCase()) ||
+      c.description.toLowerCase().includes(area.toLowerCase());
+    const q = query.toLowerCase().trim();
+    const okQuery =
+      !q ||
+      c.ticket_number.toLowerCase().includes(q) ||
+      c.description.toLowerCase().includes(q) ||
+      !!c.address?.toLowerCase().includes(q) ||
+      !!c.citizen_name?.toLowerCase().includes(q) ||
+      !!c.citizen_phone?.includes(q);
+    return okStatus && okDept && okArea && okQuery;
+  });
+
+  const hasFilter = statusFilter !== 'all' || deptFilter !== 'all' || area !== 'All Areas' || !!query;
+
+  // Radar
+  const runRadar = async () => {
     setRadarLoading(true);
-    setRadarError(null);
+    setRadarMsg(null);
     try {
       const { data, error } = await supabase.rpc('nearby_complaints', {
-        user_lat: userLat,
-        user_lon: userLon,
-        radius_meters: radiusMeters,
+        user_lat: lat, user_lon: lon, radius_meters: radius,
       });
-
-      if (error) {
-        console.warn('PostGIS function error, falling back to client-side geo calculation:', error.message);
-        // Fallback client-side calculation using haversine formula
-        const haversine = (lat1: number, lon1: number, lat2: number, lon2: number) => {
-          const R = 6371e3; // metres
-          const φ1 = (lat1 * Math.PI) / 180;
-          const φ2 = (lat2 * Math.PI) / 180;
-          const Δφ = ((lat2 - lat1) * Math.PI) / 180;
-          const Δλ = ((lon2 - lon1) * Math.PI) / 180;
-          const a =
-            Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-            Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-          const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-          return R * c;
-        };
-
-        const calculated = allComplaints
-          .filter((c) => c.latitude && c.longitude)
-          .map((c) => {
-            const dist = haversine(userLat, userLon, c.latitude!, c.longitude!);
-            return {
-              id: c.id,
-              ticket_number: c.ticket_number,
-              description: c.description,
-              address: c.address,
-              status: c.status,
-              distance_meters: Math.round(dist),
-              latitude: c.latitude,
-              longitude: c.longitude,
-            };
-          })
-          .filter((c) => c.distance_meters <= radiusMeters)
-          .sort((a, b) => a.distance_meters - b.distance_meters);
-
-        setNearbyComplaints(calculated);
-        if (calculated.length === 0) {
-          setRadarError(`No complaints found within ${Math.round(radiusMeters / 1000)}km radius.`);
-        }
-      } else {
-        setNearbyComplaints(data || []);
+      if (!error) {
+        setNearby(data || []);
+        if (!data?.length) setRadarMsg('No complaints in this radius.');
+        return;
       }
-    } catch (err: any) {
-      setRadarError(err.message || 'Error executing PostGIS nearby scan.');
+      // Fallback: haversine on the client
+      const R = 6371e3;
+      const rad = (d: number) => (d * Math.PI) / 180;
+      const list = scopedComplaints
+        .filter((c) => c.latitude && c.longitude)
+        .map((c) => {
+          const a =
+            Math.sin(rad(c.latitude! - lat) / 2) ** 2 +
+            Math.cos(rad(lat)) * Math.cos(rad(c.latitude!)) * Math.sin(rad(c.longitude! - lon) / 2) ** 2;
+          const dist = Math.round(R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+          return {
+            id: c.id, ticket_number: c.ticket_number, description: c.description,
+            address: c.address, status: c.status, distance_meters: dist,
+          };
+        })
+        .filter((c) => c.distance_meters <= radius)
+        .sort((a, b) => a.distance_meters - b.distance_meters);
+      setNearby(list);
+      if (!list.length) setRadarMsg(`No complaints within ${Math.round(radius / 1000)} km.`);
+    } catch (e: any) {
+      setRadarMsg(e.message || 'Radar scan failed.');
     } finally {
       setRadarLoading(false);
     }
   };
 
-  // Acquire current GPS location
-  const getCurrentLocation = () => {
-    if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser');
-      return;
-    }
+  const useMyGps = () => {
+    if (!navigator.geolocation) { alert('Geolocation is not supported by your browser'); return; }
     navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        setUserLat(Number(pos.coords.latitude.toFixed(6)));
-        setUserLon(Number(pos.coords.longitude.toFixed(6)));
-      },
-      (err) => {
-        alert('Could not acquire current location: ' + err.message);
-      },
+      (p) => { setLat(Number(p.coords.latitude.toFixed(6))); setLon(Number(p.coords.longitude.toFixed(6))); },
+      (e) => alert('Could not get location: ' + e.message),
       { enableHighAccuracy: true }
     );
   };
 
-  // Metrics computation
-  const totalCount = allComplaints.length;
-  const pendingCount = allComplaints.filter((c) => c.status === 'pending').length;
-  const inProgressCount = allComplaints.filter((c) => c.status === 'in_progress').length;
-  const resolvedCount = allComplaints.filter((c) => c.status === 'resolved' || c.status === 'verified').length;
-  const resolutionRate = totalCount > 0 ? Math.round((resolvedCount / totalCount) * 100) : 0;
-
-  // Filter complaints list
-  const filteredComplaints = allComplaints.filter((c) => {
-    // Status filter
-    const matchesStatus =
-      statusFilter === 'all' ||
-      (statusFilter === 'resolved' && (c.status === 'resolved' || c.status === 'verified')) ||
-      c.status === statusFilter;
-
-    // Dept filter
-    const matchesDept = selectedDeptId === 'all' || c.department_id === selectedDeptId;
-
-    // Area filter
-    const matchesArea =
-      selectedArea === 'All Areas' ||
-      (c.address && c.address.toLowerCase().includes(selectedArea.toLowerCase())) ||
-      c.description.toLowerCase().includes(selectedArea.toLowerCase());
-
-    // Search query
-    const q = searchQuery.toLowerCase().trim();
-    const matchesSearch =
-      !q ||
-      c.ticket_number.toLowerCase().includes(q) ||
-      c.description.toLowerCase().includes(q) ||
-      (c.address && c.address.toLowerCase().includes(q)) ||
-      (c.citizen_name && c.citizen_name.toLowerCase().includes(q)) ||
-      (c.citizen_phone && c.citizen_phone.includes(q));
-
-    return matchesStatus && matchesDept && matchesArea && matchesSearch;
-  });
+  const stats = [
+    { key: 'all', label: 'Total', val: total, icon: <FileText size={18} /> },
+    { key: 'pending', label: 'Pending', val: pending, icon: <Clock size={18} /> },
+    { key: 'in_progress', label: 'In Progress', val: inProgress, icon: <AlertCircle size={18} /> },
+    { key: 'resolved', label: 'Resolved', val: resolved, icon: <CheckCircle2 size={18} /> },
+  ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-      {/* ── TOP HEADER ── */}
-      <div
-        style={{
-          background: 'var(--theme-component, #d9d9d9)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '18px 22px',
-          border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: 16,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div
-            style={{
-              width: 44,
-              height: 44,
-              borderRadius: 'var(--radius-md)',
-              background: 'var(--primary-gradient)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.4rem',
-              color: '#fff',
-            }}
-          >
-            🏛️
-          </div>
-          <div>
-            <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 900, color: 'var(--gray-900)' }}>
-              Municipal Administrator Console
-            </h2>
-            <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--gray-600)' }}>
-              City-wide Grievance Head Dashboard & PostGIS Locality Radar (Betul Municipal)
-            </p>
-          </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+      {/* Header */}
+      <div style={{ ...card, padding: '16px 20px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <div>
+          <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900, color: 'var(--gray-900)' }}>
+            🏛️ Municipal Administrator Console
+          </h2>
+          <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: 'var(--gray-600)' }}>
+            {myTier === 0
+              ? 'City-wide Purview: All municipal departments & task dispatch'
+              : `Department Purview: ${profile?.linked_department_id ? 'Isolated to your assigned department' : 'Municipal Portal'}`}
+          </p>
         </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', gap: 8 }}>
           <button
-            onClick={() => setShowRadarSection(!showRadarSection)}
+            onClick={() => setShowRadar(!showRadar)}
             style={{
-              background: showRadarSection ? 'var(--theme-primary, #660033)' : 'var(--theme-bg, #fff4e7)',
-              color: showRadarSection ? '#fff' : 'var(--theme-primary, #660033)',
-              border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-              borderRadius: 'var(--radius-md)',
-              padding: '9px 14px',
-              fontSize: '0.82rem',
-              fontWeight: 800,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              transition: 'var(--transition)',
+              ...field, cursor: 'pointer', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6,
+              background: showRadar ? PRIMARY : 'var(--theme-bg, #fff4e7)',
+              color: showRadar ? '#fff' : PRIMARY,
             }}
           >
-            <Compass size={15} />
-            {showRadarSection ? 'Hide GIS Radar' : '📍 PostGIS Radar'}
+            <Compass size={15} /> {showRadar ? 'Hide Radar' : 'Nearby Radar'}
           </button>
-
-          <button
-            onClick={fetchDashboardData}
-            style={{
-              background: 'var(--theme-bg, #fff4e7)',
-              border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-              borderRadius: 'var(--radius-md)',
-              padding: '9px 12px',
-              fontSize: '0.82rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-            }}
-          >
-            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
-            Refresh
+          <button onClick={fetchData} style={{ ...field, cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}>
+            <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
           </button>
         </div>
       </div>
 
-      {/* ── MUNICIPAL HIERARCHY FLOW BANNER ── */}
-      <div
-        style={{
-          background: 'var(--theme-component, #d9d9d9)',
-          borderRadius: 'var(--radius-lg)',
-          padding: '14px 18px',
-          border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 8,
-        }}
-      >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6 }}>
-          <span style={{ fontSize: '0.8rem', fontWeight: 900, color: 'var(--gray-900)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-            👑 Municipal Organizational Hierarchy (6-Tier Chain of Command)
-          </span>
-          <span style={{ fontSize: '0.74rem', fontWeight: 700, color: 'var(--theme-primary, #660033)' }}>
-            12 Operational Departments • 4 Sub-Tiers Each
-          </span>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflowX: 'auto', paddingBottom: 4, fontSize: '0.74rem' }}>
-          <span style={{ background: 'var(--theme-primary, #660033)', color: '#fff', padding: '4px 10px', borderRadius: 'var(--radius-full)', fontWeight: 800, whiteSpace: 'nowrap' }}>
-            🏛️ Municipality
-          </span>
-          <span style={{ color: 'var(--gray-500)', fontWeight: 900 }}>→</span>
-          <span style={{ background: 'var(--theme-bg, #fff4e7)', border: '1px solid var(--theme-component-border, #bfbfbf)', color: 'var(--theme-primary, #660033)', padding: '4px 10px', borderRadius: 'var(--radius-full)', fontWeight: 800, whiteSpace: 'nowrap' }}>
-            👑 Municipal Commissioner
-          </span>
-          <span style={{ color: 'var(--gray-500)', fontWeight: 900 }}>→</span>
-          <span style={{ background: 'var(--theme-bg, #fff4e7)', border: '1px solid var(--theme-component-border, #bfbfbf)', color: 'var(--gray-800)', padding: '4px 10px', borderRadius: 'var(--radius-full)', fontWeight: 800, whiteSpace: 'nowrap' }}>
-            🌟 Deputy Commissioner / Coordinator
-          </span>
-          <span style={{ color: 'var(--gray-500)', fontWeight: 900 }}>→</span>
-          <span style={{ background: 'var(--theme-bg, #fff4e7)', border: '1px solid var(--theme-component-border, #bfbfbf)', color: 'var(--gray-800)', padding: '4px 10px', borderRadius: 'var(--radius-full)', fontWeight: 700, whiteSpace: 'nowrap' }}>
-            🏢 Tier 1: Dept Head
-          </span>
-          <span style={{ color: 'var(--gray-500)', fontWeight: 900 }}>→</span>
-          <span style={{ background: 'var(--theme-bg, #fff4e7)', border: '1px solid var(--theme-component-border, #bfbfbf)', color: 'var(--gray-800)', padding: '4px 10px', borderRadius: 'var(--radius-full)', fontWeight: 700, whiteSpace: 'nowrap' }}>
-            📍 Tier 2: Area Officer
-          </span>
-          <span style={{ color: 'var(--gray-500)', fontWeight: 900 }}>→</span>
-          <span style={{ background: 'var(--theme-bg, #fff4e7)', border: '1px solid var(--theme-component-border, #bfbfbf)', color: 'var(--gray-800)', padding: '4px 10px', borderRadius: 'var(--radius-full)', fontWeight: 700, whiteSpace: 'nowrap' }}>
-            👷 Tier 3: Supervisor
-          </span>
-          <span style={{ color: 'var(--gray-500)', fontWeight: 900 }}>→</span>
-          <span style={{ background: 'var(--theme-bg, #fff4e7)', border: '1px solid var(--theme-component-border, #bfbfbf)', color: 'var(--gray-800)', padding: '4px 10px', borderRadius: 'var(--radius-full)', fontWeight: 700, whiteSpace: 'nowrap' }}>
-            🛠️ Tier 4: Operational Staff
-          </span>
-        </div>
-      </div>
-
-      {/* ── INTERACTIVE STAT CARDS (CLICK DIV TO FILTER & VIEW COMPLAINTS) ── */}
-      <div>
-        <p style={{ margin: '0 0 8px 4px', fontSize: '0.78rem', fontWeight: 800, color: 'var(--gray-600)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-          Platform Overview (Click any card to display filtered complaints)
+      {/* Stepped Hierarchy Flow Indicator */}
+      <div style={{ ...card, padding: '12px 16px' }}>
+        <p style={{ margin: '0 0 6px', fontSize: '0.74rem', fontWeight: 800, color: 'var(--gray-700)', textTransform: 'uppercase' }}>
+          Hierarchical Allocation Flow (पदानुक्रम प्रवाह)
         </p>
-
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
-            gap: 12,
-          }}
-        >
-          {/* Total Registered */}
-          <div
-            onClick={() => {
-              setStatusFilter('all');
-              setSelectedDeptId('all');
-            }}
-            style={{
-              background: statusFilter === 'all' && selectedDeptId === 'all' ? 'var(--theme-primary, #660033)' : 'var(--theme-component, #d9d9d9)',
-              color: statusFilter === 'all' && selectedDeptId === 'all' ? '#fff' : 'var(--gray-900)',
-              borderRadius: 'var(--radius-lg)',
-              border: '1.5px solid',
-              borderColor: statusFilter === 'all' && selectedDeptId === 'all' ? 'var(--theme-primary, #660033)' : 'var(--theme-component-border, #bfbfbf)',
-              padding: '16px 18px',
-              cursor: 'pointer',
-              boxShadow: 'var(--shadow-sm)',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontSize: '0.82rem', fontWeight: 800, opacity: 0.85 }}>Total Registered</span>
-              <FileText size={18} />
-            </div>
-            <div style={{ fontSize: '1.9rem', fontWeight: 900 }}>{totalCount}</div>
-            <div style={{ fontSize: '0.72rem', marginTop: 4, opacity: 0.8 }}>
-              Click to view all complaints
-            </div>
-          </div>
-
-          {/* Pending Resolution */}
-          <div
-            onClick={() => {
-              setStatusFilter('pending');
-              setSelectedDeptId('all');
-            }}
-            style={{
-              background: statusFilter === 'pending' ? 'var(--theme-primary, #660033)' : 'var(--theme-component, #d9d9d9)',
-              color: statusFilter === 'pending' ? '#fff' : 'var(--gray-900)',
-              borderRadius: 'var(--radius-lg)',
-              border: '1.5px solid',
-              borderColor: statusFilter === 'pending' ? 'var(--theme-primary, #660033)' : 'var(--theme-component-border, #bfbfbf)',
-              padding: '16px 18px',
-              cursor: 'pointer',
-              boxShadow: 'var(--shadow-sm)',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontSize: '0.82rem', fontWeight: 800, opacity: 0.85 }}>Pending Grievances</span>
-              <Clock size={18} />
-            </div>
-            <div style={{ fontSize: '1.9rem', fontWeight: 900 }}>{pendingCount}</div>
-            <div style={{ fontSize: '0.72rem', marginTop: 4, opacity: 0.8 }}>
-              Click to view pending items
-            </div>
-          </div>
-
-          {/* In Progress */}
-          <div
-            onClick={() => {
-              setStatusFilter('in_progress');
-              setSelectedDeptId('all');
-            }}
-            style={{
-              background: statusFilter === 'in_progress' ? 'var(--theme-primary, #660033)' : 'var(--theme-component, #d9d9d9)',
-              color: statusFilter === 'in_progress' ? '#fff' : 'var(--gray-900)',
-              borderRadius: 'var(--radius-lg)',
-              border: '1.5px solid',
-              borderColor: statusFilter === 'in_progress' ? 'var(--theme-primary, #660033)' : 'var(--theme-component-border, #bfbfbf)',
-              padding: '16px 18px',
-              cursor: 'pointer',
-              boxShadow: 'var(--shadow-sm)',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontSize: '0.82rem', fontWeight: 800, opacity: 0.85 }}>In Progress</span>
-              <AlertCircle size={18} />
-            </div>
-            <div style={{ fontSize: '1.9rem', fontWeight: 900 }}>{inProgressCount}</div>
-            <div style={{ fontSize: '0.72rem', marginTop: 4, opacity: 0.8 }}>
-              Click to view assigned items
-            </div>
-          </div>
-
-          {/* Resolved */}
-          <div
-            onClick={() => {
-              setStatusFilter('resolved');
-              setSelectedDeptId('all');
-            }}
-            style={{
-              background: statusFilter === 'resolved' ? 'var(--theme-primary, #660033)' : 'var(--theme-component, #d9d9d9)',
-              color: statusFilter === 'resolved' ? '#fff' : 'var(--gray-900)',
-              borderRadius: 'var(--radius-lg)',
-              border: '1.5px solid',
-              borderColor: statusFilter === 'resolved' ? 'var(--theme-primary, #660033)' : 'var(--theme-component-border, #bfbfbf)',
-              padding: '16px 18px',
-              cursor: 'pointer',
-              boxShadow: 'var(--shadow-sm)',
-              transition: 'all 0.2s ease',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontSize: '0.82rem', fontWeight: 800, opacity: 0.85 }}>Resolved</span>
-              <CheckCircle2 size={18} />
-            </div>
-            <div style={{ fontSize: '1.9rem', fontWeight: 900 }}>{resolvedCount}</div>
-            <div style={{ fontSize: '0.72rem', marginTop: 4, opacity: 0.8 }}>
-              Rate: {resolutionRate}% resolution
-            </div>
-          </div>
-
-          {/* Total Departments */}
-          <div
-            onClick={() => {
-              setSelectedDeptId('all');
-            }}
-            style={{
-              background: 'var(--theme-component, #d9d9d9)',
-              color: 'var(--gray-900)',
-              borderRadius: 'var(--radius-lg)',
-              border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-              padding: '16px 18px',
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontSize: '0.82rem', fontWeight: 800, opacity: 0.85 }}>Departments</span>
-              <Building2 size={18} />
-            </div>
-            <div style={{ fontSize: '1.9rem', fontWeight: 900 }}>{departments.length}</div>
-            <div style={{ fontSize: '0.72rem', marginTop: 4, opacity: 0.8 }}>
-              Municipal civic units
-            </div>
-          </div>
-        </div>
+        <HierarchyFlow myTier={myTier} targetTier={1} language="en" />
       </div>
 
-      {/* ── POSTGIS RADAR SECTION (TOGGLEABLE) ── */}
-      {showRadarSection && (
-        <div
-          style={{
-            background: 'var(--theme-component, #d9d9d9)',
-            borderRadius: 'var(--radius-lg)',
-            border: '2px solid var(--theme-component-border, #bfbfbf)',
-            padding: '20px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 14,
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-            <div>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: 'var(--gray-900)' }}>
-                📍 PostGIS Nearby Complaints (Area Distance Radar)
-              </h3>
-              <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: 'var(--gray-600)' }}>
-                Uses PostgreSQL `public.nearby_complaints(user_lat, user_lon, radius_meters)` function.
-              </p>
-            </div>
-
-            <button
-              onClick={getCurrentLocation}
+      {/* Stats */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12 }}>
+        {stats.map((s) => {
+          const active = statusFilter === s.key && deptFilter === 'all';
+          return (
+            <div
+              key={s.key}
+              onClick={() => { setStatusFilter(s.key); setDeptFilter('all'); }}
               style={{
-                background: 'var(--theme-bg, #fff4e7)',
-                border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                borderRadius: 'var(--radius-md)',
-                padding: '7px 12px',
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 6,
-                color: 'var(--theme-primary, #660033)',
+                ...card, padding: '14px 16px', cursor: 'pointer',
+                background: active ? PRIMARY : 'var(--theme-component, #d9d9d9)',
+                color: active ? '#fff' : 'var(--gray-900)',
+                border: active ? `1.5px solid ${PRIMARY}` : BORDER,
               }}
             >
-              <MapPin size={14} /> Use My Current GPS
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.8rem', fontWeight: 800 }}>
+                {s.label} {s.icon}
+              </div>
+              <div style={{ fontSize: '1.8rem', fontWeight: 900 }}>{s.val}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Radar */}
+      {showRadar && (
+        <div style={{ ...card, padding: 18, display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+            <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 900 }}>📍 Nearby Complaints</h3>
+            <button onClick={useMyGps} style={{ ...field, cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, color: PRIMARY }}>
+              <MapPin size={14} /> Use my GPS
             </button>
           </div>
-
-          {/* Coordinate Inputs & Radius */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10 }}>
-            <div>
-              <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 800, marginBottom: 4 }}>
-                Latitude
-              </label>
-              <input
-                type="number"
-                step="0.0001"
-                value={userLat}
-                onChange={(e) => setUserLat(parseFloat(e.target.value) || 0)}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                  background: 'var(--theme-bg, #fff4e7)',
-                  fontSize: '0.84rem',
-                }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 800, marginBottom: 4 }}>
-                Longitude
-              </label>
-              <input
-                type="number"
-                step="0.0001"
-                value={userLon}
-                onChange={(e) => setUserLon(parseFloat(e.target.value) || 0)}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                  background: 'var(--theme-bg, #fff4e7)',
-                  fontSize: '0.84rem',
-                }}
-              />
-            </div>
-
-            <div>
-              <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 800, marginBottom: 4 }}>
-                Search Radius
-              </label>
-              <select
-                value={radiusMeters}
-                onChange={(e) => setRadiusMeters(parseInt(e.target.value))}
-                style={{
-                  width: '100%',
-                  padding: '8px 12px',
-                  borderRadius: 'var(--radius-sm)',
-                  border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                  background: 'var(--theme-bg, #fff4e7)',
-                  fontSize: '0.84rem',
-                  cursor: 'pointer',
-                }}
-              >
-                <option value={1000}>1 Kilometer (1,000m)</option>
-                <option value={2000}>2 Kilometers (2,000m)</option>
-                <option value={5000}>5 Kilometers (5,000m)</option>
-                <option value={10000}>10 Kilometers (10,000m)</option>
-                <option value={25000}>25 Kilometers (25,000m)</option>
-              </select>
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
-              <button
-                onClick={runNearbyRadar}
-                disabled={radarLoading}
-                style={{
-                  width: '100%',
-                  padding: '9px 16px',
-                  borderRadius: 'var(--radius-sm)',
-                  border: 'none',
-                  background: 'var(--primary-gradient)',
-                  color: '#fff',
-                  fontWeight: 800,
-                  fontSize: '0.84rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                }}
-              >
-                <Compass size={15} className={radarLoading ? 'animate-spin' : ''} />
-                {radarLoading ? 'Scanning...' : 'Scan Nearby Area'}
-              </button>
-            </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 10 }}>
+            <input type="number" step="0.0001" value={lat} onChange={(e) => setLat(parseFloat(e.target.value) || 0)} style={field} placeholder="Latitude" />
+            <input type="number" step="0.0001" value={lon} onChange={(e) => setLon(parseFloat(e.target.value) || 0)} style={field} placeholder="Longitude" />
+            <select value={radius} onChange={(e) => setRadius(parseInt(e.target.value))} style={field}>
+              {[1000, 2000, 5000, 10000, 25000].map((r) => <option key={r} value={r}>{r / 1000} km</option>)}
+            </select>
+            <button onClick={runRadar} disabled={radarLoading} style={{ ...primaryBtn, justifyContent: 'center', padding: '9px 14px', fontSize: '0.84rem' }}>
+              <Compass size={15} /> {radarLoading ? 'Scanning...' : 'Scan'}
+            </button>
           </div>
-
-          {/* Radar Results */}
-          {radarError && (
-            <div style={{ fontSize: '0.8rem', color: '#b45309', background: '#fef3c7', padding: '8px 12px', borderRadius: 6 }}>
-              {radarError}
-            </div>
-          )}
-
-          {nearbyComplaints.length > 0 && (
-            <div style={{ marginTop: 8 }}>
-              <h4 style={{ margin: '0 0 8px', fontSize: '0.88rem', fontWeight: 800 }}>
-                Found {nearbyComplaints.length} nearby complaints within {radiusMeters / 1000} km:
-              </h4>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
-                {nearbyComplaints.map((nc) => (
-                  <div
-                    key={nc.id}
-                    style={{
-                      background: 'var(--theme-bg, #fff4e7)',
-                      borderRadius: 'var(--radius-md)',
-                      border: '1px solid var(--theme-component-border, #bfbfbf)',
-                      padding: '12px',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: 6,
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                      <span style={{ fontWeight: 800, fontSize: '0.82rem', color: 'var(--theme-primary, #660033)' }}>
-                        #{nc.ticket_number}
-                      </span>
-                      <span
-                        style={{
-                          background: 'rgba(102,0,51,0.12)',
-                          color: 'var(--theme-primary, #660033)',
-                          borderRadius: 'var(--radius-full)',
-                          padding: '2px 8px',
-                          fontSize: '0.72rem',
-                          fontWeight: 800,
-                        }}
-                      >
-                        📍 {nc.distance_meters}m away
-                      </span>
-                    </div>
-
-                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--gray-800)', lineHeight: 1.4 }}>
-                      {nc.description}
-                    </p>
-
-                    {nc.address && (
-                      <p style={{ margin: 0, fontSize: '0.74rem', color: 'var(--gray-600)' }}>
-                        {nc.address}
-                      </p>
-                    )}
+          {radarMsg && <div style={{ fontSize: '0.8rem', color: '#b45309', background: '#fef3c7', padding: '8px 12px', borderRadius: 6 }}>{radarMsg}</div>}
+          {nearby.length > 0 && (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 8 }}>
+              {nearby.map((n) => (
+                <div key={n.id} style={{ ...field, padding: 10, fontSize: '0.8rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800 }}>
+                    <span style={{ color: PRIMARY }}>#{n.ticket_number}</span>
+                    <span>{n.distance_meters} m</span>
                   </div>
-                ))}
-              </div>
+                  <div style={{ marginTop: 4 }}>{n.description}</div>
+                </div>
+              ))}
             </div>
           )}
         </div>
       )}
 
-      {/* ── DEPARTMENT HEADS & SUMMARY (CLICK DIV TO FILTER) ── */}
+      {/* Departments (click to isolate department) */}
       <div>
-        <p style={{ margin: '0 0 8px 4px', fontSize: '0.78rem', fontWeight: 800, color: 'var(--gray-600)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-          Departments & Leadership (Click any department to view its complaints)
+        <p style={{ margin: '0 0 8px 4px', fontSize: '0.76rem', fontWeight: 800, color: 'var(--gray-600)', textTransform: 'uppercase' }}>
+          Departments — Click to isolate complaints by department
         </p>
-
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 12 }}>
-          {departments.map((dept) => {
-            const isSelected = selectedDeptId === dept.id;
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
+          {departments.map((d) => {
+            const list = scopedComplaints.filter((c) => c.department_id === d.id);
+            const open = list.filter((c) => !isDone(c.status)).length;
+            const head = headOf(d.id);
+            const active = deptFilter === d.id;
             return (
               <div
-                key={dept.id}
-                onClick={() => {
-                  setSelectedDeptId(dept.id);
-                  setStatusFilter('all');
-                }}
+                key={d.id}
+                onClick={() => { setDeptFilter(active ? 'all' : d.id); setStatusFilter('all'); }}
                 style={{
-                  background: isSelected ? 'var(--theme-bg, #fff4e7)' : 'var(--theme-component, #d9d9d9)',
-                  border: '2px solid',
-                  borderColor: isSelected ? 'var(--theme-primary, #660033)' : 'var(--theme-component-border, #bfbfbf)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '16px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  boxShadow: isSelected ? 'var(--shadow-md)' : 'var(--shadow-sm)',
-                  transition: 'all 0.2s ease',
+                  ...card, padding: '12px 14px', cursor: 'pointer',
+                  background: active ? 'var(--theme-bg, #fff4e7)' : 'var(--theme-component, #d9d9d9)',
+                  border: active ? `2px solid ${PRIMARY}` : '2px solid var(--theme-component-border, #bfbfbf)',
                 }}
               >
-                <div>
-                  {/* Dept Title */}
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <span style={{ fontSize: '1.4rem' }}>{dept.icon}</span>
-                      <h4 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 800, color: 'var(--gray-900)' }}>
-                        {dept.name}
-                      </h4>
-                    </div>
-                    {isSelected && (
-                      <span style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--theme-primary, #660033)' }}>
-                        ● ACTIVE
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Dept Head Information */}
-                  <div
-                    style={{
-                      background: 'rgba(255,255,255,0.4)',
-                      borderRadius: 'var(--radius-sm)',
-                      padding: '8px 10px',
-                      marginBottom: 12,
-                      fontSize: '0.76rem',
-                    }}
-                  >
-                    <div style={{ fontWeight: 800, color: 'var(--gray-900)' }}>
-                      Head: {dept.headName || 'Designated Dept Officer'}
-                    </div>
-                    {dept.headPhone && (
-                      <div style={{ color: 'var(--theme-primary, #660033)', fontWeight: 700, marginTop: 2 }}>
-                        📞 {dept.headPhone}
-                      </div>
-                    )}
-                    {dept.headStaffCode && (
-                      <div style={{ color: 'var(--gray-600)', fontSize: '0.7rem' }}>
-                        Staff ID: {dept.headStaffCode}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* 4 Sub-Designation Levels */}
-                  <div style={{ marginBottom: 12, display: 'flex', flexDirection: 'column', gap: 3, background: 'rgba(255,255,255,0.2)', padding: '6px 8px', borderRadius: 6 }}>
-                    <div style={{ fontSize: '0.67rem', fontWeight: 800, color: 'var(--gray-600)', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
-                      4 Sub-Designation Tiers:
-                    </div>
-                    {(DEPT_TIER_NAMES[dept.slug] || ['Department Head', 'Area / Zone Officer', 'Supervisor', 'Operational Staff']).map((tName, idx) => (
-                      <div key={idx} style={{ fontSize: '0.71rem', display: 'flex', alignItems: 'center', gap: 5, color: 'var(--gray-800)' }}>
-                        <span style={{ fontWeight: 800, color: 'var(--theme-primary, #660033)', fontSize: '0.66rem' }}>T{idx + 1}:</span>
-                        <span>{tName}</span>
-                      </div>
-                    ))}
-                  </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: '1.3rem' }}>{d.icon}</span>
+                  <b style={{ fontSize: '0.9rem', color: 'var(--gray-900)' }}>{d.name}</b>
                 </div>
-
-                {/* Counters row */}
-                <div
-                  style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    paddingTop: 8,
-                    borderTop: '1px solid var(--theme-component-border, #bfbfbf)',
-                    fontSize: '0.76rem',
-                  }}
-                >
-                  <span>
-                    Total: <b>{dept.totalComplaints}</b>
-                  </span>
-                  <span style={{ color: '#b45309' }}>
-                    Pending: <b>{dept.pendingComplaints}</b>
-                  </span>
-                  <span style={{ color: '#15803d' }}>
-                    Resolved: <b>{dept.resolvedComplaints}</b>
-                  </span>
+                <div style={{ fontSize: '0.74rem', color: 'var(--gray-700)', margin: '6px 0' }}>
+                  Head: <b>{head?.full_name || 'Not assigned'}</b>
+                  {head?.phone && <span> • 📞 {head.phone}</span>}
+                </div>
+                <div style={{ fontSize: '0.74rem', display: 'flex', justifyContent: 'space-between' }}>
+                  <span>Total <b>{list.length}</b></span>
+                  <span style={{ color: '#b45309' }}>Open <b>{open}</b></span>
                 </div>
               </div>
             );
@@ -905,209 +406,86 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* ── REGISTERED COMPLAINTS VIEWER ── */}
-      <div
-        style={{
-          background: 'var(--theme-component, #d9d9d9)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-          padding: '18px 20px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 14,
-        }}
-      >
-        {/* Section Header with Active Filter Pill */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-          <div>
-            <h3 style={{ margin: '0 0 2px', fontSize: '1.15rem', fontWeight: 900, color: 'var(--gray-900)' }}>
-              Registered Complaints ({filteredComplaints.length})
-            </h3>
-            <p style={{ margin: 0, fontSize: '0.78rem', color: 'var(--gray-600)' }}>
-              Active filter: Status [<b>{statusFilter.toUpperCase()}</b>], Department [
-              <b>{selectedDeptId === 'all' ? 'ALL' : departments.find((d) => d.id === selectedDeptId)?.name}</b>]
-            </p>
-          </div>
-
-          {(statusFilter !== 'all' || selectedDeptId !== 'all' || selectedArea !== 'All Areas' || searchQuery) && (
+      {/* Complaints List with Stepped Allotment */}
+      <div style={{ ...card, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900 }}>
+            Complaints ({filtered.length})
+            {deptFilter !== 'all' && (
+              <span style={{ marginLeft: 8, fontSize: '0.8rem', color: PRIMARY, fontWeight: 700 }}>
+                • Filtered to: {departments.find(d => d.id === deptFilter)?.name}
+              </span>
+            )}
+          </h3>
+          {hasFilter && (
             <button
-              onClick={() => {
-                setStatusFilter('all');
-                setSelectedDeptId('all');
-                setSelectedArea('All Areas');
-                setSearchQuery('');
-              }}
-              style={{
-                background: 'var(--theme-bg, #fff4e7)',
-                border: '1px solid var(--theme-component-border, #bfbfbf)',
-                borderRadius: 'var(--radius-sm)',
-                padding: '6px 12px',
-                fontSize: '0.76rem',
-                fontWeight: 800,
-                color: 'var(--theme-primary, #660033)',
-                cursor: 'pointer',
-              }}
+              onClick={() => { setStatusFilter('all'); setDeptFilter('all'); setArea('All Areas'); setQuery(''); }}
+              style={{ ...field, padding: '5px 12px', cursor: 'pointer', fontWeight: 800, fontSize: '0.76rem', color: PRIMARY }}
             >
-              Reset Filters ↺
+              Reset filters ↺
             </button>
           )}
         </div>
 
-        {/* Search & Area Filter Bar */}
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-          <div style={{ position: 'relative', flex: 1, minWidth: 240 }}>
-            <Search
-              size={16}
-              style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-500)' }}
-            />
+          <div style={{ position: 'relative', flex: 1, minWidth: 220 }}>
+            <Search size={16} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-500)' }} />
             <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by ticket #, citizen name, phone, or address keyword..."
-              style={{
-                width: '100%',
-                padding: '9px 12px 9px 34px',
-                borderRadius: 'var(--radius-md)',
-                border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                background: 'var(--theme-bg, #fff4e7)',
-                fontSize: '0.84rem',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search ticket, citizen, phone or address..."
+              style={{ ...field, width: '100%', paddingLeft: 34, outline: 'none' }}
             />
           </div>
-
-          {/* Area Selector */}
-          <select
-            value={selectedArea}
-            onChange={(e) => setSelectedArea(e.target.value)}
-            style={{
-              padding: '9px 14px',
-              borderRadius: 'var(--radius-md)',
-              border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-              background: 'var(--theme-bg, #fff4e7)',
-              fontSize: '0.82rem',
-              fontWeight: 700,
-              color: 'var(--gray-800)',
-              cursor: 'pointer',
-            }}
-          >
-            {COMMON_AREAS.map((a) => (
-              <option key={a} value={a}>
-                📍 {a}
-              </option>
-            ))}
+          <select value={area} onChange={(e) => setArea(e.target.value)} style={{ ...field, cursor: 'pointer', fontWeight: 700 }}>
+            {COMMON_AREAS.map((a) => <option key={a} value={a}>📍 {a}</option>)}
           </select>
         </div>
 
-        {/* Complaints Table */}
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {[1, 2, 3].map((n) => (
-              <div
-                key={n}
-                className="shimmer"
-                style={{ height: 60, borderRadius: 'var(--radius-md)', background: 'var(--theme-component, #d9d9d9)' }}
-              />
-            ))}
-          </div>
-        ) : filteredComplaints.length === 0 ? (
-          <div
-            style={{
-              background: 'var(--theme-bg, #fff4e7)',
-              borderRadius: 'var(--radius-md)',
-              padding: '30px 16px',
-              textAlign: 'center',
-              border: '1.5px dashed var(--theme-component-border, #bfbfbf)',
-            }}
-          >
-            <p style={{ margin: 0, fontSize: '0.86rem', color: 'var(--gray-600)' }}>
-              No registered complaints match the current filter selection.
-            </p>
+          <p style={{ textAlign: 'center', color: 'var(--gray-600)' }}>Loading complaints...</p>
+        ) : filtered.length === 0 ? (
+          <div style={{ ...field, textAlign: 'center', padding: 28, border: '1.5px dashed var(--theme-component-border, #bfbfbf)', color: 'var(--gray-600)' }}>
+            No complaints match the current filters.
           </div>
         ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 600, overflowY: 'auto' }}>
-            {filteredComplaints.map((c) => {
-              const isResolved = c.status === 'resolved' || c.status === 'verified';
-              const isPending = c.status === 'pending';
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 620, overflowY: 'auto' }}>
+            {filtered.map((c) => {
+              const st = statusStyle(c.status);
+              const assignee = c.assigned_to ? staffById[c.assigned_to] : null;
+              const canAllot = canAllotComplaint(viewer, c.department_id);
 
               return (
-                <div
-                  key={c.id}
-                  style={{
-                    background: 'var(--theme-bg, #fff4e7)',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                    padding: '12px 16px',
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    gap: 12,
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 240, flex: 1 }}>
+                <div key={c.id} style={{ ...field, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 14px' }}>
+                  <div style={{ display: 'flex', gap: 10, flex: 1, minWidth: 240 }}>
                     <span style={{ fontSize: '1.3rem' }}>{c.department?.icon || '🏢'}</span>
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontWeight: 800, fontSize: '0.88rem', color: 'var(--theme-primary, #660033)' }}>
-                          #{c.ticket_number}
-                        </span>
-                        <span style={{ fontSize: '0.78rem', fontWeight: 700, color: 'var(--gray-800)' }}>
-                          {c.department?.name}
-                        </span>
-                        <span
-                          style={{
-                            background: isResolved ? '#dcfce7' : isPending ? '#fef3c7' : '#e0e7ff',
-                            color: isResolved ? '#15803d' : isPending ? '#b45309' : '#3730a3',
-                            borderRadius: 'var(--radius-full)',
-                            padding: '1px 8px',
-                            fontSize: '0.68rem',
-                            fontWeight: 800,
-                            textTransform: 'uppercase',
-                          }}
-                        >
-                          {c.status}
+                      <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
+                        <b style={{ color: PRIMARY }}>#{c.ticket_number}</b>
+                        <span style={{ fontSize: '0.78rem', fontWeight: 700 }}>{c.department?.name}</span>
+                        <span style={{ background: st.bg, color: st.fg, borderRadius: 20, padding: '1px 8px', fontSize: '0.68rem', fontWeight: 800, textTransform: 'uppercase' }}>
+                          {c.status.replace('_', ' ')}
                         </span>
                       </div>
-
-                      <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: 'var(--gray-800)', lineHeight: 1.4 }}>
-                        {c.description}
-                      </p>
-
-                      <div style={{ display: 'flex', gap: 12, marginTop: 4, fontSize: '0.74rem', color: 'var(--gray-600)' }}>
-                        {c.citizen_name && <span>Citizen: <b>{c.citizen_name}</b></span>}
-                        {c.citizen_phone && <span>📞 {c.citizen_phone}</span>}
-                        {c.address && <span>📍 {c.address}</span>}
+                      <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: 'var(--gray-800)' }}>{c.description}</p>
+                      <div style={{ marginTop: 4, fontSize: '0.74rem', color: assignee ? PRIMARY : '#b45309', fontWeight: 700 }}>
+                        {assignee
+                          ? <><UserCheck size={12} style={{ display: 'inline' }} /> Assigned: {assignee.full_name} ({roleLabel(assignee.role, 'en')})</>
+                          : '⚠️ Unallotted'}
                       </div>
                     </div>
                   </div>
 
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontSize: '0.74rem', color: 'var(--gray-500)', whiteSpace: 'nowrap' }}>
-                      {new Date(c.created_at).toLocaleDateString()}
-                    </span>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.74rem', color: 'var(--gray-500)' }}>{new Date(c.created_at).toLocaleDateString()}</span>
+                    <button onClick={() => setDetail(c)} style={primaryBtn}><Eye size={13} /> Details</button>
 
-                    <button
-                      onClick={() => setSelectedComplaint(c)}
-                      style={{
-                        background: 'var(--primary-gradient)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 'var(--radius-sm)',
-                        padding: '6px 12px',
-                        fontSize: '0.76rem',
-                        fontWeight: 800,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 4,
-                      }}
-                    >
-                      <Eye size={13} /> View Details
-                    </button>
+                    {/* Only higher designation staff can allot/reassign */}
+                    {canAllot && !isDone(c.status) && (
+                      <button onClick={() => setAllotting(c)} style={outlineBtn}>
+                        <Briefcase size={13} /> {c.assigned_to ? 'Reassign' : 'Allot Task'}
+                      </button>
+                    )}
                   </div>
                 </div>
               );
@@ -1116,106 +494,75 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
         )}
       </div>
 
-      {/* ── COMPLAINT DETAIL MODAL ── */}
-      {selectedComplaint && (
+      {/* Details modal */}
+      {detail && (
         <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 1100,
-            background: 'rgba(0,0,0,0.6)',
-            backdropFilter: 'blur(3px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 16,
-          }}
-          onClick={(e) => {
-            if (e.target === e.currentTarget) setSelectedComplaint(null);
-          }}
+          style={{ position: 'fixed', inset: 0, zIndex: 1100, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={(e) => { if (e.target === e.currentTarget) setDetail(null); }}
         >
-          <div
-            style={{
-              background: 'var(--theme-component, #d9d9d9)',
-              borderRadius: 'var(--radius-xl)',
-              border: '2px solid var(--theme-component-border, #bfbfbf)',
-              width: '100%',
-              maxWidth: 540,
-              maxHeight: '85vh',
-              overflowY: 'auto',
-              boxShadow: 'var(--shadow-xl)',
-            }}
-          >
-            <div
-              style={{
-                background: 'var(--header-gradient, linear-gradient(135deg, #4d0026 0%, #660033 50%, #800040 100%))',
-                padding: '14px 20px',
-                color: '#fff',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-              }}
-            >
+          <div style={{ ...card, borderRadius: 'var(--radius-xl)', width: '100%', maxWidth: 540, maxHeight: '85vh', overflowY: 'auto' }}>
+            <div style={{ background: 'var(--header-gradient, linear-gradient(135deg, #4d0026, #660033, #800040))', padding: '14px 20px', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
-                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800 }}>
-                  Ticket #{selectedComplaint.ticket_number}
-                </h3>
-                <p style={{ margin: 0, fontSize: '0.74rem', color: 'rgba(255,255,255,0.8)' }}>
-                  {selectedComplaint.department?.name} Department
-                </p>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800 }}>Ticket #{detail.ticket_number}</h3>
+                <p style={{ margin: 0, fontSize: '0.74rem', opacity: 0.85 }}>{detail.department?.name} Department</p>
               </div>
-              <button
-                onClick={() => setSelectedComplaint(null)}
-                style={{
-                  background: 'rgba(255,255,255,0.15)',
-                  border: 'none',
-                  borderRadius: 'var(--radius-sm)',
-                  color: '#fff',
-                  cursor: 'pointer',
-                  padding: 5,
-                }}
-              >
+              <button onClick={() => setDetail(null)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 6, color: '#fff', cursor: 'pointer', padding: 5 }}>
                 <X size={18} />
               </button>
             </div>
-
             <div style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {selectedComplaint.photo_url && (
-                <div style={{ borderRadius: 8, overflow: 'hidden', maxHeight: 240, border: '1px solid #bfbfbf' }}>
-                  <img
-                    src={selectedComplaint.photo_url}
-                    alt="Complaint"
-                    style={{ width: '100%', maxHeight: 240, objectFit: 'cover', display: 'block' }}
-                  />
-                </div>
+              {detail.photo_url && (
+                <img src={detail.photo_url} alt="Complaint" style={{ width: '100%', maxHeight: 240, objectFit: 'cover', borderRadius: 8 }} />
               )}
-
-              <div style={{ background: 'var(--theme-bg, #fff4e7)', padding: '12px 14px', borderRadius: 8, border: '1px solid #bfbfbf' }}>
-                <div style={{ fontWeight: 800, fontSize: '0.88rem', marginBottom: 4 }}>Description</div>
-                <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--gray-800)', lineHeight: 1.5 }}>
-                  {selectedComplaint.description}
-                </p>
-              </div>
-
+              <div style={{ ...field, lineHeight: 1.5 }}>{detail.description}</div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: '0.8rem' }}>
-                <div><b>Citizen Name:</b> {selectedComplaint.citizen_name || 'N/A'}</div>
-                <div><b>Phone:</b> {selectedComplaint.citizen_phone || 'N/A'}</div>
-                <div><b>Status:</b> {selectedComplaint.status.toUpperCase()}</div>
-                <div><b>Date:</b> {new Date(selectedComplaint.created_at).toLocaleString()}</div>
-                {selectedComplaint.address && (
-                  <div style={{ gridColumn: 'span 2' }}>
-                    <b>Address:</b> {selectedComplaint.address}
-                  </div>
+                <div><b>Citizen:</b> {detail.citizen_name || 'N/A'}</div>
+                <div><b>Phone:</b> {detail.citizen_phone || 'N/A'}</div>
+                <div><b>Status:</b> {detail.status.toUpperCase()}</div>
+                <div><b>Date:</b> {new Date(detail.created_at).toLocaleString()}</div>
+                {detail.address && <div style={{ gridColumn: 'span 2' }}><b>Address:</b> {detail.address}</div>}
+                {detail.latitude && detail.longitude && (
+                  <div style={{ gridColumn: 'span 2' }}><b>GPS:</b> {detail.latitude}, {detail.longitude}</div>
                 )}
-                {selectedComplaint.latitude && selectedComplaint.longitude && (
-                  <div style={{ gridColumn: 'span 2' }}>
-                    <b>GPS Coordinates:</b> {selectedComplaint.latitude}, {selectedComplaint.longitude}
-                  </div>
-                )}
+                <div style={{ gridColumn: 'span 2' }}>
+                  <b>Assigned to:</b> {detail.assigned_to ? staffById[detail.assigned_to]?.full_name || 'Staff' : 'Not assigned'}
+                </div>
               </div>
+              {isHigherDesignation && !isDone(detail.status) && (
+                <button
+                  onClick={() => { setAllotting(detail); setDetail(null); }}
+                  style={{ ...primaryBtn, justifyContent: 'center', padding: '10px 14px', fontSize: '0.86rem' }}
+                >
+                  <Briefcase size={14} /> Allot / Dispatch Task
+                </button>
+              )}
             </div>
           </div>
         </div>
+      )}
+
+      {/* Stepped, hierarchy-aware allot modal */}
+      {allotting && (
+        <AllotModal
+          complaint={{
+            id: allotting.id,
+            ticket_number: allotting.ticket_number,
+            description: allotting.description,
+            department_id: allotting.department_id,
+            dept_name: allotting.department?.name,
+            assigned_to: allotting.assigned_to,
+            assignment_notes: allotting.assignment_notes,
+            citizen_name: allotting.citizen_name,
+            citizen_phone: allotting.citizen_phone,
+            address: allotting.address,
+          } as AllotTarget}
+          viewer={viewer}
+          staffList={staff}
+          language="en"
+          onClose={() => setAllotting(null)}
+          onAllotted={fetchData}
+          assignComplaint={assignComplaint}
+        />
       )}
     </div>
   );

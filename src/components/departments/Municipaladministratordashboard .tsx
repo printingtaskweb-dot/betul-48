@@ -3,13 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDeptComplaints } from '../../hooks/useDeptComplaints';
-import { AllotModal, HierarchyFlow } from '../../components/dept/AllotModal';
-import type { AllotTarget } from '../../components/dept/AllotModal';
-import { getTier } from '../../lib/hierarchy';
+import { AllotModal, HierarchyFlow } from '../dept/AllotModal';
+import type { AllotTarget } from '../dept/AllotModal';
+import { getTier, roleLabel, canAllotComplaint, canViewComplaint } from '../../lib/hierarchy';
 import type { StaffMember, Viewer } from '../../lib/hierarchy';
 import {
   CheckCircle2, Clock, AlertCircle, Search, MapPin, Compass,
-  RefreshCw, Eye, X, FileText, Briefcase, UserCheck,
+  RefreshCw, Eye, X, FileText, Briefcase, UserCheck
 } from 'lucide-react';
 
 interface ComplaintRecord {
@@ -51,7 +51,9 @@ const STAFF_ROLES = [
   'management_viewer', 'field_employee', 'municipal_administrator',
 ];
 
-const COMMON_AREAS = ['All Areas', 'Kothi Bazar', 'Ganj', 'Civil Lines', 'Sadar Bazar', 'Badora', 'Nehru Park', 'Railway Colony'];
+const COMMON_AREAS = [
+  'All Areas', 'Kothi Bazar', 'Ganj', 'Civil Lines', 'Sadar Bazar', 'Badora', 'Nehru Park', 'Railway Colony'
+];
 
 const BORDER = '1.5px solid var(--theme-component-border, #bfbfbf)';
 const PRIMARY = 'var(--theme-primary, #660033)';
@@ -92,13 +94,12 @@ const statusStyle = (s: string) =>
 
 export const MunicipalAdministratorDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isAdmin, loading: authLoading } = useAuth();
+  const { user, profile, isAdmin, loading: authLoading } = useAuth();
 
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) navigate('/admin', { replace: true });
   }, [user, isAdmin, authLoading, navigate]);
 
-  // Only used for assignComplaint (this hook does not fetch on mount)
   const { assignComplaint } = useDeptComplaints('all');
 
   const [departments, setDepartments] = useState<DepartmentRow[]>([]);
@@ -123,10 +124,18 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
   const [nearby, setNearby] = useState<NearbyComplaint[]>([]);
   const [radarMsg, setRadarMsg] = useState<string | null>(null);
 
-  const viewer: Viewer = useMemo(
-    () => ({ id: user?.id || '', role: 'municipal_administrator', linked_department_id: null }),
-    [user]
-  );
+  // Determine viewer hierarchy tier
+  const viewer: Viewer = useMemo(() => {
+    const isMunicipalAdmin = !profile?.linked_department_id || profile?.role === 'admin' || profile?.role === 'municipal_administrator';
+    return {
+      id: user?.id || '',
+      role: isMunicipalAdmin ? 'municipal_administrator' : (profile?.role || 'dept_staff'),
+      linked_department_id: isMunicipalAdmin ? null : (profile?.linked_department_id || null),
+    };
+  }, [user, profile]);
+
+  const myTier = getTier(viewer.role);
+  const isHigherDesignation = myTier <= 2;
 
   const fetchData = async () => {
     setLoading(true);
@@ -172,13 +181,19 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
   const headOf = (deptId: string) =>
     staff.find((s) => s.linked_department_id === deptId && getTier(s.role) === 1);
 
-  // ── Counts ──
-  const total = complaints.length;
-  const pending = complaints.filter((c) => c.status === 'pending').length;
-  const inProgress = complaints.filter((c) => c.status === 'in_progress').length;
-  const resolved = complaints.filter((c) => isDone(c.status)).length;
+  // Department Isolation: If user has a linked department, strictly isolate to their department!
+  const scopedComplaints = useMemo(() => {
+    if (myTier === 0) return complaints; // Municipal admin sees all departments
+    return complaints.filter((c) => canViewComplaint(viewer, c));
+  }, [complaints, viewer, myTier]);
 
-  const filtered = complaints.filter((c) => {
+  // ── Counts ──
+  const total = scopedComplaints.length;
+  const pending = scopedComplaints.filter((c) => c.status === 'pending').length;
+  const inProgress = scopedComplaints.filter((c) => c.status === 'in_progress').length;
+  const resolved = scopedComplaints.filter((c) => isDone(c.status)).length;
+
+  const filtered = scopedComplaints.filter((c) => {
     const okStatus = statusFilter === 'all' || (statusFilter === 'resolved' ? isDone(c.status) : c.status === statusFilter);
     const okDept = deptFilter === 'all' || c.department_id === deptFilter;
     const okArea =
@@ -214,7 +229,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
       // Fallback: haversine on the client
       const R = 6371e3;
       const rad = (d: number) => (d * Math.PI) / 180;
-      const list = complaints
+      const list = scopedComplaints
         .filter((c) => c.latitude && c.longitude)
         .map((c) => {
           const a =
@@ -258,17 +273,23 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
       {/* Header */}
       <div style={{ ...card, padding: '16px 20px', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <div>
-          <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900, color: 'var(--gray-900)' }}>🏛️ Municipal Administrator Console</h2>
+          <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900, color: 'var(--gray-900)' }}>
+            🏛️ Municipal Administrator Console
+          </h2>
           <p style={{ margin: '2px 0 0', fontSize: '0.8rem', color: 'var(--gray-600)' }}>
-            See every department. Assign complaints to the Department Head.
+            {myTier === 0
+              ? 'City-wide Purview: All municipal departments & task dispatch'
+              : `Department Purview: ${profile?.linked_department_id ? 'Isolated to your assigned department' : 'Municipal Portal'}`}
           </p>
         </div>
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             onClick={() => setShowRadar(!showRadar)}
-            style={{ ...field, cursor: 'pointer', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6,
+            style={{
+              ...field, cursor: 'pointer', fontWeight: 800, display: 'flex', alignItems: 'center', gap: 6,
               background: showRadar ? PRIMARY : 'var(--theme-bg, #fff4e7)',
-              color: showRadar ? '#fff' : PRIMARY }}
+              color: showRadar ? '#fff' : PRIMARY,
+            }}
           >
             <Compass size={15} /> {showRadar ? 'Hide Radar' : 'Nearby Radar'}
           </button>
@@ -278,12 +299,12 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Simple flow */}
+      {/* Stepped Hierarchy Flow Indicator */}
       <div style={{ ...card, padding: '12px 16px' }}>
         <p style={{ margin: '0 0 6px', fontSize: '0.74rem', fontWeight: 800, color: 'var(--gray-700)', textTransform: 'uppercase' }}>
-          Work flow
+          Hierarchical Allocation Flow (पदानुक्रम प्रवाह)
         </p>
-        <HierarchyFlow myTier={0} targetTier={1} language="en" />
+        <HierarchyFlow myTier={myTier} targetTier={1} language="en" />
       </div>
 
       {/* Stats */}
@@ -346,14 +367,14 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Departments (compact) */}
+      {/* Departments (click to isolate department) */}
       <div>
         <p style={{ margin: '0 0 8px 4px', fontSize: '0.76rem', fontWeight: 800, color: 'var(--gray-600)', textTransform: 'uppercase' }}>
-          Departments — click to filter
+          Departments — Click to isolate complaints by department
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
           {departments.map((d) => {
-            const list = complaints.filter((c) => c.department_id === d.id);
+            const list = scopedComplaints.filter((c) => c.department_id === d.id);
             const open = list.filter((c) => !isDone(c.status)).length;
             const head = headOf(d.id);
             const active = deptFilter === d.id;
@@ -385,10 +406,17 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Complaints */}
+      {/* Complaints List with Stepped Allotment */}
       <div style={{ ...card, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
-          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900 }}>Complaints ({filtered.length})</h3>
+          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900 }}>
+            Complaints ({filtered.length})
+            {deptFilter !== 'all' && (
+              <span style={{ marginLeft: 8, fontSize: '0.8rem', color: PRIMARY, fontWeight: 700 }}>
+                • Filtered to: {departments.find(d => d.id === deptFilter)?.name}
+              </span>
+            )}
+          </h3>
           {hasFilter && (
             <button
               onClick={() => { setStatusFilter('all'); setDeptFilter('all'); setArea('All Areas'); setQuery(''); }}
@@ -415,7 +443,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
         </div>
 
         {loading ? (
-          <p style={{ textAlign: 'center', color: 'var(--gray-600)' }}>Loading...</p>
+          <p style={{ textAlign: 'center', color: 'var(--gray-600)' }}>Loading complaints...</p>
         ) : filtered.length === 0 ? (
           <div style={{ ...field, textAlign: 'center', padding: 28, border: '1.5px dashed var(--theme-component-border, #bfbfbf)', color: 'var(--gray-600)' }}>
             No complaints match the current filters.
@@ -425,6 +453,8 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
             {filtered.map((c) => {
               const st = statusStyle(c.status);
               const assignee = c.assigned_to ? staffById[c.assigned_to] : null;
+              const canAllot = canAllotComplaint(viewer, c.department_id);
+
               return (
                 <div key={c.id} style={{ ...field, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: 12, padding: '12px 14px' }}>
                   <div style={{ display: 'flex', gap: 10, flex: 1, minWidth: 240 }}>
@@ -440,8 +470,8 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                       <p style={{ margin: '4px 0 0', fontSize: '0.82rem', color: 'var(--gray-800)' }}>{c.description}</p>
                       <div style={{ marginTop: 4, fontSize: '0.74rem', color: assignee ? PRIMARY : '#b45309', fontWeight: 700 }}>
                         {assignee
-                          ? <><UserCheck size={12} style={{ display: 'inline' }} /> With: {assignee.full_name}</>
-                          : 'Not assigned yet'}
+                          ? <><UserCheck size={12} style={{ display: 'inline' }} /> Assigned: {assignee.full_name} ({roleLabel(assignee.role, 'en')})</>
+                          : '⚠️ Unallotted'}
                       </div>
                     </div>
                   </div>
@@ -449,9 +479,11 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
                     <span style={{ fontSize: '0.74rem', color: 'var(--gray-500)' }}>{new Date(c.created_at).toLocaleDateString()}</span>
                     <button onClick={() => setDetail(c)} style={primaryBtn}><Eye size={13} /> Details</button>
-                    {!isDone(c.status) && (
+
+                    {/* Only higher designation staff can allot/reassign */}
+                    {canAllot && !isDone(c.status) && (
                       <button onClick={() => setAllotting(c)} style={outlineBtn}>
-                        <Briefcase size={13} /> {c.assigned_to ? 'Reassign' : 'Assign'}
+                        <Briefcase size={13} /> {c.assigned_to ? 'Reassign' : 'Allot Task'}
                       </button>
                     )}
                   </div>
@@ -496,12 +528,12 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                   <b>Assigned to:</b> {detail.assigned_to ? staffById[detail.assigned_to]?.full_name || 'Staff' : 'Not assigned'}
                 </div>
               </div>
-              {!isDone(detail.status) && (
+              {isHigherDesignation && !isDone(detail.status) && (
                 <button
                   onClick={() => { setAllotting(detail); setDetail(null); }}
                   style={{ ...primaryBtn, justifyContent: 'center', padding: '10px 14px', fontSize: '0.86rem' }}
                 >
-                  <Briefcase size={14} /> Assign to Department Head
+                  <Briefcase size={14} /> Allot / Dispatch Task
                 </button>
               )}
             </div>
@@ -509,7 +541,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* Shared, hierarchy-aware allot modal */}
+      {/* Stepped, hierarchy-aware allot modal */}
       {allotting && (
         <AllotModal
           complaint={{

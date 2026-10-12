@@ -756,7 +756,9 @@ export default function DeptDashboard() {
         return;
       }
 
-      const effectiveRole = data.is_admin ? 'admin' : data.role;
+      // If user has a linked department, they belong to that department and CANNOT view other departments
+      const isOrg = !data.linked_department_id && (data.role === 'municipal_administrator' || data.role === 'admin');
+      const effectiveRole = isOrg ? 'municipal_administrator' : (data.role || 'dept_staff');
       let dName: string | null = null;
       let dIcon: string | null = null;
 
@@ -769,7 +771,6 @@ export default function DeptDashboard() {
         if (dept) { dName = dept.name; dIcon = dept.icon || '🏢'; }
       }
 
-      const isOrg = getTier(effectiveRole) === 0;
       if (!isOrg && !data.linked_department_id) setNoDept(true);
 
       setProfile({
@@ -781,7 +782,7 @@ export default function DeptDashboard() {
         dept_icon: dIcon,
       });
 
-      // Everyone except org level is LOCKED to their own department
+      // Strict department isolation: locked to their linked department
       setSelectedDeptId(isOrg ? 'all' : (data.linked_department_id || 'none'));
       setProfileLoading(false);
     })();
