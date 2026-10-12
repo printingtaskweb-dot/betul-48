@@ -12,6 +12,8 @@ interface ComplaintCardProps {
 export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
   ({ complaint, onClick, compact }) => {
     const dept = complaint.department;
+    const hasGeo =
+      complaint.latitude != null && complaint.longitude != null;
 
     const date = new Date(complaint.created_at).toLocaleDateString('en-IN', {
       day: '2-digit',
@@ -36,6 +38,9 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
         style={{
           background: 'var(--theme-component, #d9d9d9)',
           border: '1.5px solid var(--theme-component-border, #bfbfbf)',
+          borderLeft: dept?.color
+            ? `4px solid ${dept.color}`
+            : '1.5px solid var(--theme-component-border, #bfbfbf)',
           borderRadius: 'var(--radius-md, 12px)',
           padding: compact ? '12px 14px' : '16px 18px',
           cursor: interactive ? 'pointer' : 'default',
@@ -63,23 +68,57 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
           (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
         }}
       >
+        {/* Thumbnail with GPS corner badge */}
         {complaint.photo_url && !compact && (
-          <img
-            src={complaint.photo_url}
-            alt="Complaint"
-            loading="lazy"
+          <div
             style={{
-              width: 90,
-              height: 90,
-              objectFit: 'cover',
-              borderRadius: 'var(--radius-sm, 8px)',
+              position: 'relative',
+              width: 100,
+              height: 100,
               flexShrink: 0,
-              border: '1px solid var(--theme-component-border, #bfbfbf)',
             }}
-          />
+          >
+            <img
+              src={complaint.photo_url}
+              alt="Complaint"
+              loading="lazy"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+                borderRadius: 'var(--radius-sm, 8px)',
+                border: '1px solid var(--theme-component-border, #bfbfbf)',
+                display: 'block',
+              }}
+            />
+            {hasGeo && (
+              <span
+                title="GPS-tagged photo"
+                style={{
+                  position: 'absolute',
+                  bottom: 4,
+                  left: 4,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 3,
+                  padding: '2px 6px',
+                  borderRadius: 999,
+                  background: 'rgba(0,0,0,0.7)',
+                  color: '#fff',
+                  fontSize: 9.5,
+                  fontWeight: 800,
+                  letterSpacing: 0.3,
+                  lineHeight: 1,
+                }}
+              >
+                📍 GPS
+              </span>
+            )}
+          </div>
         )}
 
         <div style={{ flex: 1, minWidth: 0 }}>
+          {/* Ticket + status */}
           <div
             style={{
               display: 'flex',
@@ -104,6 +143,7 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
             <StatusBadge status={complaint.status} />
           </div>
 
+          {/* Department */}
           {dept && (
             <div
               style={{
@@ -126,6 +166,7 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
             </div>
           )}
 
+          {/* Description */}
           <p
             style={{
               fontSize: 13,
@@ -143,6 +184,7 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
             {complaint.description}
           </p>
 
+          {/* Address line */}
           {complaint.address && (
             <div
               style={{
@@ -150,6 +192,7 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
                 alignItems: 'flex-start',
                 gap: 4,
                 marginTop: 4,
+                minWidth: 0,
               }}
             >
               <MapPin
@@ -164,6 +207,7 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
+                  minWidth: 0,
                 }}
               >
                 {complaint.address}
@@ -171,6 +215,7 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
             </div>
           )}
 
+          {/* Date + Directions */}
           <div
             style={{
               display: 'flex',
@@ -190,7 +235,7 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
               </span>
             </div>
 
-            {complaint.latitude && complaint.longitude && (
+            {hasGeo && (
               <a
                 href={`https://www.google.com/maps/dir/?api=1&destination=${complaint.latitude},${complaint.longitude}`}
                 target="_blank"
@@ -209,6 +254,7 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
                   textDecoration: 'none',
                   border: '1px solid var(--green-200)',
                   transition: 'var(--transition)',
+                  flexShrink: 0,
                 }}
               >
                 <Navigation size={10} />
