@@ -916,7 +916,11 @@ export default function DeptDashboard() {
 
   const tabs = [
     { id: 'complaints', label: hi ? 'शिकायतें एवं कार्य' : 'Complaints & Tasks', icon: Briefcase, count: visibleComplaints.length },
-    ...(myTier <= 1 ? [{ id: 'departments', label: hi ? 'विभाग और श्रेणियां' : 'Departments', icon: Layers, count: allDepartments.length }] : []),
+    ...(myTier === 0
+      ? [{ id: 'departments', label: hi ? 'समस्त विभाग' : 'All Departments', icon: Layers, count: allDepartments.length }]
+      : myTier === 1
+      ? [{ id: 'departments', label: hi ? 'विभाग की जानकारी' : 'Department Profile', icon: Layers, count: 1 }]
+      : []),
     ...(myTier <= 2 ? [{ id: 'staff_reports', label: hi ? 'कर्मचारी रिपोर्ट' : 'Staff Reports', icon: FileText, count: staffReports.length }] : []),
   ];
 
@@ -1173,13 +1177,23 @@ export default function DeptDashboard() {
           </>
         )}
 
-        {/* ── TAB 2: DEPARTMENTS (org + dept head only) ── */}
+        {/* ── TAB 2: DEPARTMENTS (org sees all, dept head sees only own department) ── */}
         {activeTab === 'departments' && myTier <= 1 && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
-              <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: 'var(--theme-primary, #660033)' }}>
-                {hi ? 'नगर निगम विभाग' : 'Municipal Departments'}
-              </h2>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: 'var(--theme-primary, #660033)' }}>
+                  {orgLevel
+                    ? (hi ? 'नगर निगम विभाग और सेवा श्रेणियां' : 'Municipal Departments & Categories')
+                    : (hi ? `आपके विभाग का विवरण (${profile?.dept_name})` : `Your Department Profile (${profile?.dept_name})`)}
+                </h2>
+                <p style={{ margin: '3px 0 0', fontSize: '0.8rem', color: 'var(--gray-600)' }}>
+                  {orgLevel
+                    ? (hi ? 'समस्त नागरिक सेवा विभाग और श्रेणियां' : 'All municipal civic departments across the city')
+                    : (hi ? 'केवल आपके आवंटित विभाग की जानकारी और प्रशासनिक संरचना' : 'Exclusively showing your linked department scope and assigned personnel')}
+                </p>
+              </div>
+
               {orgLevel && (
                 <button
                   onClick={() => setShowCreateDept(true)}
@@ -1193,51 +1207,178 @@ export default function DeptDashboard() {
               )}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
-              {allDepartments.map(dept => {
-                const deptComplaints = visibleComplaints.filter(c => c.department_id === dept.id);
-                const deptStaff = staffList.filter(s => s.linked_department_id === dept.id);
-                return (
-                  <div key={dept.id} style={{ background: 'var(--theme-component, #d9d9d9)',
-                    border: '1.5px solid var(--theme-component-border, #bfbfbf)', borderRadius: 'var(--radius-lg)',
-                    padding: 18, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: 'var(--shadow-sm)' }}>
+            {/* Department Head view: Detailed exclusive overview of their department */}
+            {!orgLevel && allDepartments[0] ? (
+              <div style={{
+                background: 'var(--theme-component, #d9d9d9)',
+                border: '1.5px solid var(--theme-component-border, #bfbfbf)',
+                borderRadius: 'var(--radius-xl)',
+                padding: '24px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: 20,
+                boxShadow: 'var(--shadow-md)',
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+                    <div style={{
+                      width: 56, height: 56, borderRadius: 14,
+                      background: 'var(--theme-bg, #fff4e7)', border: '1.5px solid var(--theme-component-border, #bfbfbf)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.8rem',
+                    }}>
+                      {allDepartments[0].icon || '🏢'}
+                    </div>
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                        <div style={{ width: 44, height: 44, borderRadius: 10, background: 'var(--theme-bg, #fff4e7)',
-                          border: '1px solid var(--theme-component-border, #bfbfbf)', display: 'flex',
-                          alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>
-                          {dept.icon || '🏢'}
-                        </div>
-                        <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 8px', borderRadius: 12,
-                          background: dept.is_active ? '#d1fae5' : '#fee2e2', color: dept.is_active ? '#065f46' : '#991b1b' }}>
-                          {dept.is_active ? (hi ? 'सक्रिय' : 'Active') : (hi ? 'निष्क्रिय' : 'Inactive')}
-                        </span>
-                      </div>
-                      <h3 style={{ margin: '0 0 4px', fontSize: '1rem', fontWeight: 800, color: 'var(--gray-900)' }}>{dept.name}</h3>
-                      <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--gray-700)', lineHeight: 1.4 }}>
-                        {dept.description || (hi ? 'कोई विवरण नहीं' : 'No description provided.')}
+                      <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900, color: 'var(--gray-900)' }}>
+                        {allDepartments[0].name}
+                      </h3>
+                      <p style={{ margin: '3px 0 0', fontSize: '0.8rem', color: 'var(--gray-600)', fontFamily: 'monospace' }}>
+                        Identifier / Slug: {allDepartments[0].slug}
                       </p>
                     </div>
-                    <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid var(--theme-component-border, #bfbfbf)',
-                      display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <div style={{ fontSize: '0.78rem', color: 'var(--gray-700)' }}>
-                        <strong>{deptComplaints.length}</strong> {hi ? 'शिकायतें' : 'complaints'}
-                        <span style={{ margin: '0 6px' }}>•</span>
-                        <strong>{deptStaff.length}</strong> {hi ? 'स्टाफ' : 'staff'}
-                      </div>
-                      <button
-                        onClick={() => { if (orgLevel) setSelectedDeptId(dept.id); setActiveTab('complaints'); }}
-                        style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: 6,
-                          background: 'var(--theme-bg, #fff4e7)', border: '1px solid var(--theme-component-border, #bfbfbf)',
-                          color: 'var(--theme-primary, #660033)', fontSize: '0.76rem', fontWeight: 800, cursor: 'pointer' }}
-                      >
-                        {hi ? 'कार्य देखें' : 'View Work'} <ArrowRight size={12} />
-                      </button>
-                    </div>
                   </div>
-                );
-              })}
-            </div>
+
+                  <span style={{
+                    fontSize: '0.76rem', fontWeight: 800, padding: '4px 12px', borderRadius: 20,
+                    background: allDepartments[0].is_active ? '#d1fae5' : '#fee2e2',
+                    color: allDepartments[0].is_active ? '#065f46' : '#991b1b',
+                  }}>
+                    {allDepartments[0].is_active ? (hi ? 'सक्रिय विभाग' : 'Active Department') : (hi ? 'निष्क्रिय' : 'Inactive')}
+                  </span>
+                </div>
+
+                <div style={{
+                  background: 'var(--theme-bg, #fff4e7)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '14px 16px',
+                  border: '1px solid var(--theme-component-border, #bfbfbf)',
+                  fontSize: '0.86rem',
+                  color: 'var(--gray-800)',
+                  lineHeight: 1.6,
+                }}>
+                  <strong>{hi ? 'कार्य क्षेत्र एवं उद्देश्य:' : 'Scope of Civic Services:'}</strong>{' '}
+                  {allDepartments[0].description || (hi ? 'इस विभाग के अंतर्गत सभी संबंधित नागरिक शिकायत निवारण कार्य शामिल हैं।' : 'Official municipal services for this category.')}
+                </div>
+
+                {/* Metrics for this department only */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: 10 }}>
+                  <div style={{ background: 'rgba(255,255,255,0.4)', padding: '12px 14px', borderRadius: 8, border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--gray-700)', textTransform: 'uppercase' }}>
+                      {hi ? 'कुल शिकायतें' : 'Total Complaints'}
+                    </span>
+                    <p style={{ margin: '4px 0 0', fontSize: '1.4rem', fontWeight: 900, color: 'var(--theme-primary, #660033)' }}>
+                      {visibleComplaints.length}
+                    </p>
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.4)', padding: '12px 14px', borderRadius: 8, border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--gray-700)', textTransform: 'uppercase' }}>
+                      {hi ? 'हल कार्य' : 'Resolved'}
+                    </span>
+                    <p style={{ margin: '4px 0 0', fontSize: '1.4rem', fontWeight: 900, color: '#065f46' }}>
+                      {stats.resolved}
+                    </p>
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.4)', padding: '12px 14px', borderRadius: 8, border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--gray-700)', textTransform: 'uppercase' }}>
+                      {hi ? 'पर्यवेक्षक' : 'Supervisors'}
+                    </span>
+                    <p style={{ margin: '4px 0 0', fontSize: '1.4rem', fontWeight: 900, color: '#1d4ed8' }}>
+                      {staffList.filter(s => getTier(s.role) === 2).length}
+                    </p>
+                  </div>
+                  <div style={{ background: 'rgba(255,255,255,0.4)', padding: '12px 14px', borderRadius: 8, border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--gray-700)', textTransform: 'uppercase' }}>
+                      {hi ? 'फील्ड कर्मचारी' : 'Field Staff'}
+                    </span>
+                    <p style={{ margin: '4px 0 0', fontSize: '1.4rem', fontWeight: 900, color: 'var(--gray-900)' }}>
+                      {staffList.filter(s => getTier(s.role) === 3).length}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Team Hierarchy under this department */}
+                <div>
+                  <h4 style={{ margin: '0 0 10px', fontSize: '0.92rem', fontWeight: 800, color: 'var(--gray-900)' }}>
+                    👷 {hi ? 'विभाग के अधीन पर्यवेक्षक एवं क्षेत्र अधिकारी' : 'Area Supervisors Assigned to this Department:'}
+                  </h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 10 }}>
+                    {staffList.filter(s => getTier(s.role) === 2).length === 0 ? (
+                      <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--gray-600)' }}>
+                        {hi ? 'कोई क्षेत्र पर्यवेक्षक पंजीकृत नहीं है।' : 'No area supervisors assigned to this department yet.'}
+                      </p>
+                    ) : (
+                      staffList.filter(s => getTier(s.role) === 2).map(sup => (
+                        <div key={sup.id} style={{
+                          background: 'var(--theme-bg, #fff4e7)',
+                          padding: '10px 12px',
+                          borderRadius: 'var(--radius-md)',
+                          border: '1px solid var(--theme-component-border, #bfbfbf)',
+                        }}>
+                          <div style={{ fontWeight: 800, fontSize: '0.86rem', color: 'var(--gray-900)' }}>
+                            {sup.full_name || 'Supervisor'}
+                          </div>
+                          <div style={{ fontSize: '0.76rem', color: 'var(--gray-600)', marginTop: 2 }}>
+                            {sup.ward_number ? `Ward ${sup.ward_number}` : 'All Wards'} {sup.staff_code ? `• ${sup.staff_code}` : ''}
+                          </div>
+                          {sup.phone && (
+                            <div style={{ fontSize: '0.76rem', color: 'var(--theme-primary, #660033)', fontWeight: 700, marginTop: 4 }}>
+                              📞 {sup.phone}
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              /* Org level: grid of all municipal departments */
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 16 }}>
+                {allDepartments.map(dept => {
+                  const deptComplaints = visibleComplaints.filter(c => c.department_id === dept.id);
+                  const deptStaff = staffList.filter(s => s.linked_department_id === dept.id);
+                  return (
+                    <div key={dept.id} style={{ background: 'var(--theme-component, #d9d9d9)',
+                      border: '1.5px solid var(--theme-component-border, #bfbfbf)', borderRadius: 'var(--radius-lg)',
+                      padding: 18, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', boxShadow: 'var(--shadow-sm)' }}>
+                      <div>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+                          <div style={{ width: 44, height: 44, borderRadius: 10, background: 'var(--theme-bg, #fff4e7)',
+                            border: '1px solid var(--theme-component-border, #bfbfbf)', display: 'flex',
+                            alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem' }}>
+                            {dept.icon || '🏢'}
+                          </div>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 8px', borderRadius: 12,
+                            background: dept.is_active ? '#d1fae5' : '#fee2e2', color: dept.is_active ? '#065f46' : '#991b1b' }}>
+                            {dept.is_active ? (hi ? 'सक्रिय' : 'Active') : (hi ? 'निष्क्रिय' : 'Inactive')}
+                          </span>
+                        </div>
+                        <h3 style={{ margin: '0 0 4px', fontSize: '1rem', fontWeight: 800, color: 'var(--gray-900)' }}>{dept.name}</h3>
+                        <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--gray-700)', lineHeight: 1.4 }}>
+                          {dept.description || (hi ? 'कोई विवरण नहीं' : 'No description provided.')}
+                        </p>
+                      </div>
+                      <div style={{ marginTop: 16, paddingTop: 12, borderTop: '1px solid var(--theme-component-border, #bfbfbf)',
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ fontSize: '0.78rem', color: 'var(--gray-700)' }}>
+                          <strong>{deptComplaints.length}</strong> {hi ? 'शिकायतें' : 'complaints'}
+                          <span style={{ margin: '0 6px' }}>•</span>
+                          <strong>{deptStaff.length}</strong> {hi ? 'स्टाफ' : 'staff'}
+                        </div>
+                        <button
+                          onClick={() => { if (orgLevel) setSelectedDeptId(dept.id); setActiveTab('complaints'); }}
+                          style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px', borderRadius: 6,
+                            background: 'var(--theme-bg, #fff4e7)', border: '1px solid var(--theme-component-border, #bfbfbf)',
+                            color: 'var(--theme-primary, #660033)', fontSize: '0.76rem', fontWeight: 800, cursor: 'pointer' }}
+                        >
+                          {hi ? 'कार्य देखें' : 'View Work'} <ArrowRight size={12} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
         )}
 

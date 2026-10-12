@@ -187,6 +187,18 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
     return complaints.filter((c) => canViewComplaint(viewer, c));
   }, [complaints, viewer, myTier]);
 
+  // Department isolation for Department Heads and non-admin staff
+  const visibleDepartments = useMemo(() => {
+    if (myTier === 0) return departments;
+    return departments.filter((d) => d.id === profile?.linked_department_id);
+  }, [departments, myTier, profile]);
+
+  useEffect(() => {
+    if (myTier > 0 && profile?.linked_department_id) {
+      setDeptFilter(profile.linked_department_id);
+    }
+  }, [myTier, profile]);
+
   // Counts
   const total = scopedComplaints.length;
   const pending = scopedComplaints.filter((c) => c.status === 'pending').length;
@@ -370,10 +382,12 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
       {/* Departments (click to isolate department) */}
       <div>
         <p style={{ margin: '0 0 8px 4px', fontSize: '0.76rem', fontWeight: 800, color: 'var(--gray-600)', textTransform: 'uppercase' }}>
-          Departments — Click to isolate complaints by department
+          {myTier === 0
+            ? 'Departments — Click to isolate complaints by department'
+            : 'Your Assigned Department (Isolated to your department only)'}
         </p>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10 }}>
-          {departments.map((d) => {
+          {visibleDepartments.map((d) => {
             const list = scopedComplaints.filter((c) => c.department_id === d.id);
             const open = list.filter((c) => !isDone(c.status)).length;
             const head = headOf(d.id);
@@ -381,9 +395,14 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
             return (
               <div
                 key={d.id}
-                onClick={() => { setDeptFilter(active ? 'all' : d.id); setStatusFilter('all'); }}
+                onClick={() => {
+                  if (myTier === 0) {
+                    setDeptFilter(active ? 'all' : d.id);
+                    setStatusFilter('all');
+                  }
+                }}
                 style={{
-                  ...card, padding: '12px 14px', cursor: 'pointer',
+                  ...card, padding: '12px 14px', cursor: myTier === 0 ? 'pointer' : 'default',
                   background: active ? 'var(--theme-bg, #fff4e7)' : 'var(--theme-component, #d9d9d9)',
                   border: active ? `2px solid ${PRIMARY}` : '2px solid var(--theme-component-border, #bfbfbf)',
                 }}
