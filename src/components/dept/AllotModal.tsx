@@ -1,15 +1,14 @@
 // src/components/dept/AllotModal.tsx
 import React, { useMemo, useState } from 'react';
-import {
-  Send, Phone, MapPin, UserCheck, ArrowRight,
-  ShieldAlert, CheckCircle2, User, Wrench
-} from 'lucide-react';
+import { Send, ArrowRight, ShieldAlert, Search } from 'lucide-react';
 import {
   getTier,
-  roleLabel,
   canAllotComplaint,
+  getDepartmentHeads,
+  getAreaOfficers,
   getDepartmentSupervisors,
   getDepartmentFieldEmployees,
+  TIER_LABEL,
 } from '../../lib/hierarchy';
 import type { StaffMember, Viewer } from '../../lib/hierarchy';
 
@@ -25,31 +24,42 @@ export function HierarchyFlow({
 }) {
   const hi = language === 'hi';
   const steps = [
-    { tier: 1, label: hi ? 'विभाग प्रमुख' : 'Dept Head', icon: '🏢' },
-    { tier: 2, label: hi ? 'क्षेत्र पर्यवेक्षक' : 'Area Supervisor', icon: '👷' },
-    { tier: 3, label: hi ? 'फील्ड कर्मचारी' : 'Field Employee', icon: '🛠️' },
+    { tier: 0, label: hi ? 'नगर प्रमुख' : 'Municipal Head', icon: '👑' },
+    { tier: 1, label: hi ? 'उपायुक्त' : 'Deputy Comm.', icon: '🏛️' },
+    { tier: 2, label: hi ? 'विभाग प्रमुख' : 'Dept Head', icon: '🏢' },
+    { tier: 3, label: hi ? 'क्षेत्र अधिकारी' : 'Area Officer', icon: '📍' },
+    { tier: 4, label: hi ? 'पर्यवेक्षक' : 'Supervisor', icon: '👷' },
+    { tier: 5, label: hi ? 'मैदानी कर्मचारी' : 'Operational Staff', icon: '🛠️' },
   ];
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexWrap: 'wrap' }}>
       {steps.map((st, i) => {
         const isCurrentAssigner = st.tier === myTier;
         const isTarget = st.tier === targetTier;
         return (
           <React.Fragment key={st.tier}>
-            {i > 0 && <ArrowRight size={13} color="var(--gray-500)" />}
+            {i > 0 && <ArrowRight size={11} color="var(--gray-500)" />}
             <span
               style={{
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: 5,
-                padding: '4px 10px',
-                borderRadius: 20,
-                fontSize: '0.74rem',
+                gap: 4,
+                padding: '3px 8px',
+                borderRadius: 16,
+                fontSize: '0.7rem',
                 fontWeight: 800,
                 whiteSpace: 'nowrap',
-                background: isTarget ? 'var(--theme-primary, #660033)' : isCurrentAssigner ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
-                color: isTarget ? '#fff' : isCurrentAssigner ? 'var(--theme-primary, #660033)' : 'var(--gray-600)',
+                background: isTarget
+                  ? 'var(--theme-primary, #660033)'
+                  : isCurrentAssigner
+                  ? 'var(--theme-bg, #fff4e7)'
+                  : 'rgba(255,255,255,0.4)',
+                color: isTarget
+                  ? '#fff'
+                  : isCurrentAssigner
+                  ? 'var(--theme-primary, #660033)'
+                  : 'var(--gray-600)',
                 border: isCurrentAssigner
                   ? '2px solid var(--theme-primary, #660033)'
                   : isTarget
@@ -60,7 +70,7 @@ export function HierarchyFlow({
               <span>{st.icon}</span>
               <span>{st.label}</span>
               {isCurrentAssigner && (
-                <span style={{ fontSize: '0.68rem', opacity: 0.85 }}>({hi ? 'आप' : 'You'})</span>
+                <span style={{ fontSize: '0.64rem', opacity: 0.9 }}>({hi ? 'आप' : 'You'})</span>
               )}
             </span>
           </React.Fragment>
@@ -103,526 +113,689 @@ export function AllotModal({
   assignComplaint,
 }: AllotModalProps) {
   const hi = language === 'hi';
-  const myTier = getTier(viewer.role);
+  const myTier = getTier(viewer.role, viewer.hierarchy_code, viewer.authority_role);
 
-  // Authority check: Lower designation staff (Tier > 2) CANNOT allot or reassign
+  // Authority check: Operational staff (Tier 5+) CANNOT allot or reassign
   const isAllowedToAllot = canAllotComplaint(viewer, complaint.department_id);
 
-  // Filter staff by complaint's department
+  // Department ID
   const deptId = complaint.department_id ?? viewer.linked_department_id ?? null;
+
+  // Filter staff by department and hierarchy roles
+  const deptHeads = useMemo(() => getDepartmentHeads(deptId, staffList), [deptId, staffList]);
+  const areaOfficers = useMemo(() => getAreaOfficers(deptId, staffList), [deptId, staffList]);
   const supervisors = useMemo(() => getDepartmentSupervisors(deptId, staffList), [deptId, staffList]);
-  const allFieldEmployees = useMemo(() => getDepartmentFieldEmployees(deptId, staffList), [deptId, staffList]);
+  const operationalStaff = useMemo(() => getDepartmentFieldEmployees(deptId, staffList), [deptId, staffList]);
 
-  // Stepped allocation state:
-  // Step 1: Selected Supervisor or Ward
-  // Step 2: Final Assignee (either the Supervisor themselves or a Field Employee)
+  // Stepped allocation states
+  // Active Tab/Step: 2 = Dept Head, 3 = Area Officer, 4 = Supervisor, 5 = Operational Staff
+  const initialStep = myTier <= 1 ? 2 : myTier === 2 ? 3 : myTier === 3 ? 4 : 5;
+  const [activeStep, setActiveStep] = useState<number>(initialStep);
+
+  const [selectedDeptHeadId, setSelectedDeptHeadId] = useState<string>('');
+  const [selectedAreaOfficerId, setSelectedAreaOfficerId] = useState<string>('');
   const [selectedSupervisorId, setSelectedSupervisorId] = useState<string>('');
+  const [selectedOperationalStaffId, setSelectedOperationalStaffId] = useState<string>('');
+
   const [selectedWard, setSelectedWard] = useState<string>('all');
-  const [allotMode, setAllotMode] = useState<'supervisor' | 'field_employee'>('supervisor');
-  const [selectedFinalStaffId, setSelectedFinalStaffId] = useState<string>(complaint.assigned_to || '');
-  const [notes, setNotes] = useState(complaint.assignment_notes || '');
+  const [staffSearch, setStaffSearch] = useState<string>('');
+  const [notes, setNotes] = useState<string>(complaint.assignment_notes || '');
   const [submitting, setSubmitting] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  // Auto-set ward if a supervisor is selected
-  const selectedSupervisor = supervisors.find((s) => s.id === selectedSupervisorId);
-  const effectiveWard = selectedSupervisor?.ward_number || selectedWard;
+  // Determine final assignee
+  const finalAssigneeId = useMemo(() => {
+    if (activeStep === 5) return selectedOperationalStaffId;
+    if (activeStep === 4) return selectedSupervisorId;
+    if (activeStep === 3) return selectedAreaOfficerId;
+    if (activeStep === 2) return selectedDeptHeadId;
+    return '';
+  }, [activeStep, selectedOperationalStaffId, selectedSupervisorId, selectedAreaOfficerId, selectedDeptHeadId]);
 
-  // Field employees filtered by the supervisor's ward
-  const filteredFieldEmployees = useMemo(() => {
-    if (!effectiveWard || effectiveWard === 'all') return allFieldEmployees;
-    return allFieldEmployees.filter((f) => !f.ward_number || f.ward_number === effectiveWard);
-  }, [allFieldEmployees, effectiveWard]);
+  const finalAssignee = useMemo(
+    () => staffList.find((s) => s.id === finalAssigneeId) || null,
+    [staffList, finalAssigneeId]
+  );
 
-  // If viewer is an Area Supervisor (Tier 2), they can only assign to Field Employees under them
-  const isSupervisorViewer = myTier === 2;
-
-  // Compute final selected staff object
-  const finalAssignee = useMemo(() => {
-    const targetId = isSupervisorViewer ? selectedFinalStaffId : allotMode === 'supervisor' ? selectedSupervisorId : selectedFinalStaffId;
-    return staffList.find((s) => s.id === targetId);
-  }, [isSupervisorViewer, allotMode, selectedSupervisorId, selectedFinalStaffId, staffList]);
-
-  const currentAssignee = staffList.find((s) => s.id === complaint.assigned_to);
-
-  // Ward options
+  // Distinct wards for quick filtering
   const availableWards = useMemo(() => {
-    const list = [...supervisors, ...allFieldEmployees];
-    return Array.from(new Set(list.map((s) => s.ward_number).filter(Boolean))) as string[];
-  }, [supervisors, allFieldEmployees]);
+    const set = new Set<string>();
+    staffList.forEach((s) => {
+      if (s.ward_number) set.add(s.ward_number);
+    });
+    return Array.from(set).sort();
+  }, [staffList]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!isAllowedToAllot) {
-      setErr(hi ? 'निचले स्तर के कर्मचारियों को कार्य आवंटित या पुनः आवंटित करने का अधिकार नहीं है।' : 'Lower designation staff cannot allot or reassign tasks.');
-      return;
-    }
-
-    const assigneeId = isSupervisorViewer ? selectedFinalStaffId : allotMode === 'supervisor' ? selectedSupervisorId : selectedFinalStaffId;
-
-    if (!assigneeId) {
-      setErr(
-        hi
-          ? allotMode === 'supervisor' && !isSupervisorViewer
-            ? 'कृपया एक क्षेत्र पर्यवेक्षक चुनें।'
-            : 'कृपया कार्य पूरा करने के लिए एक फील्ड कर्मचारी चुनें।'
-          : allotMode === 'supervisor' && !isSupervisorViewer
-          ? 'Please select an Area Supervisor.'
-          : 'Please select a Field Employee.'
-      );
-      return;
-    }
-
-    setSubmitting(true);
-    setErr(null);
-
-    const ok = await assignComplaint(complaint.id, assigneeId, viewer.id, notes);
-    if (ok) {
-      onAllotted();
-      onClose();
-    } else {
-      setErr(hi ? 'कार्य आवंटन विफल। कृपया पुनः प्रयास करें।' : 'Failed to assign task. Please try again.');
-    }
-    setSubmitting(false);
+  // Filter lists based on ward & search
+  const filterStaff = (list: StaffMember[]) => {
+    return list.filter((s) => {
+      const okWard = selectedWard === 'all' || s.ward_number === selectedWard;
+      const q = staffSearch.toLowerCase().trim();
+      const okQuery =
+        !q ||
+        (s.full_name && s.full_name.toLowerCase().includes(q)) ||
+        (s.staff_code && s.staff_code.toLowerCase().includes(q)) ||
+        (s.phone && s.phone.includes(q));
+      return okWard && okQuery;
+    });
   };
+
+  const handleAllotSubmit = async () => {
+    if (!finalAssigneeId) {
+      setSubmitError(hi ? 'कृपया कार्य सौंपने के लिए एक अधिकारी/कर्मचारी का चयन करें।' : 'Please select an officer or worker to allocate this task.');
+      return;
+    }
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const ok = await assignComplaint(complaint.id, finalAssigneeId, viewer.id, notes.trim());
+      if (ok) {
+        onAllotted();
+        onClose();
+      } else {
+        setSubmitError(hi ? 'कार्य आवंटन विफल रहा।' : 'Failed to allocate task. Please check permissions.');
+      }
+    } catch (e: any) {
+      setSubmitError(e.message || 'Task allocation encountered an error.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const border = '1.5px solid var(--theme-component-border, #bfbfbf)';
+  const primaryColor = 'var(--theme-primary, #660033)';
 
   return (
     <div
       style={{
         position: 'fixed',
         inset: 0,
-        zIndex: 1200,
-        background: 'rgba(0,0,0,0.65)',
+        background: 'rgba(0,0,0,0.6)',
         backdropFilter: 'blur(3px)',
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        zIndex: 9999,
         padding: 16,
       }}
     >
       <div
         style={{
-          width: '100%',
-          maxWidth: 620,
           background: 'var(--theme-component, #d9d9d9)',
-          borderRadius: 'var(--radius-xl)',
+          border: '2px solid var(--theme-component-border, #bfbfbf)',
+          borderRadius: 'var(--radius-xl, 16px)',
+          width: '100%',
+          maxWidth: 720,
+          maxHeight: '92vh',
+          display: 'flex',
+          flexDirection: 'column',
           boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
           overflow: 'hidden',
-          maxHeight: '92vh',
-          overflowY: 'auto',
-          border: '1.5px solid var(--theme-component-border, #bfbfbf)',
         }}
       >
         {/* Header */}
-        <div style={{ background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))', padding: '18px 22px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <h2 style={{ margin: 0, color: '#fff', fontSize: '1.15rem', fontWeight: 900 }}>
-              📌 {hi ? 'शिकायत कार्य आवंटन' : 'Task Allocation Flow'}
-            </h2>
-            <span
-              style={{
-                fontSize: '0.74rem',
-                fontWeight: 800,
-                background: 'rgba(255,255,255,0.2)',
-                color: '#fff',
-                padding: '3px 9px',
-                borderRadius: 20,
-              }}
-            >
-              #{complaint.ticket_number}
-            </span>
-          </div>
-          <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.85)', fontSize: '0.82rem' }}>
-            {complaint.dept_name || (hi ? 'संबंधित विभाग' : 'Department')} • {roleLabel(viewer.role, language)}
-          </p>
-        </div>
-
-        <form onSubmit={handleSubmit} style={{ padding: 22 }}>
-          {/* Authority Warning if lower designation */}
-          {!isAllowedToAllot && (
-            <div
-              style={{
-                padding: '14px 16px',
-                background: '#fee2e2',
-                border: '1.5px solid #fecaca',
-                borderRadius: 'var(--radius-md)',
-                color: '#991b1b',
-                fontSize: '0.86rem',
-                marginBottom: 16,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-              }}
-            >
-              <ShieldAlert size={20} style={{ flexShrink: 0 }} />
-              <div>
-                <strong>{hi ? 'कार्य आवंटन अधिकार केवल उच्च अधिकारियों को है' : 'Allocation Authority Restricted'}</strong>
-                <p style={{ margin: '3px 0 0', fontSize: '0.8rem' }}>
-                  {hi
-                    ? 'फील्ड कर्मचारी या निचले स्तर के स्टाफ कार्य आवंटित या पुनः आवंटित नहीं कर सकते। केवल विभाग प्रमुख एवं क्षेत्र पर्यवेक्षक ही कार्य सौंप सकते हैं।'
-                    : 'Field staff and lower designation officers cannot assign or reassign tasks. Only Department Heads and Supervisors have allocation permissions.'}
-                </p>
-              </div>
+        <div
+          style={{
+            padding: '16px 20px',
+            borderBottom: border,
+            background: 'var(--theme-component, #d9d9d9)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontSize: '1.2rem' }}>📋</span>
+              <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 900, color: 'var(--gray-900)' }}>
+                {hi ? 'कार्य आवंटन व पदानुक्रम प्रवाह' : 'Hierarchical Task Allocation'}
+              </h3>
+              <span
+                style={{
+                  background: 'var(--theme-bg, #fff4e7)',
+                  border: '1px solid var(--theme-component-border, #bfbfbf)',
+                  padding: '2px 8px',
+                  borderRadius: 12,
+                  fontSize: '0.74rem',
+                  fontWeight: 800,
+                  color: primaryColor,
+                }}
+              >
+                #{complaint.ticket_number}
+              </span>
             </div>
-          )}
-
-          {err && (
-            <div
-              style={{
-                padding: '10px 14px',
-                background: '#fef2f2',
-                border: '1px solid #fecaca',
-                borderRadius: 'var(--radius-md)',
-                color: '#dc2626',
-                fontSize: '0.83rem',
-                marginBottom: 14,
-              }}
-            >
-              {err}
-            </div>
-          )}
-
-          {/* Stepper Trail: Dept Head -> Area Supervisor -> Field Employee */}
-          <div style={{ marginBottom: 16 }}>
-            <p style={{ margin: '0 0 6px', fontSize: '0.76rem', fontWeight: 800, color: 'var(--gray-700)', textTransform: 'uppercase' }}>
-              {hi ? 'पदानुक्रम प्रवाह (Hierarchy Allocation Flow)' : 'Hierarchy Allocation Flow'}
+            <p style={{ margin: '3px 0 0', fontSize: '0.76rem', color: 'var(--gray-600)' }}>
+              {complaint.dept_name || 'Municipal Service'} • {complaint.address || 'Location specified on ticket'}
             </p>
-            <HierarchyFlow
-              myTier={myTier}
-              targetTier={isSupervisorViewer ? 3 : allotMode === 'supervisor' ? 2 : 3}
-              language={language}
-            />
           </div>
-
-          {/* Complaint Context Summary */}
-          <div
+          <button
+            onClick={onClose}
             style={{
               background: 'var(--theme-bg, #fff4e7)',
-              padding: '12px 14px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid var(--theme-component-border, #bfbfbf)',
-              marginBottom: 16,
-              fontSize: '0.84rem',
+              border: border,
+              borderRadius: 8,
+              width: 32,
+              height: 32,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+              fontWeight: 800,
+              color: 'var(--gray-700)',
             }}
           >
-            <p style={{ margin: '0 0 4px', fontWeight: 700, color: 'var(--theme-primary, #660033)' }}>
-              {complaint.description}
-            </p>
-            <div style={{ display: 'flex', gap: 14, flexWrap: 'wrap', fontSize: '0.76rem', color: 'var(--gray-700)' }}>
-              {complaint.citizen_name && <span>👤 Citizen: {complaint.citizen_name}</span>}
-              {complaint.citizen_phone && <span>📞 {complaint.citizen_phone}</span>}
-              {complaint.address && <span>📍 {complaint.address}</span>}
+            ✕
+          </button>
+        </div>
+
+        {/* Hierarchy Trail Banner */}
+        <div
+          style={{
+            padding: '10px 20px',
+            background: 'var(--theme-bg, #fff4e7)',
+            borderBottom: border,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 6,
+          }}
+        >
+          <div style={{ fontSize: '0.7rem', fontWeight: 800, color: 'var(--gray-600)', textTransform: 'uppercase' }}>
+            {hi ? 'प्रशासनिक प्रवाह (Cascade Delegation Flow):' : 'Cascade Delegation Flow:'}
+          </div>
+          <HierarchyFlow myTier={myTier} targetTier={activeStep} language={language} />
+        </div>
+
+        {/* Operational Staff Alert (Lower designation cannot allot) */}
+        {!isAllowedToAllot ? (
+          <div style={{ padding: 24, textAlign: 'center' }}>
+            <div
+              style={{
+                background: '#fee2e2',
+                border: '1.5px solid #f87171',
+                borderRadius: 12,
+                padding: '20px 24px',
+                maxWidth: 480,
+                margin: '0 auto',
+              }}
+            >
+              <ShieldAlert size={36} color="#991b1b" style={{ margin: '0 auto 10px' }} />
+              <h4 style={{ margin: '0 0 6px', fontSize: '0.96rem', fontWeight: 800, color: '#991b1b' }}>
+                {hi ? 'कार्य पुनरावंटन की अनुमति नहीं है' : 'Allocation Authority Restricted'}
+              </h4>
+              <p style={{ margin: 0, fontSize: '0.82rem', color: '#7f1d1d', lineHeight: 1.5 }}>
+                {hi
+                  ? 'निचले स्तर के परिचालन कर्मचारी (Tier 5) कार्य आवंटन या पुनरावंटन नहीं कर सकते। केवल विभाग प्रमुख, क्षेत्र अधिकारी, और पर्यवेक्षक ही कार्य आवंटित कर सकते हैं।'
+                  : 'Operational staff (Tier 5) cannot allot or reassign tasks. Only Department Heads, Area Officers, Supervisors, and Municipal Administrators hold allocation authority.'}
+              </p>
             </div>
-            {currentAssignee && (
-              <div
+            <button
+              onClick={onClose}
+              style={{
+                marginTop: 20,
+                padding: '10px 24px',
+                borderRadius: 8,
+                background: primaryColor,
+                color: '#fff',
+                border: 'none',
+                fontWeight: 800,
+                cursor: 'pointer',
+              }}
+            >
+              {hi ? 'बंद करें' : 'Close'}
+            </button>
+          </div>
+        ) : (
+          /* Main Stepper Body */
+          <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflowY: 'auto', padding: '16px 20px', gap: 14 }}>
+            {/* Step Selection Tabs */}
+            <div
+              style={{
+                display: 'grid',
+                gridTemplateColumns: myTier <= 1 ? 'repeat(4, 1fr)' : myTier === 2 ? 'repeat(3, 1fr)' : 'repeat(2, 1fr)',
+                gap: 8,
+              }}
+            >
+              {myTier <= 1 && (
+                <button
+                  type="button"
+                  onClick={() => setActiveStep(2)}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: 8,
+                    fontSize: '0.76rem',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    background: activeStep === 2 ? primaryColor : 'var(--theme-bg, #fff4e7)',
+                    color: activeStep === 2 ? '#fff' : 'var(--gray-800)',
+                    border: activeStep === 2 ? `2px solid ${primaryColor}` : border,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <span>🏢</span>
+                  <span>{hi ? '1. विभाग प्रमुख' : '1. Dept Head'}</span>
+                </button>
+              )}
+
+              {myTier <= 2 && (
+                <button
+                  type="button"
+                  onClick={() => setActiveStep(3)}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: 8,
+                    fontSize: '0.76rem',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    background: activeStep === 3 ? primaryColor : 'var(--theme-bg, #fff4e7)',
+                    color: activeStep === 3 ? '#fff' : 'var(--gray-800)',
+                    border: activeStep === 3 ? `2px solid ${primaryColor}` : border,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <span>📍</span>
+                  <span>{hi ? '2. क्षेत्र अधिकारी' : '2. Area Officer'}</span>
+                </button>
+              )}
+
+              {myTier <= 3 && (
+                <button
+                  type="button"
+                  onClick={() => setActiveStep(4)}
+                  style={{
+                    padding: '8px 10px',
+                    borderRadius: 8,
+                    fontSize: '0.76rem',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    background: activeStep === 4 ? primaryColor : 'var(--theme-bg, #fff4e7)',
+                    color: activeStep === 4 ? '#fff' : 'var(--gray-800)',
+                    border: activeStep === 4 ? `2px solid ${primaryColor}` : border,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                  }}
+                >
+                  <span>👷</span>
+                  <span>{hi ? '3. पर्यवेक्षक' : '3. Supervisor'}</span>
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setActiveStep(5)}
                 style={{
-                  marginTop: 8,
-                  paddingTop: 6,
-                  borderTop: '1px solid var(--theme-component-border, #bfbfbf)',
-                  fontSize: '0.78rem',
-                  color: 'var(--gray-800)',
+                  padding: '8px 10px',
+                  borderRadius: 8,
+                  fontSize: '0.76rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  background: activeStep === 5 ? primaryColor : 'var(--theme-bg, #fff4e7)',
+                  color: activeStep === 5 ? '#fff' : 'var(--gray-800)',
+                  border: activeStep === 5 ? `2px solid ${primaryColor}` : border,
                   display: 'flex',
                   alignItems: 'center',
+                  justifyContent: 'center',
                   gap: 6,
                 }}
               >
-                <UserCheck size={13} color="var(--theme-primary, #660033)" />
-                <span>
-                  {hi ? 'वर्तमान में आवंटित:' : 'Currently Assigned to:'}{' '}
-                  <strong>{currentAssignee.full_name || 'Staff'}</strong> ({roleLabel(currentAssignee.role, language)})
-                </span>
-              </div>
-            )}
-          </div>
+                <span>🛠️</span>
+                <span>{hi ? '4. मैदानी कर्मचारी' : '4. Field Worker'}</span>
+              </button>
+            </div>
 
-          {/* ────────────────── STEPPED SELECTION FLOW ────────────────── */}
-          {isAllowedToAllot && (
-            <>
-              {/* If viewer is Department Head or Admin: 2-step decision */}
-              {!isSupervisorViewer && (
-                <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', fontWeight: 800, fontSize: '0.82rem', marginBottom: 8, color: 'var(--gray-800)' }}>
-                    {hi ? '१. आवंटन का स्तर चुनें:' : '1. Choose Allocation Level:'}
-                  </label>
-                  <div style={{ display: 'flex', gap: 10 }}>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAllotMode('supervisor');
-                        setSelectedFinalStaffId('');
-                      }}
-                      style={{
-                        flex: 1,
-                        padding: '10px 12px',
-                        borderRadius: 'var(--radius-md)',
-                        cursor: 'pointer',
-                        border: allotMode === 'supervisor' ? '2px solid var(--theme-primary, #660033)' : '1px solid var(--theme-component-border, #bfbfbf)',
-                        background: allotMode === 'supervisor' ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
-                        color: allotMode === 'supervisor' ? 'var(--theme-primary, #660033)' : 'var(--gray-800)',
-                        fontWeight: 800,
-                        fontSize: '0.82rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 6,
-                      }}
-                    >
-                      <User size={15} />
-                      {hi ? 'क्षेत्र पर्यवेक्षक को सौंपें' : 'Allot to Area Supervisor'}
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => setAllotMode('field_employee')}
-                      style={{
-                        flex: 1,
-                        padding: '10px 12px',
-                        borderRadius: 'var(--radius-md)',
-                        cursor: 'pointer',
-                        border: allotMode === 'field_employee' ? '2px solid var(--theme-primary, #660033)' : '1px solid var(--theme-component-border, #bfbfbf)',
-                        background: allotMode === 'field_employee' ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
-                        color: allotMode === 'field_employee' ? 'var(--theme-primary, #660033)' : 'var(--gray-800)',
-                        fontWeight: 800,
-                        fontSize: '0.82rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: 6,
-                      }}
-                    >
-                      <Wrench size={15} />
-                      {hi ? 'फील्ड कर्मचारी को सीधे सौंपें' : 'Allot to Field Worker'}
-                    </button>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP: SELECT AREA SUPERVISOR (For Dept Head / Admin) */}
-              {!isSupervisorViewer && (
-                <div style={{ marginBottom: 16 }}>
-                  <label style={{ display: 'block', fontWeight: 800, fontSize: '0.82rem', marginBottom: 6, color: 'var(--gray-800)' }}>
-                    👷 {hi ? 'क्षेत्र / वार्ड पर्यवेक्षक चुनें (Area Supervisor):' : 'Select Area / Ward Supervisor:'}
-                  </label>
-                  {supervisors.length === 0 ? (
-                    <div style={{ padding: '10px 12px', background: '#fef3c7', borderRadius: 8, color: '#92400e', fontSize: '0.8rem' }}>
-                      {hi ? 'इस विभाग में कोई क्षेत्र पर्यवेक्षक पंजीकृत नहीं है।' : 'No Area Supervisors found in this department.'}
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 150, overflowY: 'auto' }}>
-                      {supervisors.map((s) => {
-                        const isSelected = selectedSupervisorId === s.id;
-                        return (
-                          <div
-                            key={s.id}
-                            onClick={() => {
-                              setSelectedSupervisorId(s.id);
-                              if (s.ward_number) setSelectedWard(s.ward_number);
-                            }}
-                            style={{
-                              padding: '9px 12px',
-                              borderRadius: 'var(--radius-md)',
-                              cursor: 'pointer',
-                              background: isSelected ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
-                              border: isSelected ? '2px solid var(--theme-primary, #660033)' : '1px solid var(--theme-component-border, #bfbfbf)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                            }}
-                          >
-                            <div>
-                              <div style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--gray-900)' }}>
-                                {s.full_name || s.email}
-                                {s.staff_code && (
-                                  <span style={{ marginLeft: 6, fontSize: '0.72rem', color: 'var(--theme-primary, #660033)', fontFamily: 'monospace' }}>
-                                    {s.staff_code}
-                                  </span>
-                                )}
-                              </div>
-                              <div style={{ display: 'flex', gap: 10, fontSize: '0.74rem', color: 'var(--gray-600)', marginTop: 2 }}>
-                                {s.ward_number && <span><MapPin size={11} style={{ display: 'inline' }} /> Ward {s.ward_number}</span>}
-                                {s.phone && <span><Phone size={11} style={{ display: 'inline' }} /> {s.phone}</span>}
-                              </div>
-                            </div>
-                            <input type="radio" checked={isSelected} readOnly />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* STEP: SELECT FIELD EMPLOYEE (If Supervisor viewer or if Dept Head chose Field Worker mode) */}
-              {(isSupervisorViewer || allotMode === 'field_employee') && (
-                <div style={{ marginBottom: 16 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                    <label style={{ fontWeight: 800, fontSize: '0.82rem', color: 'var(--gray-800)' }}>
-                      🛠️ {hi ? 'फील्ड कर्मचारी चुनें (Field Worker / Operational Staff):' : 'Select Field Worker / Operative:'}
-                    </label>
-                    {availableWards.length > 1 && (
-                      <select
-                        value={selectedWard}
-                        onChange={(e) => setSelectedWard(e.target.value)}
-                        style={{
-                          padding: '4px 8px',
-                          borderRadius: 6,
-                          fontSize: '0.76rem',
-                          background: 'var(--theme-bg, #fff4e7)',
-                          border: '1px solid var(--theme-component-border, #bfbfbf)',
-                        }}
-                      >
-                        <option value="all">{hi ? 'सभी वार्ड' : 'All Wards'}</option>
-                        {availableWards.map((w) => (
-                          <option key={w} value={w}>Ward {w}</option>
-                        ))}
-                      </select>
-                    )}
-                  </div>
-
-                  {filteredFieldEmployees.length === 0 ? (
-                    <div style={{ padding: '10px 12px', background: '#fef3c7', borderRadius: 8, color: '#92400e', fontSize: '0.8rem' }}>
-                      {hi ? 'इस क्षेत्र/वार्ड में कोई फील्ड कर्मचारी उपलब्ध नहीं है।' : 'No field employees found for this ward/area.'}
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6, maxHeight: 180, overflowY: 'auto' }}>
-                      {filteredFieldEmployees.map((f) => {
-                        const isSelected = selectedFinalStaffId === f.id;
-                        return (
-                          <div
-                            key={f.id}
-                            onClick={() => setSelectedFinalStaffId(f.id)}
-                            style={{
-                              padding: '9px 12px',
-                              borderRadius: 'var(--radius-md)',
-                              cursor: 'pointer',
-                              background: isSelected ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
-                              border: isSelected ? '2px solid var(--theme-primary, #660033)' : '1px solid var(--theme-component-border, #bfbfbf)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'space-between',
-                            }}
-                          >
-                            <div>
-                              <div style={{ fontWeight: 800, fontSize: '0.85rem', color: 'var(--gray-900)' }}>
-                                {f.full_name || f.email}
-                                {f.staff_code && (
-                                  <span style={{ marginLeft: 6, fontSize: '0.72rem', color: 'var(--theme-primary, #660033)', fontFamily: 'monospace' }}>
-                                    {f.staff_code}
-                                  </span>
-                                )}
-                              </div>
-                              <div style={{ display: 'flex', gap: 10, fontSize: '0.74rem', color: 'var(--gray-600)', marginTop: 2 }}>
-                                <span>{roleLabel(f.role, language)}</span>
-                                {f.ward_number && <span><MapPin size={11} style={{ display: 'inline' }} /> Ward {f.ward_number}</span>}
-                                {f.phone && <span><Phone size={11} style={{ display: 'inline' }} /> {f.phone}</span>}
-                              </div>
-                            </div>
-                            <input type="radio" checked={isSelected} readOnly />
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Instructions / Allotment Note */}
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', fontWeight: 800, fontSize: '0.82rem', marginBottom: 6, color: 'var(--gray-800)' }}>
-                  📋 {hi ? 'कार्य निर्देश / टिप्पणी (Instructions / Notes)' : 'Site Instructions / Notes (Optional)'}
-                </label>
-                <textarea
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  rows={2}
-                  placeholder={hi ? 'उदा. मौके पर जाकर 3 घंटे में निरीक्षण करें और सुधार रिपोर्ट सबमिट करें...' : 'e.g. Inspect site by 2 PM, coordinate with local supervisor...'}
+            {/* Ward & Search Filters */}
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              <div style={{ flex: '1 1 200px', position: 'relative' }}>
+                <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-500)' }} />
+                <input
+                  type="text"
+                  placeholder={hi ? 'नाम, स्टाफ कोड या फोन से खोजें...' : 'Search staff by name, code or phone...'}
+                  value={staffSearch}
+                  onChange={(e) => setStaffSearch(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '9px 12px',
-                    borderRadius: 'var(--radius-md)',
-                    border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                    fontSize: '0.85rem',
+                    padding: '8px 12px 8px 32px',
+                    borderRadius: 8,
+                    border,
                     background: 'var(--theme-bg, #fff4e7)',
-                    fontFamily: 'var(--font-primary)',
-                    resize: 'vertical',
+                    fontSize: '0.82rem',
                     boxSizing: 'border-box',
-                    outline: 'none',
                   }}
                 />
               </div>
 
-              {/* Selected Assignee Summary Pill */}
-              {finalAssignee && (
-                <div
-                  style={{
-                    background: 'var(--theme-bg, #fff4e7)',
-                    border: '1.5px solid var(--theme-primary, #660033)',
-                    borderRadius: 'var(--radius-md)',
-                    padding: '10px 14px',
-                    marginBottom: 16,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 10,
-                  }}
-                >
-                  <CheckCircle2 size={18} color="var(--theme-primary, #660033)" style={{ flexShrink: 0 }} />
-                  <div style={{ fontSize: '0.82rem' }}>
-                    <span style={{ color: 'var(--gray-700)' }}>{hi ? 'कार्य सौंपा जा रहा है:' : 'Allocating Task to:'} </span>
-                    <strong style={{ color: 'var(--theme-primary, #660033)' }}>{finalAssignee.full_name}</strong>
-                    <span style={{ color: 'var(--gray-600)', marginLeft: 6 }}>
-                      ({roleLabel(finalAssignee.role, language)} {finalAssignee.staff_code ? `• ${finalAssignee.staff_code}` : ''})
-                    </span>
-                  </div>
+              {availableWards.length > 0 && (
+                <div style={{ minWidth: 140 }}>
+                  <select
+                    value={selectedWard}
+                    onChange={(e) => setSelectedWard(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 12px',
+                      borderRadius: 8,
+                      border,
+                      background: 'var(--theme-bg, #fff4e7)',
+                      fontSize: '0.82rem',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <option value="all">{hi ? 'सभी वार्ड (All Wards)' : 'All Wards'}</option>
+                    {availableWards.map((w) => (
+                      <option key={w} value={w}>
+                        {hi ? `वार्ड ${w}` : `Ward ${w}`}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               )}
-            </>
-          )}
+            </div>
 
-          {/* Buttons */}
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button
-              type="button"
-              onClick={onClose}
-              style={{
-                flex: 1,
-                padding: 12,
-                border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--theme-bg, #fff4e7)',
-                color: 'var(--gray-800)',
-                fontWeight: 700,
-                cursor: 'pointer',
-                fontSize: '0.88rem',
-              }}
-            >
-              {hi ? 'रद्द करें' : 'Cancel'}
-            </button>
-            <button
-              type="submit"
-              disabled={submitting || !isAllowedToAllot || !finalAssignee}
-              style={{
-                flex: 2,
-                padding: 12,
-                border: 'none',
-                borderRadius: 'var(--radius-md)',
-                background:
-                  submitting || !isAllowedToAllot || !finalAssignee
-                    ? 'var(--gray-300)'
-                    : 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
-                color: '#fff',
-                fontWeight: 800,
-                fontSize: '0.9rem',
-                cursor: submitting || !isAllowedToAllot || !finalAssignee ? 'not-allowed' : 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 7,
-              }}
-            >
-              {submitting ? '...' : <><Send size={15} /> {hi ? 'कार्य आवंटित करें' : 'Confirm Allocation'}</>}
-            </button>
+            {/* List for the selected Tier */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8, minHeight: 180, maxHeight: 260, overflowY: 'auto' }}>
+              {activeStep === 2 && (
+                <>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--gray-700)' }}>
+                    {hi ? 'विभाग प्रमुख का चयन करें:' : 'Select Department Head:'}
+                  </div>
+                  {filterStaff(deptHeads).length === 0 ? (
+                    <div style={{ padding: 20, textAlign: 'center', fontSize: '0.82rem', color: 'var(--gray-600)' }}>
+                      {hi ? 'इस विभाग के लिए कोई विभाग प्रमुख नहीं मिला।' : 'No Department Head registered for this department.'}
+                    </div>
+                  ) : (
+                    filterStaff(deptHeads).map((dh) => {
+                      const isSelected = selectedDeptHeadId === dh.id;
+                      return (
+                        <div
+                          key={dh.id}
+                          onClick={() => setSelectedDeptHeadId(dh.id)}
+                          style={{
+                            padding: '10px 14px',
+                            borderRadius: 10,
+                            background: isSelected ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
+                            border: isSelected ? `2px solid ${primaryColor}` : border,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--theme-component, #d9d9d9)', border, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              🏢
+                            </div>
+                            <div>
+                              <b style={{ fontSize: '0.88rem', color: 'var(--gray-900)' }}>{dh.full_name || 'Department Head'}</b>
+                              <div style={{ fontSize: '0.74rem', color: 'var(--gray-600)' }}>
+                                {dh.staff_code ? `${dh.staff_code} • ` : ''}{dh.phone ? `📞 ${dh.phone}` : ''}
+                              </div>
+                            </div>
+                          </div>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 8px', borderRadius: 12, background: isSelected ? primaryColor : 'var(--theme-component, #d9d9d9)', color: isSelected ? '#fff' : 'var(--gray-700)' }}>
+                            {isSelected ? '✓ ' + (hi ? 'चयनित' : 'Selected') : (hi ? 'चुनें' : 'Select')}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
+                </>
+              )}
+
+              {activeStep === 3 && (
+                <>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--gray-700)' }}>
+                    {hi ? 'क्षेत्र अधिकारी का चयन करें (Area Officer):' : 'Select Area Officer:'}
+                  </div>
+                  {filterStaff(areaOfficers).length === 0 ? (
+                    <div style={{ padding: 20, textAlign: 'center', fontSize: '0.82rem', color: 'var(--gray-600)' }}>
+                      {hi ? 'इस क्षेत्र/वार्ड के लिए कोई क्षेत्र अधिकारी पंजीकृत नहीं है।' : 'No Area Officer registered for this ward/area.'}
+                    </div>
+                  ) : (
+                    filterStaff(areaOfficers).map((ao) => {
+                      const isSelected = selectedAreaOfficerId === ao.id;
+                      return (
+                        <div
+                          key={ao.id}
+                          onClick={() => setSelectedAreaOfficerId(ao.id)}
+                          style={{
+                            padding: '10px 14px',
+                            borderRadius: 10,
+                            background: isSelected ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
+                            border: isSelected ? `2px solid ${primaryColor}` : border,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--theme-component, #d9d9d9)', border, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              📍
+                            </div>
+                            <div>
+                              <b style={{ fontSize: '0.88rem', color: 'var(--gray-900)' }}>{ao.full_name || 'Area Officer'}</b>
+                              <div style={{ fontSize: '0.74rem', color: 'var(--gray-600)' }}>
+                                {ao.ward_number ? `Ward ${ao.ward_number} • ` : ''}{ao.staff_code ? `${ao.staff_code} • ` : ''}{ao.phone ? `📞 ${ao.phone}` : ''}
+                              </div>
+                            </div>
+                          </div>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 8px', borderRadius: 12, background: isSelected ? primaryColor : 'var(--theme-component, #d9d9d9)', color: isSelected ? '#fff' : 'var(--gray-700)' }}>
+                            {isSelected ? '✓ ' + (hi ? 'चयनित' : 'Selected') : (hi ? 'चुनें' : 'Select')}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
+                </>
+              )}
+
+              {activeStep === 4 && (
+                <>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--gray-700)' }}>
+                    {hi ? 'पर्यवेक्षक का चयन करें (Supervisor):' : 'Select Supervisor:'}
+                  </div>
+                  {filterStaff(supervisors).length === 0 ? (
+                    <div style={{ padding: 20, textAlign: 'center', fontSize: '0.82rem', color: 'var(--gray-600)' }}>
+                      {hi ? 'इस वार्ड/विभाग के लिए कोई पर्यवेक्षक नहीं मिला।' : 'No Supervisor registered for this ward/department.'}
+                    </div>
+                  ) : (
+                    filterStaff(supervisors).map((sup) => {
+                      const isSelected = selectedSupervisorId === sup.id;
+                      return (
+                        <div
+                          key={sup.id}
+                          onClick={() => setSelectedSupervisorId(sup.id)}
+                          style={{
+                            padding: '10px 14px',
+                            borderRadius: 10,
+                            background: isSelected ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
+                            border: isSelected ? `2px solid ${primaryColor}` : border,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--theme-component, #d9d9d9)', border, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              👷
+                            </div>
+                            <div>
+                              <b style={{ fontSize: '0.88rem', color: 'var(--gray-900)' }}>{sup.full_name || 'Supervisor'}</b>
+                              <div style={{ fontSize: '0.74rem', color: 'var(--gray-600)' }}>
+                                {sup.ward_number ? `Ward ${sup.ward_number} • ` : ''}{sup.staff_code ? `${sup.staff_code} • ` : ''}{sup.phone ? `📞 ${sup.phone}` : ''}
+                              </div>
+                            </div>
+                          </div>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 8px', borderRadius: 12, background: isSelected ? primaryColor : 'var(--theme-component, #d9d9d9)', color: isSelected ? '#fff' : 'var(--gray-700)' }}>
+                            {isSelected ? '✓ ' + (hi ? 'चयनित' : 'Selected') : (hi ? 'चुनें' : 'Select')}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
+                </>
+              )}
+
+              {activeStep === 5 && (
+                <>
+                  <div style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--gray-700)' }}>
+                    {hi ? 'मैदानी / परिचालन कर्मचारी का चयन करें (Operational Staff):' : 'Select Operational / Field Staff:'}
+                  </div>
+                  {filterStaff(operationalStaff).length === 0 ? (
+                    <div style={{ padding: 20, textAlign: 'center', fontSize: '0.82rem', color: 'var(--gray-600)' }}>
+                      {hi ? 'इस वार्ड में कोई परिचालन कर्मचारी उपलब्ध नहीं है।' : 'No operational staff found in this ward/department.'}
+                    </div>
+                  ) : (
+                    filterStaff(operationalStaff).map((op) => {
+                      const isSelected = selectedOperationalStaffId === op.id;
+                      return (
+                        <div
+                          key={op.id}
+                          onClick={() => setSelectedOperationalStaffId(op.id)}
+                          style={{
+                            padding: '10px 14px',
+                            borderRadius: 10,
+                            background: isSelected ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
+                            border: isSelected ? `2px solid ${primaryColor}` : border,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--theme-component, #d9d9d9)', border, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              🛠️
+                            </div>
+                            <div>
+                              <b style={{ fontSize: '0.88rem', color: 'var(--gray-900)' }}>{op.full_name || 'Field Worker'}</b>
+                              <div style={{ fontSize: '0.74rem', color: 'var(--gray-600)' }}>
+                                {op.ward_number ? `Ward ${op.ward_number} • ` : ''}{op.staff_code ? `${op.staff_code} • ` : ''}{op.phone ? `📞 ${op.phone}` : ''}
+                              </div>
+                            </div>
+                          </div>
+                          <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 8px', borderRadius: 12, background: isSelected ? primaryColor : 'var(--theme-component, #d9d9d9)', color: isSelected ? '#fff' : 'var(--gray-700)' }}>
+                            {isSelected ? '✓ ' + (hi ? 'चयनित' : 'Selected') : (hi ? 'चुनें' : 'Select')}
+                          </span>
+                        </div>
+                      );
+                    })
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* Assignment Notes */}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.76rem', fontWeight: 800, color: 'var(--gray-700)', marginBottom: 4 }}>
+                {hi ? 'कार्य निर्देश / टिप्पणी (Assignment Notes):' : 'Assignment Instructions / Notes:'}
+              </label>
+              <textarea
+                rows={2}
+                placeholder={hi ? 'उदा. मुख्य चौराहे पर तत्काल पाइपलाइन मरम्मत करें, कार्य 4 बजे से पहले पूर्ण करें...' : 'e.g. Urgent pipeline repair at main square, complete inspection before 4 PM...'}
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  border,
+                  background: 'var(--theme-bg, #fff4e7)',
+                  fontSize: '0.82rem',
+                  boxSizing: 'border-box',
+                  resize: 'vertical',
+                }}
+              />
+            </div>
+
+            {submitError && (
+              <div style={{ background: '#fee2e2', border: '1px solid #f87171', borderRadius: 8, padding: '8px 12px', fontSize: '0.78rem', color: '#991b1b' }}>
+                {submitError}
+              </div>
+            )}
           </div>
-        </form>
+        )}
+
+        {/* Modal Footer */}
+        {isAllowedToAllot && (
+          <div
+            style={{
+              padding: '14px 20px',
+              borderTop: border,
+              background: 'var(--theme-component, #d9d9d9)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: 10,
+            }}
+          >
+            <div style={{ fontSize: '0.8rem', color: 'var(--gray-700)' }}>
+              {finalAssignee ? (
+                <span>
+                  {hi ? 'चयनित अधिकारी/कर्मचारी: ' : 'Selected Assignee: '}
+                  <strong style={{ color: primaryColor }}>{finalAssignee.full_name}</strong>
+                  <span style={{ fontSize: '0.72rem', opacity: 0.85, marginLeft: 6 }}>
+                    ({TIER_LABEL[getTier(finalAssignee.role, finalAssignee.hierarchy_code, finalAssignee.authority_role)]?.[hi ? 'hi' : 'en']})
+                  </span>
+                </span>
+              ) : (
+                <span style={{ color: 'var(--gray-500)' }}>
+                  {hi ? 'कृपया ऊपर दिए गए स्तर से एक अधिकारी चुनें' : 'Please select an officer from the list above'}
+                </span>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="button"
+                onClick={onClose}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: 8,
+                  border,
+                  background: 'var(--theme-bg, #fff4e7)',
+                  color: 'var(--gray-800)',
+                  fontSize: '0.82rem',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                }}
+              >
+                {hi ? 'रद्द करें' : 'Cancel'}
+              </button>
+              <button
+                type="button"
+                onClick={handleAllotSubmit}
+                disabled={submitting || !finalAssigneeId}
+                style={{
+                  padding: '8px 18px',
+                  borderRadius: 8,
+                  border: 'none',
+                  background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                  color: '#fff',
+                  fontSize: '0.82rem',
+                  fontWeight: 800,
+                  cursor: submitting || !finalAssigneeId ? 'not-allowed' : 'pointer',
+                  opacity: submitting || !finalAssigneeId ? 0.6 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  boxShadow: '0 4px 12px rgba(102,0,51,0.25)',
+                }}
+              >
+                <Send size={13} />
+                {submitting ? (hi ? 'आवंटित कर रहे हैं...' : 'Allocating...') : (hi ? 'कार्य सौंपें' : 'Confirm Allocation')}
+              </button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

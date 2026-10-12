@@ -13,6 +13,8 @@ export interface UserProfile {
   is_admin?: boolean;
   role?: string | null;
   linked_department_id?: string | null;
+  authority_role?: string | null;
+  hierarchy_code?: string | null;
 }
 
 interface AuthContextType {

@@ -11,6 +11,7 @@ import { AlertBanner } from '../components/auth/AlertBanner';
 const STAFF_ROLES = [
   'dept_staff', 'admin', 'department_head', 'supervisor', 'control_room',
   'management_viewer', 'field_employee', 'municipal_administrator',
+  'deputy_commissioner', 'area_officer', 'operational_staff',
 ];
 
 export default function DeptLogin() {

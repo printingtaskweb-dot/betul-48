@@ -22,7 +22,24 @@ import {
 type FilterTab = 'pending' | 'approved' | 'rejected' | 'all';
 
 export const AdminNewsModeration: React.FC = () => {
-  const { user } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
+
+  // Super Admin can approve; Municipal Head can view but CANNOT approve live website news
+  const isSuperAdmin = Boolean(
+    isAdmin ||
+    profile?.is_admin === true ||
+    profile?.role === 'admin' ||
+    (user?.email && user.email.toLowerCase() === 'ouikey41@gmail.com') ||
+    sessionStorage.getItem('imc_admin') === '1'
+  );
+  const isMunicipalHead = Boolean(
+    profile?.role === 'municipal_administrator' ||
+    profile?.role === 'deputy_commissioner' ||
+    profile?.authority_role === 'municipal_commissioner' ||
+    profile?.authority_role === 'deputy_commissioner'
+  );
+  const canApproveNews = isSuperAdmin && !isMunicipalHead;
+
   const [posts, setPosts] = useState<LocalNews[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
@@ -636,56 +653,77 @@ export const AdminNewsModeration: React.FC = () => {
                     borderTop: '1px solid var(--theme-component-border, #bfbfbf)',
                   }}
                 >
-                  {/* Approve Button */}
-                  {!isApproved && (
-                    <button
-                      onClick={() => handleApprove(post.id)}
-                      disabled={actionLoading === post.id}
-                      style={{
-                        background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: 'var(--radius-sm)',
-                        padding: '7px 14px',
-                        fontSize: '0.8rem',
-                        fontWeight: 800,
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        boxShadow: 'var(--shadow-sm)',
-                      }}
-                    >
-                      <Check size={14} />
-                      {isPending ? 'Approve & Publish Live' : 'Re-Approve'}
-                    </button>
-                  )}
+                  {/* Approve / Reject Actions: Only Platform Admin can approve live news */}
+                  {canApproveNews ? (
+                    <>
+                      {!isApproved && (
+                        <button
+                          onClick={() => handleApprove(post.id)}
+                          disabled={actionLoading === post.id}
+                          style={{
+                            background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: 'var(--radius-sm)',
+                            padding: '7px 14px',
+                            fontSize: '0.8rem',
+                            fontWeight: 800,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            boxShadow: 'var(--shadow-sm)',
+                          }}
+                        >
+                          <Check size={14} />
+                          {isPending ? 'Approve & Publish Live' : 'Re-Approve'}
+                        </button>
+                      )}
 
-                  {/* Reject Button */}
-                  {!isRejected && (
-                    <button
-                      onClick={() => {
-                        setRejectionModalPostId(post.id);
-                        setRejectionReason('');
-                      }}
-                      disabled={actionLoading === post.id}
+                      {!isRejected && (
+                        <button
+                          onClick={() => {
+                            setRejectionModalPostId(post.id);
+                            setRejectionReason('');
+                          }}
+                          disabled={actionLoading === post.id}
+                          style={{
+                            background: 'transparent',
+                            color: 'var(--gray-800)',
+                            border: '1.5px solid var(--theme-component-border, #bfbfbf)',
+                            borderRadius: 'var(--radius-sm)',
+                            padding: '6px 14px',
+                            fontSize: '0.8rem',
+                            fontWeight: 700,
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 6,
+                          }}
+                        >
+                          <X size={14} />
+                          {isApproved ? 'Revoke / Reject' : 'Reject'}
+                        </button>
+                      )}
+                    </>
+                  ) : (
+                    <div
                       style={{
-                        background: 'transparent',
-                        color: 'var(--gray-800)',
-                        border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                        borderRadius: 'var(--radius-sm)',
-                        padding: '6px 14px',
-                        fontSize: '0.8rem',
-                        fontWeight: 700,
-                        cursor: 'pointer',
+                        fontSize: '0.76rem',
+                        color: 'var(--theme-primary, #660033)',
+                        fontWeight: 800,
+                        background: 'var(--theme-bg, #fff4e7)',
+                        border: '1px solid var(--theme-component-border, #bfbfbf)',
+                        padding: '6px 12px',
+                        borderRadius: 6,
                         display: 'flex',
                         alignItems: 'center',
                         gap: 6,
                       }}
                     >
-                      <X size={14} />
-                      {isApproved ? 'Revoke / Reject' : 'Reject'}
-                    </button>
+                      <span>🔒</span>
+                      <span>View Only: Municipal Head can monitor news, but approval is reserved for Platform Admin</span>
+                    </div>
                   )}
 
                   {/* Delete Button */}

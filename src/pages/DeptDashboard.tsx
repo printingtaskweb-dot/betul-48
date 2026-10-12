@@ -30,6 +30,7 @@ const STATUS_CONFIG: Record<string, { label: string; labelHi: string; color: str
 const STAFF_ROLES = [
   'dept_staff', 'admin', 'department_head', 'supervisor', 'control_room',
   'management_viewer', 'field_employee', 'municipal_administrator',
+  'deputy_commissioner', 'area_officer', 'operational_staff',
 ];
 
 interface Department {
@@ -1151,7 +1152,7 @@ export default function DeptDashboard() {
                   {hi ? 'कोई शिकायत नहीं मिली' : 'No grievances found'}
                 </h3>
                 <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--gray-600)' }}>
-                  {myTier === 3
+                  {myTier >= 4
                     ? (hi ? 'आपको अभी कोई कार्य नहीं सौंपा गया है' : 'No tasks have been assigned to you yet')
                     : (hi ? 'फिल्टर बदलें' : 'Try selecting another status')}
                 </p>
