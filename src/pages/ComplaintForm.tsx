@@ -86,10 +86,10 @@ export const ComplaintForm: React.FC = () => {
   /* ─────────────────────────────────────────────
      Watermark helper — single source of truth
      ───────────────────────────────────────────── */
-  const stampPhoto = async (file: File) => {
+  const stampPhoto = async (file: File): Promise<File | null> => {
     if (!locationReady) return null;
     try {
-      const stamped = await watermarkPhoto(file, {
+      return await watermarkPhoto(file, {
         latitude: loc.latitude,
         longitude: loc.longitude,
         accuracy: loc.accuracy,
@@ -98,7 +98,6 @@ export const ComplaintForm: React.FC = () => {
         appName: 'Swachh 311 · IMC',
         departmentName: selectedDept?.name ?? null,
       });
-      return stamped;
     } catch (err) {
       console.warn('Watermark failed, using original photo', err);
       return file;
@@ -106,8 +105,7 @@ export const ComplaintForm: React.FC = () => {
   };
 
   /* ─────────────────────────────────────────────
-     Photo captured → immediately show preview,
-     stamp now if GPS ready, otherwise stamp on GPS lock
+     Photo captured → preview instantly, stamp when GPS ready
      ───────────────────────────────────────────── */
   const handleFileSelected = async (file: File) => {
     setOriginalFile(file);
@@ -157,7 +155,7 @@ export const ComplaintForm: React.FC = () => {
   }, [selectedDept?.id, locationReady, loc.latitude, loc.longitude]);
 
   /* ─────────────────────────────────────────────
-     Submit
+     Submit — always re-stamp from originalFile right before upload
      ───────────────────────────────────────────── */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -176,11 +174,11 @@ export const ComplaintForm: React.FC = () => {
           : 'Please wait for GPS lock…'
       );
     }
-    if (!photoFile) {
+    if (!originalFile) {
       return setError(
         language === 'hi'
-          ? 'फोटो तैयार हो रहा है, कृपया प्रतीक्षा करें…'
-          : 'Your photo is being prepared, please wait…'
+          ? 'कृपया समस्या का फोटो अपलोड करें।'
+          : 'Please attach a photo.'
       );
     }
     if (!description.trim()) {
@@ -195,7 +193,33 @@ export const ComplaintForm: React.FC = () => {
     setError(null);
 
     try {
-      const photoUrl = await uploadPhoto(photoFile);
+      // 🔑 Re-stamp right before upload so the file we ship is ALWAYS
+      //    the watermarked version with the current GPS + dept values.
+      const stampedForUpload = await watermarkPhoto(originalFile, {
+        latitude: loc.latitude,
+        longitude: loc.longitude,
+        accuracy: loc.accuracy,
+        address: loc.address,
+        timestamp: new Date(),
+        appName: 'Swachh 311 · IMC',
+        departmentName: selectedDept.name,
+      });
+
+      if (stampedForUpload === originalFile) {
+        console.warn(
+          '[ComplaintForm] watermark returned original file — uploading un-watermarked photo'
+        );
+      }
+
+      const photoUrl = await uploadPhoto(stampedForUpload);
+
+      if (!photoUrl) {
+        throw new Error(
+          language === 'hi'
+            ? 'फोटो अपलोड नहीं हो पाया। कृपया पुनः प्रयास करें।'
+            : 'Photo upload failed. Please try again.'
+        );
+      }
 
       const complaint = await submitComplaint({
         department_id: selectedDept.id,
@@ -685,7 +709,6 @@ export const ComplaintForm: React.FC = () => {
               disabled={watermarking}
             />
 
-            {/* Quiet stamping caption */}
             {watermarking && (
               <p
                 style={{
@@ -700,7 +723,6 @@ export const ComplaintForm: React.FC = () => {
               </p>
             )}
 
-            {/* GPS location strip below the preview — echoes what's on the image */}
             {preview && !watermarking && locationReady && (
               <div
                 style={{
@@ -733,7 +755,7 @@ export const ComplaintForm: React.FC = () => {
             )}
           </div>
 
-          {/* Silent GPS indicator — only visible while GPS is locking */}
+          {/* Silent GPS indicator */}
           <div style={{ marginBottom: 22 }}>
             <LocationPicker
               latitude={loc.latitude}
