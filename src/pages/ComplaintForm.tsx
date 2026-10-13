@@ -656,7 +656,7 @@ export const ComplaintForm: React.FC = () => {
           </div>
 
           {/* Citizen name */}
-          <div style={{ marginBottom: 18 }}>
+          <div style={{ marginBottom: 28 }}>
             <label style={labelStyle}>
               👤 {language === 'hi' ? 'आपका नाम' : 'Your Name'}
             </label>
@@ -670,7 +670,7 @@ export const ComplaintForm: React.FC = () => {
           </div>
 
           {/* Citizen phone */}
-          <div style={{ marginBottom: 18 }}>
+          <div style={{ marginBottom: 28 }}>
             <label style={labelStyle}>
               📞 {language === 'hi' ? 'मोबाइल नंबर' : 'Mobile Number'}
             </label>
@@ -684,7 +684,7 @@ export const ComplaintForm: React.FC = () => {
           </div>
 
           {/* Description */}
-          <div style={{ marginBottom: 18 }}>
+          <div style={{ marginBottom: 28 }}>
             <label style={labelStyle}>
               📝 {language === 'hi' ? 'समस्या का विवरण' : 'Description'} *
             </label>
