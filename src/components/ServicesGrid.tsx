@@ -140,15 +140,15 @@ export const ServicesGrid: React.FC = () => {
       >
         <div>
           <h2 style={{
-            fontFamily: '"Instrument Serif", Georgia, serif',
-            fontSize: 24, fontWeight: 400, letterSpacing: '-0.01em',
-            color: 'var(--ink)', margin: 0,
+            fontFamily: '"Fraunces", Georgia, serif',
+            fontSize: 24, fontWeight: 600, fontStyle: 'normal', letterSpacing: '-0.01em',
+            color: 'var(--ink)', textTransform: 'none', margin: 0,
           }}>
             {t(language, 'ourServices')}
           </h2>
           <p style={{
-            margin: '4px 0 0', fontSize: 11, color: 'var(--mute)',
-            fontFamily: '"Geist Mono", monospace', letterSpacing: '0.04em',
+            margin: '4px 0 0', fontSize: 12, color: 'var(--mute)',
+            fontFamily: '"Geist", sans-serif', fontWeight: 400, fontStyle: 'normal',
           }}>
             {language === 'hi' ? 'सभी नगर निगम विभाग' : 'All Municipal Departments'}
           </p>
@@ -157,8 +157,8 @@ export const ServicesGrid: React.FC = () => {
           to="/complaint/new"
           style={{
             fontFamily: '"Geist Mono", monospace', fontSize: 11,
-            letterSpacing: '0.08em', textTransform: 'uppercase' as const,
-            color: 'var(--burgundy)', fontWeight: 600,
+            letterSpacing: '0.06em', textTransform: 'uppercase' as const,
+            color: 'var(--burgundy)', fontWeight: 500, fontStyle: 'normal',
             display: 'flex', alignItems: 'center', gap: 4,
             transition: 'gap 0.3s ease',
           }}
@@ -204,7 +204,7 @@ export const ServicesGrid: React.FC = () => {
               <span
                 style={{
                   fontFamily: '"Geist", sans-serif',
-                  fontSize: 11, fontWeight: 500, letterSpacing: '0.02em',
+                  fontSize: 12, fontWeight: 600, fontStyle: 'normal', letterSpacing: '0.01em',
                   color: 'var(--slate-soft)',
                   lineHeight: 1.2,
                 }}

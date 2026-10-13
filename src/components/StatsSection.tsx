@@ -131,9 +131,10 @@ export const StatsSection: React.FC = () => {
             </div>
             <div
               style={{
-                fontFamily: '"Instrument Serif", Georgia, serif',
+                fontFamily: '"Fraunces", Georgia, serif',
                 fontSize: 'clamp(1.5rem, 2vw, 2.2rem)',
-                fontWeight: 400,
+                fontWeight: 600,
+                fontStyle: 'normal',
                 color: card.color,
                 lineHeight: 1.1,
                 marginBottom: 4,
@@ -148,7 +149,8 @@ export const StatsSection: React.FC = () => {
                 fontSize: 10,
                 color: 'var(--mute)',
                 fontWeight: 500,
-                letterSpacing: '0.04em',
+                fontStyle: 'normal',
+                letterSpacing: '0.06em',
                 textTransform: 'uppercase' as const,
               }}
             >

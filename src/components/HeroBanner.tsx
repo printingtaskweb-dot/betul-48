@@ -138,6 +138,8 @@ export const HeroBanner: React.FC = () => {
               border: '1px solid rgba(255,255,255,0.12)',
               fontFamily: '"Geist Mono", monospace',
               fontSize: 10,
+              fontWeight: 500,
+              fontStyle: 'normal',
               letterSpacing: '0.12em',
               textTransform: 'uppercase' as const,
               color: 'rgba(255,255,255,0.9)',
@@ -154,12 +156,13 @@ export const HeroBanner: React.FC = () => {
           {/* Title */}
           <h1
             style={{
-              fontFamily: '"Instrument Serif", Georgia, serif',
+              fontFamily: '"Fraunces", Georgia, serif',
               fontSize: 'clamp(32px, 8vw, 48px)',
-              lineHeight: 1.05,
+              lineHeight: 1.1,
               letterSpacing: '-0.02em',
-              fontWeight: 400,
-              fontStyle: 'italic',
+              fontWeight: 600,
+              fontStyle: 'normal',
+              textTransform: 'none' as const,
               color: '#fff',
               margin: 0,
               textShadow: 'none',
@@ -191,11 +194,15 @@ export const HeroBanner: React.FC = () => {
 
             <p
               style={{
+                fontFamily: '"Geist", system-ui, sans-serif',
                 fontSize: 15,
+                fontWeight: 400,
+                fontStyle: 'normal',
                 lineHeight: 1.6,
                 color: 'rgba(255,255,255,0.75)',
                 maxWidth: '90%',
                 margin: 0,
+                textTransform: 'none' as const,
               }}
             >
               {slide.subtitle}
@@ -233,9 +240,12 @@ export const HeroBanner: React.FC = () => {
                 borderRadius: 999,
                 background: '#FFFFFF',
                 color: '#4A0E1F',
-                fontWeight: 600,
-                fontSize: 14,
-                letterSpacing: '0.02em',
+                fontFamily: '"Geist Mono", monospace',
+                fontWeight: 500,
+                fontStyle: 'normal',
+                textTransform: 'uppercase' as const,
+                fontSize: 13,
+                letterSpacing: '0.06em',
                 textDecoration: 'none',
                 width: 'fit-content',
                 transition: 'all 0.4s cubic-bezier(0.6, 0, 0.2, 1)',

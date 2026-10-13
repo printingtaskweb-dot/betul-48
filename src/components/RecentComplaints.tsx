@@ -42,17 +42,17 @@ export const RecentComplaints: React.FC = () => {
       }}>
         <div>
           <h2 style={{
-            fontFamily: '"Instrument Serif", Georgia, serif',
-            fontSize: 24, fontWeight: 400, letterSpacing: '-0.01em',
-            color: 'var(--ink)',
+            fontFamily: '"Fraunces", Georgia, serif',
+            fontSize: 24, fontWeight: 600, fontStyle: 'normal', letterSpacing: '-0.01em',
+            color: 'var(--ink)', textTransform: 'none',
           }}>
             {t(language, 'recentActivity')}
           </h2>
         </div>
         <Link to="/track" style={{
           fontFamily: '"Geist Mono", monospace', fontSize: 11,
-          letterSpacing: '0.08em', textTransform: 'uppercase' as const,
-          color: 'var(--burgundy)', fontWeight: 600,
+          letterSpacing: '0.06em', textTransform: 'uppercase' as const,
+          color: 'var(--burgundy)', fontWeight: 500, fontStyle: 'normal',
           display: 'flex', alignItems: 'center', gap: 4,
         }}>
           {t(language, 'viewAll')} →
@@ -88,13 +88,16 @@ export const RecentComplaints: React.FC = () => {
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{
                   fontFamily: '"Geist Mono", monospace', fontSize: 11,
-                  letterSpacing: '0.04em', color: 'var(--mute)',
+                  fontWeight: 500, fontStyle: 'normal',
+                  letterSpacing: '0.06em', textTransform: 'uppercase',
+                  color: 'var(--mute)',
                   marginBottom: 4,
                 }}>
                   #{c.ticket_number}
                 </div>
                 <div style={{
                   fontFamily: '"Geist", sans-serif', fontSize: 14, fontWeight: 600,
+                  fontStyle: 'normal', textTransform: 'none',
                   color: 'var(--ink)',
                   whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis',
                 }}>
@@ -103,7 +106,8 @@ export const RecentComplaints: React.FC = () => {
                 {c.address && (
                   <div style={{
                     display: 'flex', gap: 4, alignItems: 'center', marginTop: 3,
-                    fontSize: 11, color: 'var(--mute)',
+                    fontFamily: '"Geist", sans-serif',
+                    fontSize: 11, fontWeight: 400, fontStyle: 'normal', color: 'var(--mute)',
                   }}>
                     <MapPin size={12} />
                     <span style={{

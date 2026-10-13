@@ -85,11 +85,12 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onDone }) => {
         {/* App name */}
         <div style={{ textAlign: 'center' }}>
           <h1 style={{
-            fontFamily: '"Instrument Serif", Georgia, serif',
+            fontFamily: '"Fraunces", Georgia, serif',
             color: '#FFFFFF',
-            fontSize: 42, fontWeight: 400, fontStyle: 'italic',
+            fontSize: 42, fontWeight: 600, fontStyle: 'normal',
             letterSpacing: '-0.02em', margin: 0, lineHeight: 1,
             textShadow: '0 2px 20px rgba(0,0,0,0.35)',
+            textTransform: 'none',
           }}>
             Jila Betul
           </h1>
@@ -97,9 +98,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onDone }) => {
             color: 'rgba(255,255,255,0.75)',
             fontFamily: '"Geist Mono", monospace',
             fontSize: 10, marginTop: 8,
-            letterSpacing: '0.12em',
+            letterSpacing: '0.08em',
             textTransform: 'uppercase' as const,
-            fontWeight: 400,
+            fontWeight: 500,
+            fontStyle: 'normal',
           }}>
             नागरिक समाधान साथी
           </p>
@@ -117,8 +119,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onDone }) => {
             color: 'rgba(255,255,255,0.9)',
             fontFamily: '"Geist Mono", monospace',
             fontSize: 10, margin: 0,
-            letterSpacing: '0.1em',
+            letterSpacing: '0.08em',
             textTransform: 'uppercase' as const,
+            fontWeight: 500,
+            fontStyle: 'normal',
           }}>
             स्वच्छ बैतूल · Swachh Betul
           </p>
