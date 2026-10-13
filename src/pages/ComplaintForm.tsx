@@ -195,7 +195,7 @@ export const ComplaintForm: React.FC = () => {
     try {
       // 🔑 Re-stamp right before upload so the file we ship is ALWAYS
       //    the watermarked version with the current GPS + dept values.
-      let stampedForUpload = photoFile;
+      let stampedForUpload: File = photoFile || originalFile;
       try {
         stampedForUpload = await watermarkPhoto(originalFile, {
           latitude: loc.latitude,
