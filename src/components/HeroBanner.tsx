@@ -83,7 +83,7 @@ export const HeroBanner: React.FC = () => {
     <div
       className="hero-section"
       style={{
-        margin: '16px 20px',
+        margin: '16px 14px',
       }}
     >
       <div
