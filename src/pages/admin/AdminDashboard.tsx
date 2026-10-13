@@ -6,13 +6,15 @@ import { ComplaintTable } from '../../components/admin/ComplaintTable';
 import AdminStaffRegistration from '../../components/admin/AdminStaffRegistration';
 import AdminNewsModeration from '../../components/admin/AdminNewsModeration';
 import AdminUserDirectory from '../../components/admin/AdminUserDirectory';
+import { StaffApprovalTable } from '../../components/admin/StaffApprovalTable';
+import StaffApprovals from './StaffApprovals';
 import MunicipalAdministratorDashboard from './MunicipalAdministratorDashboard';
 import { supabase } from '../../lib/supabase';
 
 import type { Department } from '../../lib/supabase';
-import { LogOut, LayoutDashboard, Menu, X, ArrowLeft, UserPlus, Newspaper, Users, Building2 } from 'lucide-react';
+import { LogOut, LayoutDashboard, Menu, X, ArrowLeft, UserPlus, Newspaper, Users, Building2, ClipboardCheck, ShieldCheck } from 'lucide-react';
 
-type Tab = 'complaints' | 'municipal' | 'users' | 'register' | 'local_news';
+type Tab = 'complaints' | 'municipal' | 'users' | 'register' | 'local_news' | 'staff_approvals' | 'staff_directory';
 
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -297,6 +299,36 @@ export const AdminDashboard: React.FC = () => {
             )}
           </button>
 
+          {/* Staff Approvals */}
+          <button
+            onClick={() => {
+              setActiveTab('staff_approvals');
+              setActiveDept(null);
+              setMobileMenuOpen(false);
+            }}
+            style={navBtnStyle(activeTab === 'staff_approvals', 4)}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <ClipboardCheck size={16} color={activeTab === 'staff_approvals' ? '#fff' : 'var(--gray-500)'} />
+              <span>Staff Approvals</span>
+            </div>
+          </button>
+
+          {/* Staff Management */}
+          <button
+            onClick={() => {
+              setActiveTab('staff_directory');
+              setActiveDept(null);
+              setMobileMenuOpen(false);
+            }}
+            style={navBtnStyle(activeTab === 'staff_directory', 12)}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <ShieldCheck size={16} color={activeTab === 'staff_directory' ? '#fff' : 'var(--gray-500)'} />
+              <span>Staff Management</span>
+            </div>
+          </button>
+
           <div
             style={{
               margin: '6px 0 6px',
@@ -389,6 +421,24 @@ export const AdminDashboard: React.FC = () => {
           ) : activeTab === 'local_news' ? (
             <div>
               <AdminNewsModeration />
+            </div>
+          ) : activeTab === 'staff_approvals' ? (
+            <div>
+              {sectionHeader(
+                <ClipboardCheck size={22} color="var(--theme-primary, #660033)" />,
+                'Staff Approvals',
+                'Review and approve or reject pending staff registration requests',
+              )}
+              <StaffApprovals />
+            </div>
+          ) : activeTab === 'staff_directory' ? (
+            <div>
+              {sectionHeader(
+                <ShieldCheck size={22} color="var(--theme-primary, #660033)" />,
+                'Staff Approval Table',
+                'Manage department staff applications — approve, reject, or revoke access',
+              )}
+              <StaffApprovalTable />
             </div>
           ) : (
             <div>
