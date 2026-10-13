@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { t } from '../lib/i18n';
@@ -18,6 +18,38 @@ export const Home: React.FC = () => {
     navigate('/auth');
   };
 
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).gsap) {
+      const gsap = (window as any).gsap;
+      const ScrollTrigger = (window as any).ScrollTrigger;
+      if (ScrollTrigger) {
+        gsap.registerPlugin(ScrollTrigger);
+      }
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      tl.to('.top-nav', { opacity: 1, y: 0, duration: 0.8 }, 0.1)
+        .to('.hero-section', { opacity: 1, scale: 1, duration: 1.0, ease: 'back.out(1.2)' }, 0.25)
+        .to('.quick-actions', { opacity: 1, y: 0, duration: 0.8 }, 0.5);
+
+      if (ScrollTrigger) {
+        gsap.to('.special-service', {
+          opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
+          scrollTrigger: { trigger: '.special-service', start: 'top 85%' }
+        });
+      }
+    }
+  }, []);
+
+  const onCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width - 0.5;
+    const py = (e.clientY - r.top) / r.height - 0.5;
+    e.currentTarget.style.transform = `perspective(1000px) rotateX(${-py * 6}deg) rotateY(${px * 6}deg) translateY(-4px)`;
+  };
+
+  const onCardMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.currentTarget.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+  };
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -26,6 +58,7 @@ export const Home: React.FC = () => {
     }}>
       {/* ── Top Bar / Header ── */}
       <header
+        className="top-nav"
         style={{
           display: 'flex',
           justifyContent: 'space-between',
@@ -132,16 +165,7 @@ export const Home: React.FC = () => {
           {/* Language toggle */}
           <button
             onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6,
-              padding: '8px 14px', borderRadius: 999,
-              border: '1px solid rgba(28, 27, 26, 0.12)',
-              background: 'transparent',
-              fontFamily: '"Geist Mono", monospace', fontSize: 10,
-              letterSpacing: '0.08em', textTransform: 'uppercase' as const,
-              color: '#4A4744', cursor: 'pointer',
-              transition: 'all 0.3s ease',
-            }}
+            className="btn-outline"
             title="Switch Language"
           >
             <Globe size={12} />
@@ -182,16 +206,8 @@ export const Home: React.FC = () => {
           ) : (
             <Link
               to="/auth"
-              style={{
-                display: 'inline-flex', alignItems: 'center',
-                padding: '8px 18px', borderRadius: 999,
-                background: '#4A0E1F', color: '#fff', border: 'none',
-                fontFamily: '"Geist Mono", monospace', fontSize: 10,
-                letterSpacing: '0.08em', textTransform: 'uppercase' as const,
-                textDecoration: 'none', cursor: 'pointer',
-                boxShadow: '0 4px 12px -4px rgba(74, 14, 31, 0.3)',
-                transition: 'all 0.3s ease',
-              }}
+              className="btn-solid"
+              style={{ textDecoration: 'none' }}
             >
               {t(language, 'login')}
             </Link>
@@ -202,89 +218,36 @@ export const Home: React.FC = () => {
       {/* ── Hero Carousel ── */}
       <HeroBanner />
 
-      {/* ── Quick Action Cards ── */}
-      <div style={{
-        display: 'flex', flexDirection: 'column', gap: 12,
-        padding: '0 20px', marginTop: 24,
-      }}>
+      {/* ── Quick Action Cards with 3D tilt hover ── */}
+      <div className="quick-actions">
         <Link to="/complaint/new" style={{ textDecoration: 'none' }}>
           <div
-            style={{
-              display: 'flex', alignItems: 'center', gap: 16,
-              padding: 20, borderRadius: 24,
-              background: '#FFFFFF',
-              boxShadow: '0 12px 28px -12px rgba(0, 0, 0, 0.06)',
-              cursor: 'pointer',
-              transition: 'all 0.4s cubic-bezier(0.6, 0, 0.2, 1)',
-              border: '1px solid rgba(0, 0, 0, 0.04)',
-            }}
+            className="action-card"
+            onMouseMove={onCardMouseMove}
+            onMouseLeave={onCardMouseLeave}
           >
-            <div
-              style={{
-                width: 52, height: 52, borderRadius: 16,
-                background: '#F4F2EF',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#4A0E1F', flexShrink: 0,
-                border: '1px solid rgba(74, 14, 31, 0.08)',
-              }}
-            >
-              <Camera size={22} />
+            <div className="action-icon">
+              <Camera size={24} />
             </div>
-            <div>
-              <h4 style={{
-                fontFamily: '"Geist", sans-serif', fontSize: 15,
-                fontWeight: 600, fontStyle: 'normal', textTransform: 'none',
-                letterSpacing: '-0.01em', color: '#1C1B1A', margin: 0,
-              }}>
-                {t(language, 'reportIssue')}
-              </h4>
-              <p style={{
-                fontSize: 13, color: '#8E8A86', marginTop: 3,
-                fontFamily: '"Geist", sans-serif', fontWeight: 400, fontStyle: 'normal',
-                margin: '3px 0 0',
-              }}>
-                {language === 'hi' ? 'फोटो लें + GPS स्वतः जुड़ेगा' : 'Take photo & auto-attach GPS'}
-              </p>
+            <div className="action-text">
+              <h4>{t(language, 'reportIssue')}</h4>
+              <p>{language === 'hi' ? 'फोटो लें + GPS स्वतः जुड़ेगा' : 'Take photo & auto-attach GPS'}</p>
             </div>
           </div>
         </Link>
 
         <Link to="/track" style={{ textDecoration: 'none' }}>
           <div
-            style={{
-              display: 'flex', alignItems: 'center', gap: 16,
-              padding: 20, borderRadius: 24,
-              background: '#FFFFFF',
-              boxShadow: '0 12px 28px -12px rgba(0, 0, 0, 0.06)',
-              cursor: 'pointer',
-              transition: 'all 0.4s cubic-bezier(0.6, 0, 0.2, 1)',
-              border: '1px solid rgba(0, 0, 0, 0.04)',
-            }}
+            className="action-card"
+            onMouseMove={onCardMouseMove}
+            onMouseLeave={onCardMouseLeave}
           >
-            <div
-              style={{
-                width: 52, height: 52, borderRadius: 16,
-                background: '#F4F2EF',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#4A0E1F', flexShrink: 0,
-                border: '1px solid rgba(74, 14, 31, 0.08)',
-              }}
-            >
-              <Search size={22} />
+            <div className="action-icon">
+              <Search size={24} />
             </div>
-            <div>
-              <h4 style={{
-                fontFamily: '"Geist", sans-serif', fontSize: 15,
-                fontWeight: 600, fontStyle: 'normal', textTransform: 'none',
-                letterSpacing: '-0.01em', color: '#1C1B1A', margin: 0,
-              }}>
-                {t(language, 'trackComplaint')}
-              </h4>
-              <p style={{
-                fontSize: 13, color: '#8E8A86', marginTop: 3,
-                fontFamily: '"Geist", sans-serif', fontWeight: 400, fontStyle: 'normal',
-                margin: '3px 0 0',
-              }}>
+            <div className="action-text">
+              <h4>{t(language, 'trackComplaint')}</h4>
+              <p>
                 {language === 'hi'
                   ? 'टिकट नंबर से स्थिति देखें व सत्यापित करें'
                   : 'Track real-time timeline & verify resolution'}
@@ -300,37 +263,10 @@ export const Home: React.FC = () => {
       {/* ── Green Waste Pickup Highlight Card ── */}
       <section style={{ padding: '0 20px', marginTop: 8 }}>
         <Link to="/department/green" style={{ textDecoration: 'none' }}>
-          <div
-            style={{
-              position: 'relative',
-              borderRadius: 28,
-              background: '#4A0E1F',
-              padding: '36px 24px',
-              color: '#fff',
-              overflow: 'hidden',
-              boxShadow: '0 24px 48px -18px rgba(74, 14, 31, 0.4)',
-              cursor: 'pointer',
-              transition: 'all 0.4s ease',
-            }}
-          >
-            {/* Decorative glow */}
-            <div style={{
-              position: 'absolute',
-              width: 280, height: 280, borderRadius: '50%',
-              background: 'radial-gradient(circle, rgba(255,255,255,0.06), transparent 65%)',
-              bottom: -100, right: -80,
-              filter: 'blur(30px)', pointerEvents: 'none',
-            }} />
-
+          <div className="special-service">
             {/* Decorative leaf SVG */}
             <svg
-              style={{
-                position: 'absolute',
-                right: -20, bottom: -20,
-                width: 160, height: 160,
-                opacity: 0.06, color: '#fff',
-                pointerEvents: 'none',
-              }}
+              className="leaf-bg"
               viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5"
             >
               <path d="M50 10 C 30 30, 20 60, 50 90 C 80 60, 70 30, 50 10 Z" />
@@ -340,58 +276,19 @@ export const Home: React.FC = () => {
             </svg>
 
             <div style={{ position: 'relative', zIndex: 2 }}>
-              <div style={{
-                display: 'inline-flex', alignItems: 'center', gap: 8,
-                padding: '6px 14px', borderRadius: 999,
-                background: 'rgba(255,255,255,0.08)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                fontFamily: '"Geist Mono", monospace', fontSize: 10,
-                fontWeight: 500, fontStyle: 'normal',
-                letterSpacing: '0.08em', textTransform: 'uppercase' as const,
-                color: 'rgba(255,255,255,0.9)',
-                width: 'fit-content', marginBottom: 16,
-              }}>
-                <span style={{
-                  width: 6, height: 6, borderRadius: '50%', background: '#fff',
-                  display: 'inline-block',
-                }} />
+              <div className="special-badge">
+                <span className="dot" />
                 {language === 'hi' ? 'विशिष्ट सेवा' : 'Featured Service'}
               </div>
 
-              <h2
-                style={{
-                  fontFamily: '"Fraunces", Georgia, serif',
-                  fontSize: 'clamp(28px, 6vw, 34px)',
-                  fontWeight: 600, fontStyle: 'normal', textTransform: 'none',
-                  letterSpacing: '-0.01em', lineHeight: 1.1,
-                  marginBottom: 12, color: '#fff',
-                }}
-              >
+              <h2 className="special-title">
                 {t(language, 'greenDeptTitle')}
               </h2>
-              <p
-                style={{
-                  fontFamily: '"Geist", sans-serif',
-                  fontSize: 14, fontWeight: 400, fontStyle: 'normal',
-                  lineHeight: 1.6, color: 'rgba(255,255,255,0.7)',
-                  maxWidth: '85%', marginBottom: 28, textTransform: 'none',
-                }}
-              >
+              <p className="special-desc">
                 {t(language, 'greenDeptSubtitle')} (Fallen leaves, tree pruning, garden waste & fallen trees)
               </p>
 
-              <span
-                style={{
-                  display: 'inline-flex', alignItems: 'center', gap: 8,
-                  padding: '14px 28px', borderRadius: 999,
-                  background: '#fff', color: '#4A0E1F',
-                  fontFamily: '"Geist Mono", monospace',
-                  fontWeight: 500, fontStyle: 'normal',
-                  fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase',
-                  boxShadow: '0 8px 20px -8px rgba(0,0,0,0.15)',
-                  transition: 'all 0.4s cubic-bezier(0.6, 0, 0.2, 1)',
-                }}
-              >
+              <span className="special-cta">
                 {language === 'hi' ? 'हरित कचरा रिपोर्ट करें' : 'Request Green Waste Pickup'} →
               </span>
             </div>

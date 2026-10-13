@@ -130,44 +130,24 @@ export const ServicesGrid: React.FC = () => {
 
   return (
     <div style={{ padding: '0 20px', marginTop: 8 }}>
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between',
-          marginBottom: 20,
-        }}
-      >
-        <div>
-          <h2 style={{
-            fontFamily: '"Fraunces", Georgia, serif',
-            fontSize: 24, fontWeight: 600, fontStyle: 'normal', letterSpacing: '-0.01em',
-            color: 'var(--ink)', textTransform: 'none', margin: 0,
-          }}>
+      <div className="section-header" style={{ padding: 0 }}>
+        <div className="left">
+          <h3>
             {t(language, 'ourServices')}
-          </h2>
-          <p style={{
-            margin: '4px 0 0', fontSize: 12, color: 'var(--mute)',
-            fontFamily: '"Geist", sans-serif', fontWeight: 400, fontStyle: 'normal',
-          }}>
+          </h3>
+          <p>
             {language === 'hi' ? 'सभी नगर निगम विभाग' : 'All Municipal Departments'}
           </p>
         </div>
         <Link
           to="/complaint/new"
-          style={{
-            fontFamily: '"Geist Mono", monospace', fontSize: 11,
-            letterSpacing: '0.06em', textTransform: 'uppercase' as const,
-            color: 'var(--burgundy)', fontWeight: 500, fontStyle: 'normal',
-            display: 'flex', alignItems: 'center', gap: 4,
-            transition: 'gap 0.3s ease',
-          }}
+          className="right"
         >
           {t(language, 'viewAll')} →
         </Link>
       </div>
 
-      <div className="services-grid-responsive">
+      <div className="services-grid services-grid-responsive">
         {SERVICES.map((svc) => {
           const label = t(language, svc.slug as any) || svc.slug;
 
@@ -175,40 +155,15 @@ export const ServicesGrid: React.FC = () => {
             <Link
               key={svc.slug}
               to={svc.route}
-              style={{
-                textDecoration: 'none',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: 10,
-                textAlign: 'center' as const,
-                transition: 'transform 0.4s cubic-bezier(0.6, 0, 0.2, 1)',
-              }}
+              className="service-item"
             >
               {/* SVG icon in white card */}
-              <div
-                style={{
-                  width: 64, height: 64, borderRadius: 20,
-                  background: 'var(--surface)',
-                  boxShadow: '0 10px 24px -10px rgba(0, 0, 0, 0.05), inset 0 1px 0 #FFFFFF',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  border: '1px solid rgba(0, 0, 0, 0.04)',
-                  color: 'var(--burgundy)',
-                  transition: 'all 0.4s ease',
-                }}
-              >
+              <div className="service-icon">
                 {svc.svgIcon}
               </div>
 
               {/* Label always below */}
-              <span
-                style={{
-                  fontFamily: '"Geist", sans-serif',
-                  fontSize: 12, fontWeight: 600, fontStyle: 'normal', letterSpacing: '0.01em',
-                  color: 'var(--slate-soft)',
-                  lineHeight: 1.2,
-                }}
-              >
+              <span>
                 {label}
               </span>
             </Link>

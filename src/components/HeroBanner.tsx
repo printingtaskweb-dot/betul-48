@@ -81,210 +81,72 @@ export const HeroBanner: React.FC = () => {
 
   return (
     <div
+      className="hero-section"
       style={{
-        position: 'relative',
         margin: '16px 20px',
-        borderRadius: 28,
-        overflow: 'hidden',
-        boxShadow: '0 24px 48px -18px rgba(74, 14, 31, 0.4)',
       }}
     >
       <div
+        className="hero-content"
         style={{
-          background: '#4A0E1F',
-          padding: '44px 28px',
-          position: 'relative',
-          minHeight: 'clamp(280px, 35vw, 380px)',
-          display: 'flex',
-          flexDirection: 'column',
-          justifyContent: 'center',
-          color: '#fff',
+          opacity: animating ? 0 : 1,
+          transform: animating ? 'translateY(8px)' : 'translateY(0)',
+          transition: 'opacity 0.25s ease, transform 0.25s ease',
         }}
       >
-        {/* Decorative glow */}
-        <div
-          style={{
-            position: 'absolute',
-            width: 300, height: 300, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(255,255,255,0.08), transparent 65%)',
-            top: -100, right: -80,
-            filter: 'blur(30px)',
-            pointerEvents: 'none',
-          }}
-        />
+        {/* Badge */}
+        <div className="hero-badge">
+          <span className="dot" />
+          {slide.tag}
+        </div>
 
-        {/* Content */}
-        <div
-          style={{
-            position: 'relative',
-            zIndex: 2,
-            opacity: animating ? 0 : 1,
-            transform: animating ? 'translateY(8px)' : 'translateY(0)',
-            transition: 'opacity 0.25s ease, transform 0.25s ease',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 16,
-          }}
-        >
-          {/* Badge */}
-          <div
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '6px 14px',
-              borderRadius: 999,
-              background: 'rgba(255,255,255,0.08)',
-              border: '1px solid rgba(255,255,255,0.12)',
-              fontFamily: '"Geist Mono", monospace',
-              fontSize: 10,
-              fontWeight: 500,
-              fontStyle: 'normal',
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase' as const,
-              color: 'rgba(255,255,255,0.9)',
-              width: 'fit-content',
-            }}
+        {/* Title */}
+        <h1 className="hero-title">
+          {slide.title}
+        </h1>
+
+        {/* Subtitle with arrows */}
+        <div className="hero-desc">
+          <button
+            onClick={prev}
+            aria-label="Previous slide"
+            className="arrow left"
           >
-            <span style={{
-              width: 6, height: 6, borderRadius: '50%', background: '#fff',
-              display: 'inline-block',
-            }} />
-            {slide.tag}
-          </div>
+            <ChevronLeft size={16} />
+          </button>
 
-          {/* Title */}
-          <h1
-            style={{
-              fontFamily: '"Fraunces", Georgia, serif',
-              fontSize: 'clamp(32px, 8vw, 48px)',
-              lineHeight: 1.1,
-              letterSpacing: '-0.02em',
-              fontWeight: 600,
-              fontStyle: 'normal',
-              textTransform: 'none' as const,
-              color: '#fff',
-              margin: 0,
-              textShadow: 'none',
-            }}
+          {slide.subtitle}
+
+          <button
+            onClick={next}
+            aria-label="Next slide"
+            className="arrow right"
           >
-            {slide.title}
-          </h1>
+            <ChevronRight size={16} />
+          </button>
+        </div>
 
-          {/* Subtitle with arrows */}
-          <div style={{ position: 'relative', padding: '0 16px' }}>
-            {/* Left arrow */}
+        {/* CTA Button */}
+        <div style={{ marginTop: 12 }}>
+          <a
+            href={slide.ctaLink}
+            className="hero-cta"
+          >
+            {slide.cta}
+            <ArrowRight size={14} />
+          </a>
+        </div>
+
+        {/* Dots */}
+        <div className="hero-dots">
+          {SLIDES.map((_, i) => (
             <button
-              onClick={prev}
-              aria-label="Previous slide"
-              style={{
-                position: 'absolute',
-                top: '50%', transform: 'translateY(-50%)',
-                left: -8,
-                width: 28, height: 28, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', color: '#fff', fontSize: 12,
-                transition: 'all 0.3s ease',
-              }}
-            >
-              <ChevronLeft size={14} color="#fff" />
-            </button>
-
-            <p
-              style={{
-                fontFamily: '"Geist", system-ui, sans-serif',
-                fontSize: 15,
-                fontWeight: 400,
-                fontStyle: 'normal',
-                lineHeight: 1.6,
-                color: 'rgba(255,255,255,0.75)',
-                maxWidth: '90%',
-                margin: 0,
-                textTransform: 'none' as const,
-              }}
-            >
-              {slide.subtitle}
-            </p>
-
-            {/* Right arrow */}
-            <button
-              onClick={next}
-              aria-label="Next slide"
-              style={{
-                position: 'absolute',
-                top: '50%', transform: 'translateY(-50%)',
-                right: -8,
-                width: 28, height: 28, borderRadius: '50%',
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                cursor: 'pointer', color: '#fff', fontSize: 12,
-                transition: 'all 0.3s ease',
-              }}
-            >
-              <ChevronRight size={14} color="#fff" />
-            </button>
-          </div>
-
-          {/* CTA Button */}
-          <div style={{ marginTop: 12 }}>
-            <a
-              href={slide.ctaLink}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 10,
-                padding: '16px 32px',
-                borderRadius: 999,
-                background: '#FFFFFF',
-                color: '#4A0E1F',
-                fontFamily: '"Geist Mono", monospace',
-                fontWeight: 500,
-                fontStyle: 'normal',
-                textTransform: 'uppercase' as const,
-                fontSize: 13,
-                letterSpacing: '0.06em',
-                textDecoration: 'none',
-                width: 'fit-content',
-                transition: 'all 0.4s cubic-bezier(0.6, 0, 0.2, 1)',
-                boxShadow: '0 8px 20px -8px rgba(0,0,0,0.15)',
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateX(6px)';
-                e.currentTarget.style.boxShadow = '0 8px 24px -6px rgba(0,0,0,0.25)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateX(0)';
-                e.currentTarget.style.boxShadow = '0 8px 20px -8px rgba(0,0,0,0.15)';
-              }}
-            >
-              {slide.cta}
-              <ArrowRight size={14} />
-            </a>
-          </div>
-
-          {/* Dots */}
-          <div style={{ display: 'flex', gap: 6, marginTop: 24, justifyContent: 'center' }}>
-            {SLIDES.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => goTo(i)}
-                aria-label={`Go to slide ${i + 1}`}
-                style={{
-                  width: i === current ? 20 : 6,
-                  height: 6,
-                  borderRadius: 999,
-                  border: 'none',
-                  cursor: 'pointer',
-                  background: i === current ? '#fff' : 'rgba(255,255,255,0.2)',
-                  transition: 'all 0.3s ease',
-                  padding: 0,
-                }}
-              />
-            ))}
-          </div>
+              key={i}
+              onClick={() => goTo(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`dot ${i === current ? 'active' : ''}`}
+            />
+          ))}
         </div>
       </div>
     </div>

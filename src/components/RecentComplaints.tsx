@@ -34,85 +34,53 @@ export const RecentComplaints: React.FC = () => {
 
   if (complaints.length === 0) return null;
 
+  const onCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const px = (e.clientX - r.left) / r.width - 0.5;
+    const py = (e.clientY - r.top) / r.height - 0.5;
+    e.currentTarget.style.transform = `perspective(1000px) rotateX(${-py * 5}deg) rotateY(${px * 5}deg) translateX(4px)`;
+  };
+
+  const onCardMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.currentTarget.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateX(0px)';
+  };
+
   return (
-    <div style={{ padding: '0 20px 20px' }}>
-      <div style={{
-        display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
-        marginBottom: 20,
-      }}>
-        <div>
-          <h2 style={{
-            fontFamily: '"Fraunces", Georgia, serif',
-            fontSize: 24, fontWeight: 600, fontStyle: 'normal', letterSpacing: '-0.01em',
-            color: 'var(--ink)', textTransform: 'none',
-          }}>
-            {t(language, 'recentActivity')}
-          </h2>
+    <div style={{ paddingBottom: 24 }}>
+      <div className="section-header" style={{ padding: '0 20px', marginTop: 24, marginBottom: 16 }}>
+        <div className="left">
+          <h3>{t(language, 'recentActivity')}</h3>
+          <p>LIVE CITIZEN FEED</p>
         </div>
-        <Link to="/track" style={{
-          fontFamily: '"Geist Mono", monospace', fontSize: 11,
-          letterSpacing: '0.06em', textTransform: 'uppercase' as const,
-          color: 'var(--burgundy)', fontWeight: 500, fontStyle: 'normal',
-          display: 'flex', alignItems: 'center', gap: 4,
-        }}>
-          {t(language, 'viewAll')} →
+        <Link to="/track" className="right">
+          {t(language, 'viewAll')} <span>→</span>
         </Link>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+      <div className="complaints-list">
         {complaints.map((c) => (
           <Link key={c.id} to={`/track?ticket=${c.ticket_number}`} style={{ textDecoration: 'none' }}>
             <div
-              style={{
-                display: 'flex', alignItems: 'center', gap: 14,
-                padding: 18, borderRadius: 20,
-                background: 'var(--surface)',
-                boxShadow: '0 10px 24px -12px rgba(0, 0, 0, 0.06), inset 0 1px 0 #FFFFFF',
-                border: '1px solid rgba(0, 0, 0, 0.04)',
-                cursor: 'pointer',
-                transition: 'all 0.4s ease',
-              }}
+              className="complaint-card"
+              onMouseMove={onCardMouseMove}
+              onMouseLeave={onCardMouseLeave}
             >
               {/* Dept icon */}
-              <div style={{
-                width: 44, height: 44, borderRadius: 14, flexShrink: 0,
-                background: 'var(--bg-1)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: 'var(--burgundy)',
-                border: '1px solid rgba(74, 14, 31, 0.08)',
-                fontSize: 18,
-              }}>
+              <div className="complaint-icon">
                 {c.department?.icon || '📋'}
               </div>
 
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{
-                  fontFamily: '"Geist Mono", monospace', fontSize: 11,
-                  fontWeight: 500, fontStyle: 'normal',
-                  letterSpacing: '0.06em', textTransform: 'uppercase',
-                  color: 'var(--mute)',
-                  marginBottom: 4,
-                }}>
+              <div className="complaint-body">
+                <div className="complaint-id">
                   #{c.ticket_number}
                 </div>
-                <div style={{
-                  fontFamily: '"Geist", sans-serif', fontSize: 14, fontWeight: 600,
-                  fontStyle: 'normal', textTransform: 'none',
-                  color: 'var(--ink)',
-                  whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis',
-                }}>
+                <div className="complaint-title">
                   {c.description}
                 </div>
                 {c.address && (
-                  <div style={{
-                    display: 'flex', gap: 4, alignItems: 'center', marginTop: 3,
-                    fontFamily: '"Geist", sans-serif',
-                    fontSize: 11, fontWeight: 400, fontStyle: 'normal', color: 'var(--mute)',
-                  }}>
+                  <div className="complaint-loc">
                     <MapPin size={12} />
-                    <span style={{
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const,
-                    }}>
+                    <span>
                       {c.address.split(',').slice(0, 2).join(',')}
                     </span>
                   </div>
