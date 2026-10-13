@@ -702,7 +702,7 @@ export const ComplaintForm: React.FC = () => {
           </div>
 
           {/* Photo — GPS camera style */}
-          <div style={{ marginBottom: 18 }}>
+          <div style={{ marginBottom: 28 }}>
             <label style={labelStyle}>
               📷 {language === 'hi' ? 'फोटो अपलोड करें' : 'Upload Photo'} *
             </label>
