@@ -25,9 +25,9 @@ export const RecentComplaints: React.FC = () => {
   }, []);
 
   if (loading) return (
-    <div style={{ padding: '0 16px 20px' }}>
+    <div style={{ padding: '0 20px 20px' }}>
       {[...Array(3)].map((_, i) => (
-        <div key={i} className="shimmer" style={{ height: 72, borderRadius: 12, marginBottom: 10 }} />
+        <div key={i} className="shimmer" style={{ height: 72, borderRadius: 20, marginBottom: 12 }} />
       ))}
     </div>
   );
@@ -35,61 +35,87 @@ export const RecentComplaints: React.FC = () => {
   if (complaints.length === 0) return null;
 
   return (
-    <div style={{ padding: '0 16px 20px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-        <h2 style={{ fontSize: 17, fontWeight: 800, color: 'var(--gray-900)' }}>
-          {t(language, 'recentActivity')}
-        </h2>
-        <Link to="/track" style={{ fontSize: 13, color: 'var(--green-600)', fontWeight: 600 }}>
+    <div style={{ padding: '0 20px 20px' }}>
+      <div style={{
+        display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between',
+        marginBottom: 20,
+      }}>
+        <div>
+          <h2 style={{
+            fontFamily: '"Instrument Serif", Georgia, serif',
+            fontSize: 24, fontWeight: 400, letterSpacing: '-0.01em',
+            color: 'var(--ink)',
+          }}>
+            {t(language, 'recentActivity')}
+          </h2>
+        </div>
+        <Link to="/track" style={{
+          fontFamily: '"Geist Mono", monospace', fontSize: 11,
+          letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+          color: 'var(--burgundy)', fontWeight: 600,
+          display: 'flex', alignItems: 'center', gap: 4,
+        }}>
           {t(language, 'viewAll')} →
         </Link>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         {complaints.map((c) => (
           <Link key={c.id} to={`/track?ticket=${c.ticket_number}`} style={{ textDecoration: 'none' }}>
             <div
-              className="card-hover"
               style={{
-                background: 'var(--theme-component, #d9d9d9)',
-                border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                borderRadius: 12,
-                padding: '12px 14px',
-                display: 'flex', gap: 12, alignItems: 'flex-start',
+                display: 'flex', alignItems: 'center', gap: 14,
+                padding: 18, borderRadius: 20,
+                background: 'var(--surface)',
+                boxShadow: '0 10px 24px -12px rgba(0, 0, 0, 0.06), inset 0 1px 0 #FFFFFF',
+                border: '1px solid rgba(0, 0, 0, 0.04)',
                 cursor: 'pointer',
+                transition: 'all 0.4s ease',
               }}
             >
               {/* Dept icon */}
               <div style={{
-                width: 42, height: 42, borderRadius: 10, flexShrink: 0,
-                background: `${c.department?.color || '#16a34a'}22`,
+                width: 44, height: 44, borderRadius: 14, flexShrink: 0,
+                background: 'var(--bg-1)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 20,
+                color: 'var(--burgundy)',
+                border: '1px solid rgba(74, 14, 31, 0.08)',
+                fontSize: 18,
               }}>
                 {c.department?.icon || '📋'}
               </div>
 
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8, marginBottom: 4 }}>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--gray-900)', fontFamily: 'monospace' }}>
-                    #{c.ticket_number}
-                  </span>
-                  <StatusBadge status={c.status} />
+                <div style={{
+                  fontFamily: '"Geist Mono", monospace', fontSize: 11,
+                  letterSpacing: '0.04em', color: 'var(--mute)',
+                  marginBottom: 4,
+                }}>
+                  #{c.ticket_number}
                 </div>
-                <p style={{ fontSize: 13, color: 'var(--gray-600)', margin: 0,
-                  overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <div style={{
+                  fontFamily: '"Geist", sans-serif', fontSize: 14, fontWeight: 600,
+                  color: 'var(--ink)',
+                  whiteSpace: 'nowrap' as const, overflow: 'hidden', textOverflow: 'ellipsis',
+                }}>
                   {c.description}
-                </p>
+                </div>
                 {c.address && (
-                  <div style={{ display: 'flex', gap: 4, alignItems: 'center', marginTop: 3 }}>
-                    <MapPin size={11} color="var(--gray-400)" />
-                    <span style={{ fontSize: 11, color: 'var(--gray-400)',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  <div style={{
+                    display: 'flex', gap: 4, alignItems: 'center', marginTop: 3,
+                    fontSize: 11, color: 'var(--mute)',
+                  }}>
+                    <MapPin size={12} />
+                    <span style={{
+                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const,
+                    }}>
                       {c.address.split(',').slice(0, 2).join(',')}
                     </span>
                   </div>
                 )}
               </div>
+
+              <StatusBadge status={c.status} />
             </div>
           </Link>
         ))}

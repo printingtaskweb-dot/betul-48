@@ -71,41 +71,29 @@ export const StatsSection: React.FC = () => {
       key: 'total',
       label: t(language, 'totalComplaints'),
       value: stats.total,
-      icon: <TrendingUp size={20} />,
-      bg: 'var(--theme-component, #d9d9d9)',
-      border: 'var(--theme-component-border, #bfbfbf)',
-      color: 'var(--theme-primary, #660033)',
-      iconBg: 'var(--theme-primary, #660033)',
+      icon: <TrendingUp size={18} />,
+      color: 'var(--burgundy)',
     },
     {
       key: 'pending',
       label: t(language, 'pendingComplaints'),
       value: stats.pending,
-      icon: <Clock size={20} />,
-      bg: 'var(--theme-component, #d9d9d9)',
-      border: 'var(--theme-component-border, #bfbfbf)',
+      icon: <Clock size={18} />,
       color: '#92400e',
-      iconBg: 'var(--amber-500, #f59e0b)',
     },
     {
       key: 'resolved',
       label: t(language, 'resolvedComplaints'),
       value: stats.resolved,
-      icon: <CheckCircle2 size={20} />,
-      bg: 'var(--theme-component, #d9d9d9)',
-      border: 'var(--theme-component-border, #bfbfbf)',
-      color: 'var(--theme-primary, #660033)',
-      iconBg: 'var(--theme-primary, #660033)',
+      icon: <CheckCircle2 size={18} />,
+      color: 'var(--burgundy)',
     },
     {
       key: 'verified',
       label: t(language, 'verifiedComplaints'),
       value: stats.verified,
-      icon: <ShieldCheck size={20} />,
-      bg: 'var(--theme-component, #d9d9d9)',
-      border: 'var(--theme-component-border, #bfbfbf)',
-      color: 'var(--theme-primary, #660033)',
-      iconBg: 'var(--theme-primary, #660033)',
+      icon: <ShieldCheck size={18} />,
+      color: 'var(--burgundy)',
     },
   ];
 
@@ -115,36 +103,37 @@ export const StatsSection: React.FC = () => {
         {cards.map((card, i) => (
           <div
             key={card.key}
-            className="card-hover"
             style={{
-              background: card.bg,
-              border: `1.5px solid ${card.border}`,
-              borderRadius: 'var(--radius-md)',
-              padding: 'clamp(12px, 2vw, 18px)',
+              background: 'var(--surface)',
+              border: '1px solid rgba(0, 0, 0, 0.04)',
+              borderRadius: 20,
+              padding: 'clamp(14px, 2vw, 20px)',
+              boxShadow: '0 10px 24px -12px rgba(0, 0, 0, 0.06)',
               animation: loaded ? `fadeIn 0.3s ease ${i * 0.08}s forwards` : 'none',
               opacity: loaded ? 1 : 0,
+              transition: 'all 0.4s ease',
             }}
           >
             <div
               style={{
                 width: 36,
                 height: 36,
-                borderRadius: 'var(--radius-sm)',
-                background: card.iconBg,
+                borderRadius: 12,
+                background: card.key === 'pending' ? 'rgba(146, 64, 14, 0.08)' : 'rgba(74, 14, 31, 0.06)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                color: '#fff',
-                marginBottom: 8,
-                boxShadow: 'var(--shadow-sm)',
+                color: card.color,
+                marginBottom: 10,
               }}
             >
               {card.icon}
             </div>
             <div
               style={{
+                fontFamily: '"Instrument Serif", Georgia, serif',
                 fontSize: 'clamp(1.5rem, 2vw, 2.2rem)',
-                fontWeight: 900,
+                fontWeight: 400,
                 color: card.color,
                 lineHeight: 1.1,
                 marginBottom: 4,
@@ -155,10 +144,12 @@ export const StatsSection: React.FC = () => {
             </div>
             <div
               style={{
-                fontSize: '0.8rem',
-                color: card.color,
-                fontWeight: 600,
-                opacity: 0.85,
+                fontFamily: '"Geist Mono", monospace',
+                fontSize: 10,
+                color: 'var(--mute)',
+                fontWeight: 500,
+                letterSpacing: '0.04em',
+                textTransform: 'uppercase' as const,
               }}
             >
               {card.label}

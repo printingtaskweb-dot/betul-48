@@ -9,15 +9,15 @@ export const BottomNav: React.FC = () => {
   const loc = useLocation();
 
   const items = [
-    { path: '/', icon: <Home size={21} />, label: t(language, 'home') },
-    { path: '/complaint/new', icon: <Plus size={21} />, label: t(language, 'reportIssue') },
-    { path: '/track', icon: <Search size={21} />, label: t(language, 'trackComplaint') },
+    { path: '/', icon: <Home size={20} />, label: t(language, 'home') },
+    { path: '/complaint/new', icon: <Plus size={24} />, label: t(language, 'reportIssue') },
+    { path: '/track', icon: <Search size={20} />, label: t(language, 'trackComplaint') },
     // Admin button visible ONLY to admin users
     ...(isAdmin
       ? [
           {
             path: '/admin/dashboard',
-            icon: <ShieldCheck size={21} />,
+            icon: <ShieldCheck size={20} />,
             label: language === 'hi' ? 'एडमिन' : 'Admin',
             isAdminBadge: true,
           },
@@ -25,7 +25,7 @@ export const BottomNav: React.FC = () => {
       : [
           {
             path: user ? '/profile' : '/auth',
-            icon: <User size={21} />,
+            icon: <User size={20} />,
             label: user ? (language === 'hi' ? 'प्रोफ़ाइल' : 'Profile') : t(language, 'login'),
             isAdminBadge: false,
           },
@@ -33,94 +33,111 @@ export const BottomNav: React.FC = () => {
   ];
 
   return (
-    <nav
-      className="mobile-bottom-nav"
-      style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 1000,
-        background: 'var(--theme-component, #d9d9d9)',
-        borderTop: '1.5px solid var(--theme-component-border, #bfbfbf)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-around',
-        padding: '8px 0 10px',
-        boxShadow: '0 -4px 20px rgba(0,0,0,0.08)',
-      }}
-    >
-      {items.map((item) => {
-        const active = loc.pathname === item.path;
-        return (
-          <Link
-            key={item.path}
-            to={item.path}
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              gap: 3,
-              textDecoration: 'none',
-              color: active
-                ? 'var(--theme-primary, #660033)'
-                : 'var(--gray-500)',
-              transition: 'var(--transition)',
-              minWidth: 64,
-            }}
-          >
-            {item.path === '/complaint/new' ? (
-              <div
-                style={{
-                  width: 48,
-                  height: 48,
-                  borderRadius: '50%',
-                  marginTop: -22,
-                  background: 'var(--primary-gradient)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 4px 16px rgba(102,0,51,0.4)',
-                  border: '3px solid var(--theme-component, #d9d9d9)',
-                }}
-              >
-                <Plus size={24} color="#fff" />
-              </div>
-            ) : (
-              <div
-                style={{
-                  padding: '4px 12px',
-                  borderRadius: 20,
-                  background: active
-                    ? item.isAdminBadge
-                      ? 'var(--indigo-50)'
-                      : 'var(--green-50)'
-                    : 'transparent',
-                  color: active
-                    ? item.isAdminBadge
-                      ? 'var(--indigo-600)'
-                      : 'var(--green-600)'
-                    : 'var(--gray-400)',
-                  transition: 'var(--transition)',
-                }}
-              >
-                {item.icon}
-              </div>
-            )}
-            <span
+    <>
+      <style>{`
+        .bottom-nav-link {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          text-decoration: none;
+          min-width: 64px;
+          transition: color 0.2s ease, transform 0.2s ease;
+        }
+        .bottom-nav-icon-box {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 6px 12px;
+          border-radius: 12px;
+          transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+        }
+        .bottom-nav-link:hover .bottom-nav-icon-box:not(.is-active) {
+          background-color: rgba(74, 14, 31, 0.03);
+        }
+        .bottom-nav-fab {
+          width: 56px;
+          height: 56px;
+          border-radius: 50%;
+          margin-top: -20px;
+          background: var(--burgundy, #4A0E1F);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          box-shadow: 0 10px 24px -6px rgba(74, 14, 31, 0.4);
+          border: 3px solid var(--bg-1, #F4F2EF);
+          transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
+        }
+        .bottom-nav-fab:hover {
+          transform: translateY(-2px) scale(1.1);
+          background-color: var(--burgundy-light, #5E1A2C);
+          box-shadow: 0 14px 28px -4px rgba(74, 14, 31, 0.45);
+        }
+      `}</style>
+      <nav
+        className="mobile-bottom-nav"
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 1000,
+          background: 'rgba(255, 255, 255, 0.9)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderTop: '1px solid rgba(28, 27, 26, 0.12)',
+          boxShadow: '0 -10px 30px -10px rgba(0, 0, 0, 0.03)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-around',
+          padding: '10px 16px 14px',
+        }}
+      >
+        {items.map((item) => {
+          const active = loc.pathname === item.path;
+          const isFab = item.path === '/complaint/new';
+
+          return (
+            <Link
+              key={item.path}
+              to={item.path}
+              className="bottom-nav-link"
               style={{
-                fontSize: '0.72rem',
-                fontWeight: active ? 700 : 500,
-                letterSpacing: 0.2,
+                color: active ? 'var(--burgundy, #4A0E1F)' : 'var(--mute, #8E8A86)',
               }}
             >
-              {item.label}
-            </span>
-          </Link>
-        );
-      })}
-    </nav>
+              {isFab ? (
+                <div className="bottom-nav-fab" aria-label={item.label}>
+                  <Plus size={24} color="#FFFFFF" strokeWidth={2.4} />
+                </div>
+              ) : (
+                <div
+                  className={`bottom-nav-icon-box ${active ? 'is-active' : ''}`}
+                  style={{
+                    backgroundColor: active ? 'rgba(74, 14, 31, 0.06)' : 'transparent',
+                    color: active ? 'var(--burgundy, #4A0E1F)' : 'var(--mute, #8E8A86)',
+                  }}
+                >
+                  {item.icon}
+                </div>
+              )}
+              <span
+                style={{
+                  fontFamily: "var(--font-mono, 'Geist Mono', monospace)",
+                  fontSize: '9px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.06em',
+                  fontWeight: active ? 700 : 500,
+                  color: active ? 'var(--burgundy, #4A0E1F)' : 'var(--mute, #8E8A86)',
+                  lineHeight: 1.2,
+                }}
+              >
+                {item.label}
+              </span>
+            </Link>
+          );
+        })}
+      </nav>
+    </>
   );
 };

@@ -7,7 +7,7 @@ import { StatsSection } from '../components/StatsSection';
 import { ServicesGrid } from '../components/ServicesGrid';
 import { RecentComplaints } from '../components/RecentComplaints';
 import { BottomNav } from '../components/BottomNav';
-import { Globe, LogOut, Building2 } from 'lucide-react';
+import { Globe, LogOut, Building2, Camera, Search } from 'lucide-react';
 
 export const Home: React.FC = () => {
   const { language, setLanguage, user, profile, signOut } = useAuth();
@@ -19,185 +19,174 @@ export const Home: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--theme-bg, #fff4e7)', paddingBottom: 80 }}>
+    <div style={{
+      minHeight: '100vh',
+      background: 'radial-gradient(120% 70% at 50% 0%, #FFFFFF 0%, #F4F2EF 60%, #EBE7E2 100%)',
+      paddingBottom: 100,
+    }}>
       {/* ── Top Bar / Header ── */}
       <header
         style={{
-          background: 'var(--theme-component, #d9d9d9)',
-          borderBottom: '1.5px solid var(--theme-component-border, #bfbfbf)',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          padding: '14px 20px',
+          background: 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderBottom: '1px solid rgba(28, 27, 26, 0.12)',
           position: 'sticky',
           top: 0,
           zIndex: 100,
-          boxShadow: 'var(--shadow-sm)',
+          boxShadow: '0 4px 20px -10px rgba(0,0,0,0.03)',
         }}
       >
-        <div
-          className="app-container"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            paddingTop: 10,
-            paddingBottom: 10,
-          }}
-        >
-          {/* Logo & City Title */}
-          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}>
-            <div
-              style={{
-                width: 38,
-                height: 38,
-                borderRadius: 'var(--radius-sm)',
-                background: 'var(--primary-gradient)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: 20,
-                boxShadow: '0 2px 8px rgba(102,0,51,0.3)',
-              }}
-            >
-              🏛️
-            </div>
-            <div>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: '1.05rem',
-                  fontWeight: 900,
-                  color: 'var(--theme-primary, #660033)',
-                  lineHeight: 1.1,
-                  letterSpacing: '-0.02em',
-                }}
-              >
-                JILA BETUL 
-              </p>
-              <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--gray-500)', fontWeight: 500 }}>
-                {language === 'hi' ? 'ननागरिक समाधान साथी' : 'Citizen Support Partner'}
-              </p>
-            </div>
-          </Link>
-
-          {/* Desktop Navigation Links (Visible on screens >= 1024px) */}
-          <nav className="desktop-nav-links" style={{ gap: 20, alignItems: 'center' }}>
-            <Link
-              to="/complaint/new"
-              style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--gray-700)', transition: 'var(--transition)' }}
-            >
-              {t(language, 'reportIssue')}
-            </Link>
-            <Link
-              to="/department/green"
-              style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--theme-primary, #660033)', transition: 'var(--transition)' }}
-            >
-              🌿 {language === 'hi' ? 'हरित कचरा' : 'Green Waste'}
-            </Link>
-            <Link
-              to="/track"
-              style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--gray-700)', transition: 'var(--transition)' }}
-            >
-              {t(language, 'trackComplaint')}
-            </Link>
-            <Link
-              to="/dept/login"
-              style={{
-                fontSize: '0.88rem',
-                fontWeight: 600,
-                color: 'var(--theme-primary, #660033)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 5,
-                transition: 'var(--transition)',
-              }}
-            >
-              <Building2 size={15} />
-              {language === 'hi' ? 'विभाग पोर्टल' : 'Dept Portal'}
-            </Link>
-          </nav>
-
-          {/* Actions: Language Toggle, Profile/Auth */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {/* Language toggle */}
-            <button
-              onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 5,
-                padding: '6px 12px',
-                borderRadius: 'var(--radius-full)',
-                border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                background: 'var(--theme-component, #d9d9d9)',
-                color: 'var(--theme-primary, #660033)',
-                fontSize: '0.8rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                transition: 'var(--transition)',
-              }}
-              title="Switch Language"
-            >
-              <Globe size={14} />
-              {language === 'en' ? 'हिन्दी' : 'English'}
-            </button>
-
-            {/* User Avatar / Login */}
-            {user ? (
-              <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <Link
-                  to="/profile"
-                  style={{
-                    width: 34,
-                    height: 34,
-                    borderRadius: '50%',
-                    background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    fontSize: '0.85rem',
-                    fontWeight: 700,
-                    boxShadow: 'var(--shadow-sm)',
-                    textDecoration: 'none',
-                    cursor: 'pointer',
-                  }}
-                  title={user.email || 'User Profile'}
-                >
-                  {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  style={{
-                    border: 'none',
-                    background: 'var(--gray-100)',
-                    borderRadius: 'var(--radius-sm)',
-                    cursor: 'pointer',
-                    padding: 7,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
-                  title={t(language, 'logout')}
-                >
-                  <LogOut size={16} color="var(--gray-600)" />
-                </button>
-              </div>
-            ) : (
-              <Link
-                to="/auth"
-                style={{
-                  padding: '7px 16px',
-                  borderRadius: 'var(--radius-full)',
-                  background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
-                  color: '#fff',
-                  fontSize: '0.8rem',
-                  fontWeight: 700,
-                  textDecoration: 'none',
-                  boxShadow: 'var(--shadow-sm)',
-                }}
-              >
-                {t(language, 'login')}
-              </Link>
-            )}
+        {/* Logo & City Title */}
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
+          <div
+            style={{
+              width: 38, height: 38, borderRadius: 12,
+              background: '#4A0E1F',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              color: '#fff',
+              fontFamily: '"Instrument Serif", serif',
+              fontWeight: 400, fontSize: 20, fontStyle: 'italic',
+              boxShadow: '0 6px 14px -4px rgba(74, 14, 31, 0.3)',
+            }}
+          >
+            B
           </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{
+              fontFamily: '"Instrument Serif", serif',
+              fontWeight: 500, fontSize: 16,
+              letterSpacing: '0.01em', color: '#1C1B1A',
+            }}>
+              Jila Betul
+            </span>
+            <span style={{
+              fontFamily: '"Geist Mono", monospace', fontSize: 9,
+              letterSpacing: '0.1em', color: '#8E8A86',
+              textTransform: 'uppercase' as const,
+              marginTop: 1,
+            }}>
+              {language === 'hi' ? 'नागरिक समाधान साथी' : 'Citizen Resolution Partner'}
+            </span>
+          </div>
+        </Link>
+
+        {/* Desktop Navigation Links */}
+        <nav className="desktop-nav-links" style={{ gap: 20, alignItems: 'center' }}>
+          <Link
+            to="/complaint/new"
+            style={{
+              fontSize: '0.88rem', fontWeight: 600,
+              color: '#4A4744', transition: 'all 0.3s ease',
+            }}
+          >
+            {t(language, 'reportIssue')}
+          </Link>
+          <Link
+            to="/department/green"
+            style={{
+              fontSize: '0.88rem', fontWeight: 600,
+              color: '#4A0E1F', transition: 'all 0.3s ease',
+            }}
+          >
+            🌿 {language === 'hi' ? 'हरित कचरा' : 'Green Waste'}
+          </Link>
+          <Link
+            to="/track"
+            style={{
+              fontSize: '0.88rem', fontWeight: 600,
+              color: '#4A4744', transition: 'all 0.3s ease',
+            }}
+          >
+            {t(language, 'trackComplaint')}
+          </Link>
+          <Link
+            to="/dept/login"
+            style={{
+              fontSize: '0.88rem', fontWeight: 600,
+              color: '#4A0E1F',
+              display: 'flex', alignItems: 'center', gap: 5,
+              transition: 'all 0.3s ease',
+            }}
+          >
+            <Building2 size={15} />
+            {language === 'hi' ? 'विभाग पोर्टल' : 'Dept Portal'}
+          </Link>
+        </nav>
+
+        {/* Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          {/* Language toggle */}
+          <button
+            onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              padding: '8px 14px', borderRadius: 999,
+              border: '1px solid rgba(28, 27, 26, 0.12)',
+              background: 'transparent',
+              fontFamily: '"Geist Mono", monospace', fontSize: 10,
+              letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+              color: '#4A4744', cursor: 'pointer',
+              transition: 'all 0.3s ease',
+            }}
+            title="Switch Language"
+          >
+            <Globe size={12} />
+            <span>{language === 'en' ? 'हिन्दी' : 'English'}</span>
+          </button>
+
+          {/* User Avatar / Login */}
+          {user ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Link
+                to="/profile"
+                style={{
+                  width: 34, height: 34, borderRadius: '50%',
+                  background: '#4A0E1F',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#fff', fontSize: '0.85rem', fontWeight: 700,
+                  textDecoration: 'none', cursor: 'pointer',
+                  boxShadow: '0 4px 12px -4px rgba(74, 14, 31, 0.3)',
+                }}
+                title={user.email || 'User Profile'}
+              >
+                {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+              </Link>
+              <button
+                onClick={handleLogout}
+                style={{
+                  border: 'none',
+                  background: 'rgba(28, 27, 26, 0.06)',
+                  borderRadius: 8,
+                  cursor: 'pointer', padding: 7,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}
+                title={t(language, 'logout')}
+              >
+                <LogOut size={16} color="#4A4744" />
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/auth"
+              style={{
+                display: 'inline-flex', alignItems: 'center',
+                padding: '8px 18px', borderRadius: 999,
+                background: '#4A0E1F', color: '#fff', border: 'none',
+                fontFamily: '"Geist Mono", monospace', fontSize: 10,
+                letterSpacing: '0.08em', textTransform: 'uppercase' as const,
+                textDecoration: 'none', cursor: 'pointer',
+                boxShadow: '0 4px 12px -4px rgba(74, 14, 31, 0.3)',
+                transition: 'all 0.3s ease',
+              }}
+            >
+              {t(language, 'login')}
+            </Link>
+          )}
         </div>
       </header>
 
@@ -205,181 +194,193 @@ export const Home: React.FC = () => {
       <HeroBanner />
 
       {/* ── Quick Action Cards ── */}
-      <section className="app-container" style={{ marginTop: 20 }}>
-        <div className="two-col-responsive">
-          <Link to="/complaint/new" style={{ textDecoration: 'none' }}>
+      <div style={{
+        display: 'flex', flexDirection: 'column', gap: 12,
+        padding: '0 20px', marginTop: 24,
+      }}>
+        <Link to="/complaint/new" style={{ textDecoration: 'none' }}>
+          <div
+            style={{
+              display: 'flex', alignItems: 'center', gap: 16,
+              padding: 20, borderRadius: 24,
+              background: '#FFFFFF',
+              boxShadow: '0 12px 28px -12px rgba(0, 0, 0, 0.06)',
+              cursor: 'pointer',
+              transition: 'all 0.4s cubic-bezier(0.6, 0, 0.2, 1)',
+              border: '1px solid rgba(0, 0, 0, 0.04)',
+            }}
+          >
             <div
-              className="card-hover"
               style={{
-                background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
-                borderRadius: 'var(--radius-lg)',
-                padding: 'clamp(16px, 2.5vw, 24px)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 16,
-                boxShadow: '0 8px 24px rgba(22,163,74,0.22)',
+                width: 52, height: 52, borderRadius: 16,
+                background: '#F4F2EF',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#4A0E1F', flexShrink: 0,
+                border: '1px solid rgba(74, 14, 31, 0.08)',
               }}
             >
-              <div
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 'var(--radius-md)',
-                  background: 'rgba(255,255,255,0.2)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 28,
-                  flexShrink: 0,
-                  backdropFilter: 'blur(8px)',
-                }}
-              >
-                📸
-              </div>
-              <div>
-                <h3 style={{ margin: 0, color: '#fff', fontWeight: 800, fontSize: 'clamp(1rem, 1.2vw, 1.2rem)' }}>
-                  {t(language, 'reportIssue')}
-                </h3>
-                <p style={{ margin: '2px 0 0', color: 'rgba(255,255,255,0.85)', fontSize: '0.85rem' }}>
-                  {language === 'hi' ? 'फोटो लें + GPS स्वतः जुड़ेगा' : 'Take photo & auto-attach GPS coordinates'}
-                </p>
-              </div>
+              <Camera size={22} />
             </div>
-          </Link>
+            <div>
+              <h4 style={{
+                fontFamily: '"Geist", sans-serif', fontSize: 15,
+                fontWeight: 600, letterSpacing: '-0.01em',
+                color: '#1C1B1A', margin: 0,
+              }}>
+                {t(language, 'reportIssue')}
+              </h4>
+              <p style={{
+                fontSize: 12, color: '#8E8A86', marginTop: 3,
+                fontFamily: '"Geist Mono", monospace',
+                letterSpacing: '0.02em', margin: '3px 0 0',
+              }}>
+                {language === 'hi' ? 'फोटो लें + GPS स्वतः जुड़ेगा' : 'Take photo & auto-attach GPS'}
+              </p>
+            </div>
+          </div>
+        </Link>
 
-          <Link to="/track" style={{ textDecoration: 'none' }}>
+        <Link to="/track" style={{ textDecoration: 'none' }}>
+          <div
+            style={{
+              display: 'flex', alignItems: 'center', gap: 16,
+              padding: 20, borderRadius: 24,
+              background: '#FFFFFF',
+              boxShadow: '0 12px 28px -12px rgba(0, 0, 0, 0.06)',
+              cursor: 'pointer',
+              transition: 'all 0.4s cubic-bezier(0.6, 0, 0.2, 1)',
+              border: '1px solid rgba(0, 0, 0, 0.04)',
+            }}
+          >
             <div
-              className="card-hover"
               style={{
-                background: 'var(--theme-component, #d9d9d9)',
-                border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                borderRadius: 'var(--radius-lg)',
-                padding: 'clamp(16px, 2.5vw, 24px)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: 16,
-                boxShadow: 'var(--shadow-sm)',
+                width: 52, height: 52, borderRadius: 16,
+                background: '#F4F2EF',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#4A0E1F', flexShrink: 0,
+                border: '1px solid rgba(74, 14, 31, 0.08)',
               }}
             >
-              <div
-                style={{
-                  width: 52,
-                  height: 52,
-                  borderRadius: 'var(--radius-md)',
-                  background: 'var(--theme-bg, #fff4e7)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: 28,
-                  flexShrink: 0,
-                }}
-              >
-                🔍
-              </div>
-              <div>
-                <h3 style={{ margin: 0, color: 'var(--gray-900)', fontWeight: 800, fontSize: 'clamp(1rem, 1.2vw, 1.2rem)' }}>
-                  {t(language, 'trackComplaint')}
-                </h3>
-                <p style={{ margin: '2px 0 0', color: 'var(--gray-500)', fontSize: '0.85rem' }}>
-                  {language === 'hi' ? 'टिकट नंबर से स्थिति देखें व सत्यापित करें' : 'Track real-time timeline & verify resolution'}
-                </p>
-              </div>
+              <Search size={22} />
             </div>
-          </Link>
-        </div>
-      </section>
+            <div>
+              <h4 style={{
+                fontFamily: '"Geist", sans-serif', fontSize: 15,
+                fontWeight: 600, letterSpacing: '-0.01em',
+                color: '#1C1B1A', margin: 0,
+              }}>
+                {t(language, 'trackComplaint')}
+              </h4>
+              <p style={{
+                fontSize: 12, color: '#8E8A86', marginTop: 3,
+                fontFamily: '"Geist Mono", monospace',
+                letterSpacing: '0.02em', margin: '3px 0 0',
+              }}>
+                {language === 'hi'
+                  ? 'टिकट नंबर से स्थिति देखें व सत्यापित करें'
+                  : 'Track real-time timeline & verify resolution'}
+              </p>
+            </div>
+          </div>
+        </Link>
+      </div>
 
       {/* ── Live Stats ── */}
       <StatsSection />
 
       {/* ── Green Waste Pickup Highlight Card ── */}
-      <section className="app-container" style={{ marginTop: 8 }}>
+      <section style={{ padding: '0 20px', marginTop: 8 }}>
         <Link to="/department/green" style={{ textDecoration: 'none' }}>
           <div
-            className="card-hover"
             style={{
-              background: 'var(--header-gradient, linear-gradient(135deg, #4d0026 0%, #660033 50%, #800040 100%))',
-              borderRadius: 'var(--radius-lg)',
-              padding: 'clamp(20px, 3vw, 32px)',
               position: 'relative',
+              borderRadius: 28,
+              background: '#4A0E1F',
+              padding: '36px 24px',
+              color: '#fff',
               overflow: 'hidden',
-              boxShadow: '0 8px 30px rgba(102,0,51,0.25)',
+              boxShadow: '0 24px 48px -18px rgba(74, 14, 31, 0.4)',
+              cursor: 'pointer',
+              transition: 'all 0.4s ease',
             }}
           >
-            <div
+            {/* Decorative glow */}
+            <div style={{
+              position: 'absolute',
+              width: 280, height: 280, borderRadius: '50%',
+              background: 'radial-gradient(circle, rgba(255,255,255,0.06), transparent 65%)',
+              bottom: -100, right: -80,
+              filter: 'blur(30px)', pointerEvents: 'none',
+            }} />
+
+            {/* Decorative leaf SVG */}
+            <svg
               style={{
                 position: 'absolute',
-                right: -10,
-                top: '50%',
-                transform: 'translateY(-50%)',
-                fontSize: 'clamp(90px, 14vw, 160px)',
-                opacity: 0.15,
-                lineHeight: 1,
-                userSelect: 'none',
+                right: -20, bottom: -20,
+                width: 160, height: 160,
+                opacity: 0.06, color: '#fff',
                 pointerEvents: 'none',
               }}
+              viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5"
             >
-              🌿
-            </div>
+              <path d="M50 10 C 30 30, 20 60, 50 90 C 80 60, 70 30, 50 10 Z" />
+              <path d="M50 10 L 50 90" />
+              <path d="M50 30 L 35 45" />
+              <path d="M50 50 L 65 65" />
+            </svg>
 
-            <div style={{ position: 'relative', zIndex: 2, maxWidth: 640 }}>
-              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-                <span
-                  style={{
-                    background: 'rgba(255,255,255,0.2)',
-                    border: '1px solid rgba(255,255,255,0.35)',
-                    borderRadius: 'var(--radius-full)',
-                    padding: '4px 12px',
-                    fontSize: '0.75rem',
-                    color: '#fff',
-                    fontWeight: 700,
-                    letterSpacing: '0.04em',
-                  }}
-                >
-                  ✨ {language === 'hi' ? 'विशिष्ट सेवा' : 'FEATURED CIVIC SERVICE'}
-                </span>
+            <div style={{ position: 'relative', zIndex: 2 }}>
+              <div style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8,
+                padding: '6px 14px', borderRadius: 999,
+                background: 'rgba(255,255,255,0.08)',
+                border: '1px solid rgba(255,255,255,0.12)',
+                fontFamily: '"Geist Mono", monospace', fontSize: 10,
+                letterSpacing: '0.12em', textTransform: 'uppercase' as const,
+                color: 'rgba(255,255,255,0.9)',
+                width: 'fit-content', marginBottom: 16,
+              }}>
+                <span style={{
+                  width: 6, height: 6, borderRadius: '50%', background: '#fff',
+                  display: 'inline-block',
+                }} />
+                {language === 'hi' ? 'विशिष्ट सेवा' : 'Featured Service'}
               </div>
 
               <h2
                 style={{
-                  color: '#fff',
-                  margin: '0 0 8px',
-                  fontSize: 'clamp(1.2rem, 1.8vw, 1.8rem)',
-                  fontWeight: 900,
-                  letterSpacing: '-0.02em',
+                  fontFamily: '"Instrument Serif", Georgia, serif',
+                  fontSize: 'clamp(28px, 6vw, 34px)',
+                  fontWeight: 400, fontStyle: 'italic',
+                  letterSpacing: '-0.01em', lineHeight: 1.1,
+                  marginBottom: 12, color: '#fff',
                 }}
               >
-                🌿 {t(language, 'greenDeptTitle')}
+                {t(language, 'greenDeptTitle')}
               </h2>
               <p
                 style={{
-                  color: 'rgba(255,255,255,0.9)',
-                  margin: '0 0 16px',
-                  fontSize: 'clamp(0.85rem, 1vw, 0.95rem)',
-                  lineHeight: 1.6,
+                  fontSize: 14, lineHeight: 1.6,
+                  color: 'rgba(255,255,255,0.7)',
+                  maxWidth: '85%', marginBottom: 28,
                 }}
               >
                 {t(language, 'greenDeptSubtitle')} (Fallen leaves, tree pruning, garden waste & fallen trees)
               </p>
 
-              <div>
-                <span
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 6,
-                    background: 'var(--theme-bg, #fff4e7)',
-                    color: 'var(--theme-primary, #660033)',
-                    padding: '9px 20px',
-                    borderRadius: 'var(--radius-full)',
-                    fontWeight: 800,
-                    fontSize: '0.88rem',
-                    boxShadow: 'var(--shadow-md)',
-                  }}
-                >
-                  {language === 'hi' ? 'हरित कचरा रिपोर्ट करें' : 'Request Green Waste Pickup'} →
-                </span>
-              </div>
+              <span
+                style={{
+                  display: 'inline-flex', alignItems: 'center', gap: 8,
+                  padding: '14px 28px', borderRadius: 999,
+                  background: '#fff', color: '#4A0E1F',
+                  fontWeight: 600, fontSize: 13, letterSpacing: '0.02em',
+                  boxShadow: '0 8px 20px -8px rgba(0,0,0,0.15)',
+                  transition: 'all 0.4s cubic-bezier(0.6, 0, 0.2, 1)',
+                }}
+              >
+                {language === 'hi' ? 'हरित कचरा रिपोर्ट करें' : 'Request Green Waste Pickup'} →
+              </span>
             </div>
           </div>
         </Link>
@@ -392,50 +393,65 @@ export const Home: React.FC = () => {
       <RecentComplaints />
 
       {/* ── Municipal Portal Quick Links / Footer ── */}
-      <footer className="app-container" style={{ marginTop: 24, marginBottom: 20 }}>
+      <footer style={{ padding: '24px 20px 20px' }}>
         <div
           style={{
-            background: 'var(--theme-component, #d9d9d9)',
-            borderRadius: 'var(--radius-lg)',
-            padding: '24px clamp(16px, 3vw, 28px)',
-            border: '1.5px solid var(--theme-component-border, #bfbfbf)',
+            background: '#FFFFFF',
+            borderRadius: 24,
+            padding: '24px',
+            border: '1px solid rgba(0, 0, 0, 0.04)',
             display: 'flex',
-            flexWrap: 'wrap',
+            flexWrap: 'wrap' as const,
             justifyContent: 'space-between',
             gap: 20,
-            boxShadow: 'var(--shadow-sm)',
+            boxShadow: '0 10px 24px -12px rgba(0, 0, 0, 0.06)',
           }}
         >
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <span style={{ fontSize: '1.4rem' }}>🏛️</span>
-              <span style={{ fontWeight: 800, fontSize: '1rem', color: 'var(--gray-900)' }}>
-                Indore & Betul Municipal 311
+              <div style={{
+                width: 28, height: 28, borderRadius: 8,
+                background: '#4A0E1F',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: '#fff', fontFamily: '"Instrument Serif", serif',
+                fontSize: 14, fontStyle: 'italic',
+              }}>
+                B
+              </div>
+              <span style={{
+                fontFamily: '"Instrument Serif", serif',
+                fontWeight: 400, fontSize: 16, color: '#1C1B1A',
+              }}>
+                Jila Betul
               </span>
             </div>
-            <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--gray-500)', maxWidth: 360, lineHeight: 1.5 }}>
+            <p style={{
+              margin: 0, fontSize: 12, color: '#8E8A86',
+              maxWidth: 360, lineHeight: 1.5,
+            }}>
               {language === 'hi'
                 ? 'नागरिक शिकायत समाधान और नगर निगम विभागीय प्रबंधन पोर्टल। त्वरित निराकरण हेतु 24x7 सेवा।'
                 : 'Digital Civic Grievance Redressal and Department Management Portal. Connecting citizens directly with municipal field teams.'}
             </p>
           </div>
 
-          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' as const }}>
             <div>
-              <p style={{ margin: '0 0 8px', fontSize: '0.78rem', fontWeight: 800, color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <p style={{
+                margin: '0 0 8px',
+                fontFamily: '"Geist Mono", monospace',
+                fontSize: 9, fontWeight: 600, color: '#8E8A86',
+                textTransform: 'uppercase' as const, letterSpacing: '0.08em',
+              }}>
                 {language === 'hi' ? 'विभागीय पोर्टल' : 'Department Portals'}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                 <Link
                   to="/dept/login"
                   style={{
-                    fontSize: '0.84rem',
-                    fontWeight: 700,
-                    color: '#15803d',
-                    textDecoration: 'none',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: 6,
+                    fontSize: 13, fontWeight: 600,
+                    color: '#4A0E1F', textDecoration: 'none',
+                    display: 'flex', alignItems: 'center', gap: 6,
                   }}
                 >
                   <Building2 size={14} />
@@ -443,11 +459,7 @@ export const Home: React.FC = () => {
                 </Link>
                 <Link
                   to="/admin"
-                  style={{
-                    fontSize: '0.82rem',
-                    color: 'var(--gray-600)',
-                    textDecoration: 'none',
-                  }}
+                  style={{ fontSize: 12, color: '#5A5652', textDecoration: 'none' }}
                 >
                   {language === 'hi' ? 'नगर निगम एडमिन कंसोल' : 'Municipal Admin Console'}
                 </Link>
@@ -455,17 +467,22 @@ export const Home: React.FC = () => {
             </div>
 
             <div>
-              <p style={{ margin: '0 0 8px', fontSize: '0.78rem', fontWeight: 800, color: 'var(--gray-400)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <p style={{
+                margin: '0 0 8px',
+                fontFamily: '"Geist Mono", monospace',
+                fontSize: 9, fontWeight: 600, color: '#8E8A86',
+                textTransform: 'uppercase' as const, letterSpacing: '0.08em',
+              }}>
                 {language === 'hi' ? 'नागरिक सेवाएं' : 'Citizen Quick Links'}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <Link to="/complaint/new" style={{ fontSize: '0.82rem', color: 'var(--gray-600)', textDecoration: 'none' }}>
+                <Link to="/complaint/new" style={{ fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
                   {t(language, 'reportIssue')}
                 </Link>
-                <Link to="/track" style={{ fontSize: '0.82rem', color: 'var(--gray-600)', textDecoration: 'none' }}>
+                <Link to="/track" style={{ fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
                   {t(language, 'trackComplaint')}
                 </Link>
-                <Link to="/department/green" style={{ fontSize: '0.82rem', color: 'var(--gray-600)', textDecoration: 'none' }}>
+                <Link to="/department/green" style={{ fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
                   🌿 {language === 'hi' ? 'हरित अपशिष्ट संग्रहण' : 'Green Waste Pickup'}
                 </Link>
               </div>

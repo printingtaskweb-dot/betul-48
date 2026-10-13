@@ -22,26 +22,21 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onDone }) => {
         position: 'fixed', inset: 0, zIndex: 9999,
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
-        fontFamily: 'var(--font-primary)',
-
-        /* 🍷 Burgundy gradient background */
-        background:
-          'linear-gradient(160deg, #4A0D18 0%, #6E1423 45%, #8C2A3A 100%)',
-
+        fontFamily: '"Geist", system-ui, sans-serif',
+        background: 'linear-gradient(160deg, #320813 0%, #4A0E1F 45%, #5E1A2C 100%)',
         opacity: exiting ? 0 : 1,
         transition: 'opacity 0.5s ease',
         pointerEvents: exiting ? 'none' : 'auto',
       }}
     >
-      {/* Local keyframes */}
       <style>{`
         @keyframes splash-fade {
           from { opacity: 0; transform: translateY(12px); }
           to   { opacity: 1; transform: translateY(0); }
         }
         @keyframes splash-pulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(250,243,224,0.35); }
-          50%      { box-shadow: 0 0 0 14px rgba(250,243,224,0); }
+          0%, 100% { box-shadow: 0 0 0 0 rgba(255,255,255,0.25); }
+          50%      { box-shadow: 0 0 0 14px rgba(255,255,255,0); }
         }
         @keyframes splash-logo-pop {
           0%   { transform: scale(0.85); opacity: 0; }
@@ -50,16 +45,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onDone }) => {
         }
       `}</style>
 
-      {/* Decorative cream circles */}
+      {/* Decorative circles */}
       <div style={{
         position: 'absolute', top: -80, right: -80,
         width: 280, height: 280, borderRadius: '50%',
-        background: 'rgba(250,243,224,0.07)',
+        background: 'rgba(255,255,255,0.05)',
       }} />
       <div style={{
         position: 'absolute', bottom: -60, left: -60,
         width: 220, height: 220, borderRadius: '50%',
-        background: 'rgba(250,243,224,0.05)',
+        background: 'rgba(255,255,255,0.03)',
       }} />
 
       {/* Logo container */}
@@ -67,24 +62,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onDone }) => {
         animation: 'splash-fade 0.7s ease forwards',
         display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
       }}>
-        {/* Logo image in cream circle */}
+        {/* Logo in circle */}
         <div style={{
           width: 110, height: 110, borderRadius: '50%',
-          background: '#FAF3E0',                          // cream base
-          border: '3px solid #FFF9EC',                    // lighter cream border
+          background: '#FFFFFF',
+          border: '3px solid rgba(255,255,255,0.3)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           overflow: 'hidden',
-          boxShadow: '0 0 40px rgba(250,243,224,0.35)',   // cream glow
+          boxShadow: '0 0 40px rgba(255,255,255,0.2)',
           animation: 'splash-pulse 2s ease-in-out infinite, splash-logo-pop 0.8s ease forwards',
         }}>
           <img
             src="/logo.png"
-            alt="IMC 311 Logo"
+            alt="Jila Betul Logo"
             style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover',
-              display: 'block',
+              width: '100%', height: '100%',
+              objectFit: 'cover', display: 'block',
             }}
           />
         </div>
@@ -92,18 +85,23 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onDone }) => {
         {/* App name */}
         <div style={{ textAlign: 'center' }}>
           <h1 style={{
-            color: '#FAF3E0',                              // cream text
-            fontSize: 42, fontWeight: 900,
-            letterSpacing: 3, margin: 0, lineHeight: 1,
+            fontFamily: '"Instrument Serif", Georgia, serif',
+            color: '#FFFFFF',
+            fontSize: 42, fontWeight: 400, fontStyle: 'italic',
+            letterSpacing: '-0.02em', margin: 0, lineHeight: 1,
             textShadow: '0 2px 20px rgba(0,0,0,0.35)',
           }}>
-            JILA BETUL
+            Jila Betul
           </h1>
           <p style={{
-            color: 'rgba(250,243,224,0.85)',              // soft cream
-            fontSize: 15, marginTop: 6, letterSpacing: 1, fontWeight: 500,
+            color: 'rgba(255,255,255,0.75)',
+            fontFamily: '"Geist Mono", monospace',
+            fontSize: 10, marginTop: 8,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase' as const,
+            fontWeight: 400,
           }}>
-           Citizen Support Partner
+            नागरिक समाधान साथी
           </p>
         </div>
 
@@ -111,15 +109,18 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onDone }) => {
         <div style={{
           marginTop: 8,
           padding: '8px 20px',
-          background: 'rgba(250,243,224,0.12)',
-          borderRadius: 20,
-          border: '1px solid rgba(250,243,224,0.35)',
+          background: 'rgba(255,255,255,0.08)',
+          borderRadius: 999,
+          border: '1px solid rgba(255,255,255,0.12)',
         }}>
           <p lang="hi" style={{
-            color: '#FAF3E0', fontSize: 13, margin: 0, letterSpacing: 0.5,
-            fontFamily: 'var(--font-hindi)',
+            color: 'rgba(255,255,255,0.9)',
+            fontFamily: '"Geist Mono", monospace',
+            fontSize: 10, margin: 0,
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase' as const,
           }}>
-            स्वच्छ बैतूल · Swachh BETUL
+            स्वच्छ बैतूल · Swachh Betul
           </p>
         </div>
 
@@ -129,8 +130,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onDone }) => {
             <div
               key={i}
               style={{
-                width: 8, height: 8, borderRadius: '50%',
-                background: '#FAF3E0',                     // cream dots
+                width: 6, height: 6, borderRadius: '50%',
+                background: '#FFFFFF',
                 animation: `splash-pulse 1.2s ease-in-out ${i * 0.2}s infinite`,
               }}
             />
@@ -141,8 +142,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onDone }) => {
       {/* Bottom credit */}
       <p style={{
         position: 'absolute', bottom: 28,
-        color: 'rgba(250,243,224,0.55)',                   // muted cream
-        fontSize: 12, letterSpacing: 0.5,
+        color: 'rgba(255,255,255,0.4)',
+        fontFamily: '"Geist Mono", monospace',
+        fontSize: 9, letterSpacing: '0.1em',
+        textTransform: 'uppercase' as const,
       }}>
         Powered by printing task · Smart City Mission
       </p>
