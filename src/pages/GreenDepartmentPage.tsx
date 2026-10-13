@@ -163,15 +163,20 @@ export const GreenDepartmentPage: React.FC = () => {
     try {
       // 🔑 Re-stamp right before upload so the file we ship is ALWAYS
       //    watermarked with the current GPS + dept values.
-      const stampedForUpload = await watermarkPhoto(originalFile, {
-        latitude: gps.latitude,
-        longitude: gps.longitude,
-        accuracy: gps.accuracy,
-        address: gps.address,
-        timestamp: new Date(),
-        appName: 'Swachh 311 · IMC',
-        departmentName: greenDept.name,
-      });
+      let stampedForUpload = photoFile;
+      try {
+        stampedForUpload = await watermarkPhoto(originalFile, {
+          latitude: gps.latitude,
+          longitude: gps.longitude,
+          accuracy: gps.accuracy,
+          address: gps.address,
+          timestamp: new Date(),
+          appName: 'Swachh 311 · IMC',
+          departmentName: greenDept.name,
+        });
+      } catch {
+        stampedForUpload = photoFile || originalFile;
+      }
 
       if (stampedForUpload === originalFile) {
         console.warn(

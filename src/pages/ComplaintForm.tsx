@@ -195,15 +195,20 @@ export const ComplaintForm: React.FC = () => {
     try {
       // 🔑 Re-stamp right before upload so the file we ship is ALWAYS
       //    the watermarked version with the current GPS + dept values.
-      const stampedForUpload = await watermarkPhoto(originalFile, {
-        latitude: loc.latitude,
-        longitude: loc.longitude,
-        accuracy: loc.accuracy,
-        address: loc.address,
-        timestamp: new Date(),
-        appName: 'Swachh 311 · IMC',
-        departmentName: selectedDept.name,
-      });
+      let stampedForUpload = photoFile;
+      try {
+        stampedForUpload = await watermarkPhoto(originalFile, {
+          latitude: loc.latitude,
+          longitude: loc.longitude,
+          accuracy: loc.accuracy,
+          address: loc.address,
+          timestamp: new Date(),
+          appName: 'Swachh 311 · IMC',
+          departmentName: selectedDept.name,
+        });
+      } catch {
+        stampedForUpload = photoFile || originalFile;
+      }
 
       if (stampedForUpload === originalFile) {
         console.warn(
