@@ -12,18 +12,18 @@
 
 :root {
   /* =========================================================================
-     🎨 PREMIUM EDITORIAL TOKENS (No Gold, High Aesthetic)
+     🎨 PREMIUM EDITORIAL TOKENS (New Theme: Soft White, Sage Green, Deep Forest)
      ========================================================================= */
   /* Backgrounds */
-  --bg-1: #E8e9df;
-  --bg-2: #A9B887;
+  --bg-1: #E8E9DF; /* Soft White Base */
+  --bg-2: #A9B887; /* Sage Green */
   --surface: #FFFFFF;
   --surface-2: #FAF9F8;
 
   /* Deep Sophisticated Tones */
-  --burgundy: #A9B887;
-  --burgundy-dark: #2E3D28;
-  --burgundy-light: #5E1A2C;
+  --burgundy: #A9B887; /* Mapped to Sage Green */
+  --burgundy-dark: #2E3D28; /* Deep Forest Highlight */
+  --burgundy-light: #5E1A2C; /* Kept for legacy, but less used */
   --slate: #1C1B1A;
   --slate-soft: #4A4744;
 
@@ -35,8 +35,8 @@
   /* Structural */
   --hairline: rgba(28, 27, 26, 0.12);
   --accent: var(--burgundy);
-  --warning-bg: rgba(74, 14, 31, 0.06);
-  --warning: var(--burgundy);
+  --warning-bg: rgba(169, 184, 135, 0.12);
+  --warning: var(--burgundy-dark);
 
   /* Theme aliases (backwards compat with components) */
   --theme-bg: var(--bg-1);
@@ -63,13 +63,13 @@
   --primary-800: #1C0508;
   --primary-900: #0D0304;
 
-  /* Green/Civic palette mapped to burgundy editorial */
+  /* Green/Civic palette mapped to new theme */
   --green-50:  var(--surface-2);
-  --green-100: rgba(74, 14, 31, 0.06);
-  --green-200: rgba(74, 14, 31, 0.1);
-  --green-300: rgba(74, 14, 31, 0.2);
-  --green-400: rgba(74, 14, 31, 0.4);
-  --green-500: var(--burgundy-light);
+  --green-100: rgba(169, 184, 135, 0.12);
+  --green-200: rgba(169, 184, 135, 0.2);
+  --green-300: rgba(169, 184, 135, 0.3);
+  --green-400: rgba(169, 184, 135, 0.5);
+  --green-500: var(--burgundy);
   --green-600: var(--burgundy);
   --green-700: var(--burgundy-dark);
   --green-800: #1C0508;
@@ -88,14 +88,14 @@
   --gray-900: var(--ink);
 
   /* Indigo mapped */
-  --indigo-50: rgba(74, 14, 31, 0.06);
+  --indigo-50: rgba(169, 184, 135, 0.12);
   --indigo-600: var(--burgundy);
 
   /* Amber mapped */
   --amber-500: #B8860B;
 
   /* Gradients */
-  --primary-gradient: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-light) 100%);
+  --primary-gradient: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-dark) 100%);
   --header-gradient: linear-gradient(135deg, var(--burgundy-dark) 0%, var(--burgundy) 50%, var(--burgundy-light) 100%);
   --card-gradient: var(--surface);
   --tile-gradient: linear-gradient(180deg, var(--burgundy) 0%, var(--burgundy-dark) 100%);
@@ -120,7 +120,7 @@
   --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 12px 28px -12px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 24px 48px -18px rgba(0, 0, 0, 0.12);
-  --shadow-glow: 0 0 24px rgba(74, 14, 31, 0.15);
+  --shadow-glow: 0 0 24px rgba(46, 61, 40, 0.15);
   --shadow-pill: 0 12px 28px -8px rgba(0, 0, 0, 0.1);
 
   /* Border radius */
@@ -268,8 +268,8 @@ input, textarea, select {
   transition: var(--transition);
 }
 input:focus, textarea:focus, select:focus {
-  border-color: var(--burgundy) !important;
-  box-shadow: 0 0 0 3px rgba(74, 14, 31, 0.1) !important;
+  border-color: var(--burgundy-dark) !important;
+  box-shadow: 0 0 0 3px rgba(46, 61, 40, 0.1) !important;
   outline: none;
 }
 
@@ -394,8 +394,8 @@ input:focus, textarea:focus, select:focus {
 .fade-in { animation: fadeIn 0.3s ease forwards; }
 
 @keyframes pulse-burgundy {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(74, 14, 31, 0.3); }
-  50%       { box-shadow: 0 0 0 10px rgba(74, 14, 31, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(46, 61, 40, 0.3); }
+  50%       { box-shadow: 0 0 0 10px rgba(46, 61, 40, 0); }
 }
 
 .admin-badge-pulse {
@@ -449,8 +449,8 @@ input:focus, textarea:focus, select:focus {
 }
 .btn-outline:hover {
   background: var(--bg-1);
-  border-color: var(--burgundy);
-  color: var(--burgundy);
+  border-color: var(--burgundy-dark);
+  color: var(--burgundy-dark);
   transform: translateY(-1px);
 }
 
@@ -459,7 +459,7 @@ input:focus, textarea:focus, select:focus {
   align-items: center;
   padding: 10px 22px;
   border-radius: 999px;
-  background: var(--burgundy);
+  background: var(--burgundy-dark);
   color: #fff;
   border: none;
   cursor: pointer;
@@ -469,12 +469,12 @@ input:focus, textarea:focus, select:focus {
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  box-shadow: 0 6px 16px -6px rgba(74, 14, 31, 0.4);
+  box-shadow: 0 6px 16px -6px rgba(46, 61, 40, 0.4);
 }
 .btn-solid:hover {
-  background: var(--burgundy-light);
+  background: var(--burgundy);
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px -6px rgba(74, 14, 31, 0.55);
+  box-shadow: 0 10px 24px -6px rgba(46, 61, 40, 0.55);
 }
 
 /* Hero Section */
@@ -482,11 +482,11 @@ input:focus, textarea:focus, select:focus {
   position: relative;
   margin: 16px 20px;
   border-radius: 32px;
-  background: linear-gradient(145deg, #320813 0%, #160307 100%);
+  background: linear-gradient(145deg, #2E3D28 0%, #1C2A18 100%);
   padding: 48px 32px;
   color: #fff;
   overflow: hidden;
-  box-shadow: 0 30px 60px -20px rgba(50, 8, 19, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+  box-shadow: 0 30px 60px -20px rgba(46, 61, 40, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
   transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
 }
 .hero-section::before {
@@ -495,7 +495,7 @@ input:focus, textarea:focus, select:focus {
   width: 420px;
   height: 420px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(94, 26, 44, 0.45), transparent 65%);
+  background: radial-gradient(circle, rgba(169, 184, 135, 0.45), transparent 65%);
   top: -160px;
   right: -100px;
   filter: blur(40px);
@@ -584,7 +584,7 @@ input:focus, textarea:focus, select:focus {
   padding: 16px 32px;
   border-radius: 999px;
   background: #FFFFFF;
-  color: var(--burgundy);
+  color: var(--burgundy-dark);
   font-family: var(--font-mono);
   font-weight: 500;
   font-size: 13px;
@@ -600,7 +600,7 @@ input:focus, textarea:focus, select:focus {
 .hero-cta:hover {
   transform: translateX(6px);
   box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.35);
-  color: var(--burgundy);
+  color: var(--burgundy-dark);
 }
 .hero-dots {
   display: flex;
@@ -649,7 +649,7 @@ input:focus, textarea:focus, select:focus {
 }
 .action-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(28, 27, 26, 0.04), 0 24px 48px -12px rgba(74, 14, 31, 0.14);
+  box-shadow: 0 8px 16px rgba(28, 27, 26, 0.04), 0 24px 48px -12px rgba(46, 61, 40, 0.14);
 }
 .action-icon {
   width: 54px;
@@ -659,15 +659,15 @@ input:focus, textarea:focus, select:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--burgundy);
+  color: var(--burgundy-dark);
   flex-shrink: 0;
   border: 1px solid var(--hairline);
   transition: all 0.3s ease;
 }
 .action-card:hover .action-icon {
-  background: rgba(74, 14, 31, 0.08);
-  color: var(--burgundy);
-  border-color: rgba(74, 14, 31, 0.2);
+  background: rgba(46, 61, 40, 0.08);
+  color: var(--burgundy-dark);
+  border-color: rgba(46, 61, 40, 0.2);
   transform: scale(1.08);
 }
 .action-text h4 {
@@ -680,7 +680,7 @@ input:focus, textarea:focus, select:focus {
   transition: color 0.3s ease;
 }
 .action-card:hover .action-text h4 {
-  color: var(--burgundy);
+  color: var(--burgundy-dark);
 }
 .action-text p {
   font-family: var(--font-primary);
@@ -696,11 +696,11 @@ input:focus, textarea:focus, select:focus {
   position: relative;
   margin: 28px 20px;
   border-radius: 32px;
-  background: linear-gradient(145deg, #320813 0%, #160307 100%);
+  background: linear-gradient(145deg, #2E3D28 0%, #1C2A18 100%);
   padding: 40px 28px;
   color: #fff;
   overflow: hidden;
-  box-shadow: 0 30px 60px -20px rgba(50, 8, 19, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+  box-shadow: 0 30px 60px -20px rgba(46, 61, 40, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
   cursor: pointer;
   transition: all 0.4s ease;
   display: block;
@@ -712,7 +712,7 @@ input:focus, textarea:focus, select:focus {
   width: 320px;
   height: 320px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(94, 26, 44, 0.4), transparent 65%);
+  background: radial-gradient(circle, rgba(169, 184, 135, 0.4), transparent 65%);
   bottom: -120px;
   right: -100px;
   filter: blur(40px);
@@ -786,7 +786,7 @@ input:focus, textarea:focus, select:focus {
   padding: 16px 32px;
   border-radius: 999px;
   background: #FFFFFF;
-  color: var(--burgundy);
+  color: var(--burgundy-dark);
   font-family: var(--font-mono);
   font-weight: 500;
   font-size: 12px;
@@ -838,7 +838,7 @@ input:focus, textarea:focus, select:focus {
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--burgundy);
+  color: var(--burgundy-dark);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -880,17 +880,17 @@ input:focus, textarea:focus, select:focus {
   align-items: center;
   justify-content: center;
   border: 1px solid var(--hairline);
-  color: var(--burgundy);
+  color: var(--burgundy-dark);
   transition: all 0.4s cubic-bezier(0.6, 0, 0.2, 1);
 }
 .service-item:hover .service-icon {
-  box-shadow: 0 4px 12px rgba(74, 14, 31, 0.04), 0 20px 40px -10px rgba(74, 14, 31, 0.18);
-  border-color: rgba(74, 14, 31, 0.25);
+  box-shadow: 0 4px 12px rgba(46, 61, 40, 0.04), 0 20px 40px -10px rgba(46, 61, 40, 0.18);
+  border-color: rgba(46, 61, 40, 0.25);
   background: var(--surface-2);
   transform: rotate(-8deg) scale(1.08);
 }
 .service-item:hover .service-icon svg {
-  stroke: var(--burgundy);
+  stroke: var(--burgundy-dark);
 }
 .service-item span {
   font-family: var(--font-primary);
@@ -902,7 +902,7 @@ input:focus, textarea:focus, select:focus {
   transition: color 0.3s ease;
 }
 .service-item:hover span {
-  color: var(--burgundy);
+  color: var(--burgundy-dark);
 }
 
 /* Complaints List & 3D Tilt Cards */
@@ -930,7 +930,7 @@ input:focus, textarea:focus, select:focus {
 }
 .complaint-card:hover {
   transform: translateX(6px);
-  box-shadow: 0 8px 16px rgba(28, 27, 26, 0.04), 0 24px 48px -12px rgba(74, 14, 31, 0.12);
+  box-shadow: 0 8px 16px rgba(28, 27, 26, 0.04), 0 24px 48px -12px rgba(46, 61, 40, 0.12);
 }
 .complaint-icon {
   width: 48px;
@@ -940,7 +940,7 @@ input:focus, textarea:focus, select:focus {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--burgundy);
+  color: var(--burgundy-dark);
   flex-shrink: 0;
   border: 1px solid var(--hairline);
   font-size: 18px;
@@ -974,7 +974,7 @@ input:focus, textarea:focus, select:focus {
   transition: color 0.3s ease;
 }
 .complaint-card:hover .complaint-title {
-  color: var(--burgundy);
+  color: var(--burgundy-dark);
 }
 .complaint-loc {
   font-family: var(--font-primary);
@@ -1004,4 +1004,3 @@ input:focus, textarea:focus, select:focus {
 .floating-news-btn {
   animation: float-widget 3.2s ease-in-out infinite;
 }
-
