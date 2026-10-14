@@ -16,6 +16,7 @@ import MunicipalAdministratorDashboard from './pages/admin/MunicipalAdministrato
 import ProfilePage from './pages/ProfilePage';
 import { FloatingNewsWidget } from './components/FloatingNewsWidget';
 import { FCMRegistrar } from './components/FCMRegistrar';
+import { NotificationPrompt } from './components/NotificationPrompt';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -149,6 +150,7 @@ const App: React.FC = () => {
         <BrowserRouter>
           <AppRoutes />
           <FloatingNewsWidget />
+          <NotificationPrompt />
         </BrowserRouter>
       </AuthProvider>
     </ErrorBoundary>

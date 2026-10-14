@@ -24,18 +24,21 @@ export function useFCM(userId?: string | null): FCMState & { requestPermission: 
 
   // Save / update the FCM token in Supabase
   const saveToken = useCallback(async (fcmToken: string) => {
-    if (!userId) return;
-    const userAgent = navigator.userAgent.substring(0, 200);
-    await supabase.from('fcm_tokens').upsert(
-      {
-        user_id:    userId,
-        token:      fcmToken,
-        platform:   'web',
-        user_agent: userAgent,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'user_id,token' }
-    );
+    try {
+      const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent.substring(0, 200) : '';
+      await supabase.from('fcm_tokens').upsert(
+        {
+          token:      fcmToken,
+          user_id:    userId || null,
+          platform:   'web',
+          user_agent: userAgent,
+          updated_at: new Date().toISOString(),
+        },
+        { onConflict: 'token' }
+      );
+    } catch (e) {
+      console.warn('[FCM] saveToken error:', e);
+    }
   }, [userId]);
 
   const requestPermission = useCallback(async () => {

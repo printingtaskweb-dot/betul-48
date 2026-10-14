@@ -28,7 +28,7 @@ export function FCMRegistrar() {
 
   /* ── Auto-refresh token when permission already granted ── */
   useEffect(() => {
-    if (!user || !messaging) return;
+    if (!messaging) return;
     if (typeof window === 'undefined') return;
     if (Notification.permission !== 'granted') return;
 
@@ -38,13 +38,13 @@ export function FCMRegistrar() {
         if (!token) return;
         await supabase.from('fcm_tokens').upsert(
           {
-            user_id:    user.id,
             token,
+            user_id:    user?.id || null,
             platform:   'web',
             user_agent: navigator.userAgent.substring(0, 200),
             updated_at: new Date().toISOString(),
           },
-          { onConflict: 'user_id,token' },
+          { onConflict: 'token' },
         );
       } catch (e) {
         console.warn('[FCM] Token refresh failed:', e);

@@ -1,21 +1,25 @@
 -- ═══════════════════════════════════════════════════════════
--- Firebase Cloud Messaging — Supabase SQL Setup
+-- Firebase Cloud Messaging — Supabase SQL Setup (Updated)
 -- Run this in Supabase SQL Editor → New Query → Run
 -- ═══════════════════════════════════════════════════════════
 
 -- ── 1. fcm_tokens ─────────────────────────────────────────
--- Stores one or more device tokens per user (multi-device support)
+-- Stores one or more device tokens per user or guest visitor
 CREATE TABLE IF NOT EXISTS public.fcm_tokens (
   id          uuid        PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id     uuid        NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-  token       text        NOT NULL,
+  user_id     uuid        REFERENCES auth.users(id) ON DELETE CASCADE,
+  token       text        NOT NULL UNIQUE,
   platform    text        NOT NULL DEFAULT 'web',   -- 'web' | 'android' | 'ios'
   user_agent  text,
   created_at  timestamptz NOT NULL DEFAULT now(),
-  updated_at  timestamptz NOT NULL DEFAULT now(),
-
-  UNIQUE (user_id, token)
+  updated_at  timestamptz NOT NULL DEFAULT now()
 );
+
+-- In case table was previously created with user_id NOT NULL or composite unique key:
+ALTER TABLE public.fcm_tokens ALTER COLUMN user_id DROP NOT NULL;
+ALTER TABLE public.fcm_tokens DROP CONSTRAINT IF EXISTS fcm_tokens_user_id_token_key;
+ALTER TABLE public.fcm_tokens DROP CONSTRAINT IF EXISTS fcm_tokens_token_key;
+ALTER TABLE public.fcm_tokens ADD CONSTRAINT fcm_tokens_token_key UNIQUE (token);
 
 -- Index for fast lookup by user
 CREATE INDEX IF NOT EXISTS fcm_tokens_user_id_idx ON public.fcm_tokens(user_id);
@@ -25,25 +29,21 @@ CREATE INDEX IF NOT EXISTS fcm_tokens_platform_idx ON public.fcm_tokens(platform
 -- ── Row Level Security ────────────────────────────────────
 ALTER TABLE public.fcm_tokens ENABLE ROW LEVEL SECURITY;
 
--- Users can only read/write their OWN tokens
+-- Allow client browsers to register / refresh their device tokens
+DROP POLICY IF EXISTS "fcm_tokens: public insert" ON public.fcm_tokens;
+CREATE POLICY "fcm_tokens: public insert"
+  ON public.fcm_tokens FOR INSERT
+  WITH CHECK (true);
+
+DROP POLICY IF EXISTS "fcm_tokens: public update" ON public.fcm_tokens;
+CREATE POLICY "fcm_tokens: public update"
+  ON public.fcm_tokens FOR UPDATE
+  USING (true);
+
+-- Users can read their own tokens
 DROP POLICY IF EXISTS "fcm_tokens: owner read" ON public.fcm_tokens;
 CREATE POLICY "fcm_tokens: owner read"
   ON public.fcm_tokens FOR SELECT
-  USING (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "fcm_tokens: owner upsert" ON public.fcm_tokens;
-CREATE POLICY "fcm_tokens: owner upsert"
-  ON public.fcm_tokens FOR INSERT
-  WITH CHECK (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "fcm_tokens: owner update" ON public.fcm_tokens;
-CREATE POLICY "fcm_tokens: owner update"
-  ON public.fcm_tokens FOR UPDATE
-  USING (auth.uid() = user_id);
-
-DROP POLICY IF EXISTS "fcm_tokens: owner delete" ON public.fcm_tokens;
-CREATE POLICY "fcm_tokens: owner delete"
-  ON public.fcm_tokens FOR DELETE
   USING (auth.uid() = user_id);
 
 -- Admins can read ALL tokens (needed for the notification sender)
@@ -52,6 +52,20 @@ CREATE POLICY "fcm_tokens: admin read all"
   ON public.fcm_tokens FOR SELECT
   USING (
     EXISTS (
+      SELECT 1 FROM public.user_profiles
+      WHERE id = auth.uid()
+        AND (is_admin = true OR role IN ('admin','municipal_administrator'))
+    )
+    OR (auth.jwt() ->> 'email') IN ('ouikey41@gmail.com')
+  );
+
+-- Admins or owners can delete tokens
+DROP POLICY IF EXISTS "fcm_tokens: owner delete" ON public.fcm_tokens;
+CREATE POLICY "fcm_tokens: owner delete"
+  ON public.fcm_tokens FOR DELETE
+  USING (
+    auth.uid() = user_id
+    OR EXISTS (
       SELECT 1 FROM public.user_profiles
       WHERE id = auth.uid()
         AND (is_admin = true OR role IN ('admin','municipal_administrator'))
@@ -105,8 +119,3 @@ DROP TRIGGER IF EXISTS fcm_tokens_set_updated_at ON public.fcm_tokens;
 CREATE TRIGGER fcm_tokens_set_updated_at
   BEFORE UPDATE ON public.fcm_tokens
   FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
-
--- ── Done ──────────────────────────────────────────────────
--- Tables created:
---   public.fcm_tokens         — device push tokens
---   public.notification_log   — sent notification history
