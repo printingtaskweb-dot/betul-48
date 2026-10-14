@@ -8,6 +8,9 @@ import {
   getTier, roleLabel, canViewComplaint, canAllotComplaint, canResolveComplaint, TIER_LABEL,
 } from '../lib/hierarchy';
 import type { StaffMember, Viewer } from '../lib/hierarchy';
+import { WardManager } from './WardManager';
+import { LocationFilterPanel } from './LocationFilterPanel';
+import type { Ward } from '../lib/wardTypes';
 import {
   Building2, Search, Filter, CheckCircle, Clock,
   AlertCircle, XCircle, Camera,
@@ -16,6 +19,7 @@ import {
   Inbox, CheckSquare, Plus, Layers, Briefcase,
   FileText, ShieldAlert,
   ArrowRight, Info, Users, Award, Mail, MapPin,
+  Navigation,
 } from 'lucide-react';
 
 // ─── Status Config ──────────────────────────────────────────────────────────
@@ -656,7 +660,9 @@ export default function DeptDashboard() {
 
   const [profileLoading, setProfileLoading] = useState(true);
   const [noDept, setNoDept] = useState(false);
-  const [activeTab, setActiveTab] = useState<'complaints' | 'departments' | 'staff_reports'>('complaints');
+  const [activeTab, setActiveTab] = useState<
+    'complaints' | 'departments' | 'staff_reports' | 'wards' | 'location_filter'
+  >('complaints');
   const [statusFilter, setStatusFilter] = useState('all');
   const [unallottedOnly, setUnallottedOnly] = useState(false);
   const [search, setSearch] = useState('');
@@ -678,6 +684,9 @@ export default function DeptDashboard() {
 
   const [allDepartments, setAllDepartments] = useState<Department[]>([]);
   const [staffList, setStaffList] = useState<StaffMember[]>([]);
+
+  // ── NEW: Ward registry ──
+  const [wards, setWards] = useState<Ward[]>([]);
 
   const { complaints, loading, error, fetchComplaints, assignComplaint, resolveComplaint } = useDeptComplaints(
     selectedDeptId
@@ -781,6 +790,24 @@ export default function DeptDashboard() {
   }, [profile, noDept, orgLevel]);
 
   useEffect(() => { loadDepartmentsAndStaff(); }, [loadDepartmentsAndStaff]);
+
+  // ── NEW: Load wards ──
+  const loadWards = useCallback(async () => {
+    try {
+      const { data, error } = await supabase
+        .from('wards')
+        .select('*')
+        .order('ward_number', { ascending: true });
+      if (error) throw error;
+      setWards((data || []) as Ward[]);
+    } catch (e) {
+      console.warn('Wards load failed (table may not exist yet):', e);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!profileLoading && !noDept) loadWards();
+  }, [profileLoading, noDept, loadWards]);
 
   // Sync selectedDeptDetailId if department list is ready
   useEffect(() => {
@@ -1009,6 +1036,22 @@ export default function DeptDashboard() {
         }]
       : []),
     ...(myTier <= 3 ? [{ id: 'staff_reports', label: hi ? 'कर्मचारी रिपोर्ट' : 'Staff Reports', icon: FileText, count: staffReports.length }] : []),
+    // ── NEW: Ward Registration (org-level only) ──
+    ...(orgLevel
+      ? [{
+          id: 'wards',
+          label: hi ? 'वार्ड पंजीकरण' : 'Ward Registration',
+          icon: MapPin,
+          count: wards.length,
+        }]
+      : []),
+    // ── NEW: Location Filter (everyone) ──
+    {
+      id: 'location_filter',
+      label: hi ? 'स्थान फ़िल्टर' : 'Location Filter',
+      icon: Navigation,
+      count: visibleComplaints.length,
+    },
   ];
 
   return (
@@ -1680,7 +1723,7 @@ export default function DeptDashboard() {
                   </div>
                 </div>
 
-                {/* 4. FULL STAFF ROSTER WITH SEARCH, PHONE & WORKLOAD ("Same for all departments") */}
+                {/* 4. FULL STAFF ROSTER WITH SEARCH, PHONE & WORKLOAD */}
                 <div style={{
                   background: 'var(--theme-component, #d9d9d9)',
                   border: '1.5px solid var(--theme-component-border, #bfbfbf)',
@@ -1904,7 +1947,7 @@ export default function DeptDashboard() {
           </div>
         )}
 
-        {/* ── TAB 3: STAFF REPORTS (people below viewer in chain with department filter) ── */}
+        {/* ── TAB 3: STAFF REPORTS ── */}
         {activeTab === 'staff_reports' && myTier <= 3 && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
@@ -2040,6 +2083,21 @@ export default function DeptDashboard() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* ── NEW TAB 4: WARD REGISTRATION ── */}
+        {activeTab === 'wards' && orgLevel && (
+          <WardManager language={language} />
+        )}
+
+        {/* ── NEW TAB 5: LOCATION FILTER ── */}
+        {activeTab === 'location_filter' && (
+          <LocationFilterPanel
+            complaints={visibleComplaints}
+            wards={wards}
+            language={language}
+            onAllocate={(c) => setAllotting(c)}
+          />
         )}
       </div>
 
