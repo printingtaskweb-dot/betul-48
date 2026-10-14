@@ -519,4 +519,114 @@ export const WardManagement: React.FC<Props> = ({ onWardSelect, selectedWardId }
       {/* ---------- AREA MODAL ---------- */}
       {showAreaForm && (
         <div
-          style={{ position: 'fixed', inset: 0
+          style={{ position: 'fixed', inset: 0, zIndex: 1200, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}
+          onClick={(e) => { if (e.target === e.currentTarget) { setShowAreaForm(false); setEditingArea(null); setAreaForm(emptyArea); } }}
+        >
+          <div style={{ ...card, width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto', padding: 0 }}>
+            <div style={{
+              background: 'var(--header-gradient, linear-gradient(135deg, #4d0026, #660033, #800040))',
+              padding: '16px 20px', color: '#fff',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+            }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800 }}>
+                  {editingArea ? `Edit Area "${editingArea.name}"` : 'Register New Area'}
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.74rem', opacity: 0.9 }}>Locality inside a ward</p>
+              </div>
+              <button
+                onClick={() => { setShowAreaForm(false); setEditingArea(null); setAreaForm(emptyArea); }}
+                style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 6, color: '#fff', cursor: 'pointer', padding: 5 }}>
+                <X size={18} />
+              </button>
+            </div>
+
+            <div style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <label style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                Ward *
+                <select value={areaForm.ward_id}
+                  onChange={(e) => setAreaForm({ ...areaForm, ward_id: e.target.value })}
+                  style={{ ...field, marginTop: 4, cursor: 'pointer' }}>
+                  <option value="">Select ward…</option>
+                  {wards.map((w) => (
+                    <option key={w.id} value={w.id}>Ward {w.ward_number} · {w.name}</option>
+                  ))}
+                </select>
+              </label>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                  Area Name *
+                  <input type="text" value={areaForm.name}
+                    onChange={(e) => setAreaForm({ ...areaForm, name: e.target.value })}
+                    placeholder="e.g. Gandhi Chowk" style={{ ...field, marginTop: 4 }} />
+                </label>
+                <label style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                  Area Name (Hindi)
+                  <input type="text" value={areaForm.name_hindi}
+                    onChange={(e) => setAreaForm({ ...areaForm, name_hindi: e.target.value })}
+                    placeholder="e.g. गांधी चौक" style={{ ...field, marginTop: 4 }} />
+                </label>
+              </div>
+
+              <label style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                Description
+                <textarea value={areaForm.description}
+                  onChange={(e) => setAreaForm({ ...areaForm, description: e.target.value })}
+                  rows={2} placeholder="Landmarks…"
+                  style={{ ...field, marginTop: 4, resize: 'vertical' }} />
+              </label>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                  Latitude
+                  <input type="number" step="0.000001" value={areaForm.center_latitude}
+                    onChange={(e) => setAreaForm({ ...areaForm, center_latitude: e.target.value })}
+                    placeholder="21.9015" style={{ ...field, marginTop: 4 }} />
+                </label>
+                <label style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                  Longitude
+                  <input type="number" step="0.000001" value={areaForm.center_longitude}
+                    onChange={(e) => setAreaForm({ ...areaForm, center_longitude: e.target.value })}
+                    placeholder="77.9018" style={{ ...field, marginTop: 4 }} />
+                </label>
+                <label style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                  Radius (m)
+                  <input type="number" step="100" value={areaForm.radius_meters}
+                    onChange={(e) => setAreaForm({ ...areaForm, radius_meters: e.target.value })}
+                    placeholder="500" style={{ ...field, marginTop: 4 }} />
+                </label>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                <label style={{ fontSize: '0.78rem', fontWeight: 700 }}>
+                  Pincode
+                  <input type="text" value={areaForm.pincode}
+                    onChange={(e) => setAreaForm({ ...areaForm, pincode: e.target.value })}
+                    placeholder="460001" style={{ ...field, marginTop: 4 }} />
+                </label>
+                <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                  <button onClick={() => useMyLocation('area')} style={{ ...outlineBtn, width: '100%', justifyContent: 'center', fontSize: '0.74rem' }}>
+                    <Compass size={13} /> Use My Location
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end', marginTop: 8 }}>
+                <button onClick={() => { setShowAreaForm(false); setEditingArea(null); setAreaForm(emptyArea); }}
+                  style={{ ...outlineBtn, background: 'transparent', border: BORDER, color: 'var(--gray-700)' }}>
+                  Cancel
+                </button>
+                <button onClick={saveArea} disabled={saving} style={primaryBtn}>
+                  <Save size={14} /> {saving ? 'Saving…' : editingArea ? 'Update Area' : 'Create Area'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default WardManagement;
