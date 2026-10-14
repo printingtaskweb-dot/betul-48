@@ -15,6 +15,7 @@ import DeptDashboard from './pages/DeptDashboard';
 import MunicipalAdministratorDashboard from './pages/admin/MunicipalAdministratorDashboard';
 import ProfilePage from './pages/ProfilePage';
 import { FloatingNewsWidget } from './components/FloatingNewsWidget';
+import { FCMRegistrar } from './components/FCMRegistrar';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -142,6 +143,7 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <AuthProvider>
+        <FCMRegistrar />
         <div className="grain" />
         {!splashDone && <SplashScreen onDone={handleSplashDone} />}
         <BrowserRouter>

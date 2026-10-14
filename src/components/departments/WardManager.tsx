@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { LocationPicker } from '../common/LocationPicker';
+import { useAuth } from '../../contexts/AuthContext';
 import {
   reverseGeocode,
   type Ward,
@@ -72,6 +73,7 @@ const EMPTY_FORM: WardForm = {
 
 export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
   const hi = language === 'hi';
+  const { user } = useAuth();
 
   const [wards, setWards] = useState<Ward[]>([]);
   const [loading, setLoading] = useState(true);
@@ -160,6 +162,10 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
   };
 
   const saveWard = async () => {
+    if (!user) {
+      setMessage({ type: 'error', text: hi ? 'कृपया पहले लॉगिन करें' : 'Please sign in before registering a ward.' });
+      return;
+    }
     if (!form.name.trim()) {
       setMessage({ type: 'error', text: hi ? 'वार्ड का नाम आवश्यक है' : 'Ward name is required.' });
       return;
@@ -185,6 +191,7 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
         radius_meters: parseInt(form.radius_meters, 10) || 2000,
         pincode: form.pincode.trim() || null,
         is_active: true,
+        created_by: user.id,
       };
 
       const { error } = await supabase.from('wards').insert(payload);

@@ -9,12 +9,13 @@ import AdminUserDirectory from '../../components/admin/AdminUserDirectory';
 import { StaffApprovalTable } from '../../components/admin/StaffApprovalTable';
 import StaffApprovals from './StaffApprovals';
 import MunicipalAdministratorDashboard from './MunicipalAdministratorDashboard';
+import PushNotificationSender from '../../components/admin/PushNotificationSender';
 import { supabase } from '../../lib/supabase';
 
 import type { Department } from '../../lib/supabase';
-import { LogOut, LayoutDashboard, Menu, X, ArrowLeft, UserPlus, Newspaper, Users, Building2, ClipboardCheck, ShieldCheck } from 'lucide-react';
+import { LogOut, LayoutDashboard, Menu, X, ArrowLeft, UserPlus, Newspaper, Users, Building2, ClipboardCheck, ShieldCheck, BellRing } from 'lucide-react';
 
-type Tab = 'complaints' | 'municipal' | 'users' | 'register' | 'local_news' | 'staff_approvals' | 'staff_directory';
+type Tab = 'complaints' | 'municipal' | 'users' | 'register' | 'local_news' | 'staff_approvals' | 'staff_directory' | 'push_notifications';
 
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
@@ -321,11 +322,26 @@ export const AdminDashboard: React.FC = () => {
               setActiveDept(null);
               setMobileMenuOpen(false);
             }}
-            style={navBtnStyle(activeTab === 'staff_directory', 12)}
+            style={navBtnStyle(activeTab === 'staff_directory', 4)}
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <ShieldCheck size={16} color={activeTab === 'staff_directory' ? '#fff' : 'var(--gray-500)'} />
               <span>Staff Management</span>
+            </div>
+          </button>
+
+          {/* Push Notifications */}
+          <button
+            onClick={() => {
+              setActiveTab('push_notifications');
+              setActiveDept(null);
+              setMobileMenuOpen(false);
+            }}
+            style={navBtnStyle(activeTab === 'push_notifications', 12)}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <BellRing size={16} color={activeTab === 'push_notifications' ? '#fff' : 'var(--gray-500)'} />
+              <span>Push Notifications</span>
             </div>
           </button>
 
@@ -439,6 +455,10 @@ export const AdminDashboard: React.FC = () => {
                 'Manage department staff applications — approve, reject, or revoke access',
               )}
               <StaffApprovalTable />
+            </div>
+          ) : activeTab === 'push_notifications' ? (
+            <div>
+              <PushNotificationSender />
             </div>
           ) : (
             <div>

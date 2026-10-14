@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, Phone, Hash, Globe, ChevronLeft, CheckCircle, Clock, XCircle, ShieldCheck, FileText, Edit2, Save } from 'lucide-react';
+import { User, Phone, Hash, Globe, ChevronLeft, CheckCircle, Clock, XCircle, ShieldCheck, FileText, Edit2, Save, Bell, BellOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { BottomNav } from '../components/BottomNav';
+import { useFCM } from '../hooks/useFCM';
 
 /* ─── Types ─── */
 interface Complaint {
@@ -38,6 +39,7 @@ function formatDate(iso: string, lang: 'en' | 'hi') {
 const ProfilePage: React.FC = () => {
   const { user, profile, language, setLanguage, refreshProfile, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const { permission, loading: fcmLoading, requestPermission } = useFCM(user?.id ?? null);
 
   /* form state */
   const [fullName, setFullName]     = useState('');
@@ -298,6 +300,49 @@ const ProfilePage: React.FC = () => {
               </p>
             )}
           </form>
+        </section>
+
+        {/* ── Push Notifications ── */}
+        <section style={{ background: 'var(--theme-component, #d9d9d9)', borderRadius: 14, border: '1.5px solid var(--theme-component-border, #bfbfbf)', padding: '18px 16px', marginBottom: 20 }}>
+          <h3 style={{ margin: '0 0 12px', color: '#660033', fontWeight: 800, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+            <Bell size={18} />
+            {language === 'hi' ? 'सूचनाएं' : 'Notifications'}
+          </h3>
+          {permission === 'granted' ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: '#d1fae5', border: '1.5px solid #6ee7b7' }}>
+              <Bell size={18} color="#065f46" />
+              <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 700, color: '#065f46' }}>
+                {language === 'hi' ? '✅ पुश सूचनाएं सक्षम हैं' : '✅ Push notifications are enabled'}
+              </p>
+            </div>
+          ) : permission === 'denied' ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: '#fee2e2', border: '1.5px solid #fca5a5' }}>
+              <BellOff size={18} color="#991b1b" />
+              <p style={{ margin: 0, fontSize: '0.85rem', color: '#991b1b' }}>
+                {language === 'hi'
+                  ? 'सूचनाएं ब्लॉक हैं। ब्राउज़र सेटिंग से अनुमति दें।'
+                  : 'Notifications are blocked. Enable them in your browser settings.'}
+              </p>
+            </div>
+          ) : (
+            <div>
+              <p style={{ margin: '0 0 12px', fontSize: '0.87rem', color: '#555', lineHeight: 1.5 }}>
+                {language === 'hi'
+                  ? 'अपनी शिकायत की स्थिति और नगर पालिका की अपडेट के लिए पुश सूचनाएं सक्षम करें।'
+                  : 'Enable push notifications to stay updated on your complaint status and municipal announcements.'}
+              </p>
+              <button
+                onClick={requestPermission}
+                disabled={fcmLoading}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '11px 0', borderRadius: 10, border: 'none', background: fcmLoading ? '#999' : 'linear-gradient(135deg,#660033,#800040)', color: '#fff', fontWeight: 800, fontSize: '0.92rem', cursor: fcmLoading ? 'wait' : 'pointer' }}
+              >
+                <Bell size={16} />
+                {fcmLoading
+                  ? (language === 'hi' ? 'कृपया प्रतीक्षा करें...' : 'Please wait...')
+                  : (language === 'hi' ? '🔔 सूचनाएं सक्षम करें' : '🔔 Enable Notifications')}
+              </button>
+            </div>
+          )}
         </section>
 
         {/* ── My Complaints ── */}
