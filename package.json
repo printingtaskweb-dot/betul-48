@@ -1,8 +1,20 @@
 {
   "name": "imc-311-portal",
-  "private": true,
   "version": "0.0.0",
+  "private": true,
+  "description": "A modern, component-based civic portal inspired by the Indore 311 platform for municipal corporations (IMC / Betul Municipal Council). Citizens can report civic issues with auto-detected GPS location and photos, track resolution status in real time, and verify fixes before complaints are officially closed.",
+  "homepage": "https://github.com/printingtaskweb-dot/betul-48#readme",
+  "bugs": {
+    "url": "https://github.com/printingtaskweb-dot/betul-48/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/printingtaskweb-dot/betul-48.git"
+  },
+  "license": "ISC",
+  "author": "",
   "type": "module",
+  "main": "index.js",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
@@ -11,6 +23,8 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
+    "firebase": "^13.0.0",
+    "firebase-admin": "^14.5.0",
     "lucide-react": "^1.51.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
