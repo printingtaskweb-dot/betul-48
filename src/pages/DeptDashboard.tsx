@@ -8,8 +8,8 @@ import {
   getTier, roleLabel, canViewComplaint, canAllotComplaint, canResolveComplaint, TIER_LABEL,
 } from '../lib/hierarchy';
 import type { StaffMember, Viewer } from '../lib/hierarchy';
-import { WardManager } from './WardManager';
-import { LocationFilterPanel } from './LocationFilterPanel';
+import { WardManager } from '../components/departments/WardManager';
+import { LocationFilterPanel } from '../components/departments/LocationFilterPanel';
 import type { Ward } from '../lib/wardTypes';
 import {
   Building2, Search, Filter, CheckCircle, Clock,

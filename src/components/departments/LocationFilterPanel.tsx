@@ -1,9 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
-  MapPin, Compass, Search, Filter, X, Navigation,
-  Briefcase, ChevronDown, Crosshair, CheckCircle2,
+  MapPin, Search, Filter, Navigation,
+  Briefcase, ChevronDown, Crosshair,
 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
 import {
   distanceMeters,
   findWardForPoint,

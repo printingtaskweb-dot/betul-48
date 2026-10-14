@@ -1,12 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   MapPin, Plus, X, Save, Trash2, Search, Navigation,
-  RefreshCw, Layers, Compass, CheckCircle2,
+  RefreshCw, Layers, Compass,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { LocationPicker } from '../common/LocationPicker';
 import {
-  distanceMeters, reverseGeocode,
+  reverseGeocode,
   type Ward,
 } from '../../lib/wardTypes';
 
