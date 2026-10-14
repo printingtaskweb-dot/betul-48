@@ -1,4 +1,4 @@
-LocationFilterimport React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   MapPin, Compass, Search, Filter, X, Navigation,
   Briefcase, ChevronDown, Crosshair, CheckCircle2,
@@ -429,4 +429,4 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
   );
 };
 
-export default LocationFilterPanel;Panel.tsx
+export default LocationFilterPanel;
