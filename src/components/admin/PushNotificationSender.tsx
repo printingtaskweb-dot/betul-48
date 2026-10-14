@@ -163,10 +163,18 @@ export const PushNotificationSender: React.FC = () => {
 
   /* ── Determine target tokens ── */
   const targetTokens: FCMToken[] = (() => {
-    if (sendMode === 'all')  return tokens;
-    if (sendMode === 'role') return tokens.filter(t => t.user?.role === roleTarget);
-    if (sendMode === 'user') return tokens.filter(t => t.user_id === selectedUserId);
-    return [];
+    let list: FCMToken[] = [];
+    if (sendMode === 'all')  list = tokens;
+    else if (sendMode === 'role') list = tokens.filter(t => t.user?.role === roleTarget);
+    else if (sendMode === 'user') list = tokens.filter(t => t.user_id === selectedUserId);
+
+    // Deduplicate by token string so each physical device receives exactly 1 notification
+    const seen = new Set<string>();
+    return list.filter(t => {
+      if (!t.token || seen.has(t.token)) return false;
+      seen.add(t.token);
+      return true;
+    });
   })();
 
   /* ── Send via Supabase Edge Function ── */

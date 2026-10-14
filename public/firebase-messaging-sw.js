@@ -21,9 +21,16 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   console.log('[FCM SW] Background message received:', payload);
 
-  const title = payload.notification?.title || payload.data?.title || 'IMC Betul';
-  const body = payload.notification?.body || payload.data?.body || '';
-  const url = payload.data?.url || payload.fcmOptions?.link || '/';
+  // When a message contains a 'notification' payload, Firebase SDK automatically
+  // displays it. Avoid calling self.registration.showNotification to prevent double notifications.
+  if (payload.notification) {
+    return;
+  }
+
+  // Only display manually for data-only messages
+  const title = payload.data?.title || 'IMC Betul';
+  const body = payload.data?.body || '';
+  const url = payload.data?.url || '/';
   const icon = '/logo.png';
 
   self.registration.showNotification(title, {
@@ -32,8 +39,8 @@ messaging.onBackgroundMessage((payload) => {
     badge: icon,
     data: { url },
     vibrate: [300, 100, 300],
-    tag: 'imc-betul-' + Date.now(),
-    renotify: true,
+    tag: 'imc-betul',
+    renotify: false,
   });
 });
 

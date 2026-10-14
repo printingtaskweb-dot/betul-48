@@ -145,13 +145,14 @@ serve(async (req: Request) => {
     /* 3. Get OAuth2 access token */
     const accessToken = await getAccessToken(serviceAccount);
 
-    /* 4. Send to all tokens (in parallel batches of 100) */
+    /* 4. Send to all unique tokens (in parallel batches of 100) */
+    const uniqueTokens = Array.from(new Set(tokens.filter(Boolean)));
     let sent = 0;
     const failed: string[] = [];
     const batchSize = 100;
 
-    for (let i = 0; i < tokens.length; i += batchSize) {
-      const batch = tokens.slice(i, i + batchSize);
+    for (let i = 0; i < uniqueTokens.length; i += batchSize) {
+      const batch = uniqueTokens.slice(i, i + batchSize);
       const results = await Promise.allSettled(
         batch.map(token => sendFCMMessage(accessToken, projectId, token, title, body, url))
       );
