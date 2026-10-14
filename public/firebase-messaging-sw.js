@@ -21,18 +21,19 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   console.log('[FCM SW] Background message received:', payload);
 
-  const { title = 'IMC Betul', body = '', icon = '/icon-192.png', badge = '/badge-72.png', url = '/' } =
-    payload.notification || {};
-
-  const data = payload.data || {};
+  const title = payload.notification?.title || payload.data?.title || 'IMC Betul';
+  const body = payload.notification?.body || payload.data?.body || '';
+  const url = payload.data?.url || payload.fcmOptions?.link || '/';
+  const icon = '/logo.png';
 
   self.registration.showNotification(title, {
     body,
     icon,
-    badge,
-    data: { url: data.url || url },
-    vibrate: [200, 100, 200],
-    requireInteraction: false,
+    badge: icon,
+    data: { url },
+    vibrate: [300, 100, 300],
+    tag: 'imc-betul-' + Date.now(),
+    renotify: true,
   });
 });
 

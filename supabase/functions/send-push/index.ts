@@ -97,8 +97,8 @@ async function sendFCMMessage(
             notification: {
               title,
               body,
-              icon:  '/icon-192.png',
-              badge: '/badge-72.png',
+              icon:  '/logo.png',
+              badge: '/logo.png',
               click_action: url,
             },
             fcm_options: { link: url },

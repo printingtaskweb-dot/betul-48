@@ -63,10 +63,35 @@ export function useFCM(userId?: string | null): FCMState & { requestPermission: 
     const unsubscribe = onMessage(messaging, (payload) => {
       console.log('[FCM] Foreground message:', payload);
       setLastMessage(payload);
-      // Show a manual notification for foreground (service worker only handles background)
-      if (Notification.permission === 'granted') {
-        const { title = 'IMC Betul', body = '' } = payload.notification || {};
-        new Notification(title, { body, icon: '/icon-192.png' });
+      // Show notification in foreground (works on Android Chrome & desktop)
+      if (typeof window !== 'undefined' && Notification.permission === 'granted') {
+        const title = payload.notification?.title || payload.data?.title || 'IMC Betul 311';
+        const body = payload.notification?.body || payload.data?.body || '';
+        const url = payload.data?.url || '/';
+
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.ready.then((reg) => {
+            reg.showNotification(title, {
+              body,
+              icon: '/logo.png',
+              badge: '/logo.png',
+              data: { url },
+              vibrate: [300, 100, 300],
+            } as any);
+          }).catch(() => {
+            try {
+              new Notification(title, { body, icon: '/logo.png' });
+            } catch (e) {
+              console.warn('[FCM] Notification fallback error:', e);
+            }
+          });
+        } else {
+          try {
+            new Notification(title, { body, icon: '/logo.png' });
+          } catch (e) {
+            console.warn('[FCM] Notification fallback error:', e);
+          }
+        }
       }
     });
     return unsubscribe;
