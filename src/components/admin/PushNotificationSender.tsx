@@ -49,23 +49,63 @@ export const PushNotificationSender: React.FC = () => {
   /* data & status */
   const [tokens,   setTokens]   = useState<FCMToken[]>([]);
   const [loadingTokens, setLoadingTokens] = useState(true);
+  const [fetchError, setFetchError] = useState<string | null>(null);
   const [status,   setStatus]   = useState<Status>('idle');
   const [statusMsg, setStatusMsg] = useState('');
 
   /* ── Fetch registered tokens ── */
   const fetchTokens = async () => {
     setLoadingTokens(true);
-    const { data } = await supabase
-      .from('fcm_tokens')
-      .select('*, user:user_id(full_name, email, role)')
-      .order('updated_at', { ascending: false });
-    setTokens(
-      (data || []).map((r: any) => ({
-        ...r,
-        user: Array.isArray(r.user) ? r.user[0] : r.user,
-      }))
-    );
-    setLoadingTokens(false);
+    setFetchError(null);
+    try {
+      // 1. Fetch raw device tokens
+      const { data: tokenData, error: tokenError } = await supabase
+        .from('fcm_tokens')
+        .select('*')
+        .order('updated_at', { ascending: false });
+
+      if (tokenError) {
+        console.error('[FCM] Error loading fcm_tokens:', tokenError);
+        setFetchError(tokenError.message || 'Failed to load registered devices');
+        setTokens([]);
+        return;
+      }
+
+      const rows = tokenData || [];
+      if (rows.length === 0) {
+        setTokens([]);
+        return;
+      }
+
+      // 2. Query user_profiles separately to avoid PostgREST relationship 400 errors
+      const userIds = Array.from(new Set(rows.map((r: any) => r.user_id).filter(Boolean)));
+      let profileMap: Record<string, { full_name: string | null; email: string | null; role: string | null }> = {};
+
+      if (userIds.length > 0) {
+        const { data: profiles, error: profError } = await supabase
+          .from('user_profiles')
+          .select('id, full_name, email, role')
+          .in('id', userIds);
+
+        if (!profError && profiles) {
+          profileMap = Object.fromEntries(
+            profiles.map((p: any) => [p.id, { full_name: p.full_name, email: p.email, role: p.role }])
+          );
+        }
+      }
+
+      setTokens(
+        rows.map((r: any) => ({
+          ...r,
+          user: profileMap[r.user_id] || null,
+        }))
+      );
+    } catch (err: any) {
+      console.error('[FCM] fetchTokens exception:', err);
+      setFetchError(err?.message || 'Error fetching registered devices');
+    } finally {
+      setLoadingTokens(false);
+    }
   };
 
   useEffect(() => { fetchTokens(); }, []);
@@ -205,22 +245,36 @@ export const PushNotificationSender: React.FC = () => {
             <RefreshCw size={12} className={loadingTokens ? 'animate-spin' : ''} /> Refresh
           </button>
         </div>
-        {loadingTokens ? (
+        {fetchError ? (
+          <div style={{ background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 8, padding: '10px 14px', fontSize: '0.82rem', color: '#991b1b', marginTop: 4 }}>
+            ⚠️ <strong>Could not read fcm_tokens:</strong> {fetchError}
+            <div style={{ marginTop: 4, fontSize: '0.76rem', color: '#7f1d1d' }}>
+              Please ensure you have executed <code>supabase/migrations/20241014_fcm_setup.sql</code> in the Supabase SQL Editor.
+            </div>
+          </div>
+        ) : loadingTokens ? (
           <p style={{ fontSize: '0.82rem', color: 'var(--gray-500)' }}>Loading devices…</p>
         ) : (
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <span style={{ background: PRIMARY, color: '#fff', borderRadius: 20, padding: '4px 14px', fontSize: '0.78rem', fontWeight: 800 }}>
-              Total: {tokens.length}
-            </span>
-            {ROLES.map(r => {
-              const count = tokens.filter(t => t.user?.role === r.value).length;
-              if (!count) return null;
-              return (
-                <span key={r.value} style={{ background: 'var(--theme-bg, #fff4e7)', border: BORDER, borderRadius: 20, padding: '4px 12px', fontSize: '0.76rem', fontWeight: 700, color: PRIMARY }}>
-                  {r.label}: {count}
-                </span>
-              );
-            })}
+          <div>
+            <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+              <span style={{ background: PRIMARY, color: '#fff', borderRadius: 20, padding: '4px 14px', fontSize: '0.78rem', fontWeight: 800 }}>
+                Total: {tokens.length}
+              </span>
+              {ROLES.map(r => {
+                const count = tokens.filter(t => t.user?.role === r.value).length;
+                if (!count) return null;
+                return (
+                  <span key={r.value} style={{ background: 'var(--theme-bg, #fff4e7)', border: BORDER, borderRadius: 20, padding: '4px 12px', fontSize: '0.76rem', fontWeight: 700, color: PRIMARY }}>
+                    {r.label}: {count}
+                  </span>
+                );
+              })}
+            </div>
+            {tokens.length === 0 && (
+              <p style={{ margin: '10px 0 0', fontSize: '0.78rem', color: 'var(--gray-600)' }}>
+                ℹ️ No devices registered yet. Users can register by logging in and clicking <strong>🔔 Enable Notifications</strong> on their Profile page.
+              </p>
+            )}
           </div>
         )}
       </div>

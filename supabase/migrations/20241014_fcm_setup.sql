@@ -26,23 +26,28 @@ CREATE INDEX IF NOT EXISTS fcm_tokens_platform_idx ON public.fcm_tokens(platform
 ALTER TABLE public.fcm_tokens ENABLE ROW LEVEL SECURITY;
 
 -- Users can only read/write their OWN tokens
+DROP POLICY IF EXISTS "fcm_tokens: owner read" ON public.fcm_tokens;
 CREATE POLICY "fcm_tokens: owner read"
   ON public.fcm_tokens FOR SELECT
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "fcm_tokens: owner upsert" ON public.fcm_tokens;
 CREATE POLICY "fcm_tokens: owner upsert"
   ON public.fcm_tokens FOR INSERT
   WITH CHECK (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "fcm_tokens: owner update" ON public.fcm_tokens;
 CREATE POLICY "fcm_tokens: owner update"
   ON public.fcm_tokens FOR UPDATE
   USING (auth.uid() = user_id);
 
+DROP POLICY IF EXISTS "fcm_tokens: owner delete" ON public.fcm_tokens;
 CREATE POLICY "fcm_tokens: owner delete"
   ON public.fcm_tokens FOR DELETE
   USING (auth.uid() = user_id);
 
 -- Admins can read ALL tokens (needed for the notification sender)
+DROP POLICY IF EXISTS "fcm_tokens: admin read all" ON public.fcm_tokens;
 CREATE POLICY "fcm_tokens: admin read all"
   ON public.fcm_tokens FOR SELECT
   USING (
@@ -51,6 +56,7 @@ CREATE POLICY "fcm_tokens: admin read all"
       WHERE id = auth.uid()
         AND (is_admin = true OR role IN ('admin','municipal_administrator'))
     )
+    OR (auth.jwt() ->> 'email') IN ('ouikey41@gmail.com')
   );
 
 -- ── 2. notification_log ───────────────────────────────────
@@ -74,6 +80,7 @@ CREATE INDEX IF NOT EXISTS notification_log_created_idx
 ALTER TABLE public.notification_log ENABLE ROW LEVEL SECURITY;
 
 -- Only admins can read/insert the log
+DROP POLICY IF EXISTS "notification_log: admin only" ON public.notification_log;
 CREATE POLICY "notification_log: admin only"
   ON public.notification_log FOR ALL
   USING (
@@ -82,6 +89,7 @@ CREATE POLICY "notification_log: admin only"
       WHERE id = auth.uid()
         AND (is_admin = true OR role IN ('admin','municipal_administrator'))
     )
+    OR (auth.jwt() ->> 'email') IN ('ouikey41@gmail.com')
   );
 
 -- ── 3. Auto-update updated_at on fcm_tokens ───────────────
