@@ -6,7 +6,7 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
 firebase.initializeApp({
-  apiKey:            'AIzaSyCyNQwBfihfjul7B8ssPoahIzNDRIwvFnQ',
+  apiKey:            'AIzaSyBHfEU3SdN4bZQzdOVo6L9aPwErHBanHI4',
   authDomain:        'printing-task-78a01.firebaseapp.com',
   projectId:         'printing-task-78a01',
   storageBucket:     'printing-task-78a01.firebasestorage.app',
