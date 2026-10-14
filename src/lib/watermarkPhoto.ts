@@ -1,5 +1,6 @@
 // src/lib/watermarkPhoto.ts
 
+
 export interface WatermarkOptions {
   latitude: number | null;
   longitude: number | null;
