@@ -1,13 +1,12 @@
 import React, { useState, useEffect, useMemo } from 'react';
-
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { useDeptComplaints } from '../../hooks/useDeptComplaints';
 import { AllotModal } from '../dept/AllotModal';
 import type { AllotTarget } from '../dept/AllotModal';
-import { WardManagement } from './WardManagement';
-import { LocationComplaintFilter } from './LocationComplaintFilter';
+import { WardManagement } from '../admin/WardManagement';
+import { LocationComplaintFilter } from '../admin/LocationComplaintFilter';
 import type { Ward, Area } from '../../lib/wardTypes';
 import {
   getTier,
@@ -56,22 +55,6 @@ interface NearbyComplaint {
   address: string | null;
   status: string;
   distance_meters: number;
-}
-
-interface LocationComplaintRow {
-  id: string;
-  ticket_number: string;
-  description: string;
-  address: string | null;
-  status: string;
-  latitude: number | null;
-  longitude: number | null;
-  ward_id: string | null;
-  area_id: string | null;
-  department_id: string | null;
-  assigned_to: string | null;
-  created_at: string;
-  distance_meters?: number;
 }
 
 const COMMON_AREAS = [
@@ -376,7 +359,6 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
       { total: number; resolved: number; pending: number; officers: StaffMember[] }
     > = {};
 
-    // Prefer registering from actual wards list
     if (wardsList.length > 0) {
       wardsList.forEach((w) => {
         map[String(w.ward_number)] = { total: 0, resolved: 0, pending: 0, officers: [] };
@@ -467,7 +449,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
     }
   };
 
-  // Location Filter "Allot" handler — opens AllotModal with matching complaint
+  // Location Filter "Allot" handler — opens AllotModal
   const handleAllocateFromLocationFilter = (complaintId: string) => {
     const match = complaints.find((c) => c.id === complaintId);
     if (match) setAllotting(match);
@@ -807,7 +789,6 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
           <span>Departments Directory</span>
         </button>
 
-        {/* ── NEW: Ward Registration ── */}
         <button
           type="button"
           onClick={() => setActiveTab('ward-manager')}
@@ -832,7 +813,6 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
           <span>Ward Registration</span>
         </button>
 
-        {/* ── NEW: Location Filter ── */}
         <button
           type="button"
           onClick={() => setActiveTab('location-viewer')}
@@ -919,7 +899,6 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
             </select>
           )}
 
-          {/* NEW: Ward filter populated from real wards */}
           {wardsList.length > 0 && (
             <select
               value={wardFilter}
@@ -2054,10 +2033,10 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
         </div>
       )}
 
-      {/* ── TAB 6 (NEW): WARD REGISTRATION ── */}
+      {/* ── TAB 6: WARD REGISTRATION ── */}
       {activeTab === 'ward-manager' && <WardManagement />}
 
-      {/* ── TAB 7 (NEW): LOCATION-BASED COMPLAINT FILTER ── */}
+      {/* ── TAB 7: LOCATION-BASED COMPLAINT FILTER ── */}
       {activeTab === 'location-viewer' && (
         <LocationComplaintFilter
           wards={wardsList}
