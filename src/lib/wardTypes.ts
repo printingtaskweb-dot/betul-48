@@ -1,7 +1,6 @@
+// src/lib/wardTypes.ts
 export interface Ward {
   id: string;
-  city_id: string | null;
-  zone_id: string | null;
   ward_number: number;
   name: string;
   name_hindi: string | null;
@@ -32,10 +31,12 @@ export interface Area {
   created_by: string | null;
 }
 
-/** Haversine distance in meters — pure JS, no DB call. */
+/** Haversine distance in meters. Pure JS, no DB call. */
 export function distanceMeters(
-  lat1: number, lon1: number,
-  lat2: number, lon2: number,
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
 ): number {
   const R = 6371000;
   const rad = (d: number) => (d * Math.PI) / 180;
@@ -47,9 +48,10 @@ export function distanceMeters(
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-/** Find nearest ward that contains the given GPS point. */
 export function findWardForPoint(
-  lat: number, lon: number, wards: Ward[],
+  lat: number,
+  lon: number,
+  wards: Ward[],
 ): Ward | null {
   let best: Ward | null = null;
   let bestDist = Infinity;
@@ -64,20 +66,26 @@ export function findWardForPoint(
   return best;
 }
 
-/** Find nearest area inside a ward (or anywhere if ward unknown). */
-export function findAreaForPoint(
-  lat: number, lon: number, areas: Area[], wardId?: string | null,
-): Area | null {
-  let best: Area | null = null;
-  let bestDist = Infinity;
-  for (const a of areas) {
-    if (!a.is_active || a.center_latitude == null || a.center_longitude == null) continue;
-    if (wardId && a.ward_id !== wardId) continue;
-    const d = distanceMeters(lat, lon, a.center_latitude, a.center_longitude);
-    if (d <= (a.radius_meters || 500) && d < bestDist) {
-      best = a;
-      bestDist = d;
-    }
+/** Reverse-geocode via OpenStreetMap Nominatim (free, no key). */
+export async function reverseGeocode(
+  lat: number,
+  lon: number,
+): Promise<string | null> {
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${lat}&lon=${lon}&zoom=16&addressdetails=1`;
+    const res = await fetch(url, {
+      headers: { 'Accept-Language': 'en' },
+    });
+    if (!res.ok) return null;
+    const data = await res.json();
+    return (
+      data?.display_name ||
+      data?.address?.suburb ||
+      data?.address?.neighbourhood ||
+      data?.address?.city_district ||
+      null
+    );
+  } catch {
+    return null;
   }
-  return best;
 }
