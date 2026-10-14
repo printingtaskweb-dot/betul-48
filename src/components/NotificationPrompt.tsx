@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BellRing, X, CheckCircle2 } from 'lucide-react';
 import { getToken } from 'firebase/messaging';
-import { messaging, VAPID_KEY } from '../lib/firebase';
-import { supabase } from '../lib/supabase';
+import { messaging, VAPID_KEY, saveFCMTokenToSupabase } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 
 /**
@@ -64,19 +63,13 @@ export const NotificationPrompt: React.FC = () => {
         // 2. Fetch FCM token from Google
         const token = await getToken(messaging, { vapidKey: VAPID_KEY });
         if (token) {
-          const userAgent = navigator.userAgent.substring(0, 200);
-
           // 3. Register device in Supabase fcm_tokens table
-          await supabase.from('fcm_tokens').upsert(
-            {
-              token,
-              user_id: user?.id || null,
-              platform: 'web',
-              user_agent: userAgent,
-              updated_at: new Date().toISOString(),
-            },
-            { onConflict: 'token' }
-          );
+          const { error: saveErr } = await saveFCMTokenToSupabase(token, user?.id);
+          if (saveErr) {
+            console.error('[FCM] Error saving token to Supabase:', saveErr);
+          } else {
+            console.log('[FCM] Device token successfully registered in Supabase.');
+          }
         }
 
         // Auto close after 2 seconds

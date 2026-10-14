@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { getToken } from 'firebase/messaging';
+import { messaging, VAPID_KEY, saveFCMTokenToSupabase } from '../../lib/firebase';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import {
   Bell, Send, Users, User, CheckCircle, AlertCircle,
-  RefreshCw, ChevronDown, MessageSquare, BellRing,
+  RefreshCw, ChevronDown, MessageSquare, BellRing, Smartphone,
 } from 'lucide-react';
 
 /* ─── Types ─────────────────────────────────────────────── */
@@ -50,6 +52,8 @@ export const PushNotificationSender: React.FC = () => {
   const [tokens,   setTokens]   = useState<FCMToken[]>([]);
   const [loadingTokens, setLoadingTokens] = useState(true);
   const [fetchError, setFetchError] = useState<string | null>(null);
+  const [registeringDevice, setRegisteringDevice] = useState(false);
+  const [deviceRegisterMsg, setDeviceRegisterMsg] = useState<{ text: string; isError: boolean } | null>(null);
   const [status,   setStatus]   = useState<Status>('idle');
   const [statusMsg, setStatusMsg] = useState('');
 
@@ -109,6 +113,39 @@ export const PushNotificationSender: React.FC = () => {
   };
 
   useEffect(() => { fetchTokens(); }, []);
+
+  /* ── Self-register this current browser device ── */
+  const handleRegisterThisDevice = async () => {
+    if (!messaging) {
+      setDeviceRegisterMsg({ text: 'Push notifications are not supported in this browser.', isError: true });
+      return;
+    }
+    setRegisteringDevice(true);
+    setDeviceRegisterMsg(null);
+    try {
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') {
+        setDeviceRegisterMsg({ text: 'Notification permission denied in your browser settings.', isError: true });
+        return;
+      }
+      const token = await getToken(messaging, { vapidKey: VAPID_KEY });
+      if (!token) {
+        setDeviceRegisterMsg({ text: 'Could not obtain FCM token from Firebase.', isError: true });
+        return;
+      }
+      const { error: saveErr } = await saveFCMTokenToSupabase(token, user?.id);
+      if (saveErr) {
+        setDeviceRegisterMsg({ text: `Database error: ${saveErr.message || JSON.stringify(saveErr)}`, isError: true });
+      } else {
+        setDeviceRegisterMsg({ text: '✅ This device was successfully registered in Supabase!', isError: false });
+        await fetchTokens();
+      }
+    } catch (err: any) {
+      setDeviceRegisterMsg({ text: `Error: ${err?.message || err}`, isError: true });
+    } finally {
+      setRegisteringDevice(false);
+    }
+  };
 
   /* ── User search ── */
   useEffect(() => {
@@ -236,15 +273,52 @@ export const PushNotificationSender: React.FC = () => {
 
       {/* ── Registered Devices ── */}
       <div style={card}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
           <span style={{ fontWeight: 800, fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 6 }}>
             <Bell size={16} color={PRIMARY} /> Registered Devices
           </span>
-          <button onClick={fetchTokens}
-            style={{ background: 'none', border: BORDER, borderRadius: 6, padding: '5px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.76rem', fontWeight: 700 }}>
-            <RefreshCw size={12} className={loadingTokens ? 'animate-spin' : ''} /> Refresh
-          </button>
+          <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+            <button
+              onClick={handleRegisterThisDevice}
+              disabled={registeringDevice}
+              style={{
+                background: 'linear-gradient(135deg, #660033, #800040)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: 6,
+                padding: '6px 12px',
+                cursor: registeringDevice ? 'wait' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5,
+                fontSize: '0.76rem',
+                fontWeight: 800,
+                boxShadow: '0 2px 6px rgba(102, 0, 51, 0.2)',
+              }}
+            >
+              <Smartphone size={13} /> {registeringDevice ? 'Registering…' : '📱 Register This Browser Device'}
+            </button>
+            <button onClick={fetchTokens}
+              style={{ background: 'none', border: BORDER, borderRadius: 6, padding: '5px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.76rem', fontWeight: 700 }}>
+              <RefreshCw size={12} className={loadingTokens ? 'animate-spin' : ''} /> Refresh
+            </button>
+          </div>
         </div>
+
+        {deviceRegisterMsg && (
+          <div style={{
+            background: deviceRegisterMsg.isError ? '#fee2e2' : '#d1fae5',
+            border: `1px solid ${deviceRegisterMsg.isError ? '#fca5a5' : '#6ee7b7'}`,
+            borderRadius: 8,
+            padding: '8px 12px',
+            fontSize: '0.8rem',
+            color: deviceRegisterMsg.isError ? '#991b1b' : '#065f46',
+            marginBottom: 10,
+            fontWeight: 600,
+          }}>
+            {deviceRegisterMsg.text}
+          </div>
+        )}
         {fetchError ? (
           <div style={{ background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 8, padding: '10px 14px', fontSize: '0.82rem', color: '#991b1b', marginTop: 4 }}>
             ⚠️ <strong>Could not read fcm_tokens:</strong> {fetchError}

@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getToken, onMessage, type MessagePayload } from 'firebase/messaging';
-import { messaging, VAPID_KEY } from '../lib/firebase';
-import { supabase } from '../lib/supabase';
+import { messaging, VAPID_KEY, saveFCMTokenToSupabase } from '../lib/firebase';
 
 export interface FCMState {
   token: string | null;
@@ -24,20 +23,9 @@ export function useFCM(userId?: string | null): FCMState & { requestPermission: 
 
   // Save / update the FCM token in Supabase
   const saveToken = useCallback(async (fcmToken: string) => {
-    try {
-      const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent.substring(0, 200) : '';
-      await supabase.from('fcm_tokens').upsert(
-        {
-          token:      fcmToken,
-          user_id:    userId || null,
-          platform:   'web',
-          user_agent: userAgent,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: 'token' }
-      );
-    } catch (e) {
-      console.warn('[FCM] saveToken error:', e);
+    const { error: saveErr } = await saveFCMTokenToSupabase(fcmToken, userId);
+    if (saveErr) {
+      console.warn('[FCM] saveToken error:', saveErr);
     }
   }, [userId]);
 

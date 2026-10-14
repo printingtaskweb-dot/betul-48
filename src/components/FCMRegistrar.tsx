@@ -10,8 +10,7 @@
  */
 import { useEffect } from 'react';
 import { getToken } from 'firebase/messaging';
-import { messaging, VAPID_KEY } from '../lib/firebase';
-import { supabase } from '../lib/supabase';
+import { messaging, VAPID_KEY, saveFCMTokenToSupabase } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 
 export function FCMRegistrar() {
@@ -36,16 +35,12 @@ export function FCMRegistrar() {
       try {
         const token = await getToken(messaging!, { vapidKey: VAPID_KEY });
         if (!token) return;
-        await supabase.from('fcm_tokens').upsert(
-          {
-            token,
-            user_id:    user?.id || null,
-            platform:   'web',
-            user_agent: navigator.userAgent.substring(0, 200),
-            updated_at: new Date().toISOString(),
-          },
-          { onConflict: 'token' },
-        );
+        const { error } = await saveFCMTokenToSupabase(token, user?.id);
+        if (error) {
+          console.warn('[FCM] Token refresh failed:', error);
+        } else {
+          console.log('[FCM] Token refreshed and saved.');
+        }
       } catch (e) {
         console.warn('[FCM] Token refresh failed:', e);
       }
