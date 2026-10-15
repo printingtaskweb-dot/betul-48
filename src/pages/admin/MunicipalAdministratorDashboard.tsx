@@ -24,26 +24,22 @@ import { WardsTab } from './municipal/components/WardsTab';
 import { DepartmentsTab } from './municipal/components/DepartmentsTab';
 import { ComplaintDetailModal } from './municipal/components/ComplaintDetailModal';
 
-import type { ComplaintRecord, ViewTab } from './municipal/types';
+import type { AreaHotspot, ComplaintRecord, ViewTab } from './municipal/types';
 
 export const MunicipalAdministratorDashboard: React.FC = () => {
   const navigate = useNavigate();
   const { user, profile, loading: authLoading } = useAuth();
   const { assignComplaint } = useDeptComplaints('all');
 
-  // Auth guard
   useEffect(() => {
     if (!authLoading && !user) navigate('/admin', { replace: true });
   }, [user, authLoading, navigate]);
 
-  // Data
   const { departments, complaints, staff, wards, loading, fetchData } = useMunicipalData();
 
-  // Viewer / scope
   const { viewer, myTier, isDeputyOrHigher, scopedComplaints, visibleDepartments } =
     useViewerScope(complaints, departments);
 
-  // UI state
   const [activeTab, setActiveTab] = useState<ViewTab>('overview');
   const [statusFilter, setStatusFilter] = useState('all');
   const [deptFilter, setDeptFilter] = useState('all');
@@ -51,22 +47,20 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
   const [query, setQuery] = useState('');
   const [detail, setDetail] = useState<ComplaintRecord | null>(null);
   const [allotting, setAllotting] = useState<ComplaintRecord | null>(null);
+  const [bulkIds, setBulkIds] = useState<string[] | null>(null);
 
-  // Lock dept filter for non-admin viewers
   useEffect(() => {
     if (!isDeputyOrHigher && profile?.linked_department_id) {
       setDeptFilter(profile.linked_department_id);
     }
   }, [isDeputyOrHigher, profile]);
 
-  // Staff lookup
   const staffById = useMemo(() => {
     const m: Record<string, typeof staff[number]> = {};
     staff.forEach((s) => { m[s.id] = s; });
     return m;
   }, [staff]);
 
-  // Filtered complaints
   const filtered = useMemo(() => {
     return scopedComplaints.filter((c) => {
       const okStatus =
@@ -89,19 +83,41 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
     });
   }, [scopedComplaints, statusFilter, deptFilter, wardFilter, query, staffById]);
 
-  // Metrics
   const metrics = useMunicipalMetrics({
-    scopedComplaints, complaints, staff, wards,
+    scopedComplaints,
+    complaints,
+    staff,
+    wards,
+    departments: visibleDepartments,
     isDeputyOrHigher,
     linkedDeptId: profile?.linked_department_id,
   });
 
-  // Radar
-  const radar = useRadarScanner(scopedComplaints);
+  const radar = useRadarScanner(scopedComplaints, wards);
 
   const handleAllocateFromLocationFilter = (complaintId: string) => {
     const match = complaints.find((c) => c.id === complaintId);
     if (match) setAllotting(match);
+  };
+
+  const handleBulkAllot = (ids: string[]) => {
+    if (ids.length === 0) return;
+    // Open the first complaint in AllotModal; caller can then continue allotting individually.
+    // Alternatively, you can pass ids to AllotModal via a wrapper (future enhancement).
+    const first = complaints.find((c) => c.id === ids[0]);
+    if (first) {
+      setBulkIds(ids);
+      setAllotting(first);
+    }
+  };
+
+  const handleAreaClick = (area: AreaHotspot) => {
+    // Try to find a matching ward to filter
+    const match = wards.find((w) => `ward-${w.id}` === area.key);
+    if (match) {
+      setWardFilter(match.id);
+      setActiveTab('complaints');
+    }
   };
 
   return (
@@ -141,26 +157,25 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
 
       {radar.showRadar && (
         <RadarPanel
-          lat={radar.lat} setLat={radar.setLat}
-          lon={radar.lon} setLon={radar.setLon}
-          radius={radar.radius} setRadius={radar.setRadius}
-          radarLoading={radar.radarLoading}
+          wards={wards}
+          wardId={radar.wardId}
+          setWardId={radar.setWardId}
           nearby={radar.nearby}
           radarMsg={radar.radarMsg}
           onScan={radar.runRadar}
           onClose={() => radar.setShowRadar(false)}
+          selectedWard={radar.selectedWard}
         />
       )}
 
       {activeTab === 'overview' && (
         <OverviewTab
-          visibleDepartments={visibleDepartments}
-          scopedComplaints={scopedComplaints}
-          staff={staff}
-          deptFilter={deptFilter}
-          setDeptFilter={setDeptFilter}
-          isDeputyOrHigher={isDeputyOrHigher}
+          deptMetrics={metrics.deptMetrics}
+          areaHotspots={metrics.areaHotspots}
           slaMetrics={metrics.slaMetrics}
+          onDeptClick={(deptId) => { setDeptFilter(deptId); setActiveTab('complaints'); }}
+          onAreaClick={handleAreaClick}
+          isDeputyOrHigher={isDeputyOrHigher}
         />
       )}
 
@@ -168,10 +183,13 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
         <ComplaintsTab
           filtered={filtered}
           wards={wards}
+          departments={departments}
           staffById={staffById}
+          staff={staff}
           viewer={viewer}
           onShowDetail={setDetail}
           onAllot={setAllotting}
+          onBulkAllot={handleBulkAllot}
         />
       )}
 
@@ -187,6 +205,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
           wards={wards}
           wardMetrics={metrics.wardMetrics}
           unassignedWardComplaints={metrics.unassignedWardComplaints}
+          scopedComplaints={scopedComplaints}
           onManageWards={() => setActiveTab('ward-manager')}
           onViewTasks={(wardId) => { setWardFilter(wardId); setActiveTab('complaints'); }}
         />
@@ -194,9 +213,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
 
       {activeTab === 'departments' && (
         <DepartmentsTab
-          visibleDepartments={visibleDepartments}
-          scopedComplaints={scopedComplaints}
-          staff={staff}
+          deptMetrics={metrics.deptMetrics}
           deptFilter={deptFilter}
           setDeptFilter={setDeptFilter}
           setActiveTab={setActiveTab}
@@ -243,8 +260,22 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
           viewer={viewer}
           staffList={staff}
           language="en"
-          onClose={() => setAllotting(null)}
-          onAllotted={fetchData}
+          onClose={() => { setAllotting(null); setBulkIds(null); }}
+          onAllotted={async () => {
+            await fetchData();
+            if (bulkIds && bulkIds.length > 1) {
+              // Move on to the next complaint in the bulk list
+              const remaining = bulkIds.slice(1);
+              const next = complaints.find((c) => c.id === remaining[0]);
+              if (next) {
+                setBulkIds(remaining);
+                setAllotting(next);
+                return;
+              }
+            }
+            setBulkIds(null);
+            setAllotting(null);
+          }}
           assignComplaint={assignComplaint}
         />
       )}
