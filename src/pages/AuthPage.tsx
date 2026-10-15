@@ -7,6 +7,7 @@ import { LoginForm } from '../components/auth/LoginForm';
 import { RegisterForm } from '../components/auth/RegisterForm';
 import { GuestButton } from '../components/auth/GuestButton';
 
+
 type Mode = 'login' | 'register';
 
 export const AuthPage: React.FC = () => {
