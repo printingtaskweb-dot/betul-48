@@ -2,27 +2,27 @@ import React from 'react';
 import { Compass, X } from 'lucide-react';
 import { card, field, primaryBtn } from '../styles';
 import { PRIMARY } from '../constants';
+import type { Ward } from '../../../../lib/wardTypes';
 import type { NearbyComplaint } from '../types';
 
 interface Props {
-  lat: number; setLat: (v: number) => void;
-  lon: number; setLon: (v: number) => void;
-  radius: number; setRadius: (v: number) => void;
-  radarLoading: boolean;
+  wards: Ward[];
+  wardId: string;
+  setWardId: (v: string) => void;
   nearby: NearbyComplaint[];
   radarMsg: string | null;
   onScan: () => void;
   onClose: () => void;
+  selectedWard: Ward | null;
 }
 
 export const RadarPanel: React.FC<Props> = ({
-  lat, setLat, lon, setLon, radius, setRadius,
-  radarLoading, nearby, radarMsg, onScan, onClose,
+  wards, wardId, setWardId, nearby, radarMsg, onScan, onClose, selectedWard,
 }) => (
   <div style={{ ...card, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
       <b style={{ fontSize: '0.88rem', color: PRIMARY, display: 'flex', alignItems: 'center', gap: 6 }}>
-        <Compass size={16} /> PostGIS Spatial Nearby Scanner
+        <Compass size={16} /> Ward Proximity Scanner
       </b>
       <button onClick={onClose} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
         <X size={16} />
@@ -31,39 +31,32 @@ export const RadarPanel: React.FC<Props> = ({
 
     <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
       <label style={{ fontSize: '0.78rem' }}>
-        Latitude:
-        <input
-          type="number"
-          step="0.0001"
-          value={lat}
-          onChange={(e) => setLat(parseFloat(e.target.value) || 0)}
-          style={{ ...field, width: 110, marginLeft: 6 }}
-        />
+        Select Ward:
+        <select
+          value={wardId}
+          onChange={(e) => setWardId(e.target.value)}
+          style={{ ...field, minWidth: 220, marginLeft: 6, cursor: 'pointer' }}
+        >
+          <option value="">— Choose a ward —</option>
+          {wards.map((w) => (
+            <option key={w.id} value={w.id}>
+              Ward {w.ward_number} · {w.name}
+            </option>
+          ))}
+        </select>
       </label>
-      <label style={{ fontSize: '0.78rem' }}>
-        Longitude:
-        <input
-          type="number"
-          step="0.0001"
-          value={lon}
-          onChange={(e) => setLon(parseFloat(e.target.value) || 0)}
-          style={{ ...field, width: 110, marginLeft: 6 }}
-        />
-      </label>
-      <label style={{ fontSize: '0.78rem' }}>
-        Radius (m):
-        <input
-          type="number"
-          step="500"
-          value={radius}
-          onChange={(e) => setRadius(parseInt(e.target.value, 10) || 1000)}
-          style={{ ...field, width: 100, marginLeft: 6 }}
-        />
-      </label>
-      <button onClick={onScan} disabled={radarLoading} style={primaryBtn}>
-        <Compass size={14} /> {radarLoading ? 'Scanning...' : 'Scan Area'}
+
+      <button onClick={onScan} disabled={!wardId} style={{ ...primaryBtn, opacity: wardId ? 1 : 0.5 }}>
+        <Compass size={14} /> Scan Area
       </button>
     </div>
+
+    {selectedWard && (
+      <div style={{ fontSize: '0.76rem', color: 'var(--gray-700)' }}>
+        📍 Center: {selectedWard.center_latitude?.toFixed(4)}, {selectedWard.center_longitude?.toFixed(4)} · 🎯 Radius:{' '}
+        {selectedWard.radius_meters} m
+      </div>
+    )}
 
     {radarMsg && (
       <div style={{ fontSize: '0.8rem', color: '#b45309', background: '#fef3c7', padding: '8px 12px', borderRadius: 6 }}>
