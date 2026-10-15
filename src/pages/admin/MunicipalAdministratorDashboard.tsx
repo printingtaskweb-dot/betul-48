@@ -35,7 +35,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
     if (!authLoading && !user) navigate('/admin', { replace: true });
   }, [user, authLoading, navigate]);
 
-  const { departments, complaints, staff, wards, loading, fetchData } = useMunicipalData();
+  const { departments, complaints, staff, wards, loading, error: dataError, fetchData } = useMunicipalData();
 
   const { viewer, myTier, isDeputyOrHigher, scopedComplaints, visibleDepartments } =
     useViewerScope(complaints, departments);
@@ -123,6 +123,12 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
   return (
     <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 1440, margin: '0 auto' }}>
       <ExecutiveHeader myTier={myTier} loading={loading} onRefresh={fetchData} />
+
+      {dataError && (
+        <div role="alert" style={{ padding: '10px 14px', borderRadius: 8, background: '#fee2e2', border: '1px solid #fca5a5', color: '#991b1b', fontSize: '0.82rem' }}>
+          Some dashboard data could not be loaded: {dataError}. Check Supabase table access and RLS policies.
+        </div>
+      )}
 
       <KpiGrid
         total={metrics.total}

@@ -1,3 +1,5 @@
+import type { Area, Ward } from '../../../lib/wardTypes';
+
 export interface ComplaintRecord {
   id: string;
   ticket_number: string;
@@ -15,7 +17,34 @@ export interface ComplaintRecord {
   assignment_notes: string | null;
   ward_id: string | null;
   area_id: string | null;
+  created_by?: string | null;
+  updated_at?: string | null;
+  assigned_by?: string | null;
+  assigned_at?: string | null;
+  location?: unknown;
   department?: { name: string; icon: string } | null;
+  ward?: Ward | null;
+  area?: Area | null;
+  assignee?: StaffMemberLite | null;
+  assigner?: StaffMemberLite | null;
+  resolutions?: ResolutionRecord[];
+  verifications?: VerificationRecord[];
+}
+
+export interface ResolutionRecord {
+  id: string;
+  admin_note: string | null;
+  resolution_photo_url: string | null;
+  resolved_by: string;
+  resolved_at: string | null;
+}
+
+export interface VerificationRecord {
+  id: string;
+  verified_by: string;
+  is_satisfied: boolean;
+  note: string | null;
+  verified_at: string | null;
 }
 
 export interface DepartmentRow {
@@ -61,11 +90,12 @@ export interface StaffMemberLite {
   id: string;
   full_name: string | null;
   phone: string | null;
-  role: string;
-  hierarchy_code: string | null;
-  authority_role: string | null;
+  email?: string | null;
+  role: string | null;
+  hierarchy_code?: string | null;
+  authority_role?: string | null;
   linked_department_id: string | null;
-  ward_number: string | null;
+  ward_number?: string | null;
 }
 
 export type ViewTab =

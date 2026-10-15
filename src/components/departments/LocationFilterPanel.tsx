@@ -44,8 +44,13 @@ const primaryBtn: React.CSSProperties = {
 
 type Mode = 'ward' | 'radius' | 'text';
 
+type LocationComplaint = DeptComplaint & {
+  ward_id?: string | null;
+  area?: { ward_id?: string | null } | null;
+};
+
 interface Props {
-  complaints: DeptComplaint[];
+  complaints: LocationComplaint[];
   wards: Ward[];
   language?: 'en' | 'hi';
   onAllocate: (c: DeptComplaint) => void;
@@ -106,6 +111,7 @@ export const LocationFilterPanel: React.FC<Props> = ({
 
     if (mode === 'ward' && activeWard) {
       list = list.filter((c) => {
+        if (c.ward_id === activeWard.id || c.area?.ward_id === activeWard.id) return true;
         if (c.latitude == null || c.longitude == null) return false;
         if (
           activeWard.center_latitude == null ||

@@ -1,6 +1,6 @@
 import React, { useMemo, useState } from 'react';
 import { Eye, Briefcase, CheckSquare, Square, Users, ChevronRight } from 'lucide-react';
-import { card, outlineBtn, primaryBtn, field } from '../styles';
+import { card, outlineBtn, primaryBtn } from '../styles';
 import { BORDER, PRIMARY } from '../constants';
 import { isDone, statusStyle } from '../utils/statusStyle';
 import { getTier, canAllotComplaint, TIER_LABEL } from '../../../../lib/hierarchy';
@@ -24,7 +24,6 @@ export const ComplaintsTab: React.FC<Props> = ({
   filtered, wards, departments, staffById, staff, viewer, onShowDetail, onAllot, onBulkAllot,
 }) => {
   const [selection, setSelection] = useState<Set<string>>(new Set());
-  const [expandedDept, setExpandedDept] = useState<string | null>(null);
 
   const toggle = (id: string) => {
     const next = new Set(selection);

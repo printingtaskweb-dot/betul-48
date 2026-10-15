@@ -19,7 +19,11 @@ interface Props {
 
 export const ComplaintDetailModal: React.FC<Props> = ({
   detail, wards, staffById, viewer, onClose, onAllot,
-}) => (
+}) => {
+  const ward = detail.ward || wards.find((item) => item.id === detail.ward_id);
+  const assignedStaff = detail.assignee || (detail.assigned_to ? staffById[detail.assigned_to] : null);
+
+  return (
   <div
     style={{
       position: 'fixed', inset: 0, zIndex: 1100,
@@ -30,7 +34,7 @@ export const ComplaintDetailModal: React.FC<Props> = ({
   >
     <div style={{
       ...card, borderRadius: 'var(--radius-xl, 16px)',
-      width: '100%', maxWidth: 560, maxHeight: '88vh', overflowY: 'auto',
+      width: '100%', maxWidth: 720, maxHeight: '88vh', overflowY: 'auto',
     }}>
       <div style={{
         background: 'var(--header-gradient, linear-gradient(135deg, #4d0026, #660033, #800040))',
@@ -43,10 +47,7 @@ export const ComplaintDetailModal: React.FC<Props> = ({
           </h3>
           <p style={{ margin: 0, fontSize: '0.74rem', opacity: 0.9 }}>
             {detail.department?.name || 'Municipal'} Department
-            {(() => {
-              const w = wards.find((x) => x.id === detail.ward_id);
-              return w ? ` · Ward ${w.ward_number}` : '';
-            })()}
+            {ward ? ` · Ward ${ward.ward_number} · ${ward.name}` : ''}
           </p>
         </div>
         <button
@@ -71,29 +72,82 @@ export const ComplaintDetailModal: React.FC<Props> = ({
           <div style={{ marginTop: 4 }}>{detail.description}</div>
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: '0.8rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 8, fontSize: '0.8rem' }}>
           <div><b>Citizen:</b> {detail.citizen_name || 'Anonymous'}</div>
           <div><b>Phone:</b> {detail.citizen_phone || 'N/A'}</div>
+          <div><b>Department:</b> {detail.department?.name || 'N/A'}</div>
           <div>
             <b>Status:</b>{' '}
             <span style={{ textTransform: 'uppercase', fontWeight: 800 }}>{detail.status}</span>
           </div>
           <div><b>Registered:</b> {new Date(detail.created_at).toLocaleString()}</div>
+          <div><b>Last updated:</b> {detail.updated_at ? new Date(detail.updated_at).toLocaleString() : 'N/A'}</div>
           {detail.address && <div style={{ gridColumn: 'span 2' }}><b>Address:</b> {detail.address}</div>}
-          {detail.ward_id && (
+          {ward && (
             <div>
-              <b>Ward:</b>{' '}
-              {(() => {
-                const w = wards.find((x) => x.id === detail.ward_id);
-                return w ? `Ward ${w.ward_number} · ${w.name}` : '—';
-              })()}
+              <b>Ward:</b> {ward.ward_number} · {ward.name}
             </div>
           )}
-          <div style={{ gridColumn: 'span 2' }}>
-            <b>Assigned Officer:</b>{' '}
-            {detail.assigned_to ? staffById[detail.assigned_to]?.full_name || 'Staff' : 'Not assigned'}
+          {detail.area && <div><b>Area:</b> {detail.area.name}</div>}
+          {(detail.latitude != null || detail.longitude != null) && (
+            <div><b>Coordinates:</b> {detail.latitude ?? 'N/A'}, {detail.longitude ?? 'N/A'}</div>
+          )}
+          <div>
+            <b>Assigned officer:</b> {assignedStaff?.full_name || (detail.assigned_to ? 'Staff' : 'Not assigned')}
+            {assignedStaff?.role && <span> · {assignedStaff.role}</span>}
+            {assignedStaff?.phone && <span> · {assignedStaff.phone}</span>}
+          </div>
+          <div>
+            <b>Assigned by:</b> {detail.assigner?.full_name || detail.assigned_by || 'N/A'}
+          </div>
+          <div>
+            <b>Assigned at:</b> {detail.assigned_at ? new Date(detail.assigned_at).toLocaleString() : 'N/A'}
           </div>
         </div>
+
+        {detail.assignment_notes && (
+          <div style={{ ...field, lineHeight: 1.5 }}>
+            <b>Assignment notes:</b>
+            <div style={{ marginTop: 4 }}>{detail.assignment_notes}</div>
+          </div>
+        )}
+
+        {(detail.resolutions?.length || 0) > 0 && (
+          <section style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <b>Resolution history</b>
+            {detail.resolutions?.map((resolution) => (
+              <div key={resolution.id} style={{ ...field, lineHeight: 1.5 }}>
+                <div><b>Resolved:</b> {resolution.resolved_at ? new Date(resolution.resolved_at).toLocaleString() : 'N/A'}</div>
+                <div><b>Resolved by:</b> {resolution.resolved_by}</div>
+                {resolution.admin_note && <div><b>Note:</b> {resolution.admin_note}</div>}
+                {resolution.resolution_photo_url && (
+                  <a href={resolution.resolution_photo_url} target="_blank" rel="noreferrer">View resolution photo</a>
+                )}
+              </div>
+            ))}
+          </section>
+        )}
+
+        {(detail.verifications?.length || 0) > 0 && (
+          <section style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <b>Citizen verifications</b>
+            {detail.verifications?.map((verification) => (
+              <div key={verification.id} style={{ ...field, lineHeight: 1.5 }}>
+                <div><b>Result:</b> {verification.is_satisfied ? 'Satisfied' : 'Not satisfied'}</div>
+                <div><b>Verified by:</b> {verification.verified_by}</div>
+                <div><b>Verified at:</b> {verification.verified_at ? new Date(verification.verified_at).toLocaleString() : 'N/A'}</div>
+                {verification.note && <div><b>Note:</b> {verification.note}</div>}
+              </div>
+            ))}
+          </section>
+        )}
+
+        <details style={{ fontSize: '0.78rem' }}>
+          <summary style={{ cursor: 'pointer', fontWeight: 800 }}>Full complaint record</summary>
+          <pre style={{ maxHeight: 260, overflow: 'auto', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', padding: 10, background: 'var(--theme-bg, #fff4e7)', borderRadius: 6 }}>
+            {JSON.stringify(detail, null, 2)}
+          </pre>
+        </details>
 
         {canAllotComplaint(viewer, detail.department_id) && !isDone(detail.status) && (
           <button
@@ -109,4 +163,5 @@ export const ComplaintDetailModal: React.FC<Props> = ({
       </div>
     </div>
   </div>
-);
+  );
+};

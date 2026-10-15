@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import { MapPin, Layers, Eye, Navigation, Crosshair } from 'lucide-react';
 import { card, outlineBtn, primaryBtn } from '../styles';
 import { BORDER, PRIMARY } from '../constants';
@@ -30,12 +30,6 @@ export const WardsTab: React.FC<Props> = ({
   onManageWards, onViewTasks,
 }) => {
   const [expandedWardId, setExpandedWardId] = useState<string | null>(null);
-
-  const wardIdToWard = useMemo(() => {
-    const map: Record<string, Ward> = {};
-    wards.forEach((w) => (map[w.id] = w));
-    return map;
-  }, [wards]);
 
   /* Complaints that fall inside a given ward's radius (GPS-based) */
   const nearbyForWard = (ward: Ward): ComplaintRecord[] => {

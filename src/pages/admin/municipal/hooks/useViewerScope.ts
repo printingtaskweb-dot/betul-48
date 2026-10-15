@@ -11,24 +11,34 @@ export const useViewerScope = (
   const { user, profile, isAdmin } = useAuth();
 
   const viewer: Viewer = useMemo(() => {
-    const isMunicipalAdmin =
-      !profile?.linked_department_id ||
+    const isMunicipalHead =
+      isAdmin ||
       profile?.role === 'admin' ||
       profile?.role === 'municipal_administrator' ||
+      profile?.authority_role === 'municipal_commissioner';
+    const isDeputyCommissioner =
       profile?.role === 'deputy_commissioner' ||
-      profile?.authority_role === 'deputy_commissioner' ||
+      profile?.authority_role === 'deputy_commissioner';
+    const hasCitywideRole = isMunicipalHead || isDeputyCommissioner;
+    const isMunicipalAdmin =
+      hasCitywideRole ||
+      !profile?.linked_department_id ||
       profile?.authority_role === 'municipal_commissioner';
 
     return {
       id: user?.id || '',
-      role: isMunicipalAdmin
-        ? profile?.role || 'municipal_administrator'
-        : profile?.role || 'dept_staff',
+      role: hasCitywideRole
+        ? isDeputyCommissioner && !isMunicipalHead
+          ? 'deputy_commissioner'
+          : 'admin'
+        : isMunicipalAdmin
+          ? profile?.role || 'municipal_administrator'
+          : profile?.role || 'dept_staff',
       linked_department_id: isMunicipalAdmin
         ? null
         : profile?.linked_department_id || null,
-      hierarchy_code: profile?.hierarchy_code || null,
-      authority_role: profile?.authority_role || null,
+      hierarchy_code: hasCitywideRole ? null : profile?.hierarchy_code || null,
+      authority_role: hasCitywideRole ? null : profile?.authority_role || null,
       is_admin: isAdmin,
     };
   }, [user, profile, isAdmin]);
