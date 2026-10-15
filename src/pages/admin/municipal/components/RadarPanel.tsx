@@ -81,3 +81,8 @@ export const RadarPanel: React.FC<Props> = ({
             </div>
             <div style={{ marginTop: 4 }}>{n.description}</div>
           </div>
+        ))}
+      </div>
+    )}
+  </div>
+);
