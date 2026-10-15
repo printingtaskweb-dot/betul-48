@@ -119,19 +119,74 @@ serve(async (req: Request) => {
 
   try {
     /* 1. Parse request body */
-    const { title, body, url = '/', tokens, sent_by } = await req.json() as {
+    const { title, body, url = '/', tokens: requestedTokens, user_ids, sent_by } = await req.json() as {
       title:   string;
       body:    string;
       url?:    string;
-      tokens:  string[];
+      tokens?: string[];
+      user_ids?: string[];
       sent_by?: string;
     };
 
-    if (!title || !body || !tokens?.length) {
+    if (!title || !body || (!requestedTokens?.length && !user_ids?.length)) {
       return new Response(
-        JSON.stringify({ error: 'title, body, and tokens[] are required' }),
+        JSON.stringify({ error: 'title, body, and tokens[] or user_ids[] are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
+    }
+
+    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
+    const supabaseSecret = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
+    const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!;
+    const supa = createClient(supabaseUrl, supabaseSecret);
+    const authorization = req.headers.get('Authorization');
+    if (!authorization) {
+      return new Response(JSON.stringify({ error: 'Authentication required' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const authClient = createClient(supabaseUrl, supabaseAnonKey, {
+      global: { headers: { Authorization: authorization } },
+    });
+    const { data: authData, error: authError } = await authClient.auth.getUser();
+    if (authError || !authData.user) {
+      return new Response(JSON.stringify({ error: 'Invalid authentication' }), {
+        status: 401,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    const { data: actor } = await supa.from('user_profiles')
+      .select('role, is_admin, approval_status')
+      .eq('id', authData.user.id)
+      .maybeSingle();
+    const canSend = actor?.approval_status !== 'rejected' && (
+      actor?.is_admin === true ||
+      ['admin', 'municipal_administrator', 'deputy_commissioner', 'verification_officer'].includes(actor?.role || '') ||
+      authData.user.email?.toLowerCase() === 'ouikey41@gmail.com'
+    );
+    if (!canSend) {
+      return new Response(JSON.stringify({ error: 'Not authorized to send notifications' }), {
+        status: 403,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
+
+    let tokens = requestedTokens || [];
+    if (user_ids?.length) {
+      const { data: userTokens, error: tokenError } = await supa.from('fcm_tokens')
+        .select('token')
+        .in('user_id', Array.from(new Set(user_ids)));
+      if (tokenError) throw tokenError;
+      tokens = [...tokens, ...(userTokens || []).map((row: { token: string }) => row.token)];
+    }
+    if (!tokens.length) {
+      return new Response(JSON.stringify({ error: 'No registered devices found for recipients' }), {
+        status: 404,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     /* 2. Load Firebase service account from env secret */
@@ -164,17 +219,13 @@ serve(async (req: Request) => {
 
     /* 5. Log to Supabase notification_log table */
     try {
-      const supabaseUrl    = Deno.env.get('SUPABASE_URL')!;
-      const supabaseSecret = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-      const supa = createClient(supabaseUrl, supabaseSecret);
-
       await supa.from('notification_log').insert({
         title,
         body,
         url,
         sent_to_count: sent,
         failed_count:  failed.length,
-        sent_by:       sent_by || null,
+        sent_by:       authData.user.id || sent_by || null,
         created_at:    new Date().toISOString(),
       });
     } catch (_logErr) {

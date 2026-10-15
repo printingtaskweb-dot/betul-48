@@ -76,6 +76,7 @@ const ROLES: { value: string; en: string; hi: string }[] = [
   { value: 'field_employee',          en: 'Operational Staff',       hi: 'संचालन कर्मचारी' },
   { value: 'dept_staff',              en: 'Department Staff',        hi: 'विभाग कर्मचारी' },
   { value: 'control_room',            en: 'Control Room',            hi: 'कंट्रोल रूम' },
+  { value: 'verification_officer',    en: 'Verifier / Appeals Officer', hi: 'सत्यापन / अपील अधिकारी' },
   { value: 'management_viewer',       en: 'Management Viewer',       hi: 'प्रबंधन दर्शक' },
   { value: 'citizen',                 en: 'Citizen (remove access)', hi: 'नागरिक (अधिकार हटाएं)' },
 ];

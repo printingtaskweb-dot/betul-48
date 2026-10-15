@@ -394,6 +394,9 @@ export const Home: React.FC = () => {
                 <Link to="/track" style={{ fontFamily: '"Geist", sans-serif', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
                   {t(language, 'trackComplaint')}
                 </Link>
+                <Link to="/callback" style={{ fontFamily: '"Geist", sans-serif', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
+                  {language === 'hi' ? 'कॉल बैक का अनुरोध करें' : 'Request a callback'}
+                </Link>
                 <Link to="/department/green" style={{ fontFamily: '"Geist", sans-serif', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
                   🌿 {language === 'hi' ? 'हरित अपशिष्ट संग्रहण' : 'Green Waste Pickup'}
                 </Link>

@@ -9,7 +9,8 @@ import { AlertBanner } from './AlertBanner';
 
 const STAFF_ROLES = [
   'dept_staff', 'admin', 'department_head', 'supervisor', 'control_room',
-  'management_viewer', 'field_employee', 'municipal_administrator',
+  'management_viewer', 'field_employee', 'municipal_administrator', 'verification_officer',
+  'deputy_commissioner', 'area_officer', 'operational_staff',
 ];
 
 interface Props {

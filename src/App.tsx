@@ -17,6 +17,7 @@ import ProfilePage from './pages/ProfilePage';
 import { FloatingNewsWidget } from './components/FloatingNewsWidget';
 import { FCMRegistrar } from './components/FCMRegistrar';
 import { NotificationPrompt } from './components/NotificationPrompt';
+import CitizenCallbackPage from './pages/CitizenCallbackPage';
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -110,6 +111,7 @@ const AppRoutes: React.FC = () => (
     <Route path="/profile" element={<ProfilePage />} />
     <Route path="/complaint/new" element={<ComplaintForm />} />
     <Route path="/track" element={<TrackComplaint />} />
+    <Route path="/callback" element={<CitizenCallbackPage />} />
 
     {/* Department-specific routes */}
     <Route path="/department/green" element={<GreenDepartmentPage />} />

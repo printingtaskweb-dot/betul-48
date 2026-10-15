@@ -11,6 +11,8 @@ import type { StaffMember, Viewer } from '../lib/hierarchy';
 import { WardManager } from '../components/departments/WardManager';
 import { LocationFilterPanel } from '../components/departments/LocationFilterPanel';
 import MunicipalAdministratorDashboard from './admin/MunicipalAdministratorDashboard';
+import ControlRoomDashboard from './ControlRoomDashboard';
+import VerifierDashboard from './VerifierDashboard';
 import type { Ward } from '../lib/wardTypes';
 import {
   Building2, Search, Filter, CheckCircle, Clock,
@@ -35,7 +37,7 @@ const STATUS_CONFIG: Record<string, { label: string; labelHi: string; color: str
 const STAFF_ROLES = [
   'dept_staff', 'admin', 'department_head', 'supervisor', 'control_room',
   'management_viewer', 'field_employee', 'municipal_administrator',
-  'deputy_commissioner', 'area_officer', 'operational_staff',
+  'deputy_commissioner', 'area_officer', 'operational_staff', 'verification_officer',
 ];
 
 interface Department {
@@ -726,7 +728,8 @@ export default function DeptDashboard() {
       }
 
       const myTierVal = getTier(data.role, data.hierarchy_code, data.authority_role);
-      const isOrg = Boolean(data.is_admin) || myTierVal <= 1 || (!data.linked_department_id && (data.role === 'municipal_administrator' || data.role === 'admin' || data.role === 'deputy_commissioner'));
+      const isDedicatedRole = data.role === 'control_room' || data.role === 'verification_officer';
+      const isOrg = Boolean(data.is_admin) || myTierVal <= 1 || isDedicatedRole || (!data.linked_department_id && (data.role === 'municipal_administrator' || data.role === 'admin' || data.role === 'deputy_commissioner'));
       const effectiveRole = isOrg ? (data.role || 'municipal_administrator') : (data.role || 'dept_staff');
       let dName: string | null = null;
       let dIcon: string | null = null;
@@ -987,6 +990,9 @@ export default function DeptDashboard() {
       </div>
     );
   }
+
+  if (profile?.role === 'control_room') return <ControlRoomDashboard />;
+  if (profile?.role === 'verification_officer') return <VerifierDashboard />;
 
   if (noDept) {
     return (

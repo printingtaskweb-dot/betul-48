@@ -202,7 +202,7 @@ const GENERIC_DEFAULT_DESIGNATIONS: Designation[] = [
 
   /* ---------- derived ---------- */
   const isDeptRole = roleKey.startsWith('dept:');
-  const needsOfficer = roleKey !== 'municipal_commissioner';
+  const needsOfficer = !['municipal_commissioner', 'control_room', 'verification_officer'].includes(roleKey);
   const needsDeputy = isDeptRole && !!selectedDesig &&
     (selectedDesig.hierarchy_code === 'department_head' || selectedDesig.tier === 1);
 
@@ -249,7 +249,7 @@ const GENERIC_DEFAULT_DESIGNATIONS: Designation[] = [
     // flow changes with roleKey, so compute the target manually
     setError('');
     if (roleKey.startsWith('dept:')) setStage('level');
-    else if (roleKey !== 'municipal_commissioner') setStage('officer');
+    else if (needsOfficer) setStage('officer');
     else setStage('details');
   };
 
@@ -592,6 +592,8 @@ const GENERIC_DEFAULT_DESIGNATIONS: Designation[] = [
                 <optgroup label="Authority">
                   <option value="municipal_commissioner">Municipal Commissioner</option>
                   <option value="deputy_commissioner">Deputy Commissioner</option>
+                  <option value="control_room">Control Room</option>
+                  <option value="verification_officer">Verifier / Appeals Officer</option>
                 </optgroup>
                 <optgroup label="Departments">
                   {departments.map(d => <option key={d.id} value={`dept:${d.id}`}>{d.icon} {d.name}</option>)}
