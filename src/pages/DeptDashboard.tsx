@@ -10,6 +10,7 @@ import {
 import type { StaffMember, Viewer } from '../lib/hierarchy';
 import { WardManager } from '../components/departments/WardManager';
 import { LocationFilterPanel } from '../components/departments/LocationFilterPanel';
+import MunicipalAdministratorDashboard from './admin/MunicipalAdministratorDashboard';
 import type { Ward } from '../lib/wardTypes';
 import {
   Building2, Search, Filter, CheckCircle, Clock,
@@ -643,7 +644,7 @@ function ComplaintDetailCard({
 
 // ─── Main Department Dashboard ──────────────────────────────────────────────
 export default function DeptDashboard() {
-  const { user, language } = useAuth();
+  const { user, language, isAdmin } = useAuth();
   const navigate = useNavigate();
   const hi = language === 'hi';
 
@@ -1007,6 +1008,10 @@ export default function DeptDashboard() {
         </div>
       </div>
     );
+  }
+
+  if (isAdmin || myTier <= 2) {
+    return <MunicipalAdministratorDashboard />;
   }
 
   const canAllotAnything = myTier <= 4;
