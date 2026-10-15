@@ -1,140 +1,189 @@
 import React from 'react';
 import { card } from '../styles';
 import { BORDER, PRIMARY } from '../constants';
-import { isDone } from '../utils/statusStyle';
-import { getTier } from '../../../../lib/hierarchy';
-import type { StaffMember } from '../../../../lib/hierarchy';
-import type { ComplaintRecord, DepartmentRow } from '../types';
+import type { DeptMetric, AreaHotspot } from '../types';
 
 interface Props {
-  visibleDepartments: DepartmentRow[];
-  scopedComplaints: ComplaintRecord[];
-  staff: StaffMember[];
-  deptFilter: string;
-  setDeptFilter: (v: string) => void;
-  isDeputyOrHigher: boolean;
+  deptMetrics: DeptMetric[];
+  areaHotspots: AreaHotspot[];
   slaMetrics: { fastCount: number; standardCount: number; overdueCount: number };
+  onDeptClick: (deptId: string) => void;
+  onAreaClick: (area: AreaHotspot) => void;
+  isDeputyOrHigher: boolean;
 }
 
 export const OverviewTab: React.FC<Props> = ({
-  visibleDepartments, scopedComplaints, staff,
-  deptFilter, setDeptFilter, isDeputyOrHigher, slaMetrics,
+  deptMetrics, areaHotspots, slaMetrics, onDeptClick, onAreaClick, isDeputyOrHigher,
 }) => {
-  const headOf = (deptId: string) =>
-    staff.find(
-      (s) =>
-        s.linked_department_id === deptId &&
-        getTier(s.role, s.hierarchy_code, s.authority_role) === 2
-    );
+  const maxTotal = Math.max(1, ...deptMetrics.map((d) => d.total));
+  const maxAreaTotal = Math.max(1, ...areaHotspots.map((a) => a.total));
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+      {/* ── Bar Chart: Department Workload ── */}
       <div style={{ ...card, padding: '20px 22px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
           <div>
             <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 900, color: 'var(--gray-900)' }}>
-              📊 Department Workload & Performance Comparison
+              📊 Department Workload Bar Chart
             </h3>
             <p style={{ margin: '3px 0 0', fontSize: '0.76rem', color: 'var(--gray-600)' }}>
-              Comparative workload bars across municipal departments. Click any department bar to filter tasks.
+              Horizontal bars show completed vs remaining complaints per department, ranked by total volume.
             </p>
           </div>
-          <span style={{
-            fontSize: '0.74rem', fontWeight: 800, padding: '4px 10px', borderRadius: 12,
-            background: 'var(--theme-bg, #fff4e7)', border: BORDER, color: PRIMARY,
-          }}>
-            Live Metrics
-          </span>
+          <div style={{ display: 'flex', gap: 12, fontSize: '0.72rem', fontWeight: 700 }}>
+            <LegendDot color="#15803d" label="Resolved" />
+            <LegendDot color="#3730a3" label="In Progress" />
+            <LegendDot color="#b45309" label="Pending" />
+            <LegendDot color="#991b1b" label="Overdue" />
+          </div>
         </div>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
-          {visibleDepartments.map((dept) => {
-            const deptComps = scopedComplaints.filter((c) => c.department_id === dept.id);
-            const deptResolved = deptComps.filter((c) => isDone(c.status)).length;
-            const deptInProgress = deptComps.filter((c) => c.status === 'in_progress').length;
-            const deptPending = deptComps.filter((c) => c.status === 'pending').length;
-            const deptTotal = deptComps.length;
-            const rate = deptTotal > 0 ? Math.round((deptResolved / deptTotal) * 100) : 0;
-            const head = headOf(dept.id);
-            const isSelected = deptFilter === dept.id;
-
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+          {deptMetrics.map((m) => {
+            const widthPct = (m.total / maxTotal) * 100;
             return (
               <div
-                key={dept.id}
-                onClick={() => { if (isDeputyOrHigher) setDeptFilter(isSelected ? 'all' : dept.id); }}
+                key={m.dept.id}
+                onClick={() => isDeputyOrHigher && onDeptClick(m.dept.id)}
                 style={{
-                  padding: '12px 16px',
-                  borderRadius: 10,
-                  background: isSelected ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
-                  border: isSelected ? `2px solid ${PRIMARY}` : BORDER,
+                  display: 'grid',
+                  gridTemplateColumns: 'minmax(140px, 200px) 1fr auto',
+                  gap: 12,
+                  alignItems: 'center',
                   cursor: isDeputyOrHigher ? 'pointer' : 'default',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  gap: 8,
-                  transition: 'all 0.15s ease',
+                  padding: '4px 0',
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 6 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: '1.25rem' }}>{dept.icon}</span>
-                    <b style={{ fontSize: '0.9rem', color: 'var(--gray-900)' }}>{dept.name}</b>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--gray-600)' }}>
-                      • Head: <b>{head?.full_name || 'Not assigned'}</b>
-                    </span>
-                  </div>
-                  <div style={{ fontSize: '0.76rem', display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ color: '#15803d', fontWeight: 800 }}>Resolved: {deptResolved}</span>
-                    <span style={{ color: '#3730a3', fontWeight: 700 }}>In Progress: {deptInProgress}</span>
-                    <span style={{ color: '#b45309', fontWeight: 700 }}>Pending: {deptPending}</span>
-                    <span style={{ fontWeight: 900, color: PRIMARY, marginLeft: 4 }}>
-                      Total: {deptTotal} ({rate}%)
-                    </span>
-                  </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', fontWeight: 700 }}>
+                  <span style={{ fontSize: '1.1rem' }}>{m.dept.icon}</span>
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {m.dept.name}
+                  </span>
                 </div>
 
-                <div style={{
-                  height: 12, borderRadius: 6,
-                  background: 'var(--theme-component-border, #bfbfbf)',
-                  display: 'flex', overflow: 'hidden', width: '100%',
-                }}>
-                  {deptTotal > 0 ? (
-                    <>
-                      <div style={{ width: `${(deptResolved / deptTotal) * 100}%`, background: '#15803d', transition: 'width 0.4s ease' }} />
-                      <div style={{ width: `${(deptInProgress / deptTotal) * 100}%`, background: '#3730a3', transition: 'width 0.4s ease' }} />
-                      <div style={{ width: `${(deptPending / deptTotal) * 100}%`, background: '#b45309', transition: 'width 0.4s ease' }} />
-                    </>
-                  ) : (
-                    <div style={{ width: '100%', background: 'rgba(0,0,0,0.06)' }} />
+                <div style={{ position: 'relative', height: 22, background: 'rgba(0,0,0,0.05)', borderRadius: 6 }}>
+                  <div style={{ display: 'flex', height: '100%', width: `${widthPct}%`, borderRadius: 6, overflow: 'hidden', transition: 'width 0.4s ease' }}>
+                    {m.resolved > 0 && <div style={{ width: `${(m.resolved / m.total) * 100}%`, background: '#15803d' }} />}
+                    {m.inProgress > 0 && <div style={{ width: `${(m.inProgress / m.total) * 100}%`, background: '#3730a3' }} />}
+                    {m.pending > 0 && <div style={{ width: `${(m.pending / m.total) * 100}%`, background: '#b45309' }} />}
+                  </div>
+                  {m.overdue > 0 && (
+                    <div
+                      title={`${m.overdue} overdue`}
+                      style={{
+                        position: 'absolute', right: -4, top: -4, bottom: -4, width: 3,
+                        background: '#991b1b', borderRadius: 2,
+                      }}
+                    />
                   )}
+                </div>
+
+                <div style={{ display: 'flex', gap: 8, fontSize: '0.74rem', whiteSpace: 'nowrap' }}>
+                  <b style={{ color: PRIMARY }}>{m.total}</b>
+                  <span style={{ color: '#15803d' }}>✓ {m.resolved}</span>
+                  <span style={{ color: '#b45309' }}>⌛ {m.pending}</span>
+                  {m.overdue > 0 && <span style={{ color: '#991b1b', fontWeight: 800 }}>⚠ {m.overdue}</span>}
+                  <span style={{ color: 'var(--gray-600)' }}>({m.rate}%)</span>
                 </div>
               </div>
             );
           })}
+
+          {deptMetrics.length === 0 && (
+            <div style={{ padding: 24, textAlign: 'center', color: 'var(--gray-500)', fontSize: '0.85rem' }}>
+              No department data available yet.
+            </div>
+          )}
         </div>
       </div>
 
+      {/* ── Area Hotspot Ranking ── */}
+      <div style={{ ...card, padding: '20px 22px' }}>
+        <h3 style={{ margin: '0 0 4px', fontSize: '1.05rem', fontWeight: 900, color: 'var(--gray-900)' }}>
+          🗺️ Area Hotspot Ranking
+        </h3>
+        <p style={{ margin: '0 0 14px', fontSize: '0.76rem', color: 'var(--gray-600)' }}>
+          Wards / areas with highest complaint density. Click any row to filter complaints in that area.
+        </p>
+
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 10 }}>
+          {areaHotspots.map((a, idx) => {
+            const intensity = a.total / maxAreaTotal;
+            const bg = intensity > 0.66 ? '#fee2e2' : intensity > 0.33 ? '#fef3c7' : '#dcfce7';
+            const fg = intensity > 0.66 ? '#991b1b' : intensity > 0.33 ? '#854d0e' : '#166534';
+
+            return (
+              <div
+                key={a.key}
+                onClick={() => isDeputyOrHigher && onAreaClick(a)}
+                style={{
+                  padding: '12px 14px', borderRadius: 10,
+                  border: BORDER, background: bg,
+                  cursor: isDeputyOrHigher ? 'pointer' : 'default',
+                  display: 'flex', flexDirection: 'column', gap: 6,
+                }}
+              >
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{
+                      background: fg, color: '#fff', fontWeight: 900,
+                      fontSize: '0.68rem', padding: '2px 7px', borderRadius: 10,
+                    }}>#{idx + 1}</span>
+                    <b style={{ fontSize: '0.86rem', color: 'var(--gray-900)' }}>{a.label}</b>
+                  </div>
+                  <span style={{ fontSize: '0.9rem', fontWeight: 900, color: fg }}>{a.total}</span>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: fg, fontWeight: 700 }}>
+                  <span>✓ Resolved: {a.resolved}</span>
+                  <span>⌛ Pending: {a.pending}</span>
+                </div>
+                {a.topDepartment && (
+                  <div style={{ fontSize: '0.7rem', color: 'var(--gray-700)' }}>
+                    🔥 Top dept: <b>{a.topDepartment}</b>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+
+          {areaHotspots.length === 0 && (
+            <div style={{ padding: 24, textAlign: 'center', color: 'var(--gray-500)', fontSize: '0.85rem' }}>
+              No area hotspots detected yet.
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* ── SLA ── */}
       <div style={{ ...card, padding: '20px 22px' }}>
         <h3 style={{ margin: '0 0 12px', fontSize: '1.05rem', fontWeight: 900, color: 'var(--gray-900)' }}>
           ⏱️ Turnaround Timing & SLA Resolution Compliance
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-          <div style={{ padding: '12px 14px', borderRadius: 8, background: '#dcfce7', border: '1.5px solid #86efac' }}>
-            <b style={{ fontSize: '0.86rem', color: '#166534' }}>⚡ Fast Resolution (&lt; 24h)</b>
-            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#166534', marginTop: 4 }}>{slaMetrics.fastCount}</div>
-            <div style={{ fontSize: '0.72rem', color: '#166534', marginTop: 2 }}>Complaints resolved within 24 hours</div>
-          </div>
-          <div style={{ padding: '12px 14px', borderRadius: 8, background: '#fef3c7', border: '1.5px solid #fde047' }}>
-            <b style={{ fontSize: '0.86rem', color: '#854d0e' }}>⏳ Standard Resolution (24 - 72h)</b>
-            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#854d0e', marginTop: 4 }}>{slaMetrics.standardCount}</div>
-            <div style={{ fontSize: '0.72rem', color: '#854d0e', marginTop: 2 }}>Resolved within regular SLA threshold</div>
-          </div>
-          <div style={{ padding: '12px 14px', borderRadius: 8, background: '#fee2e2', border: '1.5px solid #fca5a5' }}>
-            <b style={{ fontSize: '0.86rem', color: '#991b1b' }}>🚨 Overdue / SLA Breached (&gt; 72h)</b>
-            <div style={{ fontSize: '1.4rem', fontWeight: 900, color: '#991b1b', marginTop: 4 }}>{slaMetrics.overdueCount}</div>
-            <div style={{ fontSize: '0.72rem', color: '#991b1b', marginTop: 2 }}>Requires urgent head intervention</div>
-          </div>
+          <SlaCard title="⚡ Fast Resolution (< 24h)" value={slaMetrics.fastCount} subtitle="Complaints resolved within 24 hours" bg="#dcfce7" border="#86efac" fg="#166534" />
+          <SlaCard title="⏳ Standard Resolution (24 - 72h)" value={slaMetrics.standardCount} subtitle="Resolved within regular SLA threshold" bg="#fef3c7" border="#fde047" fg="#854d0e" />
+          <SlaCard title="🚨 Overdue / SLA Breached (> 72h)" value={slaMetrics.overdueCount} subtitle="Requires urgent head intervention" bg="#fee2e2" border="#fca5a5" fg="#991b1b" />
         </div>
       </div>
     </div>
   );
 };
+
+const LegendDot: React.FC<{ color: string; label: string }> = ({ color, label }) => (
+  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+    <span style={{ width: 10, height: 10, background: color, borderRadius: 2, display: 'inline-block' }} />
+    {label}
+  </span>
+);
+
+const SlaCard: React.FC<{
+  title: string; value: number; subtitle: string;
+  bg: string; border: string; fg: string;
+}> = ({ title, value, subtitle, bg, border, fg }) => (
+  <div style={{ padding: '12px 14px', borderRadius: 8, background: bg, border: `1.5px solid ${border}` }}>
+    <b style={{ fontSize: '0.86rem', color: fg }}>{title}</b>
+    <div style={{ fontSize: '1.4rem', fontWeight: 900, color: fg, marginTop: 4 }}>{value}</div>
+    <div style={{ fontSize: '0.72rem', color: fg, marginTop: 2 }}>{subtitle}</div>
+  </div>
+);
