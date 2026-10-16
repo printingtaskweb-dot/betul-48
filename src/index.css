@@ -2,8 +2,6 @@
    Jila Betul — Premium Editorial Design System
    ========================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400..700&family=Geist:wght@300..700&family=Geist+Mono:wght@400..600&family=Noto+Sans+Devanagari:wght@400;500;600;700;800&display=swap');
-
 *, *::before, *::after {
   margin: 0;
   padding: 0;
@@ -12,18 +10,22 @@
 
 :root {
   /* =========================================================================
-     🎨 PREMIUM EDITORIAL TOKENS (No Gold, High Aesthetic)
+     🎨 BETUL CIVIC PALETTE
      ========================================================================= */
   /* Backgrounds */
-  --bg-1: #F4F2EF;
-  --bg-2: #EBE7E2;
+  --bg-1: #FFF8F2;
+  --bg-2: #FFF1E8;
   --surface: #FFFFFF;
-  --surface-2: #FAF9F8;
+  --surface-2: #FFFAF6;
 
-  /* Deep Sophisticated Tones */
-  --burgundy: #4A0E1F;
-  --burgundy-dark: #320813;
-  --burgundy-light: #5E1A2C;
+  /* Shared accent palette: softer tones for supporting UI, deeper green for primary actions */
+  --peach: #FFC799;
+  --rose: #FF9BAA;
+  --civic-green: #7DB668;
+  --civic-green-dark: #006A4E;
+  --burgundy: var(--civic-green-dark);
+  --burgundy-dark: #004A37;
+  --burgundy-light: var(--civic-green);
   --slate: #1C1B1A;
   --slate-soft: #4A4744;
 
@@ -34,9 +36,9 @@
 
   /* Structural */
   --hairline: rgba(28, 27, 26, 0.12);
-  --accent: var(--burgundy);
-  --warning-bg: rgba(74, 14, 31, 0.06);
-  --warning: var(--burgundy);
+  --accent: var(--rose);
+  --warning-bg: rgba(255, 199, 153, 0.24);
+  --warning: #8A451B;
 
   /* Theme aliases (backwards compat with components) */
   --theme-bg: var(--bg-1);
@@ -46,34 +48,34 @@
   --theme-component-hover: var(--surface-2);
 
   /* Fonts */
-  --font-serif: "Fraunces", Georgia, serif;
-  --font-primary: "Geist", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  --font-mono: "Geist Mono", monospace;
-  --font-hindi: "Noto Sans Devanagari", "Geist", sans-serif;
+  --font-serif: "Poppins", system-ui, sans-serif;
+  --font-primary: "Poppins", system-ui, sans-serif;
+  --font-mono: "Poppins", system-ui, sans-serif;
+  --font-hindi: "Noto Sans Devanagari", "Poppins", sans-serif;
 
   /* Primary Palette */
-  --primary-50:  #FAF9F8;
-  --primary-100: #F4F2EF;
-  --primary-200: #EBE7E2;
-  --primary-300: #D4CFC8;
-  --primary-400: #8E8A86;
-  --primary-500: #5A5652;
+  --primary-50:  #FFFAF6;
+  --primary-100: #FFF8F2;
+  --primary-200: #FFC799;
+  --primary-300: #FF9BAA;
+  --primary-400: #7DB668;
+  --primary-500: #006A4E;
   --primary-600: var(--burgundy);
   --primary-700: var(--burgundy-dark);
-  --primary-800: #1C0508;
-  --primary-900: #0D0304;
+  --primary-800: #004A37;
+  --primary-900: #003024;
 
-  /* Green/Civic palette mapped to burgundy editorial */
+  /* Green/Civic palette */
   --green-50:  var(--surface-2);
-  --green-100: rgba(74, 14, 31, 0.06);
-  --green-200: rgba(74, 14, 31, 0.1);
-  --green-300: rgba(74, 14, 31, 0.2);
-  --green-400: rgba(74, 14, 31, 0.4);
-  --green-500: var(--burgundy-light);
-  --green-600: var(--burgundy);
-  --green-700: var(--burgundy-dark);
-  --green-800: #1C0508;
-  --green-900: #0D0304;
+  --green-100: rgba(125, 182, 104, 0.12);
+  --green-200: rgba(125, 182, 104, 0.24);
+  --green-300: rgba(125, 182, 104, 0.4);
+  --green-400: var(--civic-green);
+  --green-500: var(--civic-green-dark);
+  --green-600: var(--civic-green-dark);
+  --green-700: #00543E;
+  --green-800: #00402F;
+  --green-900: #003024;
 
   /* Neutrals */
   --gray-50:  var(--surface-2);
@@ -88,11 +90,11 @@
   --gray-900: var(--ink);
 
   /* Indigo mapped */
-  --indigo-50: rgba(74, 14, 31, 0.06);
+  --indigo-50: rgba(125, 182, 104, 0.12);
   --indigo-600: var(--burgundy);
 
   /* Amber mapped */
-  --amber-500: #B8860B;
+  --amber-500: #8A451B;
 
   /* Gradients */
   --primary-gradient: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-light) 100%);
@@ -120,7 +122,7 @@
   --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 12px 28px -12px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 24px 48px -18px rgba(0, 0, 0, 0.12);
-  --shadow-glow: 0 0 24px rgba(74, 14, 31, 0.15);
+  --shadow-glow: 0 0 24px rgba(0, 106, 78, 0.15);
   --shadow-pill: 0 12px 28px -8px rgba(0, 0, 0, 0.1);
 
   /* Border radius */
@@ -142,7 +144,7 @@ html,
 body {
   background: radial-gradient(
     120% 70% at 50% 0%,
-    #FFFFFF 0%, #F4F2EF 60%, #EBE7E2 100%
+    #FFFFFF 0%, #FFF8F2 60%, #FFF1E8 100%
   ) fixed;
   color: var(--ink);
   font-family: var(--font-primary);
@@ -165,8 +167,8 @@ body {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.1  0 0 0 0 0.1  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
 }
 
-/* Typography (The Premium Factor) */
-/* Hero Title: Fraunces, 600, Upright, Sentence */
+/* Typography */
+/* Hero Title: Poppins, 600, Upright, Sentence */
 h1, .hero-title {
   font-family: var(--font-serif);
   font-weight: 600;
@@ -177,7 +179,7 @@ h1, .hero-title {
   text-transform: none;
 }
 
-/* Section Headers: Fraunces, 600, Upright, Sentence */
+/* Section Headers: Poppins, 600, Upright, Sentence */
 h2, h3, .section-header, .serif {
   font-family: var(--font-serif);
   font-weight: 600;
@@ -192,7 +194,7 @@ h1 { font-size: var(--text-2xl); }
 h2 { font-size: var(--text-xl); }
 h3 { font-size: var(--text-lg); }
 
-/* Card Titles: Geist, 600, Upright, Sentence */
+/* Card Titles: Poppins, 600, Upright, Sentence */
 h4, h5, .card-title {
   font-family: var(--font-primary);
   font-weight: 600;
@@ -202,7 +204,7 @@ h4, h5, .card-title {
   text-transform: none;
 }
 
-/* Body / Desc: Geist, 400, Upright, Sentence */
+/* Body / Desc: Poppins, 400, Upright, Sentence */
 p, .body-desc, .body-text {
   font-family: var(--font-primary);
   font-weight: 400;
@@ -210,7 +212,7 @@ p, .body-desc, .body-text {
   line-height: 1.5;
 }
 
-/* Labels / IDs: Geist Mono, 500, Upright, UPPERCASE */
+/* Labels / IDs: Poppins, 500, Upright, UPPERCASE */
 label, .badge, .status-badge, .id-label, .mono-label {
   font-family: var(--font-mono);
   font-weight: 500;
@@ -219,7 +221,7 @@ label, .badge, .status-badge, .id-label, .mono-label {
   letter-spacing: 0.06em;
 }
 
-/* Nav / Buttons: Geist Mono, 500, Upright, UPPERCASE */
+/* Nav / Buttons: Poppins, 500, Upright, UPPERCASE */
 button, nav a, .btn, .nav-btn, .button {
   font-family: var(--font-mono);
   font-weight: 500;
@@ -269,14 +271,14 @@ input, textarea, select {
 }
 input:focus, textarea:focus, select:focus {
   border-color: var(--burgundy) !important;
-  box-shadow: 0 0 0 3px rgba(74, 14, 31, 0.1) !important;
+  box-shadow: 0 0 0 3px rgba(0, 106, 78, 0.16) !important;
   outline: none;
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #D4CFC8; border-radius: 999px; }
+::-webkit-scrollbar-thumb { background: #FFC799; border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--mute); }
 
 /* Global Component & Card Defaults (Premium Editorial) */
@@ -394,8 +396,8 @@ input:focus, textarea:focus, select:focus {
 .fade-in { animation: fadeIn 0.3s ease forwards; }
 
 @keyframes pulse-burgundy {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(74, 14, 31, 0.3); }
-  50%       { box-shadow: 0 0 0 10px rgba(74, 14, 31, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 106, 78, 0.3); }
+  50%       { box-shadow: 0 0 0 10px rgba(0, 106, 78, 0); }
 }
 
 .admin-badge-pulse {
@@ -448,7 +450,7 @@ input:focus, textarea:focus, select:focus {
   text-transform: uppercase;
 }
 .btn-outline:hover {
-  background: var(--bg-1);
+  background: var(--peach);
   border-color: var(--burgundy);
   color: var(--burgundy);
   transform: translateY(-1px);
@@ -469,12 +471,12 @@ input:focus, textarea:focus, select:focus {
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  box-shadow: 0 6px 16px -6px rgba(74, 14, 31, 0.4);
+  box-shadow: 0 6px 16px -6px rgba(0, 106, 78, 0.4);
 }
 .btn-solid:hover {
   background: var(--burgundy-light);
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px -6px rgba(74, 14, 31, 0.55);
+  box-shadow: 0 10px 24px -6px rgba(0, 106, 78, 0.55);
 }
 
 /* Hero Section */
@@ -482,7 +484,7 @@ input:focus, textarea:focus, select:focus {
   position: relative;
   margin: 16px 20px;
   border-radius: 32px;
-  background: linear-gradient(145deg, #320813 0%, #160307 100%);
+  background: linear-gradient(145deg, #006A4E 0%, #00402F 100%);
   padding: 48px 32px;
   color: #fff;
   overflow: hidden;
@@ -495,7 +497,7 @@ input:focus, textarea:focus, select:focus {
   width: 420px;
   height: 420px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(94, 26, 44, 0.45), transparent 65%);
+  background: radial-gradient(circle, rgba(125, 182, 104, 0.45), transparent 65%);
   top: -160px;
   right: -100px;
   filter: blur(40px);
@@ -514,14 +516,14 @@ input:focus, textarea:focus, select:focus {
   gap: 8px;
   padding: 8px 16px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 155, 170, 0.12);
+  border: 1px solid rgba(255, 155, 170, 0.4);
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--rose);
   width: fit-content;
 }
 .hero-badge .dot {
@@ -649,7 +651,7 @@ input:focus, textarea:focus, select:focus {
 }
 .action-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(28, 27, 26, 0.04), 0 24px 48px -12px rgba(74, 14, 31, 0.14);
+  box-shadow: 0 8px 16px rgba(28, 27, 26, 0.04), 0 24px 48px -12px rgba(0, 106, 78, 0.14);
 }
 .action-icon {
   width: 54px;
@@ -665,9 +667,9 @@ input:focus, textarea:focus, select:focus {
   transition: all 0.3s ease;
 }
 .action-card:hover .action-icon {
-  background: rgba(74, 14, 31, 0.08);
+  background: rgba(0, 106, 78, 0.08);
   color: var(--burgundy);
-  border-color: rgba(74, 14, 31, 0.2);
+  border-color: rgba(0, 106, 78, 0.2);
   transform: scale(1.08);
 }
 .action-text h4 {
@@ -696,7 +698,7 @@ input:focus, textarea:focus, select:focus {
   position: relative;
   margin: 28px 20px;
   border-radius: 32px;
-  background: linear-gradient(145deg, #320813 0%, #160307 100%);
+  background: linear-gradient(145deg, #006A4E 0%, #00402F 100%);
   padding: 40px 28px;
   color: #fff;
   overflow: hidden;
@@ -712,7 +714,7 @@ input:focus, textarea:focus, select:focus {
   width: 320px;
   height: 320px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(94, 26, 44, 0.4), transparent 65%);
+  background: radial-gradient(circle, rgba(125, 182, 104, 0.4), transparent 65%);
   bottom: -120px;
   right: -100px;
   filter: blur(40px);
@@ -884,8 +886,8 @@ input:focus, textarea:focus, select:focus {
   transition: all 0.4s cubic-bezier(0.6, 0, 0.2, 1);
 }
 .service-item:hover .service-icon {
-  box-shadow: 0 4px 12px rgba(74, 14, 31, 0.04), 0 20px 40px -10px rgba(74, 14, 31, 0.18);
-  border-color: rgba(74, 14, 31, 0.25);
+  box-shadow: 0 4px 12px rgba(0, 106, 78, 0.04), 0 20px 40px -10px rgba(0, 106, 78, 0.18);
+  border-color: rgba(0, 106, 78, 0.25);
   background: var(--surface-2);
   transform: rotate(-8deg) scale(1.08);
 }
@@ -930,7 +932,7 @@ input:focus, textarea:focus, select:focus {
 }
 .complaint-card:hover {
   transform: translateX(6px);
-  box-shadow: 0 8px 16px rgba(28, 27, 26, 0.04), 0 24px 48px -12px rgba(74, 14, 31, 0.12);
+  box-shadow: 0 8px 16px rgba(28, 27, 26, 0.04), 0 24px 48px -12px rgba(0, 106, 78, 0.12);
 }
 .complaint-icon {
   width: 48px;
