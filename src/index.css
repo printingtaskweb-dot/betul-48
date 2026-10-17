@@ -479,7 +479,9 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 10px 24px -6px rgba(0, 106, 78, 0.55);
 }
 
-/* Hero Section */
+/* ============================================================
+   HERO SECTION (responsive, compact on mobile)
+   ============================================================ */
 .hero-section {
   position: relative;
   margin: 16px 20px;
@@ -503,13 +505,19 @@ input:focus, textarea:focus, select:focus {
   filter: blur(40px);
   pointer-events: none;
 }
+
 .hero-content {
   position: relative;
   z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 20px;
+  transition: opacity 0.2s ease;
 }
+.hero-content.hero-fading {
+  opacity: 0;
+}
+
 .hero-badge {
   display: inline-flex;
   align-items: center;
@@ -525,13 +533,20 @@ input:focus, textarea:focus, select:focus {
   text-transform: uppercase;
   color: var(--rose);
   width: fit-content;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-.hero-badge .dot {
+.hero-badge .dot,
+.hero-status-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
   background: #fff;
+  flex-shrink: 0;
 }
+
 .hero-title {
   font-family: var(--font-serif);
   font-weight: 600;
@@ -541,7 +556,9 @@ input:focus, textarea:focus, select:focus {
   letter-spacing: -0.035em;
   color: #fff;
   margin: 0;
+  max-width: 720px;
 }
+
 .hero-desc {
   font-family: var(--font-primary);
   font-size: 15px;
@@ -550,9 +567,48 @@ input:focus, textarea:focus, select:focus {
   color: rgba(255, 255, 255, 0.75);
   max-width: 90%;
   position: relative;
-  padding: 0 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  width: 100%;
   margin: 0;
 }
+
+/* Text portion */
+.hero-desc-text {
+  flex: 1;
+  margin: 0;
+}
+.hero-desc-full { display: inline; }
+.hero-desc-short { display: none; }
+
+/* Arrows (new component) */
+.hero-arrows {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.hero-arrow {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  color: #fff;
+  padding: 0;
+}
+.hero-arrow:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: scale(1.08);
+}
+
+/* Legacy arrow selectors (kept for backward compat) */
 .hero-desc .arrow {
   position: absolute;
   top: 50%;
@@ -578,6 +634,7 @@ input:focus, textarea:focus, select:focus {
 }
 .hero-desc .arrow.left { left: -14px; }
 .hero-desc .arrow.right { right: -14px; }
+
 .hero-cta {
   margin-top: 14px;
   display: inline-flex;
@@ -604,13 +661,18 @@ input:focus, textarea:focus, select:focus {
   box-shadow: 0 16px 32px -8px rgba(0, 0, 0, 0.35);
   color: var(--burgundy);
 }
+
+.hero-actions {
+  margin-top: 4px;
+}
+
 .hero-dots {
   display: flex;
   gap: 6px;
   margin-top: 24px;
   justify-content: center;
 }
-.hero-dots .dot {
+.hero-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
@@ -620,10 +682,96 @@ input:focus, textarea:focus, select:focus {
   cursor: pointer;
   padding: 0;
 }
-.hero-dots .dot.active {
+.hero-dot.active {
   width: 24px;
   border-radius: 999px;
   background: #FFFFFF;
+}
+
+/* ============================================================
+   MOBILE HERO — compact banner (≤ 640px)
+   ============================================================ */
+@media (max-width: 640px) {
+  .hero-section {
+    margin: 12px 14px;
+    padding: 20px 18px;
+    border-radius: 24px;
+  }
+
+  .hero-content {
+    gap: 10px;
+    min-height: 180px;
+    justify-content: space-between;
+  }
+
+  .hero-badge {
+    padding: 5px 10px;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+  }
+
+  .hero-title {
+    font-size: 22px;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  .hero-desc {
+    font-size: 13px;
+    line-height: 1.45;
+    max-width: 100%;
+    gap: 10px;
+  }
+
+  .hero-desc-text {
+    /* Clamp to 2 lines so all slides have equal height */
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .hero-desc-full { display: none; }
+  .hero-desc-short { display: inline; }
+
+  .hero-arrow {
+    width: 28px;
+    height: 28px;
+  }
+
+  .hero-cta {
+    margin-top: 4px;
+    padding: 10px 18px;
+    font-size: 12px;
+    gap: 8px;
+  }
+
+  .hero-dots {
+    margin-top: 10px;
+    gap: 5px;
+  }
+  .hero-dot {
+    width: 5px;
+    height: 5px;
+  }
+  .hero-dot.active {
+    width: 18px;
+  }
+}
+
+/* Very small phones (≤ 380px) */
+@media (max-width: 380px) {
+  .hero-section {
+    margin: 10px 12px;
+    padding: 16px 14px;
+  }
+  .hero-title { font-size: 19px; }
+  .hero-desc-text {
+    -webkit-line-clamp: 1;
+    font-size: 12px;
+  }
+  .hero-cta { padding: 9px 16px; font-size: 11px; }
+  .hero-badge { font-size: 8px; padding: 4px 8px; }
 }
 
 /* Quick Actions Cards & 3D Hover */
@@ -1005,4 +1153,36 @@ input:focus, textarea:focus, select:focus {
 }
 .floating-news-btn {
   animation: float-widget 3.2s ease-in-out infinite;
+}
+
+/* ============================================================
+   GSAP SAFETY NET
+   Prevents the header/hero/quick-actions from staying invisible
+   on mobile or when GSAP fails to load.
+   ============================================================ */
+
+/* Default: everything visible */
+.top-nav,
+.hero-section,
+.quick-actions,
+.special-service {
+  opacity: 1;
+  transform: none;
+}
+
+/* Only hide IF GSAP actually loaded (Home.tsx adds body.gsap-ready) */
+body.gsap-ready .top-nav         { opacity: 0; transform: translateY(-10px); }
+body.gsap-ready .hero-section    { opacity: 0; transform: scale(0.98); }
+body.gsap-ready .quick-actions   { opacity: 0; transform: translateY(12px); }
+body.gsap-ready .special-service { opacity: 0; transform: translateY(20px); }
+
+/* Mobile: always visible — skip entry animations entirely */
+@media (max-width: 640px) {
+  .top-nav,
+  .hero-section,
+  .quick-actions,
+  .special-service {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
