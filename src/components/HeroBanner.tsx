@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 
@@ -15,7 +16,8 @@ const SLIDES: BannerSlide[] = [
     id: 1,
     tag: '#1 Cleanest City Model',
     title: 'Clean Indore & Betul Mission',
-    subtitle: 'Report civic issues instantly with photo & auto GPS location. Track until resolved and verified.',
+    subtitle:
+      'Report civic issues instantly with photo & auto GPS location. Track until resolved and verified.',
     cta: 'Report Civic Issue',
     ctaLink: '/complaint/new',
   },
@@ -23,7 +25,8 @@ const SLIDES: BannerSlide[] = [
     id: 2,
     tag: 'Water Conservation',
     title: 'Report Water Leakage & Supply',
-    subtitle: 'Save precious water every day. Spot a broken pipe or shortage? Route to department in 30 seconds.',
+    subtitle:
+      'Save precious water every day. Report broken pipes and water shortages in seconds.',
     cta: 'Report Water Issue',
     ctaLink: '/complaint/new?dept=water',
   },
@@ -31,7 +34,8 @@ const SLIDES: BannerSlide[] = [
     id: 3,
     tag: 'Monsoon Preparedness',
     title: 'Rain Water & Flood Drainage',
-    subtitle: 'Blocked storm drains or road waterlogging? Municipal teams ready for immediate dispatch.',
+    subtitle:
+      'Report blocked storm drains and road waterlogging for faster municipal action.',
     cta: 'Report Drainage',
     ctaLink: '/complaint/new?dept=rainwater',
   },
@@ -39,7 +43,8 @@ const SLIDES: BannerSlide[] = [
     id: 4,
     tag: 'Green Waste Initiative',
     title: 'Biodegradable Waste Pickup',
-    subtitle: 'Garden trimmings, fallen branches, and leaves — specialized pickup fleet dispatched to your location.',
+    subtitle:
+      'Report garden trimmings, fallen branches, and leaves that need specialized pickup.',
     cta: 'Report Green Waste',
     ctaLink: '/department/green',
   },
@@ -47,7 +52,8 @@ const SLIDES: BannerSlide[] = [
     id: 5,
     tag: 'Debris Free City',
     title: 'C&D Waste Clearance Drive',
-    subtitle: 'Construction and demolition waste clearance. Fast removal of roadside rubble and debris.',
+    subtitle:
+      'Report construction rubble and demolition waste dumped along roadsides.',
     cta: 'Report C&D Waste',
     ctaLink: '/complaint/new?dept=cnd',
   },
@@ -59,96 +65,95 @@ export const HeroBanner: React.FC = () => {
 
   const goTo = useCallback(
     (idx: number) => {
-      if (animating) return;
+      if (animating || idx === current) return;
+
       setAnimating(true);
-      setTimeout(() => {
+
+      window.setTimeout(() => {
         setCurrent(idx);
         setAnimating(false);
-      }, 250);
+      }, 200);
     },
-    [animating]
+    [animating, current]
   );
 
-  const next = useCallback(() => goTo((current + 1) % SLIDES.length), [current, goTo]);
-  const prev = useCallback(() => goTo((current - 1 + SLIDES.length) % SLIDES.length), [current, goTo]);
+  const next = useCallback(() => {
+    goTo((current + 1) % SLIDES.length);
+  }, [current, goTo]);
+
+  const prev = useCallback(() => {
+    goTo((current - 1 + SLIDES.length) % SLIDES.length);
+  }, [current, goTo]);
 
   useEffect(() => {
-    const id = setInterval(next, 5000);
-    return () => clearInterval(id);
-  }, [next]);
+    const timer = window.setInterval(() => {
+      setCurrent((previous) => (previous + 1) % SLIDES.length);
+    }, 5000);
+
+    return () => window.clearInterval(timer);
+  }, []);
 
   const slide = SLIDES[current];
 
   return (
-    <div
-      className="hero-section"
-      style={{
-        margin: '10px 14px',
-      }}
-    >
+    <section className="hero-section">
       <div
-        className="hero-content"
-        style={{
-          opacity: animating ? 0 : 1,
-          transform: animating ? 'translateY(8px)' : 'translateY(0)',
-          transition: 'opacity 0.25s ease, transform 0.25s ease',
-        }}
+        className={`hero-content ${animating ? 'hero-fading' : ''}`}
+        aria-live="polite"
       >
-        {/* Badge */}
         <div className="hero-badge">
-          <span className="dot" />
-          {slide.tag}
+          <span className="hero-status-dot" />
+          <span>{slide.tag}</span>
         </div>
 
-        {/* Title */}
-        <h1 className="hero-title">
-          {slide.title}
-        </h1>
+        <h1 className="hero-title">{slide.title}</h1>
 
-        {/* Subtitle with arrows */}
         <div className="hero-desc">
-          <button
-            onClick={prev}
-            aria-label="Previous slide"
-            className="arrow left"
-          >
-            <ChevronLeft size={16} />
-          </button>
+          <p>{slide.subtitle}</p>
 
-          {slide.subtitle}
+          <div className="hero-arrows">
+            <button
+              type="button"
+              onClick={prev}
+              aria-label="Previous slide"
+              className="hero-arrow"
+            >
+              <ChevronLeft size={17} />
+            </button>
 
-          <button
-            onClick={next}
-            aria-label="Next slide"
-            className="arrow right"
-          >
-            <ChevronRight size={16} />
-          </button>
+            <button
+              type="button"
+              onClick={next}
+              aria-label="Next slide"
+              className="hero-arrow"
+            >
+              <ChevronRight size={17} />
+            </button>
+          </div>
         </div>
 
-        {/* CTA Button */}
-        <div style={{ marginTop: 12 }}>
-          <a
-            href={slide.ctaLink}
-            className="hero-cta"
-          >
+        <div className="hero-actions">
+          <a href={slide.ctaLink} className="hero-cta">
             {slide.cta}
-            <ArrowRight size={14} />
+            <ArrowRight size={15} />
           </a>
         </div>
 
-        {/* Dots */}
-        <div className="hero-dots">
-          {SLIDES.map((_, i) => (
+        <div className="hero-dots" aria-label="Banner slides">
+          {SLIDES.map((item, index) => (
             <button
-              key={i}
-              onClick={() => goTo(i)}
-              aria-label={`Go to slide ${i + 1}`}
-              className={`dot ${i === current ? 'active' : ''}`}
+              key={item.id}
+              type="button"
+              onClick={() => goTo(index)}
+              aria-label={`Go to slide ${index + 1}`}
+              aria-current={index === current ? 'true' : undefined}
+              className={`hero-dot ${index === current ? 'active' : ''}`}
             />
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 };
+
+export default HeroBanner;
