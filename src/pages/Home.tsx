@@ -264,40 +264,41 @@ export const Home: React.FC = () => {
       {/* ── Live Stats ── */}
       <StatsSection />
 
-      {/* ── Green Waste Pickup Highlight Card ── */}
-      <section style={{ padding: '0 15px', marginTop: 4}}>
-        <Link to="/department/green" style={{ textDecoration: 'none' }}>
-          <div className="special-service">
-            <svg
-              className="leaf-bg"
-              viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5"
-            >
-              <path d="M50 10 C 30 30, 20 60, 50 90 C 80 60, 70 30, 50 10 Z" />
-              <path d="M50 10 L 50 90" />
-              <path d="M50 30 L 35 45" />
-              <path d="M50 50 L 65 65" />
-            </svg>
+     
+   {/* ── Green Waste Pickup Highlight Card ── */}
+<section style={{ padding: 0 }}>
+  <Link to="/department/green" style={{ textDecoration: 'none' }}>
+    <div className="special-service">
+      <svg
+        className="leaf-bg"
+        viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5"
+      >
+        <path d="M50 10 C 30 30, 20 60, 50 90 C 80 60, 70 30, 50 10 Z" />
+        <path d="M50 10 L 50 90" />
+        <path d="M50 30 L 35 45" />
+        <path d="M50 50 L 65 65" />
+      </svg>
 
-            <div style={{ position: 'relative', zIndex: 2 }}>
-              <div className="special-badge">
-                <span className="dot" />
-                {language === 'hi' ? 'विशिष्ट सेवा' : 'Featured Service'}
-              </div>
+      <div style={{ position: 'relative', zIndex: 2 }}>
+        <div className="special-badge">
+          <span className="dot" />
+          {language === 'hi' ? 'विशिष्ट सेवा' : 'Featured Service'}
+        </div>
 
-              <h2 className="special-title">
-                {t(language, 'greenDeptTitle')}
-              </h2>
-              <p className="special-desc">
-                {t(language, 'greenDeptSubtitle')} (Fallen leaves, tree pruning, garden waste & fallen trees)
-              </p>
+        <h2 className="special-title">
+          {t(language, 'greenDeptTitle')}
+        </h2>
+        <p className="special-desc">
+          {t(language, 'greenDeptSubtitle')} (Fallen leaves, tree pruning, garden waste & fallen trees)
+        </p>
 
-              <span className="special-cta">
-                {language === 'hi' ? 'हरित कचरा रिपोर्ट करें' : 'Request Green Waste Pickup'} →
-              </span>
-            </div>
-          </div>
-        </Link>
-      </section>
+        <span className="special-cta">
+          {language === 'hi' ? 'हरित कचरा रिपोर्ट करें' : 'Request Green Waste Pickup'} →
+        </span>
+      </div>
+    </div>
+  </Link>
+</section>
 
       {/* ── Municipal Services Grid ── */}
       <ServicesGrid />
