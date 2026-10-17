@@ -5,6 +5,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { BottomNav } from '../components/BottomNav';
 import { useFCM } from '../hooks/useFCM';
+import { isValidMobile, lettersAndSpaces, mobileDigits, wholeNumber } from '../lib/inputValidation';
 
 /* ─── Types ─── */
 interface Complaint {
@@ -94,12 +95,16 @@ const ProfilePage: React.FC = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!user) return;
+    if (!isValidMobile(phone)) {
+      setSaveMsg(language === 'hi' ? 'कृपया 10 अंकों का सही मोबाइल नंबर दर्ज करें।' : 'Enter a valid 10-digit mobile number.');
+      return;
+    }
     setSaving(true);
     setSaveMsg('');
     try {
       await supabase
         .from('user_profiles')
-        .update({ full_name: fullName, phone, ward_number: wardNumber, language })
+        .update({ full_name: lettersAndSpaces(fullName).trim(), phone: mobileDigits(phone), ward_number: wholeNumber(wardNumber, 3), language })
         .eq('id', user.id);
       await refreshProfile();
       setSaveMsg(language === 'hi' ? '✅ प्रोफ़ाइल अपडेट हो गई!' : '✅ Profile updated!');
@@ -224,7 +229,7 @@ const ProfilePage: React.FC = () => {
               <input
                 type="text"
                 value={fullName}
-                onChange={e => setFullName(e.target.value)}
+                onChange={e => setFullName(lettersAndSpaces(e.target.value))}
                 placeholder={language === 'hi' ? 'नाम दर्ज करें' : 'Enter your name'}
                 style={inputStyle}
               />
@@ -235,8 +240,10 @@ const ProfilePage: React.FC = () => {
               <span style={labelTextStyle}><Phone size={14} /> {language === 'hi' ? 'फोन नंबर' : 'Phone Number'}</span>
               <input
                 type="tel"
+                inputMode="numeric"
+                maxLength={10}
                 value={phone}
-                onChange={e => setPhone(e.target.value)}
+                onChange={e => setPhone(mobileDigits(e.target.value))}
                 placeholder={language === 'hi' ? 'फोन नंबर' : 'Phone number'}
                 style={inputStyle}
               />
@@ -247,8 +254,9 @@ const ProfilePage: React.FC = () => {
               <span style={labelTextStyle}><Hash size={14} /> {language === 'hi' ? 'वार्ड नंबर' : 'Ward Number'}</span>
               <input
                 type="text"
+                inputMode="numeric"
                 value={wardNumber}
-                onChange={e => setWardNumber(e.target.value)}
+                onChange={e => setWardNumber(wholeNumber(e.target.value, 3))}
                 placeholder={language === 'hi' ? 'वार्ड नंबर' : 'Ward number'}
                 style={inputStyle}
               />

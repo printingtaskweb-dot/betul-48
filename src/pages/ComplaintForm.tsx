@@ -10,6 +10,7 @@ import { LocationPicker } from '../components/common/LocationPicker';
 import { BottomNav } from '../components/BottomNav';
 import { watermarkPhoto } from '../lib/watermarkPhoto';
 import type { Department } from '../lib/supabase';
+import { isValidMobile, lettersAndSpaces, mobileDigits } from '../lib/inputValidation';
 import { ArrowLeft, CheckCircle2, ChevronDown, Search, X } from 'lucide-react';
 
 export const ComplaintForm: React.FC = () => {
@@ -187,6 +188,9 @@ export const ComplaintForm: React.FC = () => {
           ? 'कृपया शिकायत का विवरण दें।'
           : 'Please describe the issue.'
       );
+    }
+    if (!isValidMobile(citizenPhone)) {
+      return setError(language === 'hi' ? 'कृपया 10 अंकों का सही मोबाइल नंबर दर्ज करें।' : 'Enter a valid 10-digit mobile number.');
     }
 
     setSubmitting(true);
@@ -663,7 +667,7 @@ export const ComplaintForm: React.FC = () => {
             <input
               type="text"
               value={citizenName}
-              onChange={(e) => setCitizenName(e.target.value)}
+              onChange={(e) => setCitizenName(lettersAndSpaces(e.target.value))}
               placeholder={language === 'hi' ? 'वैकल्पिक' : 'Optional'}
               style={inputStyle}
             />
@@ -676,8 +680,10 @@ export const ComplaintForm: React.FC = () => {
             </label>
             <input
               type="tel"
+              inputMode="numeric"
+              maxLength={10}
               value={citizenPhone}
-              onChange={(e) => setCitizenPhone(e.target.value)}
+              onChange={(e) => setCitizenPhone(mobileDigits(e.target.value))}
               placeholder={language === 'hi' ? 'वैकल्पिक' : 'Optional'}
               style={inputStyle}
             />

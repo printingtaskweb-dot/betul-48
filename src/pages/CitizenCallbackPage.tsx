@@ -3,6 +3,7 @@ import { ArrowLeft, PhoneCall, Send } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import { isValidMobile, lettersAndSpaces, mobileDigits } from '../lib/inputValidation';
 
 const input: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box', padding: '10px 12px',
@@ -25,6 +26,10 @@ export default function CitizenCallbackPage() {
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (!isValidMobile(phone)) {
+      setError(hi ? 'कृपया 10 अंकों का सही मोबाइल नंबर दर्ज करें।' : 'Enter a valid 10-digit mobile number.');
+      return;
+    }
     if (requestType === 'appeal' && !ticket.trim()) {
       setError(hi ? 'अपील के लिए शिकायत टिकट नंबर आवश्यक है।' : 'A complaint ticket is required for an appeal.');
       return;
@@ -46,8 +51,8 @@ export default function CitizenCallbackPage() {
 
     const { error: insertError } = await supabase.from('citizen_callback_requests').insert({
       request_type: requestType,
-      citizen_name: name.trim(),
-      citizen_phone: phone.trim(),
+      citizen_name: lettersAndSpaces(name).trim(),
+      citizen_phone: mobileDigits(phone),
       complaint_id: complaintId,
       message: message.trim(),
       preferred_callback_at: preferredAt ? new Date(preferredAt).toISOString() : null,
@@ -72,8 +77,8 @@ export default function CitizenCallbackPage() {
           ) : (
             <form onSubmit={submit} style={{ display: 'grid', gap: 12, marginTop: 18 }}>
               {error && <div role="alert" style={{ color: '#991b1b' }}>{error}</div>}
-              <label style={{ display: 'grid', gap: 5, fontSize: '0.8rem', fontWeight: 700 }}>{hi ? 'नाम' : 'Name'}<input required value={name} onChange={(e) => setName(e.target.value)} style={input} /></label>
-              <label style={{ display: 'grid', gap: 5, fontSize: '0.8rem', fontWeight: 700 }}>{hi ? 'फोन नंबर' : 'Phone number'}<input required type="tel" value={phone} onChange={(e) => setPhone(e.target.value)} style={input} /></label>
+              <label style={{ display: 'grid', gap: 5, fontSize: '0.8rem', fontWeight: 700 }}>{hi ? 'नाम' : 'Name'}<input required value={name} onChange={(e) => setName(lettersAndSpaces(e.target.value))} style={input} /></label>
+              <label style={{ display: 'grid', gap: 5, fontSize: '0.8rem', fontWeight: 700 }}>{hi ? 'फोन नंबर' : 'Phone number'}<input required type="tel" inputMode="numeric" maxLength={10} value={phone} onChange={(e) => setPhone(mobileDigits(e.target.value))} style={input} /></label>
               <label style={{ display: 'grid', gap: 5, fontSize: '0.8rem', fontWeight: 700 }}>{hi ? 'अनुरोध का प्रकार' : 'Request type'}<select value={requestType} onChange={(e) => setRequestType(e.target.value as 'callback' | 'appeal')} style={input}><option value="callback">{hi ? 'कॉल बैक / सहायता' : 'Callback / assistance'}</option><option value="appeal">{hi ? 'शिकायत पर अपील' : 'Appeal a complaint decision'}</option></select></label>
               <label style={{ display: 'grid', gap: 5, fontSize: '0.8rem', fontWeight: 700 }}>{hi ? 'टिकट नंबर (वैकल्पिक)' : 'Complaint ticket (optional)'}<input value={ticket} onChange={(e) => setTicket(e.target.value)} style={input} /></label>
               <label style={{ display: 'grid', gap: 5, fontSize: '0.8rem', fontWeight: 700 }}>{hi ? 'किस बारे में सहायता चाहिए?' : 'How can we help?'}<textarea required rows={4} value={message} onChange={(e) => setMessage(e.target.value)} style={input} /></label>

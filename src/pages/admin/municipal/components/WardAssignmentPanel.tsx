@@ -10,14 +10,23 @@ import { BORDER, PRIMARY } from '../constants';
 type Department = { id: string; name: string };
 
 interface Props {
-  staff: StaffMember[];
-  wards: Ward[];
-  departments: Department[];
+  staff?: StaffMember[];
+  wards?: Ward[];
+  departments?: Department[];
   departmentId: string | null;
-  onSaved: () => void;
+  onSaved?: () => void;
 }
 
-export const WardAssignmentPanel: React.FC<Props> = ({ staff, wards, departments, departmentId, onSaved }) => {
+export const WardAssignmentPanel: React.FC<Props> = ({
+  staff: staffData,
+  wards: wardData,
+  departments: departmentData,
+  departmentId,
+  onSaved,
+}) => {
+  const staff = Array.isArray(staffData) ? staffData : [];
+  const wards = Array.isArray(wardData) ? wardData : [];
+  const departments = Array.isArray(departmentData) ? departmentData : [];
   const [areas, setAreas] = useState<Area[]>([]);
   const [selectedWardId, setSelectedWardId] = useState('');
   const [selectedAreaId, setSelectedAreaId] = useState('');
@@ -107,7 +116,7 @@ export const WardAssignmentPanel: React.FC<Props> = ({ staff, wards, departments
     setSaving(false);
     if (failures.length) setError(`${savedCount} saved; ${failures.length} failed. ${failures[0]}`);
     else setMessage(`${savedCount} staff member(s) assigned to Ward ${selectedWard?.ward_number}.`);
-    if (savedCount) onSaved();
+    if (savedCount) onSaved?.();
   };
 
   const allVisibleSelected = assignableStaff.length > 0 && assignableStaff.every((person) => selectedStaffIds.has(person.id));

@@ -10,6 +10,7 @@ import { LocationPicker } from '../components/common/LocationPicker';
 import { ComplaintCard } from '../components/common/ComplaintCard';
 import { BottomNav } from '../components/BottomNav';
 import { watermarkPhoto } from '../lib/watermarkPhoto';
+import { isValidMobile, lettersAndSpaces, mobileDigits } from '../lib/inputValidation';
 import { ArrowLeft, Recycle, Info } from 'lucide-react';
 
 const WASTE_TYPES = [
@@ -152,6 +153,9 @@ export const GreenDepartmentPage: React.FC = () => {
           : 'Please attach a photo of the waste.'
       );
 
+    if (!isValidMobile(citizenPhone))
+      return setError(language === 'hi' ? 'कृपया 10 अंकों का सही मोबाइल नंबर दर्ज करें।' : 'Enter a valid 10-digit mobile number.');
+
     if (!greenDept)
       return setError(
         'Department not found. Please ensure database is initialized.'
@@ -200,8 +204,8 @@ export const GreenDepartmentPage: React.FC = () => {
 
       const result = await submitComplaint({
         department_id: greenDept.id,
-        citizen_name: citizenName || null,
-        citizen_phone: citizenPhone || null,
+        citizen_name: lettersAndSpaces(citizenName).trim() || null,
+        citizen_phone: mobileDigits(citizenPhone) || null,
         description: fullDesc,
         latitude: gps.latitude ?? null,
         longitude: gps.longitude ?? null,
@@ -681,13 +685,16 @@ export const GreenDepartmentPage: React.FC = () => {
                 <input
                   placeholder={t(language, 'name')}
                   value={citizenName}
-                  onChange={(e) => setCitizenName(e.target.value)}
+                  onChange={(e) => setCitizenName(lettersAndSpaces(e.target.value))}
                   style={inputStyle}
                 />
                 <input
                   placeholder={t(language, 'phone')}
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={10}
                   value={citizenPhone}
-                  onChange={(e) => setCitizenPhone(e.target.value)}
+                  onChange={(e) => setCitizenPhone(mobileDigits(e.target.value))}
                   style={inputStyle}
                 />
               </div>

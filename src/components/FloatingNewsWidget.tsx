@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase';
 import type { LocalNews, LocalNewsCategory } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { useStorage } from '../hooks/useStorage';
+import { isValidMobile, lettersAndSpaces, mobileDigits } from '../lib/inputValidation';
 import {
   MessageSquarePlus,
   Send,
@@ -154,6 +155,10 @@ export const FloatingNewsWidget: React.FC = () => {
       setErrorMsg('Please fill in your Name, Area, and Thought/News.');
       return;
     }
+    if (!isValidMobile(authorPhone)) {
+      setErrorMsg('Enter a valid 10-digit mobile number.');
+      return;
+    }
 
     setSubmitting(true);
     setErrorMsg(null);
@@ -166,8 +171,8 @@ export const FloatingNewsWidget: React.FC = () => {
 
       // Strictly submitted as pending for admin verification!
       const { error } = await supabase.from('local_news').insert({
-        author_name: authorName.trim(),
-        author_phone: authorPhone.trim() || null,
+        author_name: lettersAndSpaces(authorName).trim(),
+        author_phone: mobileDigits(authorPhone) || null,
         area: area.trim(),
         category,
         title: title.trim() || null,
@@ -839,7 +844,7 @@ export const FloatingNewsWidget: React.FC = () => {
                         type="text"
                         required
                         value={authorName}
-                        onChange={(e) => setAuthorName(e.target.value)}
+                        onChange={(e) => setAuthorName(lettersAndSpaces(e.target.value))}
                         placeholder="e.g. Rahul Sharma"
                         style={{
                           width: '100%',
@@ -859,8 +864,10 @@ export const FloatingNewsWidget: React.FC = () => {
                       </label>
                       <input
                         type="tel"
+                        inputMode="numeric"
+                        maxLength={10}
                         value={authorPhone}
-                        onChange={(e) => setAuthorPhone(e.target.value)}
+                        onChange={(e) => setAuthorPhone(mobileDigits(e.target.value))}
                         placeholder="10-digit phone"
                         style={{
                           width: '100%',

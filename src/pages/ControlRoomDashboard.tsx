@@ -1,10 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Briefcase, Building2, ClipboardList, PhoneCall, RefreshCw, Save, Send, ShieldCheck, Users } from 'lucide-react';
+import { Briefcase, Building2, ClipboardList, PhoneCall, RefreshCw, Save, Search, Send, ShieldCheck, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import type { StaffMember } from '../lib/hierarchy';
 import type { Ward } from '../lib/wardTypes';
+import { findWardForPoint } from '../lib/wardTypes';
+import { decimalNumber, isValidMobile, lettersAndSpaces, mobileDigits } from '../lib/inputValidation';
 import { WardAssignmentPanel } from './admin/municipal/components/WardAssignmentPanel';
+import { ControlRoomComplaintSearch } from './ControlRoomComplaintSearch';
 
 type Tab = 'intake' | 'routing' | 'callbacks' | 'followups' | 'ward-staff';
 type Department = { id: string; name: string; icon: string };
@@ -43,6 +46,7 @@ type Referral = {
   created_at: string;
   complaint?: { ticket_number: string; description: string } | null;
 };
+type LocationResult = { display_name: string; lat: string; lon: string };
 
 const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'intake', label: 'H01 Intake', icon: <PhoneCall size={16} /> },
@@ -82,6 +86,13 @@ export default function ControlRoomDashboard() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [message, setMessage] = useState('');
+  const [locationQuery, setLocationQuery] = useState('');
+  const [locationResults, setLocationResults] = useState<LocationResult[]>([]);
+  const [searchingLocation, setSearchingLocation] = useState(false);
+  const [routingSearch, setRoutingSearch] = useState('');
+  const [routingSearchDraft, setRoutingSearchDraft] = useState('');
+  const [routingSearchResults, setRoutingSearchResults] = useState<Complaint[] | null>(null);
+  const [searchingRouting, setSearchingRouting] = useState(false);
   const [routingEdits, setRoutingEdits] = useState<Record<string, { departmentId: string; wardId: string; reason: string }>>({});
   const [referralUpdates, setReferralUpdates] = useState<Record<string, { outcome: string; followUpAt: string }>>({});
 
@@ -124,16 +135,87 @@ export default function ControlRoomDashboard() {
     setError('');
   };
 
+  const searchLocations = async () => {
+    if (!locationQuery.trim()) return;
+    setSearchingLocation(true);
+    setError('');
+    try {
+      const url = `https://nominatim.openstreetmap.org/search?format=jsonv2&limit=5&q=${encodeURIComponent(locationQuery.trim())}`;
+      const response = await fetch(url, { headers: { 'Accept-Language': 'en' } });
+      if (!response.ok) throw new Error('Location search is unavailable. Enter the address or coordinates manually.');
+      setLocationResults(await response.json() as LocationResult[]);
+    } catch (searchError) {
+      setError(searchError instanceof Error ? searchError.message : 'Location search failed.');
+      setLocationResults([]);
+    } finally {
+      setSearchingLocation(false);
+    }
+  };
+
+  const searchRoutingQueue = async () => {
+    const needle = routingSearchDraft.trim();
+    if (!needle) {
+      setRoutingSearch('');
+      setRoutingSearchResults(null);
+      return;
+    }
+    setSearchingRouting(true);
+    setError('');
+    const fields = 'id, ticket_number, department_id, ward_id, citizen_name, citizen_phone, description, address, status, created_at, department:departments!complaints_department_id_fkey(name), ward:wards!complaints_ward_id_fkey(ward_number, name)';
+    let request = supabase.from('complaints').select(fields)
+      .or('department_id.is.null,ward_id.is.null');
+    if (/^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/i.test(needle)) {
+      request = request.eq('id', needle);
+    } else {
+      const safeNeedle = needle.replace(/[(),]/g, ' ').replace(/[%_]/g, '\\$&');
+      request = request.or([
+        `ticket_number.ilike.%${safeNeedle}%`,
+        `citizen_name.ilike.%${safeNeedle}%`,
+        `citizen_phone.ilike.%${safeNeedle}%`,
+        `description.ilike.%${safeNeedle}%`,
+        `address.ilike.%${safeNeedle}%`,
+      ].join(','));
+    }
+    const { data, error: searchError } = await request.order('created_at', { ascending: false }).limit(100);
+    setSearchingRouting(false);
+    if (searchError) {
+      setError(searchError.message);
+      return;
+    }
+    setRoutingSearch(needle);
+    setRoutingSearchResults((data || []).map((row: any) => ({
+      ...row,
+      department: Array.isArray(row.department) ? row.department[0] || null : row.department,
+      ward: Array.isArray(row.ward) ? row.ward[0] || null : row.ward,
+    })) as Complaint[]);
+  };
+
+  const selectLocation = (result: LocationResult) => {
+    const latitude = Number(result.lat);
+    const longitude = Number(result.lon);
+    const matchingWard = findWardForPoint(latitude, longitude, wards);
+    setIntake({
+      ...intake,
+      address: result.display_name,
+      latitude: result.lat,
+      longitude: result.lon,
+      wardId: matchingWard?.id || intake.wardId,
+    });
+    setLocationQuery(result.display_name);
+    setLocationResults([]);
+  };
+
   const submitIntake = async (event: React.FormEvent) => {
     event.preventDefault();
     if (!user) return setError('You must be signed in to record an intake.');
+    if (!isValidMobile(intake.phone)) return setError('Enter a valid 10-digit citizen mobile number.');
     setSaving(true);
     setError('');
     const { error: insertError } = await supabase.from('complaints').insert({
       department_id: intake.departmentId || null,
       ward_id: intake.wardId || null,
-      citizen_name: intake.name.trim() || null,
-      citizen_phone: intake.phone.trim() || null,
+      citizen_name: lettersAndSpaces(intake.name).trim() || null,
+      citizen_phone: mobileDigits(intake.phone) || null,
       description: intake.description.trim(),
       address: intake.address.trim() || null,
       latitude: intake.latitude ? Number(intake.latitude) : null,
@@ -185,11 +267,12 @@ export default function ControlRoomDashboard() {
     if (!callback.name.trim() || !callback.phone.trim() || !callback.message.trim()) {
       return setError('Citizen name, phone, and callback request are required.');
     }
+    if (!isValidMobile(callback.phone)) return setError('Enter a valid 10-digit citizen mobile number.');
     setSaving(true);
     setError('');
     const { error: insertError } = await supabase.from('citizen_callback_requests').insert({
-      citizen_name: callback.name.trim(),
-      citizen_phone: callback.phone.trim(),
+      citizen_name: lettersAndSpaces(callback.name).trim(),
+      citizen_phone: mobileDigits(callback.phone),
       complaint_id: callback.complaintId || null,
       message: callback.message.trim(),
       preferred_callback_at: callback.preferredAt ? new Date(callback.preferredAt).toISOString() : null,
@@ -274,6 +357,12 @@ export default function ControlRoomDashboard() {
   };
 
   const routingQueue = complaints.filter((complaint) => !complaint.department_id || !complaint.ward_id);
+  const localFilteredRoutingQueue = routingQueue.filter((complaint) => {
+    const query = routingSearch.trim().toLowerCase();
+    return !query || [complaint.id, complaint.ticket_number, complaint.citizen_name, complaint.citizen_phone, complaint.description, complaint.address]
+      .some((value) => value?.toLowerCase().includes(query));
+  });
+  const filteredRoutingQueue = routingSearchResults ?? localFilteredRoutingQueue;
   const fieldStyle: React.CSSProperties = { display: 'grid', gap: 5, fontSize: '0.78rem', fontWeight: 700 };
 
   return (
@@ -307,11 +396,19 @@ export default function ControlRoomDashboard() {
             <label style={fieldStyle}>Received via<select required value={intake.channel} onChange={(e) => setIntake({ ...intake, channel: e.target.value })} style={input}><option value="phone">Telephone</option><option value="counter">Walk-in counter</option></select></label>
             <label style={fieldStyle}>Category / department<select value={intake.departmentId} onChange={(e) => setIntake({ ...intake, departmentId: e.target.value })} style={input}><option value="">Category identification pending</option>{departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}</select></label>
             <label style={fieldStyle}>Ward<select value={intake.wardId} onChange={(e) => setIntake({ ...intake, wardId: e.target.value })} style={input}><option value="">Ward identification pending</option>{wards.map((w) => <option key={w.id} value={w.id}>Ward {w.ward_number} · {w.name}</option>)}</select></label>
-            <label style={fieldStyle}>Citizen name<input value={intake.name} onChange={(e) => setIntake({ ...intake, name: e.target.value })} style={input} /></label>
-            <label style={fieldStyle}>Citizen phone<input value={intake.phone} onChange={(e) => setIntake({ ...intake, phone: e.target.value })} style={input} /></label>
+            <label style={fieldStyle}>Citizen name<input value={intake.name} onChange={(e) => setIntake({ ...intake, name: lettersAndSpaces(e.target.value) })} style={input} /></label>
+            <label style={fieldStyle}>Citizen phone<input type="tel" inputMode="numeric" maxLength={10} value={intake.phone} onChange={(e) => setIntake({ ...intake, phone: mobileDigits(e.target.value) })} style={input} /></label>
+            <div style={{ ...fieldStyle, gridColumn: '1 / -1' }}>
+              <label htmlFor="control-room-location-search">Search complaint location</label>
+              <div style={{ display: 'flex', gap: 7 }}>
+                <input id="control-room-location-search" value={locationQuery} onChange={(e) => setLocationQuery(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); void searchLocations(); } }} placeholder="Search address, landmark, or locality" style={input} />
+                <button type="button" onClick={() => void searchLocations()} disabled={searchingLocation} style={{ ...button, opacity: searchingLocation ? 0.65 : 1 }}><Search size={14} />{searchingLocation ? 'Searching…' : 'Search location'}</button>
+              </div>
+              {locationResults.map((result) => <button key={`${result.lat},${result.lon}`} type="button" onClick={() => selectLocation(result)} style={{ ...input, textAlign: 'left', cursor: 'pointer' }}>{result.display_name}</button>)}
+            </div>
             <label style={fieldStyle}>Address<input value={intake.address} onChange={(e) => setIntake({ ...intake, address: e.target.value })} style={input} /></label>
-            <label style={fieldStyle}>Latitude<input type="number" step="any" value={intake.latitude} onChange={(e) => setIntake({ ...intake, latitude: e.target.value })} style={input} /></label>
-            <label style={fieldStyle}>Longitude<input type="number" step="any" value={intake.longitude} onChange={(e) => setIntake({ ...intake, longitude: e.target.value })} style={input} /></label>
+            <label style={fieldStyle}>Latitude<input type="number" step="any" value={intake.latitude} onChange={(e) => setIntake({ ...intake, latitude: decimalNumber(e.target.value) })} style={input} /></label>
+            <label style={fieldStyle}>Longitude<input type="number" step="any" value={intake.longitude} onChange={(e) => setIntake({ ...intake, longitude: decimalNumber(e.target.value) })} style={input} /></label>
             <label style={{ ...fieldStyle, gridColumn: '1 / -1' }}>Complaint details<textarea required rows={4} value={intake.description} onChange={(e) => setIntake({ ...intake, description: e.target.value })} style={input} /></label>
             <button type="submit" disabled={saving} style={{ ...button, justifySelf: 'start' }}><Send size={15} />{saving ? 'Saving…' : 'Record complaint'}</button>
           </form>
@@ -322,11 +419,15 @@ export default function ControlRoomDashboard() {
         <section style={{ display: 'grid', gap: 10 }}>
           <div style={panel}><h2 style={{ margin: 0, fontSize: '1rem' }}>H02 · Routing corrections</h2><p style={{ margin: '5px 0 0', color: 'var(--gray-600)', fontSize: '0.82rem' }}>Tickets with missing category or ward mapping: {routingQueue.length}</p></div>
           <form onSubmit={submitVerificationRequest} style={{ ...panel, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 }}>
-            <label style={fieldStyle}>Request independent review<select required value={verificationRequest.complaintId} onChange={(e) => setVerificationRequest({ ...verificationRequest, complaintId: e.target.value })} style={input}><option value="">Select resolved complaint</option>{complaints.filter((c) => c.status === 'resolved').map((c) => <option key={c.id} value={c.id}>#{c.ticket_number} · {c.description.slice(0, 70)}</option>)}</select></label>
+            <div style={fieldStyle}>Request independent review<ControlRoomComplaintSearch complaints={complaints.filter((c) => c.status === 'resolved')} value={verificationRequest.complaintId} onChange={(complaintId) => setVerificationRequest({ ...verificationRequest, complaintId })} placeholder="Find resolved ticket, citizen, or complaint" /></div>
             <label style={fieldStyle}>Reason for review<input required value={verificationRequest.reason} onChange={(e) => setVerificationRequest({ ...verificationRequest, reason: e.target.value })} style={input} /></label>
             <button type="submit" disabled={saving} style={{ ...button, alignSelf: 'end' }}><ShieldCheck size={14} />Request verifier review</button>
           </form>
-          {routingQueue.map((complaint) => {
+          <div style={{ ...panel, display: 'flex', gap: 8, alignItems: 'center' }}>
+            <input value={routingSearchDraft} onChange={(event) => setRoutingSearchDraft(event.target.value)} onKeyDown={(event) => { if (event.key === 'Enter') { event.preventDefault(); void searchRoutingQueue(); } }} placeholder="Find routing ticket by ID, ticket, citizen, phone, or details" style={input} />
+            <button type="button" disabled={searchingRouting} onClick={() => void searchRoutingQueue()} style={{ ...button, opacity: searchingRouting ? 0.65 : 1 }}><Search size={14} />{searchingRouting ? 'Searching…' : 'Search'}</button>
+          </div>
+          {filteredRoutingQueue.map((complaint) => {
             const edit = routingEdits[complaint.id] || { departmentId: complaint.department_id || '', wardId: complaint.ward_id || '', reason: '' };
             return <article key={complaint.id} style={{ ...panel, display: 'grid', gap: 10 }}>
               <div><b>#{complaint.ticket_number}</b> · {complaint.description}<div style={{ color: 'var(--gray-600)', fontSize: '0.78rem' }}>{complaint.address || 'No address'} · {new Date(complaint.created_at).toLocaleString()}</div></div>
@@ -338,7 +439,7 @@ export default function ControlRoomDashboard() {
               <button type="button" disabled={saving} onClick={() => void saveRouting(complaint)} style={{ ...button, justifySelf: 'start' }}><Save size={14} />Save routing</button>
             </article>;
           })}
-          {!loading && routingQueue.length === 0 && <div style={panel}>No complaints currently need routing correction.</div>}
+          {!loading && filteredRoutingQueue.length === 0 && <div style={panel}>{routingSearch ? 'No routing complaints match this search.' : 'No complaints currently need routing correction.'}</div>}
         </section>
       )}
 
@@ -346,9 +447,9 @@ export default function ControlRoomDashboard() {
         <section style={{ display: 'grid', gap: 12 }}>
           <div style={panel}><h2 style={{ margin: 0, fontSize: '1rem' }}>H03 · Citizen callbacks</h2><p style={{ margin: '5px 0 0', color: 'var(--gray-600)', fontSize: '0.82rem' }}>Log incoming assistance requests and track callbacks.</p></div>
           <form onSubmit={submitCallback} style={{ ...panel, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
-            <label style={fieldStyle}>Citizen name<input required value={callback.name} onChange={(e) => setCallback({ ...callback, name: e.target.value })} style={input} /></label>
-            <label style={fieldStyle}>Phone<input required value={callback.phone} onChange={(e) => setCallback({ ...callback, phone: e.target.value })} style={input} /></label>
-            <label style={fieldStyle}>Related complaint<select value={callback.complaintId} onChange={(e) => setCallback({ ...callback, complaintId: e.target.value })} style={input}><option value="">Not linked</option>{complaints.map((c) => <option key={c.id} value={c.id}>#{c.ticket_number}</option>)}</select></label>
+            <label style={fieldStyle}>Citizen name<input required value={callback.name} onChange={(e) => setCallback({ ...callback, name: lettersAndSpaces(e.target.value) })} style={input} /></label>
+            <label style={fieldStyle}>Phone<input required type="tel" inputMode="numeric" maxLength={10} value={callback.phone} onChange={(e) => setCallback({ ...callback, phone: mobileDigits(e.target.value) })} style={input} /></label>
+            <div style={fieldStyle}>Related complaint<ControlRoomComplaintSearch complaints={complaints} value={callback.complaintId} onChange={(complaintId) => setCallback({ ...callback, complaintId })} includeNone placeholder="Find ticket or citizen (optional)" /></div>
             <label style={fieldStyle}>Preferred callback<input type="datetime-local" value={callback.preferredAt} onChange={(e) => setCallback({ ...callback, preferredAt: e.target.value })} style={input} /></label>
             <label style={{ ...fieldStyle, gridColumn: '1 / -1' }}>Request details<textarea required rows={3} value={callback.message} onChange={(e) => setCallback({ ...callback, message: e.target.value })} style={input} /></label>
             <button type="submit" disabled={saving} style={{ ...button, justifySelf: 'start' }}><PhoneCall size={14} />Add callback request</button>
@@ -362,7 +463,7 @@ export default function ControlRoomDashboard() {
         <section style={{ display: 'grid', gap: 12 }}>
           <div style={panel}><h2 style={{ margin: 0, fontSize: '1rem' }}>H04 · External department follow-up</h2><p style={{ margin: '5px 0 0', color: 'var(--gray-600)', fontSize: '0.82rem' }}>Track referrals to agencies outside the municipal organization.</p></div>
           <form onSubmit={submitReferral} style={{ ...panel, display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
-            <label style={fieldStyle}>Complaint<select required value={referral.complaintId} onChange={(e) => setReferral({ ...referral, complaintId: e.target.value })} style={input}><option value="">Select complaint</option>{complaints.map((c) => <option key={c.id} value={c.id}>#{c.ticket_number} · {c.description.slice(0, 70)}</option>)}</select></label>
+            <div style={fieldStyle}>Complaint<ControlRoomComplaintSearch complaints={complaints} value={referral.complaintId} onChange={(complaintId) => setReferral({ ...referral, complaintId })} placeholder="Find ticket, citizen, or complaint details" /></div>
             <label style={fieldStyle}>External agency<input required value={referral.agency} onChange={(e) => setReferral({ ...referral, agency: e.target.value })} style={input} /></label>
             <label style={fieldStyle}>Agency reference<input value={referral.reference} onChange={(e) => setReferral({ ...referral, reference: e.target.value })} style={input} /></label>
             <label style={fieldStyle}>Next follow-up<input type="datetime-local" value={referral.followUpAt} onChange={(e) => setReferral({ ...referral, followUpAt: e.target.value })} style={input} /></label>

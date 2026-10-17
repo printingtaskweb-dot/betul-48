@@ -8,6 +8,7 @@ import {
 import { FormInput } from '../auth/FormInput';
 import { PasswordInput } from '../auth/PasswordInput';
 import { AlertBanner } from '../auth/AlertBanner';
+import { isValidMobile, lettersAndSpaces, mobileDigits } from '../../lib/inputValidation';
 
 /* Separate client: creating the new user must NOT replace the admin's session */
 const provisionClient = createClient(
@@ -236,7 +237,7 @@ const GENERIC_DEFAULT_DESIGNATIONS: Designation[] = [
 
   const validateAccount = () => {
     if (!fullName.trim()) { setError('Enter staff member full name'); return; }
-    if (!phone.trim()) { setError('Enter staff member mobile number'); return; }
+    if (!phone.trim() || !isValidMobile(phone)) { setError('Enter a valid 10-digit staff mobile number'); return; }
     const mail = email.trim().toLowerCase();
     if (!/^\S+@\S+\.\S+$/.test(mail)) { setError('Enter a valid email address'); return; }
     if (password.length < 6) { setError('Password must be at least 6 characters'); return; }
@@ -511,9 +512,10 @@ const GENERIC_DEFAULT_DESIGNATIONS: Designation[] = [
             <h2 style={S.h2}>Staff details & credentials</h2>
             <p style={S.sub}>Enter the staff member's name, mobile number, and login credentials.</p>
             <FormInput icon={User} placeholder="Staff Full Name *"
-              value={fullName} onChange={e => setFullName(e.target.value)} />
+              value={fullName} onChange={e => setFullName(lettersAndSpaces(e.target.value))} />
             <FormInput icon={Phone} type="tel" placeholder="Mobile Number (10 digits) *"
-              value={phone} onChange={e => setPhone(e.target.value)} />
+              inputMode="numeric" maxLength={10}
+              value={phone} onChange={e => setPhone(mobileDigits(e.target.value))} />
             <FormInput icon={Mail} type="email" placeholder="Staff Email Address *"
               value={email} onChange={e => setEmail(e.target.value)} />
             <PasswordInput placeholder="Password * (min 6 characters)"
@@ -736,8 +738,8 @@ const GENERIC_DEFAULT_DESIGNATIONS: Designation[] = [
               {supervisor && <span><b>Reports to:</b> {supervisor.full_name}{supervisor.staff_code ? ` (${supervisor.staff_code})` : ''}</span>}
             </div>
 
-            <FormInput icon={User} placeholder="Full Name *" value={fullName} onChange={e => setFullName(e.target.value)} />
-            <FormInput icon={Phone} placeholder="Mobile Number" value={phone} onChange={e => setPhone(e.target.value)} />
+            <FormInput icon={User} placeholder="Full Name *" value={fullName} onChange={e => setFullName(lettersAndSpaces(e.target.value))} />
+            <FormInput icon={Phone} type="tel" inputMode="numeric" maxLength={10} placeholder="Mobile Number" value={phone} onChange={e => setPhone(mobileDigits(e.target.value))} />
 
             <div style={{ display: 'flex', gap: 8, marginTop: 20 }}>
               <button type="button" onClick={goBack} style={S.btnSecondary}><ChevronLeft size={15} /></button>

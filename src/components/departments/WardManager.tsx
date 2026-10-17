@@ -6,6 +6,7 @@ import {
 import { supabase } from '../../lib/supabase';
 import { LocationPicker } from '../common/LocationPicker';
 import { useAuth } from '../../contexts/AuthContext';
+import { wholeNumber } from '../../lib/inputValidation';
 import {
   reverseGeocode,
   type Ward,
@@ -514,8 +515,9 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
                   {hi ? 'वार्ड नंबर *' : 'Ward Number *'}
                   <input
                     type="number"
+                    inputMode="numeric"
                     value={form.ward_number}
-                    onChange={(e) => setForm({ ...form, ward_number: e.target.value })}
+                    onChange={(e) => setForm({ ...form, ward_number: wholeNumber(e.target.value, 3) })}
                     placeholder="1"
                     style={{ ...field, marginTop: 4 }}
                   />
@@ -550,7 +552,7 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
                     type="number"
                     step="100"
                     value={form.radius_meters}
-                    onChange={(e) => setForm({ ...form, radius_meters: e.target.value })}
+                    onChange={(e) => setForm({ ...form, radius_meters: wholeNumber(e.target.value, 6) })}
                     placeholder="2000"
                     style={{ ...field, marginTop: 4 }}
                   />
@@ -559,8 +561,10 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
                   {hi ? 'पिनकोड' : 'Pincode'}
                   <input
                     type="text"
+                    inputMode="numeric"
+                    maxLength={6}
                     value={form.pincode}
-                    onChange={(e) => setForm({ ...form, pincode: e.target.value })}
+                    onChange={(e) => setForm({ ...form, pincode: wholeNumber(e.target.value, 6) })}
                     placeholder="460001"
                     style={{ ...field, marginTop: 4 }}
                   />

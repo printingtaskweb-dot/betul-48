@@ -5,6 +5,7 @@ import { t } from '../../lib/i18n';
 import { FormInput } from './FormInput';
 import { PasswordInput } from './PasswordInput';
 import { AlertBanner } from './AlertBanner';
+import { isValidMobile, lettersAndSpaces, mobileDigits, wholeNumber } from '../../lib/inputValidation';
 
 interface Props {
   language: 'en' | 'hi';
@@ -29,6 +30,10 @@ export const RegisterForm: React.FC<Props> = ({ language, selectedLang }) => {
 
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
+      return;
+    }
+    if (!isValidMobile(phone)) {
+      setError('Enter a valid 10-digit mobile number.');
       return;
     }
 
@@ -66,19 +71,23 @@ export const RegisterForm: React.FC<Props> = ({ language, selectedLang }) => {
         icon={User}
         placeholder={t(language, 'fullName')}
         value={fullName}
-        onChange={(e) => setFullName(e.target.value)}
+        onChange={(e) => setFullName(lettersAndSpaces(e.target.value))}
       />
       <FormInput
         icon={Phone}
+        type="tel"
+        inputMode="numeric"
+        maxLength={10}
         placeholder={t(language, 'phone')}
         value={phone}
-        onChange={(e) => setPhone(e.target.value)}
+        onChange={(e) => setPhone(mobileDigits(e.target.value))}
       />
       <FormInput
         icon={MapPin}
+        inputMode="numeric"
         placeholder={`${t(language, 'ward')} (${t(language, 'optional')})`}
         value={ward}
-        onChange={(e) => setWard(e.target.value)}
+        onChange={(e) => setWard(wholeNumber(e.target.value, 3))}
       />
       <FormInput
         required
