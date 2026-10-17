@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
 
@@ -7,6 +6,7 @@ interface BannerSlide {
   tag: string;
   title: string;
   subtitle: string;
+  subtitleShort?: string;
   cta: string;
   ctaLink: string;
 }
@@ -18,6 +18,7 @@ const SLIDES: BannerSlide[] = [
     title: 'Clean Indore & Betul Mission',
     subtitle:
       'Report civic issues instantly with photo & auto GPS location. Track until resolved and verified.',
+    subtitleShort: 'Report civic issues with photo & GPS. Track until resolved.',
     cta: 'Report Civic Issue',
     ctaLink: '/complaint/new',
   },
@@ -27,6 +28,7 @@ const SLIDES: BannerSlide[] = [
     title: 'Report Water Leakage & Supply',
     subtitle:
       'Save precious water every day. Report broken pipes and water shortages in seconds.',
+    subtitleShort: 'Report broken pipes & water shortages in seconds.',
     cta: 'Report Water Issue',
     ctaLink: '/complaint/new?dept=water',
   },
@@ -36,6 +38,7 @@ const SLIDES: BannerSlide[] = [
     title: 'Rain Water & Flood Drainage',
     subtitle:
       'Report blocked storm drains and road waterlogging for faster municipal action.',
+    subtitleShort: 'Report blocked drains & waterlogging for faster action.',
     cta: 'Report Drainage',
     ctaLink: '/complaint/new?dept=rainwater',
   },
@@ -45,6 +48,7 @@ const SLIDES: BannerSlide[] = [
     title: 'Biodegradable Waste Pickup',
     subtitle:
       'Report garden trimmings, fallen branches, and leaves that need specialized pickup.',
+    subtitleShort: 'Report garden trimmings & leaves for specialized pickup.',
     cta: 'Report Green Waste',
     ctaLink: '/department/green',
   },
@@ -54,6 +58,7 @@ const SLIDES: BannerSlide[] = [
     title: 'C&D Waste Clearance Drive',
     subtitle:
       'Report construction rubble and demolition waste dumped along roadsides.',
+    subtitleShort: 'Report construction rubble dumped along roadsides.',
     cta: 'Report C&D Waste',
     ctaLink: '/complaint/new?dept=cnd',
   },
@@ -109,7 +114,13 @@ export const HeroBanner: React.FC = () => {
         <h1 className="hero-title">{slide.title}</h1>
 
         <div className="hero-desc">
-          <p>{slide.subtitle}</p>
+          <p className="hero-desc-text">
+            {/* Full text on larger screens, short text on mobile */}
+            <span className="hero-desc-full">{slide.subtitle}</span>
+            <span className="hero-desc-short">
+              {slide.subtitleShort ?? slide.subtitle}
+            </span>
+          </p>
 
           <div className="hero-arrows">
             <button
