@@ -265,7 +265,7 @@ export const Home: React.FC = () => {
       <StatsSection />
 
       {/* ── Green Waste Pickup Highlight Card ── */}
-      <section style={{ padding: '0 20px', marginTop: 8 }}>
+      <section style={{ padding: '0 15px', marginTop: 4}}>
         <Link to="/department/green" style={{ textDecoration: 'none' }}>
           <div className="special-service">
             <svg
