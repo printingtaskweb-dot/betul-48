@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Briefcase, Building2, ClipboardList, PhoneCall, RefreshCw, Save, Send, ShieldCheck } from 'lucide-react';
+import { Briefcase, Building2, ClipboardList, PhoneCall, RefreshCw, Save, Send, ShieldCheck, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
+import type { StaffMember } from '../lib/hierarchy';
 import type { Ward } from '../lib/wardTypes';
+import { WardAssignmentPanel } from './admin/municipal/components/WardAssignmentPanel';
 
-type Tab = 'intake' | 'routing' | 'callbacks' | 'followups';
+type Tab = 'intake' | 'routing' | 'callbacks' | 'followups' | 'ward-staff';
 type Department = { id: string; name: string; icon: string };
 type Complaint = {
   id: string;
@@ -47,6 +49,7 @@ const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
   { id: 'routing', label: 'H02 Routing', icon: <ClipboardList size={16} /> },
   { id: 'callbacks', label: 'H03 Callbacks', icon: <PhoneCall size={16} /> },
   { id: 'followups', label: 'H04 External follow-up', icon: <Briefcase size={16} /> },
+  { id: 'ward-staff', label: 'H05 Ward staff', icon: <Users size={16} /> },
 ];
 
 const panel: React.CSSProperties = {
@@ -63,7 +66,7 @@ const input: React.CSSProperties = {
 const button: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7,
   padding: '9px 12px', border: 0, borderRadius: 6, cursor: 'pointer',
-  color: '#fff', background: 'var(--theme-primary, #660033)', fontWeight: 800,
+  color: '#fff', background: 'var(--theme-primary, #7DB668)', fontWeight: 800,
 };
 
 export default function ControlRoomDashboard() {
@@ -71,6 +74,7 @@ export default function ControlRoomDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>('intake');
   const [departments, setDepartments] = useState<Department[]>([]);
   const [wards, setWards] = useState<Ward[]>([]);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [callbacks, setCallbacks] = useState<Callback[]>([]);
   const [referrals, setReferrals] = useState<Referral[]>([]);
@@ -89,18 +93,20 @@ export default function ControlRoomDashboard() {
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
-    const [deptResult, wardResult, complaintResult, callbackResult, referralResult] = await Promise.all([
+    const [deptResult, wardResult, staffResult, complaintResult, callbackResult, referralResult] = await Promise.all([
       supabase.from('departments').select('id, name, icon').eq('is_active', true).order('name'),
       supabase.from('wards').select('*').eq('is_active', true).order('ward_number'),
+      supabase.from('user_profiles').select('*').neq('role', 'citizen').order('full_name'),
       supabase.from('complaints').select('id, ticket_number, department_id, ward_id, citizen_name, citizen_phone, description, address, status, created_at, department:departments!complaints_department_id_fkey(name), ward:wards!complaints_ward_id_fkey(ward_number, name)').order('created_at', { ascending: false }).limit(1000),
       supabase.from('citizen_callback_requests').select('*, complaint:complaints!citizen_callback_requests_complaint_id_fkey(ticket_number, description)').order('created_at', { ascending: false }).limit(500),
       supabase.from('complaint_referrals').select('*, complaint:complaints!complaint_referrals_complaint_id_fkey(ticket_number, description)').eq('referral_type', 'external').order('next_follow_up_at', { ascending: true }).limit(500),
     ]);
 
-    const failure = [deptResult, wardResult, complaintResult, callbackResult, referralResult].find((result) => result.error);
+    const failure = [deptResult, wardResult, staffResult, complaintResult, callbackResult, referralResult].find((result) => result.error);
     if (failure?.error) setError(failure.error.message);
     setDepartments((deptResult.data || []) as Department[]);
     setWards((wardResult.data || []) as Ward[]);
+    setStaff((staffResult.data || []) as StaffMember[]);
     setComplaints((complaintResult.data || []).map((row: any) => ({
       ...row,
       department: Array.isArray(row.department) ? row.department[0] || null : row.department,
@@ -377,6 +383,16 @@ export default function ControlRoomDashboard() {
           })}
           {!loading && referrals.length === 0 && <div style={panel}>No external referrals yet.</div>}
         </section>
+      )}
+
+      {activeTab === 'ward-staff' && (
+        <WardAssignmentPanel
+          staff={staff}
+          wards={wards}
+          departments={departments}
+          departmentId={null}
+          onSaved={load}
+        />
       )}
     </main>
   );

@@ -27,6 +27,8 @@ export interface DeptComplaint {
   assigned_phone?: string | null;
   assigned_role?: string | null;
   assigned_code?: string | null;
+  ward_id?: string | null;
+  area_id?: string | null;
   resolution_note: string | null;
   resolution_photo: string | null;
   resolved_by: string | null;

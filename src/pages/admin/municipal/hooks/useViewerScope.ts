@@ -3,10 +3,13 @@ import { useAuth } from '../../../../contexts/AuthContext';
 import { getTier, canViewComplaint } from '../../../../lib/hierarchy';
 import type { Viewer } from '../../../../lib/hierarchy';
 import type { ComplaintRecord, DepartmentRow } from '../types';
+import type { Ward } from '../../../../lib/wardTypes';
+import { isComplaintInWard } from '../utils/complaintWard';
 
 export const useViewerScope = (
   complaints: ComplaintRecord[],
-  departments: DepartmentRow[]
+  departments: DepartmentRow[],
+  wards: Ward[],
 ) => {
   const { user, profile, isAdmin } = useAuth();
 
@@ -47,9 +50,14 @@ export const useViewerScope = (
   const isDeputyOrHigher = myTier <= 1;
 
   const scopedComplaints = useMemo(() => {
-    if (isDeputyOrHigher) return complaints;
-    return complaints.filter((c) => canViewComplaint(viewer, c));
-  }, [complaints, viewer, isDeputyOrHigher]);
+    const permitted = isDeputyOrHigher
+      ? complaints
+      : complaints.filter((complaint) => canViewComplaint(viewer, complaint));
+    const assignedWard = wards.find((ward) => ward.id === profile?.assigned_ward_id);
+    return assignedWard
+      ? permitted.filter((complaint) => isComplaintInWard(complaint, assignedWard))
+      : permitted;
+  }, [complaints, viewer, isDeputyOrHigher, profile?.assigned_ward_id, wards]);
 
   const visibleDepartments = useMemo(() => {
     if (isDeputyOrHigher) return departments;

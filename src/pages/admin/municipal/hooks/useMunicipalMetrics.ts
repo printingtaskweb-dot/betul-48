@@ -9,6 +9,7 @@ import type {
   AreaHotspot,
 } from '../types';
 import { isDone } from '../utils/statusStyle';
+import { isComplaintInWard } from '../utils/complaintWard';
 
 interface Args {
   scopedComplaints: ComplaintRecord[];
@@ -203,29 +204,19 @@ export const useMunicipalMetrics = ({
     wards.forEach((w) => {
       byId[w.id] = { ward: w, total: 0, resolved: 0, pending: 0, inProgress: 0, officers: [] };
     });
-    const wardNumToId: Record<string, string> = {};
-    wards.forEach((w) => { wardNumToId[String(w.ward_number)] = w.id; });
-
     scopedComplaints.forEach((c) => {
-      let key: string | null = null;
-      if (c.ward_id && byId[c.ward_id]) key = c.ward_id;
-      else {
-        const m =
-          c.address?.match(/ward\s*(\d+)/i) || c.description.match(/ward\s*(\d+)/i);
-        if (m && wardNumToId[m[1]]) key = wardNumToId[m[1]];
-      }
-      if (key && byId[key]) {
-        byId[key].total++;
-        if (isDone(c.status)) byId[key].resolved++;
-        else if (c.status === 'in_progress') byId[key].inProgress++;
-        else byId[key].pending++;
-      }
+      wards.filter((ward) => isComplaintInWard(c, ward)).forEach((ward) => {
+        byId[ward.id].total++;
+        if (isDone(c.status)) byId[ward.id].resolved++;
+        else if (c.status === 'in_progress') byId[ward.id].inProgress++;
+        else byId[ward.id].pending++;
+      });
     });
 
     staff.forEach((s) => {
-      if (!s.ward_number) return;
-      const key = wardNumToId[String(s.ward_number)];
-      if (key && byId[key]) byId[key].officers.push(s);
+      const ward = wards.find((item) => item.id === s.assigned_ward_id)
+        || wards.find((item) => String(item.ward_number) === s.ward_number);
+      if (ward) byId[ward.id].officers.push(s);
     });
 
     return Object.values(byId).sort(
@@ -234,8 +225,9 @@ export const useMunicipalMetrics = ({
   }, [scopedComplaints, staff, wards]);
 
   const unassignedWardComplaints = useMemo(() => {
-    const knownIds = new Set(wards.map((w) => w.id));
-    return scopedComplaints.filter((c) => !c.ward_id || !knownIds.has(c.ward_id)).length;
+    return scopedComplaints.filter((complaint) =>
+      !wards.some((ward) => isComplaintInWard(complaint, ward))
+    ).length;
   }, [scopedComplaints, wards]);
 
   return {

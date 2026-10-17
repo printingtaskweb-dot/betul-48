@@ -17,6 +17,7 @@ export interface StaffMember {
   role: string | null;
   staff_code: string | null;
   linked_department_id: string | null;
+  assigned_ward_id?: string | null;
   ward_number?: string | null;
   authority_role?: string | null;
   hierarchy_code?: string | null;

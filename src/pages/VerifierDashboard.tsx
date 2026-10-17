@@ -1,7 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { AlertTriangle, CheckCircle2, ClipboardCheck, Clock3, RefreshCw, Send, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import type { StaffMember } from '../lib/hierarchy';
 import { supabase } from '../lib/supabase';
+import type { Ward } from '../lib/wardTypes';
+import { WardAssignmentPanel } from './admin/municipal/components/WardAssignmentPanel';
 
 type DecisionAction = 'rework' | 'verified_resolved' | 'request_information' | 'refer_department';
 type Department = { id: string; name: string };
@@ -64,6 +67,8 @@ export default function VerifierDashboard() {
   const { user } = useAuth();
   const [requests, setRequests] = useState<Request[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
+  const [wards, setWards] = useState<Ward[]>([]);
+  const [staff, setStaff] = useState<StaffMember[]>([]);
   const [selectedId, setSelectedId] = useState('');
   const [pastDecisions, setPastDecisions] = useState<Decision[]>([]);
   const [loading, setLoading] = useState(true);
@@ -80,7 +85,7 @@ export default function VerifierDashboard() {
   const load = useCallback(async () => {
     setLoading(true);
     setError('');
-    const [requestResult, departmentResult] = await Promise.all([
+    const [requestResult, departmentResult, wardResult, staffResult] = await Promise.all([
       supabase.from('verification_requests').select(
         `*, complaint:complaints!verification_requests_complaint_id_fkey(
           *, department:departments!complaints_department_id_fkey(name),
@@ -89,9 +94,13 @@ export default function VerifierDashboard() {
         )`
       ).in('status', ['pending', 'in_review', 'awaiting_information']).order('deadline_at'),
       supabase.from('departments').select('id, name').eq('is_active', true).order('name'),
+      supabase.from('wards').select('*').eq('is_active', true).order('ward_number'),
+      supabase.from('user_profiles').select('*').neq('role', 'citizen').order('full_name'),
     ]);
     if (requestResult.error) setError(requestResult.error.message);
     if (departmentResult.error && !requestResult.error) setError(departmentResult.error.message);
+    if (wardResult.error && !requestResult.error && !departmentResult.error) setError(wardResult.error.message);
+    if (staffResult.error && !requestResult.error && !departmentResult.error && !wardResult.error) setError(staffResult.error.message);
     const normalized = (requestResult.data || []).map((row: any) => ({
       ...row,
       complaint: row.complaint ? {
@@ -102,6 +111,8 @@ export default function VerifierDashboard() {
     })).filter((row: any) => row.complaint) as Request[];
     setRequests(normalized);
     setDepartments((departmentResult.data || []) as Department[]);
+    setWards((wardResult.data || []) as Ward[]);
+    setStaff((staffResult.data || []) as StaffMember[]);
     setLoading(false);
   }, []);
 
@@ -249,6 +260,14 @@ export default function VerifierDashboard() {
 
       {error && <div role="alert" style={{ ...card, color: '#991b1b', borderColor: '#fca5a5' }}>{error}</div>}
       {message && <div role="status" style={{ ...card, color: '#166534', borderColor: '#86efac' }}>{message}</div>}
+
+      <WardAssignmentPanel
+        staff={staff}
+        wards={wards}
+        departments={departments}
+        departmentId={null}
+        onSaved={load}
+      />
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap: 14, alignItems: 'start' }}>
         <section style={{ display: 'grid', gap: 8 }}>

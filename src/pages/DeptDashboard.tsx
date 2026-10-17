@@ -14,6 +14,7 @@ import MunicipalAdministratorDashboard from './admin/MunicipalAdministratorDashb
 import ControlRoomDashboard from './ControlRoomDashboard';
 import VerifierDashboard from './VerifierDashboard';
 import type { Ward } from '../lib/wardTypes';
+import { isComplaintInWard } from './admin/municipal/utils/complaintWard';
 import {
   Building2, Search, Filter, CheckCircle, Clock,
   AlertCircle, XCircle, Camera,
@@ -655,6 +656,8 @@ export default function DeptDashboard() {
     full_name: string | null;
     role: string | null;
     linked_department_id: string | null;
+    assigned_ward_id: string | null;
+    ward_number: string | null;
     dept_name: string | null;
     dept_icon: string | null;
     authority_role?: string | null;
@@ -698,6 +701,12 @@ export default function DeptDashboard() {
   const myTier = getTier(profile?.role, profile?.hierarchy_code, profile?.authority_role);
   // Municipal Administrator & Deputy Commissioner have city-wide org purview
   const orgLevel = myTier <= 1;
+  const assignedWard = useMemo(
+    () => wards.find((ward) => ward.id === profile?.assigned_ward_id)
+      || wards.find((ward) => profile?.ward_number != null && String(ward.ward_number) === String(profile.ward_number))
+      || null,
+    [wards, profile?.assigned_ward_id, profile?.ward_number]
+  );
 
   const viewer: Viewer = useMemo(
     () => ({
@@ -717,7 +726,7 @@ export default function DeptDashboard() {
     (async () => {
       const { data } = await supabase
         .from('user_profiles')
-        .select('id, full_name, phone, role, linked_department_id, is_admin, authority_role, hierarchy_code')
+        .select('id, full_name, phone, role, linked_department_id, assigned_ward_id, ward_number, is_admin, authority_role, hierarchy_code')
         .eq('id', user.id)
         .single();
 
@@ -750,6 +759,8 @@ export default function DeptDashboard() {
         full_name: data.full_name,
         role: effectiveRole,
         linked_department_id: data.linked_department_id,
+        assigned_ward_id: data.assigned_ward_id,
+        ward_number: data.ward_number,
         dept_name: dName,
         dept_icon: dIcon,
         authority_role: data.authority_role,
@@ -772,7 +783,7 @@ export default function DeptDashboard() {
       let dq = supabase.from('departments').select('*').order('name');
       let sq = supabase
         .from('user_profiles')
-        .select('id, full_name, phone, email, role, staff_code, linked_department_id, ward_number, authority_role, hierarchy_code')
+        .select('id, full_name, phone, email, role, staff_code, linked_department_id, assigned_ward_id, ward_number, authority_role, hierarchy_code')
         .in('role', STAFF_ROLES)
         .order('full_name');
 
@@ -846,8 +857,15 @@ export default function DeptDashboard() {
 
   // Safety net: only complaints this viewer is permitted to see
   const visibleComplaints = useMemo(
-    () => (profile && !noDept ? complaints.filter(c => canViewComplaint(viewer, c)) : []),
-    [complaints, viewer, profile, noDept]
+    () => {
+      if (!profile || noDept) return [];
+      const allowed = complaints.filter((complaint) => canViewComplaint(viewer, complaint));
+      if ((myTier === 3 || myTier === 4) && !assignedWard) return [];
+      return assignedWard
+        ? allowed.filter((complaint) => isComplaintInWard(complaint, assignedWard))
+        : allowed;
+    },
+    [complaints, viewer, profile, noDept, assignedWard, myTier]
   );
 
   const shownComplaints = useMemo(
@@ -940,6 +958,14 @@ export default function DeptDashboard() {
         const stTier = getTier(st.role, st.hierarchy_code, st.authority_role);
         if (stTier <= myTier) return false;
 
+        if (myTier === 3) {
+          if (!assignedWard) return false;
+          const sameWard = st.assigned_ward_id
+            ? st.assigned_ward_id === assignedWard.id
+            : st.ward_number != null && String(st.ward_number) === String(assignedWard.ward_number);
+          if (!sameWard) return false;
+        }
+
         // Department filter
         if (staffReportDeptFilter !== 'all' && st.linked_department_id !== staffReportDeptFilter) {
           return false;
@@ -976,7 +1002,7 @@ export default function DeptDashboard() {
           deptIcon: dept?.icon || '🏢',
         };
       });
-  }, [staffList, viewer.id, myTier, staffReportDeptFilter, staffReportTierFilter, staffReportSearch, getStaffStats, allDepartments]);
+  }, [staffList, viewer.id, myTier, assignedWard, staffReportDeptFilter, staffReportTierFilter, staffReportSearch, getStaffStats, allDepartments]);
 
   // ── Early screens ──
   if (profileLoading) {
@@ -1016,7 +1042,7 @@ export default function DeptDashboard() {
     );
   }
 
-  if (isAdmin || myTier <= 2) {
+  if (isAdmin || orgLevel) {
     return <MunicipalAdministratorDashboard />;
   }
 
@@ -1090,6 +1116,11 @@ export default function DeptDashboard() {
               <p style={{ margin: 0, fontSize: '0.72rem', color: 'rgba(255,255,255,0.8)' }}>
                 {profile?.full_name ? `${profile.full_name} • ` : ''}{roleLabel(profile?.role, language)}
               </p>
+              {assignedWard && (
+                <p style={{ margin: '3px 0 0', fontSize: '0.68rem', color: 'rgba(255,255,255,0.88)' }}>
+                  Assigned ward: Ward {assignedWard.ward_number} · {assignedWard.name}
+                </p>
+              )}
             </div>
           </div>
 

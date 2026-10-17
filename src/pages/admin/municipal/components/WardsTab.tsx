@@ -5,7 +5,9 @@ import { BORDER, PRIMARY } from '../constants';
 import type { Ward } from '../../../../lib/wardTypes';
 import type { StaffMember } from '../../../../lib/hierarchy';
 import type { ComplaintRecord } from '../types';
-import { haversineMeters } from '../utils/haversine';
+import type { DepartmentRow } from '../types';
+import { isComplaintInWard } from '../utils/complaintWard';
+import { WardAssignmentPanel } from './WardAssignmentPanel';
 
 interface WardMetric {
   ward: Ward;
@@ -21,25 +23,25 @@ interface Props {
   wardMetrics: WardMetric[];
   unassignedWardComplaints: number;
   scopedComplaints: ComplaintRecord[];
+  staff: StaffMember[];
+  departments: DepartmentRow[];
+  canManageWardAssignments: boolean;
+  assignmentDepartmentId: string | null;
+  onAssignmentSaved: () => void;
   onManageWards: () => void;
   onViewTasks: (wardId: string) => void;
 }
 
 export const WardsTab: React.FC<Props> = ({
   wards, wardMetrics, unassignedWardComplaints, scopedComplaints,
+  staff, departments, canManageWardAssignments, assignmentDepartmentId, onAssignmentSaved,
   onManageWards, onViewTasks,
 }) => {
   const [expandedWardId, setExpandedWardId] = useState<string | null>(null);
 
-  /* Complaints that fall inside a given ward's radius (GPS-based) */
+  /* Complaints registered to or located inside a ward */
   const nearbyForWard = (ward: Ward): ComplaintRecord[] => {
-    if (ward.center_latitude == null || ward.center_longitude == null) return [];
-    const r = ward.radius_meters || 2000;
-    return scopedComplaints.filter((c) => {
-      if (c.latitude == null || c.longitude == null) return false;
-      const d = haversineMeters(ward.center_latitude!, ward.center_longitude!, c.latitude, c.longitude);
-      return d <= r;
-    });
+    return scopedComplaints.filter((complaint) => isComplaintInWard(complaint, ward));
   };
 
   return (
@@ -47,10 +49,10 @@ export const WardsTab: React.FC<Props> = ({
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
         <div>
           <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: 'var(--gray-900)' }}>
-            🗺️ Registered Wards & Radius Coverage
+            🗺️ Registered Wards & Complaint Coverage
           </h3>
           <p style={{ margin: '3px 0 0', fontSize: '0.76rem', color: 'var(--gray-600)' }}>
-            Each ward shows complaints registered inside its GPS radius (from <code>center_latitude/longitude</code>).
+            Ward totals include explicitly registered complaints and GPS locations within each ward boundary.
           </p>
         </div>
 
@@ -66,6 +68,16 @@ export const WardsTab: React.FC<Props> = ({
           </button>
         </div>
       </div>
+
+      {canManageWardAssignments && (
+        <WardAssignmentPanel
+          staff={staff}
+          wards={wards}
+          departments={departments}
+          departmentId={assignmentDepartmentId}
+          onSaved={onAssignmentSaved}
+        />
+      )}
 
       {wards.length === 0 ? (
         <div style={{
@@ -140,7 +152,7 @@ export const WardsTab: React.FC<Props> = ({
                     {w.pincode && <span>📮 {w.pincode}</span>}
                     <span>👤 Officers Assigned: <b>{entry.officers.length}</b></span>
                     <span style={{ color: PRIMARY, fontWeight: 800 }}>
-                      <Crosshair size={11} style={{ display: 'inline', verticalAlign: 'middle' }} /> In radius: <b>{radiusHits.length}</b>
+                      <Crosshair size={11} style={{ display: 'inline', verticalAlign: 'middle' }} /> In ward: <b>{radiusHits.length}</b>
                     </span>
                   </div>
 
@@ -149,7 +161,7 @@ export const WardsTab: React.FC<Props> = ({
                       onClick={() => setExpandedWardId(isExpanded ? null : w.id)}
                       style={{ ...outlineBtn, padding: '5px 10px', fontSize: '0.72rem', flex: 1, justifyContent: 'center' }}
                     >
-                      <Crosshair size={12} /> {isExpanded ? 'Hide' : 'Preview'} Radius
+                      <Crosshair size={12} /> {isExpanded ? 'Hide' : 'Preview'} Complaints
                     </button>
                     <button
                       onClick={() => onViewTasks(w.id)}
@@ -181,7 +193,7 @@ export const WardsTab: React.FC<Props> = ({
                     }}>
                       {radiusHits.length === 0 ? (
                         <span style={{ fontSize: '0.74rem', color: 'var(--gray-500)' }}>
-                          No complaints within {w.radius_meters} m.
+                          No complaints registered to or located within this ward.
                         </span>
                       ) : (
                         radiusHits.slice(0, 20).map((c) => (
