@@ -21,8 +21,8 @@
   /* Shared accent palette: softer tones for supporting UI, deeper green for primary actions */
   --peach: #FFC799;
   --rose: #FF9BAA;
-  --civic-green: #7DB668;
-  --civic-green-dark: #006A4E;
+  --civic-green: #19A7CE;
+  --civic-green-dark: #146C94;
   --burgundy: var(--civic-green-dark);
   --burgundy-dark: #146C94;
   --burgundy-light: var(--civic-green);
