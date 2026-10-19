@@ -1086,16 +1086,16 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                       </div>
                     </div>
 
-                    {/* Progress bar — width capped so it doesn't stretch full card */}
+                    {/* Progress bar — thinner by half (height 6px, maxWidth 210px) */}
                     <div
                       style={{
-                        height: 12,
-                        borderRadius: 6,
+                        height: 6,
+                        borderRadius: 3,
                         background: 'var(--theme-component-border, #bfbfbf)',
                         display: 'flex',
                         overflow: 'hidden',
                         width: '100%',
-                        maxWidth: 420,
+                        maxWidth: 210,
                       }}
                     >
                       {deptTotal > 0 ? (

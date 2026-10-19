@@ -21,64 +21,64 @@ const HERO_CARDS: HeroCardData[] = [
     className: 'card card-1',
     rot: -9,
     depth: 14,
-    img: 'https://cdn.shopify.com/s/files/1/0185/5999/1872/files/dhs-brand-3x4-07.jpg?v=1782043727?w=400&h=600&fit=crop&crop=faces&q=80',
-    alt: 'Sanitation Lead',
+    img: '/cleaning.png',
+    alt: 'Sanitation & Cleaning',
   },
   {
     id: 2,
     className: 'card card-2',
     rot: -5,
     depth: 10,
-    img: 'https://cdn.shopify.com/s/files/1/0185/5999/1872/files/enr-1x1-01.jpg?v=1782002435?w=400&h=600&fit=crop&crop=faces&q=80',
-    alt: 'Civic Engineer',
+    img: '/road.png',
+    alt: 'Roads & Infrastructure',
   },
   {
     id: 3,
     className: 'card card-3',
     rot: -2,
     depth: 8,
-    img: 'https://cdn.shopify.com/s/files/1/0185/5999/1872/files/dhs-brand-3x4-05.jpg?v=1782043916?w=400&h=600&fit=crop&crop=faces&q=80',
-    alt: 'Ward Supervisor',
+    img: '/water.png',
+    alt: 'Water Supply',
   },
   {
     id: 4,
     className: 'card card-4',
     rot: 3,
     depth: 12,
-    img: 'https://cdn.shopify.com/s/files/1/0185/5999/1872/files/fes-3x4-09.jpg?v=1782034037?w=400&h=600&fit=crop&crop=faces&q=80',
-    alt: 'Green Waste Lead',
+    img: '/street_light.png',
+    alt: 'Street Lighting',
   },
   {
     id: 5,
     className: 'card card-5',
     rot: 0,
     depth: 6,
-    img: 'https://cdn.shopify.com/s/files/1/0185/5999/1872/files/enr20-3x4-01.jpg?v=1782002435?w=400&h=600&fit=crop&crop=faces&q=80',
-    alt: 'Operations Chief',
+    img: '/green.png',
+    alt: 'Green Waste Initiative',
   },
   {
     id: 6,
     className: 'card card-6',
     rot: 4,
     depth: 11,
-    img: 'https://cdn.shopify.com/s/files/1/0185/5999/1872/files/dcs-3x4-01.jpg?v=1782035651?w=400&h=600&fit=crop&crop=faces&q=80',
-    alt: 'Rapid Resolver',
+    img: '/sewage.png',
+    alt: 'Sewage Drainage',
   },
   {
     id: 7,
     className: 'card card-7',
     rot: 7,
     depth: 9,
-    img: 'https://cdn.shopify.com/s/files/1/0185/5999/1872/files/fes-3x4-01.jpg?v=1782034037?v=1782042890?w=400&h=600&fit=crop&crop=faces&q=80',
-    alt: 'Drainage Officer',
+    img: '/C&D.png',
+    alt: 'C&D Waste Clearance',
   },
   {
     id: 8,
     className: 'card card-8',
     rot: -4,
     depth: 13,
-    img: 'https://cdn.shopify.com/s/files/1/0185/5999/1872/files/dhs-brand-3x4-07.jpg?v=1782043727?w=400&h=600&fit=crop&crop=faces&q=80',
-    alt: 'Field Inspector',
+    img: '/rain_water.png',
+    alt: 'Rainwater Drainage',
   },
 ];
 
@@ -122,7 +122,7 @@ export const HeroBanner: React.FC = () => {
             stagger: 0.08,
             ease: 'power3.out',
           },
-          0.3
+          0.2
         )
         .to(
           '.big-results .letter',
@@ -133,7 +133,7 @@ export const HeroBanner: React.FC = () => {
             stagger: 0.05,
             ease: 'back.out(1.6)',
           },
-          0.55
+          0.45
         )
         .to(
           cards,
@@ -146,9 +146,9 @@ export const HeroBanner: React.FC = () => {
             stagger: { each: 0.08, from: 'center' },
             ease: 'back.out(1.4)',
           },
-          0.8
+          0.7
         )
-        .to('#subline', { opacity: 1, y: 0, duration: 0.8 }, 1.6);
+        .to('#subline', { opacity: 1, y: 0, duration: 0.8 }, 1.4);
 
       // CONTINUOUS FLOAT ON CARDS
       cards.forEach((card, i) => {
@@ -299,8 +299,8 @@ export const HeroBanner: React.FC = () => {
           --accent-4: #e2f0f7;
 
           position: relative;
-          min-height: 88vh;
-          padding: 110px 24px 60px;
+          min-height: 78vh;
+          padding: 40px 24px 50px;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -322,13 +322,13 @@ export const HeroBanner: React.FC = () => {
           z-index: 1;
           opacity: 0.05;
           mix-blend-mode: multiply;
-          background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.1  0 0 0 0 0.1  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+          background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.1  0 0 0 0 0.1  0 0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
         }
 
         .hero-animation-section .small-team {
           font-family: var(--font-primary, "DM Sans", system-ui, sans-serif);
           font-weight: 700;
-          font-size: clamp(38px, 6.2vw, 88px);
+          font-size: clamp(36px, 5.8vw, 84px);
           letter-spacing: -0.035em;
           line-height: 1;
           color: var(--hero-ink);
@@ -363,7 +363,7 @@ export const HeroBanner: React.FC = () => {
           font-family: var(--font-primary, "DM Sans", system-ui, sans-serif);
           font-style: italic;
           font-weight: 800;
-          font-size: clamp(100px, 20vw, 290px);
+          font-size: clamp(96px, 19vw, 280px);
           letter-spacing: -0.045em;
           line-height: 0.85;
           color: var(--hero-ghost);
@@ -384,7 +384,7 @@ export const HeroBanner: React.FC = () => {
           position: absolute;
           left: 0;
           right: 0;
-          top: 50%;
+          top: 48%;
           height: 320px;
           z-index: 3;
           pointer-events: none;
@@ -398,21 +398,14 @@ export const HeroBanner: React.FC = () => {
           position: absolute;
           border-radius: 18px;
           overflow: hidden;
-          background: linear-gradient(
-            180deg,
-            var(--accent-1) 0%,
-            var(--accent-2) 35%,
-            var(--accent-3) 70%,
-            var(--accent-4) 100%
-          );
-          box-shadow: 0 30px 50px -16px rgba(20, 108, 148, 0.45),
-            0 14px 26px -8px rgba(20, 108, 148, 0.3),
-            0 5px 10px -2px rgba(15, 31, 38, 0.2),
-            inset 0 2px 0 rgba(255, 255, 255, 0.45),
-            inset 0 -4px 8px rgba(20, 108, 148, 0.4);
+          background: #ffffff;
+          border: 1.5px solid rgba(20, 108, 148, 0.18);
+          box-shadow: 0 24px 44px -14px rgba(20, 108, 148, 0.35),
+            0 10px 22px -6px rgba(20, 108, 148, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.9);
           cursor: pointer;
           will-change: transform;
-          transition: box-shadow 0.5s cubic-bezier(0.6, 0, 0.2, 1);
+          transition: box-shadow 0.4s ease;
         }
 
         .hero-animation-section .card::before {
@@ -421,10 +414,9 @@ export const HeroBanner: React.FC = () => {
           inset: 0;
           background: linear-gradient(
             155deg,
-            rgba(255, 255, 255, 0.25) 0%,
-            transparent 30%,
-            transparent 70%,
-            rgba(20, 108, 148, 0.25) 100%
+            rgba(255, 255, 255, 0.3) 0%,
+            transparent 40%,
+            rgba(20, 108, 148, 0.06) 100%
           );
           pointer-events: none;
           border-radius: inherit;
@@ -435,16 +427,14 @@ export const HeroBanner: React.FC = () => {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          object-position: center top;
+          object-position: center;
           display: block;
         }
 
         .hero-animation-section .card:hover {
-          box-shadow: 0 44px 70px -20px rgba(20, 108, 148, 0.55),
-            0 22px 38px -10px rgba(20, 108, 148, 0.35),
-            0 8px 14px -3px rgba(15, 31, 38, 0.22),
-            inset 0 2px 0 rgba(255, 255, 255, 0.5),
-            inset 0 -4px 8px rgba(20, 108, 148, 0.4);
+          box-shadow: 0 36px 64px -16px rgba(20, 108, 148, 0.5),
+            0 18px 32px -8px rgba(20, 108, 148, 0.28),
+            inset 0 1px 0 rgba(255, 255, 255, 0.9);
         }
 
         .hero-animation-section .card-1 { width: 130px; height: 180px; left: 4%; top: 30px; z-index: 1; }
@@ -456,10 +446,11 @@ export const HeroBanner: React.FC = () => {
         .hero-animation-section .card-7 { width: 175px; height: 240px; left: 70%; top: 30px; z-index: 4; }
         .hero-animation-section .card-8 { width: 130px; height: 175px; left: 84%; top: 50px; z-index: 2; }
 
+        /* Report Civic Issue pill placed lower to avoid overlapping cards */
         .hero-animation-section .subline {
-          margin-top: 180px;
+          margin-top: 250px;
           text-align: center;
-          z-index: 4;
+          z-index: 10;
           position: relative;
         }
 
@@ -470,7 +461,7 @@ export const HeroBanner: React.FC = () => {
           background: var(--hero-ink);
           color: #fafaf7;
           border: none;
-          padding: 12px 22px 12px 26px;
+          padding: 13px 24px 13px 28px;
           border-radius: 999px;
           font-family: inherit;
           font-size: 14px;
@@ -513,8 +504,8 @@ export const HeroBanner: React.FC = () => {
 
         @media (max-width: 750px) {
           .hero-animation-section {
-            padding: 90px 16px 40px;
-            min-height: 80vh;
+            padding: 30px 16px 36px;
+            min-height: 72vh;
           }
           .hero-animation-section .small-team {
             font-size: 11vw;
@@ -524,7 +515,7 @@ export const HeroBanner: React.FC = () => {
           }
           .hero-animation-section .cards-row {
             height: 220px;
-            top: 52%;
+            top: 50%;
           }
           .hero-animation-section .card-1 { width: 80px; height: 110px; left: 0%; top: 20px; }
           .hero-animation-section .card-2 { width: 90px; height: 130px; left: 10%; top: 35px; }
@@ -535,7 +526,7 @@ export const HeroBanner: React.FC = () => {
           .hero-animation-section .card-7 { width: 100px; height: 140px; left: 74%; top: 20px; }
           .hero-animation-section .card-8 { width: 80px; height: 110px; left: 87%; top: 35px; }
           .hero-animation-section .subline {
-            margin-top: 130px;
+            margin-top: 175px;
           }
         }
       `}</style>
@@ -565,7 +556,7 @@ export const HeroBanner: React.FC = () => {
         </div>
       </div>
 
-      {/* 8 fanned-out floating portrait cards */}
+      {/* 8 fanned-out floating portrait cards using public civic images */}
       <div className="cards-row" id="cardsRow">
         {HERO_CARDS.map((card, idx) => (
           <div
