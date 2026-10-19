@@ -13,10 +13,10 @@
      🎨 BETUL CIVIC PALETTE
      ========================================================================= */
   /* Backgrounds */
-  --bg-1: #FFF8F2;
-  --bg-2: #FFF1E8;
-  --surface: #FFFFFF;
-  --surface-2: #FFFAF6;
+  --bg-1: #F6F1F1;
+  --bg-2: #AFD3E2;
+  --surface: #19A7CE;
+  --surface-2: #19A7CE;
 
   /* Shared accent palette: softer tones for supporting UI, deeper green for primary actions */
   --peach: #FFC799;
@@ -24,7 +24,7 @@
   --civic-green: #7DB668;
   --civic-green-dark: #006A4E;
   --burgundy: var(--civic-green-dark);
-  --burgundy-dark: #004A37;
+  --burgundy-dark: #146C94;
   --burgundy-light: var(--civic-green);
   --slate: #1C1B1A;
   --slate-soft: #4A4744;
