@@ -91,7 +91,7 @@ const SCRAMBLE_CHARS = [
   '?', '/', '~', '`',
 ];
 
-const SCRAMBLE_COLORS = ['#85AF00', '#FFCC00', '#FB9CFD', '#A19BFF', '#FF4C00'];
+const SCRAMBLE_COLORS = ['#146C94', '#19A7CE', '#AFD3E2', '#F6F1F1', '#0f1f26'];
 
 // ── Stat counter data ─────────────────────────────────────────────────────────
 interface Stat {
@@ -108,7 +108,7 @@ const STATS: Stat[] = [
     value: 12400,
     suffix: '+',
     label: 'Complaints Resolved',
-    color: '#85AF00',
+    color: '#146C94',
   },
   {
     icon: <Clock size={18} />,
@@ -122,7 +122,7 @@ const STATS: Stat[] = [
     value: 94,
     suffix: '%',
     label: 'Citizen Satisfaction',
-    color: '#FFCC00',
+    color: '#AFD3E2',
   },
 ];
 
@@ -138,13 +138,13 @@ const HOW_IT_WORKS = [
     icon: <Clock size={16} />,
     label: 'Assign',
     desc: 'Auto-routed',
-    color: '#A19BFF',
+    color: '#146C94',
   },
   {
     icon: <CheckCircle2 size={16} />,
     label: 'Resolve',
     desc: 'Verified close',
-    color: '#85AF00',
+    color: '#AFD3E2',
   },
 ];
 
@@ -445,7 +445,7 @@ export const HeroBanner: React.FC = () => {
       <div className="hero-art" aria-hidden="true">
         {/* Floating data cards */}
         <div className="hero-float-card hero-float-card--a">
-          <Recycle size={14} style={{ color: '#85AF00' }} />
+          <Recycle size={14} style={{ color: '#146C94' }} />
           <span>Green Waste</span>
           <strong>↑ 18%</strong>
         </div>
@@ -455,7 +455,7 @@ export const HeroBanner: React.FC = () => {
           <strong>3.2 ML</strong>
         </div>
         <div className="hero-float-card hero-float-card--c">
-          <Trash2 size={14} style={{ color: '#FFCC00' }} />
+          <Trash2 size={14} style={{ color: '#AFD3E2' }} />
           <span>Waste Cleared</span>
           <strong>94 T</strong>
         </div>
