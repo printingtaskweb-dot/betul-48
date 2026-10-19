@@ -131,6 +131,9 @@ export const HeroBanner: React.FC = () => {
     splitInstancesRef.current.forEach((s) => s.revert());
     splitInstancesRef.current = [];
 
+    const tagEl = contentRef.current.querySelector(
+      '.hero-badge span:last-child'
+    ) as HTMLElement | null;
     const titleEl = contentRef.current.querySelector(
       '.hero-title'
     ) as HTMLElement | null;
@@ -140,11 +143,8 @@ export const HeroBanner: React.FC = () => {
     const shortEl = contentRef.current.querySelector(
       '.hero-desc-short'
     ) as HTMLElement | null;
-    const tagEl = contentRef.current.querySelector(
-      '.hero-badge span:last-child'
-    ) as HTMLElement | null;
 
-    if (!titleEl || !descEl || !shortEl || !tagEl) return;
+    if (!tagEl || !titleEl || !descEl || !shortEl) return;
 
     // Split each target into lines + chars
     const targets = [tagEl, titleEl, descEl, shortEl];
@@ -157,12 +157,14 @@ export const HeroBanner: React.FC = () => {
       });
       splitInstancesRef.current.push(split);
 
+      // Cast Element[] -> HTMLElement[] once so .dataset/.style type-check
+      const chars = split.chars as HTMLElement[];
+      const lines = split.lines as HTMLElement[];
+
       // Attach the hover effect to each line
-      split.lines.forEach((line) => {
+      lines.forEach((line) => {
         const onEnter = () => {
-          const charsInLine = split.chars.filter((char) =>
-            line.contains(char)
-          );
+          const charsInLine = chars.filter((char) => line.contains(char));
           const totalChars = charsInLine.length;
           const middleIndex = (totalChars - 1) / 2;
 
@@ -229,7 +231,7 @@ export const HeroBanner: React.FC = () => {
     // Cleanup: revert splits and remove listeners
     return () => {
       splitInstancesRef.current.forEach((split) => {
-        split.lines.forEach((line) => {
+        (split.lines as HTMLElement[]).forEach((line) => {
           const handler = (line as any)._scrambleHandler;
           if (handler) line.removeEventListener('mouseenter', handler);
         });
