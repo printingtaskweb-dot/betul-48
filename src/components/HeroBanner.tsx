@@ -16,14 +16,70 @@ interface HeroCardData {
 }
 
 const HERO_CARDS: HeroCardData[] = [
-  { id: 1, className: 'card card-1', rot: -9, depth: 14, img: '/cleaning.png', alt: 'Sanitation & Cleaning' },
-  { id: 2, className: 'card card-2', rot: -5, depth: 10, img: '/road.png', alt: 'Roads & Infrastructure' },
-  { id: 3, className: 'card card-3', rot: -2, depth: 8, img: '/water.png', alt: 'Water Supply' },
-  { id: 4, className: 'card card-4', rot: 3, depth: 12, img: '/street_light.png', alt: 'Street Lighting' },
-  { id: 5, className: 'card card-5', rot: 0, depth: 6, img: '/green.png', alt: 'Green Waste Initiative' },
-  { id: 6, className: 'card card-6', rot: 4, depth: 11, img: '/sewage.png', alt: 'Sewage Drainage' },
-  { id: 7, className: 'card card-7', rot: 7, depth: 9, img: '/C&D.png', alt: 'C&D Waste Clearance' },
-  { id: 8, className: 'card card-8', rot: -4, depth: 13, img: '/rain_water.png', alt: 'Rainwater Drainage' },
+  {
+    id: 1,
+    className: 'card card-1',
+    rot: -9,
+    depth: 14,
+    img: '/cleaning.png',
+    alt: 'Sanitation & Cleaning',
+  },
+  {
+    id: 2,
+    className: 'card card-2',
+    rot: -5,
+    depth: 10,
+    img: '/road.png',
+    alt: 'Roads & Infrastructure',
+  },
+  {
+    id: 3,
+    className: 'card card-3',
+    rot: -2,
+    depth: 8,
+    img: '/water.png',
+    alt: 'Water Supply',
+  },
+  {
+    id: 4,
+    className: 'card card-4',
+    rot: 3,
+    depth: 12,
+    img: '/street_light.png',
+    alt: 'Street Lighting',
+  },
+  {
+    id: 5,
+    className: 'card card-5',
+    rot: 0,
+    depth: 6,
+    img: '/green.png',
+    alt: 'Green Waste Initiative',
+  },
+  {
+    id: 6,
+    className: 'card card-6',
+    rot: 4,
+    depth: 11,
+    img: '/sewage.png',
+    alt: 'Sewage Drainage',
+  },
+  {
+    id: 7,
+    className: 'card card-7',
+    rot: 7,
+    depth: 9,
+    img: '/C&D.png',
+    alt: 'C&D Waste Clearance',
+  },
+  {
+    id: 8,
+    className: 'card card-8',
+    rot: -4,
+    depth: 13,
+    img: '/rain_water.png',
+    alt: 'Rainwater Drainage',
+  },
 ];
 
 export const HeroBanner: React.FC = () => {
@@ -60,12 +116,23 @@ export const HeroBanner: React.FC = () => {
       intro
         .to(
           '.small-team .word > span',
-          { y: '0%', duration: 0.9, stagger: 0.08, ease: 'power3.out' },
+          {
+            y: '0%',
+            duration: 0.9,
+            stagger: 0.08,
+            ease: 'power3.out',
+          },
           0.2
         )
         .to(
           '.big-results .letter',
-          { y: 0, opacity: 1, duration: 0.9, stagger: 0.05, ease: 'back.out(1.6)' },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.9,
+            stagger: 0.05,
+            ease: 'back.out(1.6)',
+          },
           0.45
         )
         .to(
@@ -160,7 +227,13 @@ export const HeroBanner: React.FC = () => {
           gsap.fromTo(
             card,
             { scale: 1.15 },
-            { scale: 1.05, duration: 0.15, yoyo: true, repeat: 1, ease: 'power2.inOut' }
+            {
+              scale: 1.05,
+              duration: 0.15,
+              yoyo: true,
+              repeat: 1,
+              ease: 'power2.inOut',
+            }
           );
         };
 
@@ -226,7 +299,7 @@ export const HeroBanner: React.FC = () => {
           --accent-4: #e2f0f7;
 
           position: relative;
-          min-height: 88vh;
+          min-height: 78vh;
           padding: 40px 24px 50px;
           display: flex;
           flex-direction: column;
@@ -276,19 +349,16 @@ export const HeroBanner: React.FC = () => {
           transform: translateY(105%);
         }
 
-        /* ✅ CHANGED: wrapper now sits ABOVE the cards (cards-row is z-index: 3) */
         .hero-animation-section .big-results-wrap {
           position: relative;
           width: 100%;
           margin-top: -16px;
           display: flex;
           justify-content: center;
-          z-index: 6;                 /* was 1 */
-          pointer-events: none;       /* ✅ NEW: card hover / tilt still works underneath */
+          z-index: 1;
           user-select: none;
         }
 
-        /* ✅ CHANGED: slightly translucent ghost colour + soft shadow for readability over photos */
         .hero-animation-section .big-results {
           font-family: var(--font-primary, "DM Sans", system-ui, sans-serif);
           font-style: italic;
@@ -296,12 +366,12 @@ export const HeroBanner: React.FC = () => {
           font-size: clamp(96px, 19vw, 280px);
           letter-spacing: -0.045em;
           line-height: 0.85;
-          color: rgba(184, 208, 218, 0.85);              /* was solid var(--hero-ghost) */
+          color: var(--hero-ghost);
           text-align: center;
           white-space: nowrap;
           user-select: none;
           z-index: 1;
-          text-shadow: 0 2px 14px rgba(15, 31, 38, 0.25); /* was a faint blue glow */
+          text-shadow: 0 4px 12px rgba(20, 108, 148, 0.08);
         }
 
         .hero-animation-section .big-results .letter {
@@ -310,12 +380,11 @@ export const HeroBanner: React.FC = () => {
           will-change: transform, opacity;
         }
 
-        /* ✅ CHANGED: top 48% -> 36% so cards slide up under the lower half of the letters */
         .hero-animation-section .cards-row {
           position: absolute;
           left: 0;
           right: 0;
-          top: 36%;
+          top: 48%;
           height: 320px;
           z-index: 3;
           pointer-events: none;
@@ -377,9 +446,9 @@ export const HeroBanner: React.FC = () => {
         .hero-animation-section .card-7 { width: 175px; height: 240px; left: 70%; top: 30px; z-index: 4; }
         .hero-animation-section .card-8 { width: 130px; height: 175px; left: 84%; top: 50px; z-index: 2; }
 
-        /* ✅ CHANGED: margin-top 340px -> 260px (cards moved up) */
+        /* Report Civic Issue pill placed lower to avoid overlapping cards */
         .hero-animation-section .subline {
-          margin-top: 260px;
+          margin-top: 250px;
           text-align: center;
           z-index: 10;
           position: relative;
@@ -436,7 +505,7 @@ export const HeroBanner: React.FC = () => {
         @media (max-width: 750px) {
           .hero-animation-section {
             padding: 30px 16px 36px;
-            min-height: 82vh;
+            min-height: 72vh;
           }
           .hero-animation-section .small-team {
             font-size: 11vw;
@@ -446,7 +515,7 @@ export const HeroBanner: React.FC = () => {
           }
           .hero-animation-section .cards-row {
             height: 220px;
-            top: 38%;                      /* ✅ CHANGED: was 46% */
+            top: 50%;
           }
           .hero-animation-section .card-1 { width: 80px; height: 110px; left: 0%; top: 20px; }
           .hero-animation-section .card-2 { width: 90px; height: 130px; left: 10%; top: 35px; }
@@ -457,18 +526,7 @@ export const HeroBanner: React.FC = () => {
           .hero-animation-section .card-7 { width: 100px; height: 140px; left: 74%; top: 20px; }
           .hero-animation-section .card-8 { width: 80px; height: 110px; left: 87%; top: 35px; }
           .hero-animation-section .subline {
-            margin-top: 200px;             /* ✅ CHANGED: was 260px */
-          }
-        }
-
-        @media (max-width: 420px) {
-          .hero-animation-section .subline {
-            margin-top: 230px;             /* ✅ CHANGED: was 300px */
-          }
-          .hero-animation-section .subline-text {
-            font-size: 11px;
-            padding: 0 8px;
-            line-height: 1.5;
+            margin-top: 175px;
           }
         }
       `}</style>
@@ -479,15 +537,15 @@ export const HeroBanner: React.FC = () => {
       {/* Masked reveal title */}
       <h1 className="small-team" id="smallTeam">
         <span className="word">
-          <span>{language === 'hi' ? 'एक' : 'One'}</span>
+          <span>{language === 'hi' ? 'छोटा' : 'Small'}</span>
         </span>
         &nbsp;
         <span className="word">
-          <span>{language === 'hi' ? 'कदम,' : 'Step,'}</span>
+          <span>{language === 'hi' ? 'दल,' : 'team,'}</span>
         </span>
       </h1>
 
-      {/* Big results text — now layered in front of the photo cards */}
+      {/* Big results back text with individual letter hover/reveal */}
       <div className="big-results-wrap">
         <div className="big-results" id="bigResults">
           {'big results'.split('').map((char, idx) => (
