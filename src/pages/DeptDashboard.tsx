@@ -25,6 +25,7 @@ import {
   ArrowRight, Info, Users, Award, Mail, MapPin,
   Navigation,
 } from 'lucide-react';
+import { DepartmentServiceIcon } from '../components/common/DepartmentServiceIcon';
 
 // ─── Status Config ──────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; labelHi: string; color: string; bg: string; Icon: typeof Clock }> = {
@@ -1108,11 +1109,16 @@ export default function DeptDashboard() {
               <Building2 size={20} color="#fff" />
             </div>
             <div>
-              <h1 style={{ margin: 0, fontSize: 'clamp(0.95rem, 2.5vw, 1.15rem)', fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>
-                {orgLevel
-                  ? `🏛️ ${hi ? 'समस्त विभाग / संगठन' : 'All Municipal Departments'}`
-                  : `${profile?.dept_icon || '🏢'} ${profile?.dept_name || 'Department'}`}
-              </h1>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {!orgLevel && profile?.dept_name && (
+                  <DepartmentServiceIcon slugOrName={profile.dept_name} size={28} iconSize={15} />
+                )}
+                <h1 style={{ margin: 0, fontSize: 'clamp(0.95rem, 2.5vw, 1.15rem)', fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>
+                  {orgLevel
+                    ? (hi ? 'समस्त विभाग / संगठन' : 'All Municipal Departments')
+                    : (profile?.dept_name || 'Department')}
+                </h1>
+              </div>
               <p style={{ margin: 0, fontSize: '0.72rem', color: 'rgba(255,255,255,0.8)' }}>
                 {profile?.full_name ? `${profile.full_name} • ` : ''}{roleLabel(profile?.role, language)}
               </p>
@@ -1418,7 +1424,7 @@ export default function DeptDashboard() {
                           boxShadow: isSelected ? '0 2px 8px rgba(102,0,51,0.15)' : 'none',
                         }}
                       >
-                        <span style={{ fontSize: '1.1rem' }}>{d.icon || '🏢'}</span>
+                        <DepartmentServiceIcon slugOrName={d.slug || d.name} size={24} iconSize={13} />
                         <span>{d.name}</span>
                         <span style={{
                           padding: '2px 7px', borderRadius: 12, fontSize: '0.72rem', fontWeight: 800,
@@ -1448,13 +1454,7 @@ export default function DeptDashboard() {
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 14, marginBottom: 16 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-                      <div style={{
-                        width: 54, height: 54, borderRadius: 12,
-                        background: 'var(--theme-bg, #F6F1F1)', border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.9rem',
-                      }}>
-                        {activeDetailDept.icon || '🏢'}
-                      </div>
+                      <DepartmentServiceIcon slugOrName={activeDetailDept.slug || activeDetailDept.name} size={54} iconSize={26} />
                       <div>
                         <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: 900, color: 'var(--gray-900)' }}>
                           {activeDetailDept.name}

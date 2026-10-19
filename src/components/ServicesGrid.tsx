@@ -123,10 +123,104 @@ const SERVICES: Service[] = [
       </svg>
     ),
   },
+  // ── 4 new categories ──────────────────────────────────────────────────────
+  {
+    slug: 'parks',
+    icon: '🌳',
+    gradient: 'linear-gradient(135deg, #15803d, #0d9488)',
+    shadow: 'rgba(13,148,136,0.3)',
+    route: '/complaint/new?dept=parks',
+    svgIcon: (
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22V12m0 0c-3.5-2-6-5-6-8a6 6 0 0 1 12 0c0 3-2.5 6-6 8z"/>
+      </svg>
+    ),
+  },
+  {
+    slug: 'electricity',
+    icon: '⚡',
+    gradient: 'linear-gradient(135deg, #ca8a04, #d97706)',
+    shadow: 'rgba(217,119,6,0.35)',
+    route: '/complaint/new?dept=electricity',
+    svgIcon: (
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+      </svg>
+    ),
+  },
+  {
+    slug: 'solid-waste',
+    icon: '🗑️',
+    gradient: 'linear-gradient(135deg, #475569, #64748b)',
+    shadow: 'rgba(100,116,139,0.3)',
+    route: '/complaint/new?dept=solid-waste',
+    svgIcon: (
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+      </svg>
+    ),
+  },
+  {
+    slug: 'noise',
+    icon: '🔊',
+    gradient: 'linear-gradient(135deg, #ea580c, #dc2626)',
+    shadow: 'rgba(234,88,12,0.3)',
+    route: '/complaint/new?dept=noise',
+    svgIcon: (
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M11 5L6 9H2v6h4l5 4V5z"/>
+        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+      </svg>
+    ),
+  },
 ];
+
+// ── Inline responsive grid styles injected once ───────────────────────────────
+const GRID_STYLE_ID = 'services-grid-responsive-style';
+
+function ensureGridStyles() {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById(GRID_STYLE_ID)) return;
+  const style = document.createElement('style');
+  style.id = GRID_STYLE_ID;
+  style.textContent = `
+    .services-grid-responsive {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+    }
+    @media (min-width: 640px) {
+      .services-grid-responsive {
+        grid-template-columns: repeat(6, 1fr);
+      }
+    }
+    @media (min-width: 900px) {
+      .services-grid-responsive {
+        grid-template-columns: repeat(5, 1fr);
+      }
+    }
+    .service-item-hoverable {
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      will-change: transform, box-shadow;
+    }
+    @media (hover: hover) {
+      .service-item-hoverable:hover {
+        transform: scale(1.06) translateY(-2px);
+        box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+        z-index: 1;
+      }
+    }
+  `;
+  document.head.appendChild(style);
+}
 
 export const ServicesGrid: React.FC = () => {
   const { language } = useAuth();
+
+  // Inject grid + hover styles once on first render
+  React.useEffect(() => {
+    ensureGridStyles();
+  }, []);
 
   return (
     <div style={{ padding: '0 20px', marginTop: 8 }}>
@@ -155,7 +249,7 @@ export const ServicesGrid: React.FC = () => {
             <Link
               key={svc.slug}
               to={svc.route}
-              className="service-item"
+              className="service-item service-item-hoverable"
             >
               {/* SVG icon in white card */}
               <div className="service-icon">

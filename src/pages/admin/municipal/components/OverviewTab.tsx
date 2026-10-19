@@ -2,6 +2,7 @@ import React from 'react';
 import { card } from '../styles';
 import { BORDER, PRIMARY } from '../constants';
 import type { DeptMetric, AreaHotspot } from '../types';
+import { DepartmentServiceIcon } from '../../../../components/common/DepartmentServiceIcon';
 
 interface Props {
   deptMetrics: DeptMetric[];
@@ -55,8 +56,8 @@ export const OverviewTab: React.FC<Props> = ({
                   padding: '4px 0',
                 }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.82rem', fontWeight: 700 }}>
-                  <span style={{ fontSize: '1.1rem' }}>{m.dept.icon}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.82rem', fontWeight: 700 }}>
+                  <DepartmentServiceIcon slugOrName={m.dept.slug || m.dept.name} size={24} iconSize={13} />
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                     {m.dept.name}
                   </span>

@@ -8,6 +8,7 @@ import type { AllotTarget } from '../dept/AllotModal';
 import { WardManagement } from '../admin/WardManagement';
 import { LocationComplaintFilter } from '../admin/LocationComplaintFilter';
 import type { Ward, Area } from '../../lib/wardTypes';
+import { DepartmentServiceIcon } from '../common/DepartmentServiceIcon';
 import {
   getTier,
   canAllotComplaint,
@@ -663,181 +664,90 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
       {/* ── Navigation Tabs ── */}
       <div
         style={{
-          display: 'flex',
-          gap: 8,
-          borderBottom: BORDER,
-          paddingBottom: 4,
-          overflowX: 'auto',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+          gap: 10,
+          marginBottom: 12,
         }}
       >
-        <button
-          type="button"
-          onClick={() => setActiveTab('overview')}
-          style={{
-            padding: '10px 16px',
-            border: 'none',
-            borderRadius: '8px 8px 0 0',
-            fontWeight: 800,
-            fontSize: '0.84rem',
-            cursor: 'pointer',
-            background:
-              activeTab === 'overview' ? 'var(--theme-component, #d9d9d9)' : 'transparent',
-            color: activeTab === 'overview' ? PRIMARY : 'var(--gray-700)',
-            borderBottom: activeTab === 'overview' ? `3px solid ${PRIMARY}` : 'none',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <BarChart3 size={16} />
-          <span>Executive Overview & Power BI</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('complaints')}
-          style={{
-            padding: '10px 16px',
-            border: 'none',
-            borderRadius: '8px 8px 0 0',
-            fontWeight: 800,
-            fontSize: '0.84rem',
-            cursor: 'pointer',
-            background:
-              activeTab === 'complaints' ? 'var(--theme-component, #d9d9d9)' : 'transparent',
-            color: activeTab === 'complaints' ? PRIMARY : 'var(--gray-700)',
-            borderBottom: activeTab === 'complaints' ? `3px solid ${PRIMARY}` : 'none',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <Briefcase size={16} />
-          <span>Task Allocation & Complaints ({filtered.length})</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('analytics')}
-          style={{
-            padding: '10px 16px',
-            border: 'none',
-            borderRadius: '8px 8px 0 0',
-            fontWeight: 800,
-            fontSize: '0.84rem',
-            cursor: 'pointer',
-            background:
-              activeTab === 'analytics' ? 'var(--theme-component, #d9d9d9)' : 'transparent',
-            color: activeTab === 'analytics' ? PRIMARY : 'var(--gray-700)',
-            borderBottom: activeTab === 'analytics' ? `3px solid ${PRIMARY}` : 'none',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <TrendingUp size={16} />
-          <span>Employee Performance Leaderboard</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('wards')}
-          style={{
-            padding: '10px 16px',
-            border: 'none',
-            borderRadius: '8px 8px 0 0',
-            fontWeight: 800,
-            fontSize: '0.84rem',
-            cursor: 'pointer',
-            background: activeTab === 'wards' ? 'var(--theme-component, #d9d9d9)' : 'transparent',
-            color: activeTab === 'wards' ? PRIMARY : 'var(--gray-700)',
-            borderBottom: activeTab === 'wards' ? `3px solid ${PRIMARY}` : 'none',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <MapPin size={16} />
-          <span>Registered Wards & Area Coverage</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('departments')}
-          style={{
-            padding: '10px 16px',
-            border: 'none',
-            borderRadius: '8px 8px 0 0',
-            fontWeight: 800,
-            fontSize: '0.84rem',
-            cursor: 'pointer',
-            background:
-              activeTab === 'departments' ? 'var(--theme-component, #d9d9d9)' : 'transparent',
-            color: activeTab === 'departments' ? PRIMARY : 'var(--gray-700)',
-            borderBottom: activeTab === 'departments' ? `3px solid ${PRIMARY}` : 'none',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <Building2 size={16} />
-          <span>Departments Directory</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('ward-manager')}
-          style={{
-            padding: '10px 16px',
-            border: 'none',
-            borderRadius: '8px 8px 0 0',
-            fontWeight: 800,
-            fontSize: '0.84rem',
-            cursor: 'pointer',
-            background:
-              activeTab === 'ward-manager' ? 'var(--theme-component, #d9d9d9)' : 'transparent',
-            color: activeTab === 'ward-manager' ? PRIMARY : 'var(--gray-700)',
-            borderBottom: activeTab === 'ward-manager' ? `3px solid ${PRIMARY}` : 'none',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <Layers size={16} />
-          <span>Ward Registration</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => setActiveTab('location-viewer')}
-          style={{
-            padding: '10px 16px',
-            border: 'none',
-            borderRadius: '8px 8px 0 0',
-            fontWeight: 800,
-            fontSize: '0.84rem',
-            cursor: 'pointer',
-            background:
-              activeTab === 'location-viewer'
-                ? 'var(--theme-component, #d9d9d9)'
-                : 'transparent',
-            color: activeTab === 'location-viewer' ? PRIMARY : 'var(--gray-700)',
-            borderBottom: activeTab === 'location-viewer' ? `3px solid ${PRIMARY}` : 'none',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          <Compass size={16} />
-          <span>Location Filter</span>
-        </button>
+        {[
+          { id: 'overview', label: 'Executive Overview', sub: 'KPIs & Workload', icon: <BarChart3 size={22} />, gradient: 'linear-gradient(135deg, #146C94, #19A7CE)', border: '#146C94' },
+          { id: 'complaints', label: 'Task Allocation', sub: 'Complaints', badge: filtered.length, icon: <Briefcase size={22} />, gradient: 'linear-gradient(135deg, #7c3aed, #a855f7)', border: '#7c3aed' },
+          { id: 'analytics', label: 'Employee Leaderboard', sub: 'Rankings', icon: <TrendingUp size={22} />, gradient: 'linear-gradient(135deg, #059669, #10b981)', border: '#059669' },
+          { id: 'wards', label: 'Wards', sub: 'Boundaries', badge: wardsList.length, icon: <MapPin size={22} />, gradient: 'linear-gradient(135deg, #d97706, #f59e0b)', border: '#d97706' },
+          { id: 'departments', label: 'Departments', sub: 'Civic Units', icon: <Building2 size={22} />, gradient: 'linear-gradient(135deg, #0f766e, #14b8a6)', border: '#0f766e' },
+          { id: 'ward-manager', label: 'Ward Registration', sub: 'Geofence', icon: <Layers size={22} />, gradient: 'linear-gradient(135deg, #dc2626, #f87171)', border: '#dc2626' },
+          { id: 'location-viewer', label: 'Location Filter', sub: 'Map Radar', icon: <Compass size={22} />, gradient: 'linear-gradient(135deg, #475569, #64748b)', border: '#475569' },
+        ].map((item) => {
+          const isActive = activeTab === item.id;
+          return (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => setActiveTab(item.id as ViewTab)}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                textAlign: 'center',
+                padding: '12px 8px',
+                borderRadius: 14,
+                border: isActive ? `2px solid ${item.border}` : '1px solid #e2e8f0',
+                background: isActive ? '#ffffff' : '#f8fafc',
+                cursor: 'pointer',
+                position: 'relative',
+                transition: 'all 0.18s ease',
+                boxShadow: isActive ? '0 6px 18px rgba(0, 0, 0, 0.08)' : '0 1px 3px rgba(0,0,0,0.03)',
+                transform: isActive ? 'translateY(-2px)' : 'none',
+              }}
+            >
+              {item.badge !== undefined && (
+                <span
+                  style={{
+                    position: 'absolute',
+                    top: 6,
+                    right: 6,
+                    background: isActive ? item.border : '#64748b',
+                    color: '#fff',
+                    borderRadius: 12,
+                    padding: '1px 6px',
+                    fontSize: '0.65rem',
+                    fontWeight: 800,
+                  }}
+                >
+                  {item.badge}
+                </span>
+              )}
+              <div
+                style={{
+                  width: 42,
+                  height: 42,
+                  borderRadius: 12,
+                  background: item.gradient,
+                  color: '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  marginBottom: 6,
+                  boxShadow: isActive ? '0 4px 12px rgba(0,0,0,0.18)' : '0 2px 6px rgba(0,0,0,0.08)',
+                }}
+              >
+                {item.icon}
+              </div>
+              <span
+                style={{
+                  fontSize: '0.78rem',
+                  fontWeight: isActive ? 800 : 700,
+                  color: isActive ? '#0f172a' : '#475569',
+                  lineHeight: 1.25,
+                }}
+              >
+                {item.label}
+              </span>
+              <span style={{ fontSize: '0.65rem', color: '#94a3b8', marginTop: 2 }}>{item.sub}</span>
+            </button>
+          );
+        })}
       </div>
 
       {/* ── Global Search & Quick Multi-Filter Bar ── */}
@@ -1144,8 +1054,8 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                         gap: 6,
                       }}
                     >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <span style={{ fontSize: '1.25rem' }}>{dept.icon}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <DepartmentServiceIcon slugOrName={dept.name} size={30} iconSize={16} />
                         <b style={{ fontSize: '0.9rem', color: 'var(--gray-900)' }}>
                           {dept.name}
                         </b>

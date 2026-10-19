@@ -1,5 +1,16 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import {
+  ChevronLeft,
+  ChevronRight,
+  ArrowRight,
+  CheckCircle2,
+  MapPin,
+  Clock,
+  TrendingUp,
+  Recycle,
+  Droplets,
+  Trash2,
+} from 'lucide-react';
 import { gsap } from 'gsap';
 import { SplitText } from 'gsap/SplitText';
 
@@ -68,16 +79,13 @@ const SLIDES: BannerSlide[] = [
   },
 ];
 
+// ── Scramble effect constants ─────────────────────────────────────────────────
 const SCRAMBLE_CHARS = [
-  // Lowercase
   'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
   'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-  // Uppercase
   'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
   'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-  // Numbers
   '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-  // Special
   '<', '>', '%', '&', '@', '!', '#', '$', '^', '*', '(', ')', '-',
   '_', '+', '=', '{', '}', '[', ']', '|', '\\', ':', ';', '"',
   '?', '/', '~', '`',
@@ -85,18 +93,114 @@ const SCRAMBLE_CHARS = [
 
 const SCRAMBLE_COLORS = ['#85AF00', '#FFCC00', '#FB9CFD', '#A19BFF', '#FF4C00'];
 
+// ── Stat counter data ─────────────────────────────────────────────────────────
+interface Stat {
+  icon: React.ReactNode;
+  value: number;
+  suffix: string;
+  label: string;
+  color: string;
+}
+
+const STATS: Stat[] = [
+  {
+    icon: <CheckCircle2 size={18} />,
+    value: 12400,
+    suffix: '+',
+    label: 'Complaints Resolved',
+    color: '#85AF00',
+  },
+  {
+    icon: <Clock size={18} />,
+    value: 48,
+    suffix: 'h',
+    label: 'Avg. Response Time',
+    color: '#19A7CE',
+  },
+  {
+    icon: <TrendingUp size={18} />,
+    value: 94,
+    suffix: '%',
+    label: 'Citizen Satisfaction',
+    color: '#FFCC00',
+  },
+];
+
+// ── How-it-works steps ────────────────────────────────────────────────────────
+const HOW_IT_WORKS = [
+  {
+    icon: <MapPin size={16} />,
+    label: 'Report',
+    desc: 'Photo + GPS',
+    color: '#19A7CE',
+  },
+  {
+    icon: <Clock size={16} />,
+    label: 'Assign',
+    desc: 'Auto-routed',
+    color: '#A19BFF',
+  },
+  {
+    icon: <CheckCircle2 size={16} />,
+    label: 'Resolve',
+    desc: 'Verified close',
+    color: '#85AF00',
+  },
+];
+
+// ── Animated stat counter ─────────────────────────────────────────────────────
+const StatCounter: React.FC<{ stat: Stat; trigger: boolean }> = ({ stat, trigger }) => {
+  const numRef = useRef<HTMLSpanElement>(null);
+  const objRef = useRef({ val: 0 });
+
+  useEffect(() => {
+    if (!trigger || !numRef.current) return;
+    objRef.current.val = 0;
+    const tween = gsap.to(objRef.current, {
+      val: stat.value,
+      duration: 2.2,
+      ease: 'power2.out',
+      onUpdate: () => {
+        if (numRef.current) {
+          numRef.current.textContent =
+            stat.value >= 1000
+              ? Math.round(objRef.current.val).toLocaleString('en-IN')
+              : Math.round(objRef.current.val).toString();
+        }
+      },
+    });
+    return () => { tween.kill(); };
+  }, [trigger, stat.value]);
+
+  return (
+    <div className="hero-stat-card" style={{ '--stat-color': stat.color } as React.CSSProperties}>
+      <span className="hero-stat-icon" style={{ color: stat.color }}>
+        {stat.icon}
+      </span>
+      <div className="hero-stat-body">
+        <span className="hero-stat-number">
+          <span ref={numRef}>0</span>
+          <span className="hero-stat-suffix">{stat.suffix}</span>
+        </span>
+        <span className="hero-stat-label">{stat.label}</span>
+      </div>
+    </div>
+  );
+};
+
+// ── Main component ────────────────────────────────────────────────────────────
 export const HeroBanner: React.FC = () => {
   const [current, setCurrent] = useState(0);
   const [animating, setAnimating] = useState(false);
+  const [statsVisible, setStatsVisible] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const statsRef = useRef<HTMLDivElement>(null);
   const splitInstancesRef = useRef<SplitText[]>([]);
 
   const goTo = useCallback(
     (idx: number) => {
       if (animating || idx === current) return;
-
       setAnimating(true);
-
       window.setTimeout(() => {
         setCurrent(idx);
         setAnimating(false);
@@ -113,21 +217,26 @@ export const HeroBanner: React.FC = () => {
     goTo((current - 1 + SLIDES.length) % SLIDES.length);
   }, [current, goTo]);
 
+  // Auto-advance
   useEffect(() => {
     const timer = window.setInterval(() => {
       setCurrent((previous) => (previous + 1) % SLIDES.length);
     }, 5000);
-
     return () => window.clearInterval(timer);
+  }, []);
+
+  // Trigger stat counters once hero is mounted
+  useEffect(() => {
+    const timeout = window.setTimeout(() => setStatsVisible(true), 600);
+    return () => window.clearTimeout(timeout);
   }, []);
 
   const slide = SLIDES[current];
 
-  // ── GSAP SplitText scramble-on-hover effect ─────────────────
+  // ── GSAP SplitText scramble-on-hover effect (preserved exactly) ────────────
   useEffect(() => {
     if (!contentRef.current) return;
 
-    // Revert any previous SplitText instances before re-splitting
     splitInstancesRef.current.forEach((s) => s.revert());
     splitInstancesRef.current = [];
 
@@ -146,7 +255,6 @@ export const HeroBanner: React.FC = () => {
 
     if (!tagEl || !titleEl || !descEl || !shortEl) return;
 
-    // Split each target into lines + chars
     const targets = [tagEl, titleEl, descEl, shortEl];
 
     targets.forEach((el) => {
@@ -157,11 +265,9 @@ export const HeroBanner: React.FC = () => {
       });
       splitInstancesRef.current.push(split);
 
-      // Cast Element[] -> HTMLElement[] once so .dataset/.style type-check
       const chars = split.chars as HTMLElement[];
       const lines = split.lines as HTMLElement[];
 
-      // Attach the hover effect to each line
       lines.forEach((line) => {
         const onEnter = () => {
           const charsInLine = chars.filter((char) => line.contains(char));
@@ -191,12 +297,10 @@ export const HeroBanner: React.FC = () => {
                   const randomNum = gsap.utils.random(['0', '1']);
                   const randomNumThree = gsap.utils.random(['0', '1', '2']);
 
-                  // Randomly replace the character
                   if (randomNum === '1') {
                     char.textContent = gsap.utils.random(SCRAMBLE_CHARS);
                   }
 
-                  // Randomly add a size label
                   if (randomNumThree === '1') {
                     const detail = document.createElement('span');
                     detail.classList.add('detail-size');
@@ -204,7 +308,6 @@ export const HeroBanner: React.FC = () => {
                     char.appendChild(detail);
                   }
 
-                  // Randomly add a colored border
                   if (randomNumThree === '1') {
                     char.style.border = `1px solid ${gsap.utils.random(
                       SCRAMBLE_COLORS
@@ -213,8 +316,6 @@ export const HeroBanner: React.FC = () => {
                 },
 
                 onComplete: () => {
-                  // ✅ FIX: dataset values are `string | undefined`;
-                  // coalesce to '' so textContent (string | null) type-checks.
                   char.textContent = char.dataset.orig ?? '';
                   char.style.border = 'none';
                 },
@@ -224,13 +325,10 @@ export const HeroBanner: React.FC = () => {
         };
 
         line.addEventListener('mouseenter', onEnter);
-
-        // Store the handler so we can clean it up
         (line as any)._scrambleHandler = onEnter;
       });
     });
 
-    // Cleanup: revert splits and remove listeners
     return () => {
       splitInstancesRef.current.forEach((split) => {
         (split.lines as HTMLElement[]).forEach((line) => {
@@ -245,7 +343,124 @@ export const HeroBanner: React.FC = () => {
 
   return (
     <section className="hero-section">
+      {/* ── LEFT / CONTENT COLUMN ────────────────────────────────────────── */}
+      <div
+        ref={contentRef}
+        className={`hero-content ${animating ? 'hero-fading' : ''}`}
+        aria-live="polite"
+      >
+        {/* Badge */}
+        <div className="hero-badge">
+          <span className="hero-status-dot" />
+          <span>{slide.tag}</span>
+        </div>
+
+        {/* Title */}
+        <h1 className="hero-title">{slide.title}</h1>
+
+        {/* Description + nav arrows */}
+        <div className="hero-desc">
+          <p className="hero-desc-text">
+            <span className="hero-desc-full">{slide.subtitle}</span>
+            <span className="hero-desc-short">
+              {slide.subtitleShort ?? slide.subtitle}
+            </span>
+          </p>
+
+          <div className="hero-arrows">
+            <button
+              type="button"
+              onClick={prev}
+              aria-label="Previous slide"
+              className="hero-arrow"
+            >
+              <ChevronLeft size={17} />
+            </button>
+            <button
+              type="button"
+              onClick={next}
+              aria-label="Next slide"
+              className="hero-arrow"
+            >
+              <ChevronRight size={17} />
+            </button>
+          </div>
+        </div>
+
+        {/* CTA */}
+        <div className="hero-actions">
+          <a href={slide.ctaLink} className="hero-cta">
+            {slide.cta}
+            <ArrowRight size={15} />
+          </a>
+        </div>
+
+        {/* ── How It Works ─────────────────────────────────────────────── */}
+        <div className="hero-how" aria-label="How it works">
+          <span className="hero-how-label">How it works</span>
+          <div className="hero-how-steps">
+            {HOW_IT_WORKS.map((step, i) => (
+              <React.Fragment key={step.label}>
+                <div className="hero-how-step">
+                  <span
+                    className="hero-how-icon"
+                    style={{ background: step.color + '22', color: step.color }}
+                  >
+                    {step.icon}
+                  </span>
+                  <span className="hero-how-step-name">{step.label}</span>
+                  <span className="hero-how-step-desc">{step.desc}</span>
+                </div>
+                {i < HOW_IT_WORKS.length - 1 && (
+                  <ArrowRight size={12} className="hero-how-arrow" />
+                )}
+              </React.Fragment>
+            ))}
+          </div>
+        </div>
+
+        {/* ── Stat counters ─────────────────────────────────────────────── */}
+        <div ref={statsRef} className="hero-stats" aria-label="Key statistics">
+          {STATS.map((stat) => (
+            <StatCounter key={stat.label} stat={stat} trigger={statsVisible} />
+          ))}
+        </div>
+
+        {/* Slide dots */}
+        <div className="hero-dots" aria-label="Banner slides">
+          {SLIDES.map((item, index) => (
+            <button
+              key={item.id}
+              type="button"
+              onClick={() => goTo(index)}
+              aria-label={`Go to slide ${index + 1}`}
+              aria-current={index === current ? 'true' : undefined}
+              className={`hero-dot ${index === current ? 'active' : ''}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* ── RIGHT / ILLUSTRATION COLUMN ──────────────────────────────────── */}
       <div className="hero-art" aria-hidden="true">
+        {/* Floating data cards */}
+        <div className="hero-float-card hero-float-card--a">
+          <Recycle size={14} style={{ color: '#85AF00' }} />
+          <span>Green Waste</span>
+          <strong>↑ 18%</strong>
+        </div>
+        <div className="hero-float-card hero-float-card--b">
+          <Droplets size={14} style={{ color: '#19A7CE' }} />
+          <span>Water Saved</span>
+          <strong>3.2 ML</strong>
+        </div>
+        <div className="hero-float-card hero-float-card--c">
+          <Trash2 size={14} style={{ color: '#FFCC00' }} />
+          <span>Waste Cleared</span>
+          <strong>94 T</strong>
+        </div>
+
+        {/* City SVG illustration */}
         <svg viewBox="0 0 520 360" role="presentation">
           <defs>
             <linearGradient id="hero-hill" x1="0" x2="1" y1="0" y2="1">
@@ -334,68 +549,6 @@ export const HeroBanner: React.FC = () => {
             />
           </g>
         </svg>
-      </div>
-      <div
-        ref={contentRef}
-        className={`hero-content ${animating ? 'hero-fading' : ''}`}
-        aria-live="polite"
-      >
-        <div className="hero-badge">
-          <span className="hero-status-dot" />
-          <span>{slide.tag}</span>
-        </div>
-
-        <h1 className="hero-title">{slide.title}</h1>
-
-        <div className="hero-desc">
-          <p className="hero-desc-text">
-            {/* Full text on larger screens, short text on mobile */}
-            <span className="hero-desc-full">{slide.subtitle}</span>
-            <span className="hero-desc-short">
-              {slide.subtitleShort ?? slide.subtitle}
-            </span>
-          </p>
-
-          <div className="hero-arrows">
-            <button
-              type="button"
-              onClick={prev}
-              aria-label="Previous slide"
-              className="hero-arrow"
-            >
-              <ChevronLeft size={17} />
-            </button>
-
-            <button
-              type="button"
-              onClick={next}
-              aria-label="Next slide"
-              className="hero-arrow"
-            >
-              <ChevronRight size={17} />
-            </button>
-          </div>
-        </div>
-
-        <div className="hero-actions">
-          <a href={slide.ctaLink} className="hero-cta">
-            {slide.cta}
-            <ArrowRight size={15} />
-          </a>
-        </div>
-
-        <div className="hero-dots" aria-label="Banner slides">
-          {SLIDES.map((item, index) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => goTo(index)}
-              aria-label={`Go to slide ${index + 1}`}
-              aria-current={index === current ? 'true' : undefined}
-              className={`hero-dot ${index === current ? 'active' : ''}`}
-            />
-          ))}
-        </div>
       </div>
     </section>
   );
