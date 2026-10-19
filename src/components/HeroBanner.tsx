@@ -1,6 +1,9 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
-import { createTimeline, scrambleText } from 'animejs';
+import { gsap } from 'gsap';
+import { SplitText } from 'gsap/SplitText';
+
+gsap.registerPlugin(SplitText);
 
 interface BannerSlide {
   id: number;
@@ -65,10 +68,28 @@ const SLIDES: BannerSlide[] = [
   },
 ];
 
+const SCRAMBLE_CHARS = [
+  // Lowercase
+  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
+  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+  // Uppercase
+  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
+  'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+  // Numbers
+  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+  // Special
+  '<', '>', '%', '&', '@', '!', '#', '$', '^', '*', '(', ')', '-',
+  '_', '+', '=', '{', '}', '[', ']', '|', '\\', ':', ';', '"',
+  '?', '/', '~', '`',
+];
+
+const SCRAMBLE_COLORS = ['#85AF00', '#FFCC00', '#FB9CFD', '#A19BFF', '#FF4C00'];
+
 export const HeroBanner: React.FC = () => {
   const [current, setCurrent] = useState(0);
   const [animating, setAnimating] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
+  const splitInstancesRef = useRef<SplitText[]>([]);
 
   const goTo = useCallback(
     (idx: number) => {
@@ -102,13 +123,14 @@ export const HeroBanner: React.FC = () => {
 
   const slide = SLIDES[current];
 
-  // ── Scramble text animation on slide change ─────────────────
+  // ── GSAP SplitText scramble-on-hover effect ─────────────────
   useEffect(() => {
     if (!contentRef.current) return;
 
-    const tagEl = contentRef.current.querySelector(
-      '.hero-badge span:last-child'
-    ) as HTMLElement | null;
+    // Revert any previous SplitText instances before re-splitting
+    splitInstancesRef.current.forEach((s) => s.revert());
+    splitInstancesRef.current = [];
+
     const titleEl = contentRef.current.querySelector(
       '.hero-title'
     ) as HTMLElement | null;
@@ -118,79 +140,104 @@ export const HeroBanner: React.FC = () => {
     const shortEl = contentRef.current.querySelector(
       '.hero-desc-short'
     ) as HTMLElement | null;
+    const tagEl = contentRef.current.querySelector(
+      '.hero-badge span:last-child'
+    ) as HTMLElement | null;
 
-    if (!tagEl || !titleEl || !descEl || !shortEl) return;
+    if (!titleEl || !descEl || !shortEl || !tagEl) return;
 
-    // Set final texts as the scramble targets
-    tagEl.textContent = slide.tag;
-    titleEl.textContent = slide.title;
-    descEl.textContent = slide.subtitle;
-    shortEl.textContent = slide.subtitleShort ?? slide.subtitle;
+    // Split each target into lines + chars
+    const targets = [tagEl, titleEl, descEl, shortEl];
 
-    // Run scramble timeline
-    const tl = createTimeline();
+    targets.forEach((el) => {
+      const split = new SplitText(el, {
+        type: 'lines,chars',
+        linesClass: 'split-line',
+        charsClass: 'split-char',
+      });
+      splitInstancesRef.current.push(split);
 
-    tl.add(tagEl, {
-      innerHTML: scrambleText({
-        override: ' ',
-        from: 'center',
-        duration: 400,
-        cursor: '░▒▓',
-        perturbation: 0.25,
-      }),
+      // Attach the hover effect to each line
+      split.lines.forEach((line) => {
+        const onEnter = () => {
+          const charsInLine = split.chars.filter((char) =>
+            line.contains(char)
+          );
+          const totalChars = charsInLine.length;
+          const middleIndex = (totalChars - 1) / 2;
+
+          charsInLine.forEach((char, index) => {
+            if (!char.dataset.orig) {
+              char.dataset.orig = char.textContent || '';
+            }
+
+            const distanceFromCenter = Math.abs(index - middleIndex);
+
+            gsap.fromTo(
+              char,
+              { color: '#fff' },
+              {
+                color: gsap.utils.random(SCRAMBLE_COLORS),
+                ease: 'power3.out',
+                duration: 0.3,
+                delay: distanceFromCenter * 0.03,
+                repeat: 1,
+                yoyo: true,
+                overwrite: 'auto',
+
+                onStart: () => {
+                  const randomNum = gsap.utils.random(['0', '1']);
+                  const randomNumThree = gsap.utils.random(['0', '1', '2']);
+
+                  // Randomly replace the character
+                  if (randomNum === '1') {
+                    char.textContent = gsap.utils.random(SCRAMBLE_CHARS);
+                  }
+
+                  // Randomly add a size label
+                  if (randomNumThree === '1') {
+                    const detail = document.createElement('span');
+                    detail.classList.add('detail-size');
+                    detail.textContent = `△x = ${char.clientWidth}px`;
+                    char.appendChild(detail);
+                  }
+
+                  // Randomly add a colored border
+                  if (randomNumThree === '1') {
+                    char.style.border = `1px solid ${gsap.utils.random(
+                      SCRAMBLE_COLORS
+                    )}`;
+                  }
+                },
+
+                onComplete: () => {
+                  char.textContent = char.dataset.orig;
+                  char.style.border = 'none';
+                },
+              }
+            );
+          });
+        };
+
+        line.addEventListener('mouseenter', onEnter);
+
+        // Store the handler so we can clean it up
+        (line as any)._scrambleHandler = onEnter;
+      });
     });
 
-    tl.add(
-      titleEl,
-      {
-        innerHTML: scrambleText({
-          override: ' ',
-          from: 'center',
-          duration: 600,
-          cursor: '░▒▓█',
-          perturbation: 0.3,
-        }),
-      },
-      '<+=50'
-    );
-
-    tl.add(
-      descEl,
-      {
-        innerHTML: scrambleText({
-          override: ' ',
-          from: 'center',
-          duration: 500,
-          cursor: '░▒▓',
-          perturbation: 0.2,
-          revealDelay: 200,
-        }),
-      },
-      '<+=100'
-    );
-
-    tl.add(
-      shortEl,
-      {
-        innerHTML: scrambleText({
-          override: ' ',
-          from: 'center',
-          duration: 500,
-          cursor: '░▒▓',
-          perturbation: 0.2,
-          revealDelay: 200,
-        }),
-      },
-      '<'
-    );
-
-    tl.init();
-
-    // Cleanup: reset any running animation on unmount / slide change
+    // Cleanup: revert splits and remove listeners
     return () => {
-      tl.pause();
+      splitInstancesRef.current.forEach((split) => {
+        split.lines.forEach((line) => {
+          const handler = (line as any)._scrambleHandler;
+          if (handler) line.removeEventListener('mouseenter', handler);
+        });
+        split.revert();
+      });
+      splitInstancesRef.current = [];
     };
-  }, [current, slide]);
+  }, [current]);
 
   return (
     <section className="hero-section">

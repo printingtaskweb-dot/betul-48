@@ -26,6 +26,7 @@
     "animejs": "^4.5.0",
     "firebase": "^13.0.0",
     "firebase-admin": "^14.5.0",
+    "gsap": "^3.15.0",
     "lucide-react": "^1.51.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
