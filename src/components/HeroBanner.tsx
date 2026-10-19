@@ -16,14 +16,70 @@ interface HeroCardData {
 }
 
 const HERO_CARDS: HeroCardData[] = [
-  { id: 1, className: 'card card-1', rot: -9, depth: 14, img: '/cleaning.png', alt: 'Sanitation & Cleaning' },
-  { id: 2, className: 'card card-2', rot: -5, depth: 10, img: '/road.png', alt: 'Roads & Infrastructure' },
-  { id: 3, className: 'card card-3', rot: -2, depth: 8, img: '/water.png', alt: 'Water Supply' },
-  { id: 4, className: 'card card-4', rot: 3, depth: 12, img: '/street_light.png', alt: 'Street Lighting' },
-  { id: 5, className: 'card card-5', rot: 0, depth: 6, img: '/green.png', alt: 'Green Waste Initiative' },
-  { id: 6, className: 'card card-6', rot: 4, depth: 11, img: '/sewage.png', alt: 'Sewage Drainage' },
-  { id: 7, className: 'card card-7', rot: 7, depth: 9, img: '/C&D.png', alt: 'C&D Waste Clearance' },
-  { id: 8, className: 'card card-8', rot: -4, depth: 13, img: '/rain_water.png', alt: 'Rainwater Drainage' },
+  {
+    id: 1,
+    className: 'card card-1',
+    rot: -9,
+    depth: 14,
+    img: '/cleaning.png',
+    alt: 'Sanitation & Cleaning',
+  },
+  {
+    id: 2,
+    className: 'card card-2',
+    rot: -5,
+    depth: 10,
+    img: '/road.png',
+    alt: 'Roads & Infrastructure',
+  },
+  {
+    id: 3,
+    className: 'card card-3',
+    rot: -2,
+    depth: 8,
+    img: '/water.png',
+    alt: 'Water Supply',
+  },
+  {
+    id: 4,
+    className: 'card card-4',
+    rot: 3,
+    depth: 12,
+    img: '/street_light.png',
+    alt: 'Street Lighting',
+  },
+  {
+    id: 5,
+    className: 'card card-5',
+    rot: 0,
+    depth: 6,
+    img: '/green.png',
+    alt: 'Green Waste Initiative',
+  },
+  {
+    id: 6,
+    className: 'card card-6',
+    rot: 4,
+    depth: 11,
+    img: '/sewage.png',
+    alt: 'Sewage Drainage',
+  },
+  {
+    id: 7,
+    className: 'card card-7',
+    rot: 7,
+    depth: 9,
+    img: '/C&D.png',
+    alt: 'C&D Waste Clearance',
+  },
+  {
+    id: 8,
+    className: 'card card-8',
+    rot: -4,
+    depth: 13,
+    img: '/rain_water.png',
+    alt: 'Rainwater Drainage',
+  },
 ];
 
 export const HeroBanner: React.FC = () => {
@@ -42,10 +98,12 @@ export const HeroBanner: React.FC = () => {
     let ty = 0;
 
     const ctx = gsap.context(() => {
+      // INITIAL STATES
       gsap.set('.small-team .word > span', { y: '105%' });
       gsap.set('.big-results .letter', { y: 80, opacity: 0 });
       gsap.set('#subline', { opacity: 0, y: 20 });
 
+      // Apply each card's rest rotation and initial entrance values
       const cards = cardRefs.current.filter(Boolean) as HTMLDivElement[];
       cards.forEach((card) => {
         const rot = parseFloat(card.dataset.rot || '0') || 0;
@@ -53,10 +111,30 @@ export const HeroBanner: React.FC = () => {
         gsap.set(card, { y: -800, rotation: rot + 25, opacity: 0, scale: 0.7 });
       });
 
+      // INTRO TIMELINE
       const intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
       intro
-        .to('.small-team .word > span', { y: '0%', duration: 0.9, stagger: 0.08, ease: 'power3.out' }, 0.2)
-        .to('.big-results .letter', { y: 0, opacity: 1, duration: 0.9, stagger: 0.05, ease: 'back.out(1.6)' }, 0.45)
+        .to(
+          '.small-team .word > span',
+          {
+            y: '0%',
+            duration: 0.9,
+            stagger: 0.08,
+            ease: 'power3.out',
+          },
+          0.2
+        )
+        .to(
+          '.big-results .letter',
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.9,
+            stagger: 0.05,
+            ease: 'back.out(1.6)',
+          },
+          0.45
+        )
         .to(
           cards,
           {
@@ -72,6 +150,7 @@ export const HeroBanner: React.FC = () => {
         )
         .to('#subline', { opacity: 1, y: 0, duration: 0.8 }, 1.4);
 
+      // CONTINUOUS FLOAT ON CARDS
       cards.forEach((card, i) => {
         const rot = parseFloat(card.dataset.restRot || '0') || 0;
         gsap.to(card, {
@@ -85,6 +164,7 @@ export const HeroBanner: React.FC = () => {
         });
       });
 
+      // MOUSEMOVE PARALLAX
       const hero = heroRef.current;
       if (hero) {
         const onMouseMove = (e: MouseEvent) => {
@@ -92,7 +172,12 @@ export const HeroBanner: React.FC = () => {
           mx = ((e.clientX - r.left) / r.width - 0.5) * 2;
           my = ((e.clientY - r.top) / r.height - 0.5) * 2;
         };
-        const onMouseLeave = () => { mx = 0; my = 0; };
+
+        const onMouseLeave = () => {
+          mx = 0;
+          my = 0;
+        };
+
         hero.addEventListener('mousemove', onMouseMove);
         hero.addEventListener('mouseleave', onMouseLeave);
 
@@ -108,32 +193,56 @@ export const HeroBanner: React.FC = () => {
         animFrameId = requestAnimationFrame(parallax);
       }
 
+      // CARD 3D TILT ON HOVER
       cards.forEach((card) => {
         const onCardMove = (e: MouseEvent) => {
           const r = card.getBoundingClientRect();
           const px = (e.clientX - r.left) / r.width - 0.5;
           const py = (e.clientY - r.top) / r.height - 0.5;
           gsap.to(card, {
-            rotateX: -py * 16, rotateY: px * 16, scale: 1.12, zIndex: 20,
-            duration: 0.4, ease: 'power2.out', transformPerspective: 700, overwrite: 'auto',
+            rotateX: -py * 16,
+            rotateY: px * 16,
+            scale: 1.12,
+            zIndex: 20,
+            duration: 0.4,
+            ease: 'power2.out',
+            transformPerspective: 700,
+            overwrite: 'auto',
           });
         };
+
         const onCardLeave = () => {
           gsap.to(card, {
-            rotateX: 0, rotateY: 0, scale: 1, zIndex: card.style.zIndex || '',
-            duration: 0.8, ease: 'elastic.out(1, 0.6)', overwrite: 'auto',
+            rotateX: 0,
+            rotateY: 0,
+            scale: 1,
+            zIndex: card.style.zIndex || '',
+            duration: 0.8,
+            ease: 'elastic.out(1, 0.6)',
+            overwrite: 'auto',
           });
         };
+
         const onCardClick = () => {
-          gsap.fromTo(card, { scale: 1.15 }, {
-            scale: 1.05, duration: 0.15, yoyo: true, repeat: 1, ease: 'power2.inOut',
-          });
+          gsap.fromTo(
+            card,
+            { scale: 1.15 },
+            {
+              scale: 1.05,
+              duration: 0.15,
+              yoyo: true,
+              repeat: 1,
+              ease: 'power2.inOut',
+            }
+          );
         };
+
         card.addEventListener('mousemove', onCardMove);
         card.addEventListener('mouseleave', onCardLeave);
         card.addEventListener('click', onCardClick);
       });
 
+      // SCROLL: CARDS FAN OUT, "big results" SCALES UP
       ScrollTrigger.create({
         trigger: heroRef.current,
         start: 'top top',
@@ -144,16 +253,24 @@ export const HeroBanner: React.FC = () => {
           gsap.set('.big-results', { scale: 1 + 0.15 * p, opacity: 1 - 0.4 * p });
           gsap.set('.small-team', { y: -60 * p, opacity: 1 - p * 1.5 });
           const moves = [
-            { x: -260, y: -40, rot: -25 }, { x: -200, y: 20, rot: -18 },
-            { x: -120, y: 80, rot: -10 }, { x: -40, y: 120, rot: -4 },
-            { x: 40, y: 120, rot: 4 }, { x: 120, y: 80, rot: 12 },
-            { x: 200, y: 20, rot: 22 }, { x: 260, y: -40, rot: 28 },
+            { x: -260, y: -40, rot: -25 },
+            { x: -200, y: 20, rot: -18 },
+            { x: -120, y: 80, rot: -10 },
+            { x: -40, y: 120, rot: -4 },
+            { x: 40, y: 120, rot: 4 },
+            { x: 120, y: 80, rot: 12 },
+            { x: 200, y: 20, rot: 22 },
+            { x: 260, y: -40, rot: 28 },
           ];
           cards.forEach((card, i) => {
             const m = moves[i];
             if (!m) return;
             const rest = parseFloat(card.dataset.restRot || '0') || 0;
-            gsap.set(card, { x: m.x * p, y: m.y * p, rotation: rest + m.rot * p });
+            gsap.set(card, {
+              x: m.x * p,
+              y: m.y * p,
+              rotation: rest + m.rot * p,
+            });
           });
           gsap.set('#subline', { opacity: 1 - p * 2 });
         },
@@ -182,12 +299,12 @@ export const HeroBanner: React.FC = () => {
           --accent-4: #e2f0f7;
 
           position: relative;
-          min-height: 95vh;                 /* ✅ CHANGED: was 88vh */
+          min-height: 100vh;                /* ✅ CHANGED: was 78vh — room for lowered pill */
           padding: 40px 24px 80px;          /* ✅ CHANGED: bottom padding 50 → 80 */
           display: flex;
           flex-direction: column;
           align-items: center;
-          justify-content: flex-start;      /* ✅ CHANGED: was center — top-align so cards don't get pushed */
+          justify-content: flex-start;      /* ✅ CHANGED: was center — top-align so margin behaves predictably */
           z-index: 5;
           overflow: hidden;
           background: radial-gradient(
@@ -295,7 +412,12 @@ export const HeroBanner: React.FC = () => {
           content: "";
           position: absolute;
           inset: 0;
-          background: linear-gradient(155deg, rgba(255,255,255,0.3) 0%, transparent 40%, rgba(20,108,148,0.06) 100%);
+          background: linear-gradient(
+            155deg,
+            rgba(255, 255, 255, 0.3) 0%,
+            transparent 40%,
+            rgba(20, 108, 148, 0.06) 100%
+          );
           pointer-events: none;
           border-radius: inherit;
           z-index: 2;
@@ -324,9 +446,9 @@ export const HeroBanner: React.FC = () => {
         .hero-animation-section .card-7 { width: 175px; height: 240px; left: 70%; top: 30px; z-index: 4; }
         .hero-animation-section .card-8 { width: 130px; height: 175px; left: 84%; top: 50px; z-index: 2; }
 
-        /* Report Civic Issue pill placed lower to avoid overlapping cards */
+        /* Report Civic Issue pill placed MUCH lower to clear all cards */
         .hero-animation-section .subline {
-          margin-top: 420px;               /* ✅ CHANGED: was 340px — much lower */
+          margin-top: 560px;               /* ✅ CHANGED: was 250px — clears the 320px cards-row at top:48% */
           text-align: center;
           z-index: 10;
           position: relative;
@@ -382,14 +504,18 @@ export const HeroBanner: React.FC = () => {
 
         @media (max-width: 750px) {
           .hero-animation-section {
-            padding: 30px 16px 60px;      /* ✅ CHANGED: bottom 36 → 60 */
-            min-height: 90vh;             /* ✅ CHANGED: was 82vh */
+            padding: 30px 16px 60px;       /* ✅ CHANGED: bottom 36 → 60 */
+            min-height: 95vh;              /* ✅ CHANGED: was 72vh */
           }
-          .hero-animation-section .small-team { font-size: 11vw; }
-          .hero-animation-section .big-results { font-size: 24vw; }
+          .hero-animation-section .small-team {
+            font-size: 11vw;
+          }
+          .hero-animation-section .big-results {
+            font-size: 24vw;
+          }
           .hero-animation-section .cards-row {
             height: 220px;
-            top: 42%;                     /* ✅ CHANGED: was 46% — pulled up more */
+            top: 42%;                      /* ✅ CHANGED: was 50% — pulls cards up for more gap below */
           }
           .hero-animation-section .card-1 { width: 80px; height: 110px; left: 0%; top: 20px; }
           .hero-animation-section .card-2 { width: 90px; height: 130px; left: 10%; top: 35px; }
@@ -400,14 +526,14 @@ export const HeroBanner: React.FC = () => {
           .hero-animation-section .card-7 { width: 100px; height: 140px; left: 74%; top: 20px; }
           .hero-animation-section .card-8 { width: 80px; height: 110px; left: 87%; top: 35px; }
           .hero-animation-section .subline {
-            margin-top: 340px;            /* ✅ CHANGED: was 260px */
+            margin-top: 460px;             /* ✅ CHANGED: was 175px — clears the 220px cards-row */
           }
         }
 
         /* ✅ NEW: extra clearance on very small phones */
         @media (max-width: 420px) {
           .hero-animation-section .subline {
-            margin-top: 380px;
+            margin-top: 520px;
           }
           .hero-animation-section .subline-text {
             font-size: 11px;
@@ -417,27 +543,39 @@ export const HeroBanner: React.FC = () => {
         }
       `}</style>
 
+      {/* Grain background overlay */}
       <div className="grain" />
 
+      {/* Masked reveal title */}
       <h1 className="small-team" id="smallTeam">
-        <span className="word"><span>{language === 'hi' ? 'एक' : 'One'}</span></span>
+        <span className="word">
+          <span>{language === 'hi' ? 'छोटा' : 'Small'}</span>
+        </span>
         &nbsp;
-        <span className="word"><span>{language === 'hi' ? 'कदम,' : 'Step,'}</span></span>
+        <span className="word">
+          <span>{language === 'hi' ? 'दल,' : 'team,'}</span>
+        </span>
       </h1>
 
+      {/* Big results back text with individual letter hover/reveal */}
       <div className="big-results-wrap">
         <div className="big-results" id="bigResults">
           {'big results'.split('').map((char, idx) => (
-            <span key={idx} className="letter">{char === ' ' ? '\u00A0' : char}</span>
+            <span key={idx} className="letter">
+              {char === ' ' ? '\u00A0' : char}
+            </span>
           ))}
         </div>
       </div>
 
+      {/* 8 fanned-out floating portrait cards using public civic images */}
       <div className="cards-row" id="cardsRow">
         {HERO_CARDS.map((card, idx) => (
           <div
             key={card.id}
-            ref={(el) => { cardRefs.current[idx] = el; }}
+            ref={(el) => {
+              cardRefs.current[idx] = el;
+            }}
             className={card.className}
             data-rot={card.rot}
             data-depth={card.depth}
@@ -447,6 +585,7 @@ export const HeroBanner: React.FC = () => {
         ))}
       </div>
 
+      {/* CTA Pill button and subline */}
       <div className="subline" id="subline">
         <button
           className="arrow-pill"
@@ -455,7 +594,15 @@ export const HeroBanner: React.FC = () => {
         >
           {language === 'hi' ? 'शिकायत दर्ज करें' : 'Report Civic Issue'}
           <span className="ar">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+            >
               <line x1="7" y1="17" x2="17" y2="7" />
               <polyline points="7 7 17 7 17 17" />
             </svg>
