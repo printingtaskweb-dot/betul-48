@@ -1,662 +1,615 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import {
-  ChevronLeft,
-  ChevronRight,
-  ArrowRight,
-  CheckCircle2,
-  MapPin,
-  Clock,
-  TrendingUp,
-  Recycle,
-  Droplets,
-  Trash2,
-} from 'lucide-react';
+import React, { useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { SplitText } from 'gsap/SplitText';
 
-gsap.registerPlugin(ScrollTrigger, SplitText);
+gsap.registerPlugin(ScrollTrigger);
 
-interface BannerSlide {
+interface HeroCardData {
   id: number;
-  tag: string;
-  title: string;
-  subtitle: string;
-  subtitleShort?: string;
-  cta: string;
-  ctaLink: string;
+  className: string;
+  rot: number;
+  depth: number;
+  img: string;
+  alt: string;
 }
 
-const SLIDES: BannerSlide[] = [
+const HERO_CARDS: HeroCardData[] = [
   {
     id: 1,
-    tag: '#1 Cleanest City Model',
-    title: 'Clean Indore & Betul Mission',
-    subtitle:
-      'Report civic issues instantly with photo & auto GPS location. Track until resolved and verified.',
-    subtitleShort: 'Report civic issues with photo & GPS. Track until resolved.',
-    cta: 'Report Civic Issue',
-    ctaLink: '/complaint/new',
+    className: 'card card-1',
+    rot: -9,
+    depth: 14,
+    img: 'https://cdn.shopify.com/s/files/1/0185/5999/1872/files/dhs-brand-3x4-07.jpg?v=1782043727?w=400&h=600&fit=crop&crop=faces&q=80',
+    alt: 'Sanitation Lead',
   },
   {
     id: 2,
-    tag: 'Water Conservation',
-    title: 'Report Water Leakage & Supply',
-    subtitle:
-      'Save precious water every day. Report broken pipes and water shortages in seconds.',
-    subtitleShort: 'Report broken pipes & water shortages in seconds.',
-    cta: 'Report Water Issue',
-    ctaLink: '/complaint/new?dept=water',
+    className: 'card card-2',
+    rot: -5,
+    depth: 10,
+    img: 'https://cdn.shopify.com/s/files/1/0185/5999/1872/files/enr-1x1-01.jpg?v=1782002435?w=400&h=600&fit=crop&crop=faces&q=80',
+    alt: 'Civic Engineer',
   },
   {
     id: 3,
-    tag: 'Monsoon Preparedness',
-    title: 'Rain Water & Flood Drainage',
-    subtitle:
-      'Report blocked storm drains and road waterlogging for faster municipal action.',
-    subtitleShort: 'Report blocked drains & waterlogging for faster action.',
-    cta: 'Report Drainage',
-    ctaLink: '/complaint/new?dept=rainwater',
+    className: 'card card-3',
+    rot: -2,
+    depth: 8,
+    img: 'https://cdn.shopify.com/s/files/1/0185/5999/1872/files/dhs-brand-3x4-05.jpg?v=1782043916?w=400&h=600&fit=crop&crop=faces&q=80',
+    alt: 'Ward Supervisor',
   },
   {
     id: 4,
-    tag: 'Green Waste Initiative',
-    title: 'Biodegradable Waste Pickup',
-    subtitle:
-      'Report garden trimmings, fallen branches, and leaves that need specialized pickup.',
-    subtitleShort: 'Report garden trimmings & leaves for specialized pickup.',
-    cta: 'Report Green Waste',
-    ctaLink: '/department/green',
+    className: 'card card-4',
+    rot: 3,
+    depth: 12,
+    img: 'https://cdn.shopify.com/s/files/1/0185/5999/1872/files/fes-3x4-09.jpg?v=1782034037?w=400&h=600&fit=crop&crop=faces&q=80',
+    alt: 'Green Waste Lead',
   },
   {
     id: 5,
-    tag: 'Debris Free City',
-    title: 'C&D Waste Clearance Drive',
-    subtitle:
-      'Report construction rubble and demolition waste dumped along roadsides.',
-    subtitleShort: 'Report construction rubble dumped along roadsides.',
-    cta: 'Report C&D Waste',
-    ctaLink: '/complaint/new?dept=cnd',
+    className: 'card card-5',
+    rot: 0,
+    depth: 6,
+    img: 'https://cdn.shopify.com/s/files/1/0185/5999/1872/files/enr20-3x4-01.jpg?v=1782002435?w=400&h=600&fit=crop&crop=faces&q=80',
+    alt: 'Operations Chief',
+  },
+  {
+    id: 6,
+    className: 'card card-6',
+    rot: 4,
+    depth: 11,
+    img: 'https://cdn.shopify.com/s/files/1/0185/5999/1872/files/dcs-3x4-01.jpg?v=1782035651?w=400&h=600&fit=crop&crop=faces&q=80',
+    alt: 'Rapid Resolver',
+  },
+  {
+    id: 7,
+    className: 'card card-7',
+    rot: 7,
+    depth: 9,
+    img: 'https://cdn.shopify.com/s/files/1/0185/5999/1872/files/fes-3x4-01.jpg?v=1782034037?v=1782042890?w=400&h=600&fit=crop&crop=faces&q=80',
+    alt: 'Drainage Officer',
+  },
+  {
+    id: 8,
+    className: 'card card-8',
+    rot: -4,
+    depth: 13,
+    img: 'https://cdn.shopify.com/s/files/1/0185/5999/1872/files/dhs-brand-3x4-07.jpg?v=1782043727?w=400&h=600&fit=crop&crop=faces&q=80',
+    alt: 'Field Inspector',
   },
 ];
-
-const SCRAMBLE_CHARS = [
-  'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm',
-  'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
-  'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M',
-  'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
-  '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-  '<', '>', '%', '&', '@', '!', '#', '$', '^', '*', '(', ')', '-',
-  '_', '+', '=', '{', '}', '[', ']', '|', '\\', ':', ';', '"',
-  '?', '/', '~', '`',
-];
-
-const SCRAMBLE_COLORS = ['#146C94', '#19A7CE', '#AFD3E2', '#F6F1F1', '#0f1f26'];
-
-interface Stat {
-  icon: React.ReactNode;
-  value: number;
-  suffix: string;
-  label: string;
-  color: string;
-}
-
-const STATS: Stat[] = [
-  {
-    icon: <CheckCircle2 size={18} />,
-    value: 12400,
-    suffix: '+',
-    label: 'Complaints Resolved',
-    color: '#146C94',
-  },
-  {
-    icon: <Clock size={18} />,
-    value: 48,
-    suffix: 'h',
-    label: 'Avg. Response Time',
-    color: '#19A7CE',
-  },
-  {
-    icon: <TrendingUp size={18} />,
-    value: 94,
-    suffix: '%',
-    label: 'Citizen Satisfaction',
-    color: '#AFD3E2',
-  },
-];
-
-const HOW_IT_WORKS = [
-  {
-    icon: <MapPin size={16} />,
-    label: 'Report',
-    desc: 'Photo + GPS',
-    color: '#19A7CE',
-  },
-  {
-    icon: <Clock size={16} />,
-    label: 'Assign',
-    desc: 'Auto-routed',
-    color: '#146C94',
-  },
-  {
-    icon: <CheckCircle2 size={16} />,
-    label: 'Resolve',
-    desc: 'Verified close',
-    color: '#AFD3E2',
-  },
-];
-
-const StatCounter: React.FC<{ stat: Stat; trigger: boolean }> = ({ stat, trigger }) => {
-  const numRef = useRef<HTMLSpanElement>(null);
-  const objRef = useRef({ val: 0 });
-
-  useEffect(() => {
-    if (!trigger || !numRef.current) return;
-    objRef.current.val = 0;
-    const tween = gsap.to(objRef.current, {
-      val: stat.value,
-      duration: 2.2,
-      ease: 'power2.out',
-      onUpdate: () => {
-        if (numRef.current) {
-          numRef.current.textContent =
-            stat.value >= 1000
-              ? Math.round(objRef.current.val).toLocaleString('en-IN')
-              : Math.round(objRef.current.val).toString();
-        }
-      },
-    });
-    return () => {
-      tween.kill();
-    };
-  }, [trigger, stat.value]);
-
-  return (
-    <div className="hero-stat-card">
-      <span className="hero-stat-icon" style={{ color: stat.color }}>
-        {stat.icon}
-      </span>
-      <div className="hero-stat-body">
-        <span className="hero-stat-number">
-          <span ref={numRef}>0</span>
-          <span className="hero-stat-suffix">{stat.suffix}</span>
-        </span>
-        <span className="hero-stat-label">{stat.label}</span>
-      </div>
-    </div>
-  );
-};
 
 export const HeroBanner: React.FC = () => {
-  const [current, setCurrent] = useState(0);
-  const [animating, setAnimating] = useState(false);
-  const [statsVisible, setStatsVisible] = useState(false);
-  const contentRef = useRef<HTMLDivElement>(null);
-  const sectionRef = useRef<HTMLElement>(null);
-  const splitInstancesRef = useRef<SplitText[]>([]);
-
-  const goTo = useCallback(
-    (idx: number) => {
-      if (animating || idx === current) return;
-      setAnimating(true);
-      window.setTimeout(() => {
-        setCurrent(idx);
-        setAnimating(false);
-      }, 200);
-    },
-    [animating, current]
-  );
-
-  const next = useCallback(() => {
-    goTo((current + 1) % SLIDES.length);
-  }, [current, goTo]);
-
-  const prev = useCallback(() => {
-    goTo((current - 1 + SLIDES.length) % SLIDES.length);
-  }, [current, goTo]);
+  const { language } = useAuth();
+  const navigate = useNavigate();
+  const heroRef = useRef<HTMLElement>(null);
+  const cardRefs = useRef<(HTMLDivElement | null)[]>([]);
 
   useEffect(() => {
-    const timer = window.setInterval(() => {
-      setCurrent((previous) => (previous + 1) % SLIDES.length);
-    }, 5000);
-    return () => window.clearInterval(timer);
-  }, []);
+    if (!heroRef.current) return;
 
-  useEffect(() => {
-    const timeout = window.setTimeout(() => setStatsVisible(true), 600);
-    return () => window.clearTimeout(timeout);
-  }, []);
+    let animFrameId: number;
+    let mx = 0;
+    let my = 0;
+    let tx = 0;
+    let ty = 0;
 
-  // GSAP intro + float + parallax + scroll
-  useEffect(() => {
-    if (!sectionRef.current) return;
-    const section = sectionRef.current;
-    const cards = Array.from(section.querySelectorAll('.hero-float-card'));
+    const ctx = gsap.context(() => {
+      // INITIAL STATES
+      gsap.set('.small-team .word > span', { y: '105%' });
+      gsap.set('.big-results .letter', { y: 80, opacity: 0 });
+      gsap.set('#subline', { opacity: 0, y: 20 });
 
-    gsap.set('.hero-title', { opacity: 0, y: 40 });
-    gsap.set('.hero-badge', { opacity: 0, y: -20 });
-    gsap.set('.hero-desc', { opacity: 0, y: 30 });
-    gsap.set('.hero-actions', { opacity: 0, y: 30 });
-    gsap.set('.hero-how', { opacity: 0, y: 30 });
-    gsap.set('.hero-stats', { opacity: 0, y: 30 });
-    gsap.set('.hero-dots', { opacity: 0 });
-    gsap.set('.hero-art svg', { opacity: 0, scale: 0.95 });
-
-    cards.forEach((card, i) => {
-      const rot = i === 0 ? -9 : i === 1 ? -5 : i === 2 ? 4 : 0;
-      (card as HTMLElement).dataset.restRot = String(rot);
-      gsap.set(card, { y: -80, rotation: rot + 25, opacity: 0, scale: 0.7 });
-    });
-
-    const intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
-    intro
-      .to('.hero-badge', { opacity: 1, y: 0, duration: 0.8 }, 0.1)
-      .to('.hero-title', { opacity: 1, y: 0, duration: 0.9 }, 0.25)
-      .to('.hero-desc', { opacity: 1, y: 0, duration: 0.8 }, 0.45)
-      .to('.hero-actions', { opacity: 1, y: 0, duration: 0.8 }, 0.6)
-      .to('.hero-how', { opacity: 1, y: 0, duration: 0.8 }, 0.75)
-      .to('.hero-stats', { opacity: 1, y: 0, duration: 0.8 }, 0.9)
-      .to('.hero-dots', { opacity: 1, duration: 0.6 }, 1.1)
-      .to('.hero-art svg', { opacity: 1, scale: 1, duration: 1.1 }, 0.4)
-      .to(
-        '.hero-float-card',
-        {
-          y: 0,
-          opacity: 1,
-          scale: 1,
-          rotation: (_i: number, el: HTMLElement) => parseFloat(el.dataset.restRot || '0'),
-          duration: 1.1,
-          stagger: { each: 0.1, from: 'center' },
-          ease: 'back.out(1.4)',
-        },
-        0.6
-      );
-
-    cards.forEach((card, i) => {
-      const rot = parseFloat((card as HTMLElement).dataset.restRot || '0');
-      gsap.to(card, {
-        y: `+=${8 + (i % 3) * 5}`,
-        rotation: rot + (i % 2 === 0 ? 1.5 : -1.5),
-        duration: 3 + (i % 4) * 0.5,
-        delay: 1.8 + i * 0.1,
-        ease: 'sine.inOut',
-        yoyo: true,
-        repeat: -1,
-      });
-    });
-
-    let mx = 0, my = 0, tx = 0, ty = 0;
-    const onMove = (e: MouseEvent) => {
-      const r = section.getBoundingClientRect();
-      mx = ((e.clientX - r.left) / r.width - 0.5) * 2;
-      my = ((e.clientY - r.top) / r.height - 0.5) * 2;
-    };
-    const onLeave = () => {
-      mx = 0;
-      my = 0;
-    };
-    section.addEventListener('mousemove', onMove);
-    section.addEventListener('mouseleave', onLeave);
-
-    let rafId = 0;
-    const parallax = () => {
-      tx += (mx - tx) * 0.05;
-      ty += (my - ty) * 0.05;
+      // Apply each card's rest rotation and initial entrance values
+      const cards = cardRefs.current.filter(Boolean) as HTMLDivElement[];
       cards.forEach((card) => {
-        const d = 10 + (parseInt((card as HTMLElement).style.zIndex) || 0);
-        (card as HTMLElement).style.translate = `${tx * d}px ${ty * d * 0.5}px`;
+        const rot = parseFloat(card.dataset.rot || '0') || 0;
+        card.dataset.restRot = rot.toString();
+        gsap.set(card, { y: -800, rotation: rot + 25, opacity: 0, scale: 0.7 });
       });
-      rafId = requestAnimationFrame(parallax);
-    };
-    parallax();
 
-    const hoverHandlers: Array<{
-      el: Element;
-      enter: () => void;
-      leave: () => void;
-      move: (e: MouseEvent) => void;
-    }> = [];
+      // INTRO TIMELINE
+      const intro = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      intro
+        .to(
+          '.small-team .word > span',
+          {
+            y: '0%',
+            duration: 0.9,
+            stagger: 0.08,
+            ease: 'power3.out',
+          },
+          0.3
+        )
+        .to(
+          '.big-results .letter',
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.9,
+            stagger: 0.05,
+            ease: 'back.out(1.6)',
+          },
+          0.55
+        )
+        .to(
+          cards,
+          {
+            y: 0,
+            opacity: 1,
+            scale: 1,
+            rotation: (_i, el) => parseFloat((el as HTMLElement).dataset.restRot || '0') || 0,
+            duration: 1.1,
+            stagger: { each: 0.08, from: 'center' },
+            ease: 'back.out(1.4)',
+          },
+          0.8
+        )
+        .to('#subline', { opacity: 1, y: 0, duration: 0.8 }, 1.6);
 
-    cards.forEach((card) => {
-      const enter = () => {
+      // CONTINUOUS FLOAT ON CARDS
+      cards.forEach((card, i) => {
+        const rot = parseFloat(card.dataset.restRot || '0') || 0;
         gsap.to(card, {
-          scale: 1.12,
-          zIndex: 20,
-          duration: 0.4,
-          ease: 'power2.out',
-          overwrite: 'auto',
+          y: `+=${8 + (i % 3) * 5}`,
+          rotation: rot + (i % 2 === 0 ? 1.5 : -1.5),
+          duration: 3 + (i % 4) * 0.5,
+          delay: 1.8 + i * 0.1,
+          ease: 'sine.inOut',
+          yoyo: true,
+          repeat: -1,
         });
-      };
-      const move = (e: MouseEvent) => {
-        const r = (card as HTMLElement).getBoundingClientRect();
-        const px = (e.clientX - r.left) / r.width - 0.5;
-        const py = (e.clientY - r.top) / r.height - 0.5;
-        gsap.to(card, {
-          rotateX: -py * 16,
-          rotateY: px * 16,
-          duration: 0.4,
-          ease: 'power2.out',
-          transformPerspective: 700,
-          overwrite: 'auto',
-        });
-      };
-      const leave = () => {
-        gsap.to(card, {
-          rotateX: 0,
-          rotateY: 0,
-          scale: 1,
-          duration: 0.8,
-          ease: 'elastic.out(1, 0.6)',
-          overwrite: 'auto',
-        });
-      };
-      card.addEventListener('mouseenter', enter);
-      card.addEventListener('mousemove', move as EventListener);
-      card.addEventListener('mouseleave', leave);
-      hoverHandlers.push({ el: card, enter, leave, move });
-    });
+      });
 
-    const scrollTrigger = ScrollTrigger.create({
-      trigger: section,
-      start: 'top top',
-      end: 'bottom top',
-      scrub: 0.8,
-      onUpdate: (self) => {
-        const p = self.progress;
-        const moves = [
-          { x: -120, y: -40, rot: -25 },
-          { x: 40, y: 80, rot: 12 },
-          { x: 160, y: -20, rot: 28 },
-        ];
-        cards.forEach((card, i) => {
-          const m = moves[i] || { x: 0, y: 0, rot: 0 };
-          const rest = parseFloat((card as HTMLElement).dataset.restRot || '0');
-          gsap.set(card, {
-            x: m.x * p,
-            y: m.y * p,
-            rotation: rest + m.rot * p,
+      // MOUSEMOVE PARALLAX
+      const hero = heroRef.current;
+      if (hero) {
+        const onMouseMove = (e: MouseEvent) => {
+          const r = hero.getBoundingClientRect();
+          mx = ((e.clientX - r.left) / r.width - 0.5) * 2;
+          my = ((e.clientY - r.top) / r.height - 0.5) * 2;
+        };
+
+        const onMouseLeave = () => {
+          mx = 0;
+          my = 0;
+        };
+
+        hero.addEventListener('mousemove', onMouseMove);
+        hero.addEventListener('mouseleave', onMouseLeave);
+
+        const parallax = () => {
+          tx += (mx - tx) * 0.05;
+          ty += (my - ty) * 0.05;
+          cards.forEach((card) => {
+            const d = parseFloat(card.dataset.depth || '8') || 8;
+            (card.style as any).translate = `${tx * d}px ${ty * d * 0.5}px`;
           });
-        });
-      },
-    });
+          animFrameId = requestAnimationFrame(parallax);
+        };
+        animFrameId = requestAnimationFrame(parallax);
+      }
 
-    return () => {
-      section.removeEventListener('mousemove', onMove);
-      section.removeEventListener('mouseleave', onLeave);
-      cancelAnimationFrame(rafId);
-      hoverHandlers.forEach(({ el, enter, leave, move }) => {
-        el.removeEventListener('mouseenter', enter);
-        el.removeEventListener('mousemove', move as EventListener);
-        el.removeEventListener('mouseleave', leave);
-      });
-      scrollTrigger.kill();
-    };
-  }, []);
-
-  const slide = SLIDES[current];
-
-  // SplitText scramble on hover
-  useEffect(() => {
-    if (!contentRef.current) return;
-
-    splitInstancesRef.current.forEach((s) => s.revert());
-    splitInstancesRef.current = [];
-
-    const tagEl = contentRef.current.querySelector('.hero-badge span:last-child') as HTMLElement | null;
-    const titleEl = contentRef.current.querySelector('.hero-title') as HTMLElement | null;
-    const descEl = contentRef.current.querySelector('.hero-desc-full') as HTMLElement | null;
-    const shortEl = contentRef.current.querySelector('.hero-desc-short') as HTMLElement | null;
-
-    if (!tagEl || !titleEl || !descEl || !shortEl) return;
-
-    const targets = [tagEl, titleEl, descEl, shortEl];
-
-    targets.forEach((el) => {
-      const split = new SplitText(el, {
-        type: 'lines,chars',
-        linesClass: 'split-line',
-        charsClass: 'split-char',
-      });
-      splitInstancesRef.current.push(split);
-
-      const chars = split.chars as HTMLElement[];
-      const lines = split.lines as HTMLElement[];
-
-      lines.forEach((line) => {
-        const onEnter = () => {
-          const charsInLine = chars.filter((char) => line.contains(char));
-          const totalChars = charsInLine.length;
-          const middleIndex = (totalChars - 1) / 2;
-
-          charsInLine.forEach((char, index) => {
-            if (!char.dataset.orig) {
-              char.dataset.orig = char.textContent || '';
-            }
-            const distanceFromCenter = Math.abs(index - middleIndex);
-            gsap.fromTo(
-              char,
-              { color: '#fff' },
-              {
-                color: gsap.utils.random(SCRAMBLE_COLORS),
-                ease: 'power3.out',
-                duration: 0.3,
-                delay: distanceFromCenter * 0.03,
-                repeat: 1,
-                yoyo: true,
-                overwrite: 'auto',
-                onStart: () => {
-                  const randomNum = gsap.utils.random(['0', '1']);
-                  const randomNumThree = gsap.utils.random(['0', '1', '2']);
-                  if (randomNum === '1') {
-                    char.textContent = gsap.utils.random(SCRAMBLE_CHARS);
-                  }
-                  if (randomNumThree === '1') {
-                    const detail = document.createElement('span');
-                    detail.classList.add('detail-size');
-                    detail.textContent = `△x = ${char.clientWidth}px`;
-                    char.appendChild(detail);
-                  }
-                  if (randomNumThree === '1') {
-                    char.style.border = `1px solid ${gsap.utils.random(SCRAMBLE_COLORS)}`;
-                  }
-                },
-                onComplete: () => {
-                  char.textContent = char.dataset.orig ?? '';
-                  char.style.border = 'none';
-                },
-              }
-            );
+      // CARD 3D TILT ON HOVER
+      cards.forEach((card) => {
+        const onCardMove = (e: MouseEvent) => {
+          const r = card.getBoundingClientRect();
+          const px = (e.clientX - r.left) / r.width - 0.5;
+          const py = (e.clientY - r.top) / r.height - 0.5;
+          gsap.to(card, {
+            rotateX: -py * 16,
+            rotateY: px * 16,
+            scale: 1.12,
+            zIndex: 20,
+            duration: 0.4,
+            ease: 'power2.out',
+            transformPerspective: 700,
+            overwrite: 'auto',
           });
         };
 
-        line.addEventListener('mouseenter', onEnter);
-        (line as any)._scrambleHandler = onEnter;
+        const onCardLeave = () => {
+          gsap.to(card, {
+            rotateX: 0,
+            rotateY: 0,
+            scale: 1,
+            zIndex: card.style.zIndex || '',
+            duration: 0.8,
+            ease: 'elastic.out(1, 0.6)',
+            overwrite: 'auto',
+          });
+        };
+
+        const onCardClick = () => {
+          gsap.fromTo(
+            card,
+            { scale: 1.15 },
+            {
+              scale: 1.05,
+              duration: 0.15,
+              yoyo: true,
+              repeat: 1,
+              ease: 'power2.inOut',
+            }
+          );
+        };
+
+        card.addEventListener('mousemove', onCardMove);
+        card.addEventListener('mouseleave', onCardLeave);
+        card.addEventListener('click', onCardClick);
       });
-    });
+
+      // SCROLL: CARDS FAN OUT, "big results" SCALES UP
+      ScrollTrigger.create({
+        trigger: heroRef.current,
+        start: 'top top',
+        end: 'bottom top',
+        scrub: 0.8,
+        onUpdate: (self) => {
+          const p = self.progress;
+          gsap.set('.big-results', { scale: 1 + 0.15 * p, opacity: 1 - 0.4 * p });
+          gsap.set('.small-team', { y: -60 * p, opacity: 1 - p * 1.5 });
+          const moves = [
+            { x: -260, y: -40, rot: -25 },
+            { x: -200, y: 20, rot: -18 },
+            { x: -120, y: 80, rot: -10 },
+            { x: -40, y: 120, rot: -4 },
+            { x: 40, y: 120, rot: 4 },
+            { x: 120, y: 80, rot: 12 },
+            { x: 200, y: 20, rot: 22 },
+            { x: 260, y: -40, rot: 28 },
+          ];
+          cards.forEach((card, i) => {
+            const m = moves[i];
+            if (!m) return;
+            const rest = parseFloat(card.dataset.restRot || '0') || 0;
+            gsap.set(card, {
+              x: m.x * p,
+              y: m.y * p,
+              rotation: rest + m.rot * p,
+            });
+          });
+          gsap.set('#subline', { opacity: 1 - p * 2 });
+        },
+      });
+    }, heroRef);
 
     return () => {
-      splitInstancesRef.current.forEach((split) => {
-        (split.lines as HTMLElement[]).forEach((line) => {
-          const handler = (line as any)._scrambleHandler;
-          if (handler) line.removeEventListener('mouseenter', handler);
-        });
-        split.revert();
-      });
-      splitInstancesRef.current = [];
+      cancelAnimationFrame(animFrameId);
+      ctx.revert();
     };
-  }, [current]);
+  }, []);
 
   return (
-    <section ref={sectionRef} className="hero-section">
-      <div
-        ref={contentRef}
-        className={`hero-content ${animating ? 'hero-fading' : ''}`}
-        aria-live="polite"
-      >
-        <div className="hero-badge">
-          <span className="hero-status-dot" />
-          <span>{slide.tag}</span>
-        </div>
+    <section className="hero hero-animation-section" id="heroSection" ref={heroRef}>
+      <style>{`
+        .hero-animation-section {
+          --hero-bg: #F6F1F1;
+          --hero-ink: #0f1f26;
+          --hero-ink-soft: #1f3540;
+          --hero-mute: #6b8a99;
+          --hero-line: #c4d8e2;
+          --hero-ghost: #b8d0da;
+          --accent-1: #146C94;
+          --accent-2: #19A7CE;
+          --accent-3: #AFD3E2;
+          --accent-4: #e2f0f7;
 
-        <h1 className="hero-title">{slide.title}</h1>
+          position: relative;
+          min-height: 88vh;
+          padding: 110px 24px 60px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          z-index: 5;
+          overflow: hidden;
+          background: radial-gradient(
+            120% 70% at 50% 0%,
+            #ffffff 0%,
+            #F6F1F1 55%,
+            #e2e8ec 100%
+          );
+        }
 
-        <div className="hero-desc">
-          <p className="hero-desc-text">
-            <span className="hero-desc-full">{slide.subtitle}</span>
-            <span className="hero-desc-short">
-              {slide.subtitleShort ?? slide.subtitle}
+        .hero-animation-section .grain {
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          z-index: 1;
+          opacity: 0.05;
+          mix-blend-mode: multiply;
+          background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.1  0 0 0 0 0.1  0 0 0 0 0.1  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+        }
+
+        .hero-animation-section .small-team {
+          font-family: var(--font-primary, "DM Sans", system-ui, sans-serif);
+          font-weight: 700;
+          font-size: clamp(38px, 6.2vw, 88px);
+          letter-spacing: -0.035em;
+          line-height: 1;
+          color: var(--hero-ink);
+          text-align: center;
+          margin-bottom: 0;
+          z-index: 4;
+          position: relative;
+        }
+
+        .hero-animation-section .small-team .word {
+          display: inline-block;
+          overflow: hidden;
+          vertical-align: top;
+        }
+
+        .hero-animation-section .small-team .word > span {
+          display: inline-block;
+          transform: translateY(105%);
+        }
+
+        .hero-animation-section .big-results-wrap {
+          position: relative;
+          width: 100%;
+          margin-top: -16px;
+          display: flex;
+          justify-content: center;
+          z-index: 1;
+          user-select: none;
+        }
+
+        .hero-animation-section .big-results {
+          font-family: var(--font-primary, "DM Sans", system-ui, sans-serif);
+          font-style: italic;
+          font-weight: 800;
+          font-size: clamp(100px, 20vw, 290px);
+          letter-spacing: -0.045em;
+          line-height: 0.85;
+          color: var(--hero-ghost);
+          text-align: center;
+          white-space: nowrap;
+          user-select: none;
+          z-index: 1;
+          text-shadow: 0 4px 12px rgba(20, 108, 148, 0.08);
+        }
+
+        .hero-animation-section .big-results .letter {
+          display: inline-block;
+          transform-origin: bottom;
+          will-change: transform, opacity;
+        }
+
+        .hero-animation-section .cards-row {
+          position: absolute;
+          left: 0;
+          right: 0;
+          top: 50%;
+          height: 320px;
+          z-index: 3;
+          pointer-events: none;
+        }
+
+        .hero-animation-section .cards-row > * {
+          pointer-events: auto;
+        }
+
+        .hero-animation-section .card {
+          position: absolute;
+          border-radius: 18px;
+          overflow: hidden;
+          background: linear-gradient(
+            180deg,
+            var(--accent-1) 0%,
+            var(--accent-2) 35%,
+            var(--accent-3) 70%,
+            var(--accent-4) 100%
+          );
+          box-shadow: 0 30px 50px -16px rgba(20, 108, 148, 0.45),
+            0 14px 26px -8px rgba(20, 108, 148, 0.3),
+            0 5px 10px -2px rgba(15, 31, 38, 0.2),
+            inset 0 2px 0 rgba(255, 255, 255, 0.45),
+            inset 0 -4px 8px rgba(20, 108, 148, 0.4);
+          cursor: pointer;
+          will-change: transform;
+          transition: box-shadow 0.5s cubic-bezier(0.6, 0, 0.2, 1);
+        }
+
+        .hero-animation-section .card::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: linear-gradient(
+            155deg,
+            rgba(255, 255, 255, 0.25) 0%,
+            transparent 30%,
+            transparent 70%,
+            rgba(20, 108, 148, 0.25) 100%
+          );
+          pointer-events: none;
+          border-radius: inherit;
+          z-index: 2;
+        }
+
+        .hero-animation-section .card img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: center top;
+          display: block;
+        }
+
+        .hero-animation-section .card:hover {
+          box-shadow: 0 44px 70px -20px rgba(20, 108, 148, 0.55),
+            0 22px 38px -10px rgba(20, 108, 148, 0.35),
+            0 8px 14px -3px rgba(15, 31, 38, 0.22),
+            inset 0 2px 0 rgba(255, 255, 255, 0.5),
+            inset 0 -4px 8px rgba(20, 108, 148, 0.4);
+        }
+
+        .hero-animation-section .card-1 { width: 130px; height: 180px; left: 4%; top: 30px; z-index: 1; }
+        .hero-animation-section .card-2 { width: 160px; height: 220px; left: 12%; top: 50px; z-index: 2; }
+        .hero-animation-section .card-3 { width: 200px; height: 270px; left: 22%; top: 20px; z-index: 4; }
+        .hero-animation-section .card-4 { width: 150px; height: 200px; left: 36%; top: 70px; z-index: 3; }
+        .hero-animation-section .card-5 { width: 230px; height: 310px; left: 44%; top: 0px; z-index: 5; }
+        .hero-animation-section .card-6 { width: 160px; height: 215px; left: 59%; top: 55px; z-index: 3; }
+        .hero-animation-section .card-7 { width: 175px; height: 240px; left: 70%; top: 30px; z-index: 4; }
+        .hero-animation-section .card-8 { width: 130px; height: 175px; left: 84%; top: 50px; z-index: 2; }
+
+        .hero-animation-section .subline {
+          margin-top: 180px;
+          text-align: center;
+          z-index: 4;
+          position: relative;
+        }
+
+        .hero-animation-section .subline .arrow-pill {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          background: var(--hero-ink);
+          color: #fafaf7;
+          border: none;
+          padding: 12px 22px 12px 26px;
+          border-radius: 999px;
+          font-family: inherit;
+          font-size: 14px;
+          font-weight: 600;
+          cursor: pointer;
+          box-shadow: 0 14px 24px -8px rgba(0, 0, 0, 0.4),
+            0 5px 10px -2px rgba(0, 0, 0, 0.2),
+            inset 0 1px 0 rgba(255, 255, 255, 0.12),
+            inset 0 -2px 4px rgba(0, 0, 0, 0.4);
+          transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
+        }
+
+        .hero-animation-section .subline .arrow-pill:hover {
+          transform: translateY(-2px);
+        }
+
+        .hero-animation-section .subline .arrow-pill .ar {
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background: linear-gradient(180deg, var(--accent-1), var(--accent-2));
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          color: #fff;
+          transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
+        }
+
+        .hero-animation-section .subline .arrow-pill:hover .ar {
+          transform: rotate(45deg);
+        }
+
+        .hero-animation-section .subline-text {
+          margin-top: 20px;
+          font-size: 13px;
+          color: var(--hero-mute);
+          letter-spacing: 0.06em;
+          font-weight: 500;
+        }
+
+        @media (max-width: 750px) {
+          .hero-animation-section {
+            padding: 90px 16px 40px;
+            min-height: 80vh;
+          }
+          .hero-animation-section .small-team {
+            font-size: 11vw;
+          }
+          .hero-animation-section .big-results {
+            font-size: 24vw;
+          }
+          .hero-animation-section .cards-row {
+            height: 220px;
+            top: 52%;
+          }
+          .hero-animation-section .card-1 { width: 80px; height: 110px; left: 0%; top: 20px; }
+          .hero-animation-section .card-2 { width: 90px; height: 130px; left: 10%; top: 35px; }
+          .hero-animation-section .card-3 { width: 110px; height: 150px; left: 22%; top: 15px; }
+          .hero-animation-section .card-4 { width: 90px; height: 120px; left: 36%; top: 50px; }
+          .hero-animation-section .card-5 { width: 130px; height: 180px; left: 46%; top: 0; }
+          .hero-animation-section .card-6 { width: 95px; height: 130px; left: 62%; top: 40px; }
+          .hero-animation-section .card-7 { width: 100px; height: 140px; left: 74%; top: 20px; }
+          .hero-animation-section .card-8 { width: 80px; height: 110px; left: 87%; top: 35px; }
+          .hero-animation-section .subline {
+            margin-top: 130px;
+          }
+        }
+      `}</style>
+
+      {/* Grain background overlay */}
+      <div className="grain" />
+
+      {/* Masked reveal title */}
+      <h1 className="small-team" id="smallTeam">
+        <span className="word">
+          <span>{language === 'hi' ? 'छोटा' : 'Small'}</span>
+        </span>
+        &nbsp;
+        <span className="word">
+          <span>{language === 'hi' ? 'दल,' : 'team,'}</span>
+        </span>
+      </h1>
+
+      {/* Big results back text with individual letter hover/reveal */}
+      <div className="big-results-wrap">
+        <div className="big-results" id="bigResults">
+          {'big results'.split('').map((char, idx) => (
+            <span key={idx} className="letter">
+              {char === ' ' ? '\u00A0' : char}
             </span>
-          </p>
-
-          <div className="hero-arrows">
-            <button type="button" onClick={prev} aria-label="Previous slide" className="hero-arrow">
-              <ChevronLeft size={17} />
-            </button>
-            <button type="button" onClick={next} aria-label="Next slide" className="hero-arrow">
-              <ChevronRight size={17} />
-            </button>
-          </div>
-        </div>
-
-        <div className="hero-actions">
-          <a href={slide.ctaLink} className="hero-cta">
-            {slide.cta}
-            <ArrowRight size={15} />
-          </a>
-        </div>
-
-        <div className="hero-how" aria-label="How it works">
-          <span className="hero-how-label">How it works</span>
-          <div className="hero-how-steps">
-            {HOW_IT_WORKS.map((step, i) => (
-              <React.Fragment key={step.label}>
-                <div className="hero-how-step">
-                  <span
-                    className="hero-how-icon"
-                    style={{ background: step.color + '22', color: step.color }}
-                  >
-                    {step.icon}
-                  </span>
-                  <span className="hero-how-step-name">{step.label}</span>
-                  <span className="hero-how-step-desc">{step.desc}</span>
-                </div>
-                {i < HOW_IT_WORKS.length - 1 && (
-                  <ArrowRight size={12} className="hero-how-arrow" />
-                )}
-              </React.Fragment>
-            ))}
-          </div>
-        </div>
-
-        <div className="hero-stats" aria-label="Key statistics">
-          {STATS.map((stat) => (
-            <StatCounter key={stat.label} stat={stat} trigger={statsVisible} />
-          ))}
-        </div>
-
-        <div className="hero-dots" aria-label="Banner slides">
-          {SLIDES.map((item, index) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => goTo(index)}
-              aria-label={`Go to slide ${index + 1}`}
-              aria-current={index === current ? 'true' : undefined}
-              className={`hero-dot ${index === current ? 'active' : ''}`}
-            />
           ))}
         </div>
       </div>
 
-      <div className="hero-art" aria-hidden="true">
-        <div className="hero-float-card hero-float-card--a">
-          <Recycle size={14} style={{ color: '#146C94' }} />
-          <span>Green Waste</span>
-          <strong>↑ 18%</strong>
-        </div>
-        <div className="hero-float-card hero-float-card--b">
-          <Droplets size={14} style={{ color: '#19A7CE' }} />
-          <span>Water Saved</span>
-          <strong>3.2 ML</strong>
-        </div>
-        <div className="hero-float-card hero-float-card--c">
-          <Trash2 size={14} style={{ color: '#AFD3E2' }} />
-          <span>Waste Cleared</span>
-          <strong>94 T</strong>
-        </div>
+      {/* 8 fanned-out floating portrait cards */}
+      <div className="cards-row" id="cardsRow">
+        {HERO_CARDS.map((card, idx) => (
+          <div
+            key={card.id}
+            ref={(el) => {
+              cardRefs.current[idx] = el;
+            }}
+            className={card.className}
+            data-rot={card.rot}
+            data-depth={card.depth}
+          >
+            <img src={card.img} alt={card.alt} loading="eager" />
+          </div>
+        ))}
+      </div>
 
-        <svg viewBox="0 0 520 360" role="presentation">
-          <defs>
-            <linearGradient id="hero-hill" x1="0" x2="1" y1="0" y2="1">
-              <stop offset="0%" stopColor="#AFD3E2" />
-              <stop offset="100%" stopColor="#19A7CE" />
-            </linearGradient>
-            <linearGradient id="hero-road" x1="0" x2="1" y1="0" y2="1">
-              <stop offset="0%" stopColor="#F6F1F1" />
-              <stop offset="100%" stopColor="#AFD3E2" />
-            </linearGradient>
-          </defs>
-          <circle cx="390" cy="86" r="49" fill="#AFD3E2" opacity=".9" />
-          <path
-            d="M0 221c71-59 127-64 193-20 51 34 94 19 143-29 68-66 127-57 184-19v207H0z"
-            fill="url(#hero-hill)"
-          />
-          <path
-            d="M0 276c69-51 137-43 193-9 65 39 111 33 171-13 61-46 112-38 156-7v113H0z"
-            fill="#146C94"
-            opacity=".88"
-          />
-          <path d="M72 249h48v85H72z" fill="#F6F1F1" />
-          <path d="M82 227h28v22H82z" fill="#19A7CE" />
-          <path d="M150 223h61v111h-61z" fill="#F6F1F1" />
-          <path d="M160 203h41v20h-41z" fill="#AFD3E2" />
-          <path d="M225 252h44v82h-44z" fill="#AFD3E2" />
-          <path d="M286 231h56v103h-56z" fill="#F6F1F1" />
-          <path d="M298 210h32v21h-32z" fill="#19A7CE" />
-          <path d="M358 267h43v67h-43z" fill="#F6F1F1" />
-          <g fill="#19A7CE">
-            <circle cx="58" cy="274" r="21" />
-            <circle cx="51" cy="261" r="13" />
-            <circle cx="422" cy="266" r="24" />
-            <circle cx="432" cy="250" r="15" />
-            <circle cx="471" cy="287" r="17" />
-            <circle cx="465" cy="274" r="11" />
-          </g>
-          <path
-            d="M178 334c47-29 88-35 132-23 28 8 49 8 80-3"
-            fill="none"
-            stroke="url(#hero-road)"
-            strokeWidth="9"
-            strokeLinecap="round"
-          />
-          <path
-            d="M253 311l10 2m26 8 10 3m27 1 10-2"
-            stroke="#146C94"
-            strokeWidth="2"
-            strokeLinecap="round"
-          />
-          <g transform="translate(365 129)">
-            <path
-              d="M25 0c-14 0-25 11-25 25 0 18 25 43 25 43s25-25 25-43C50 11 39 0 25 0z"
-              fill="#19A7CE"
-            />
-            <circle cx="25" cy="25" r="9" fill="#F6F1F1" />
-          </g>
-          <g transform="translate(31 112)">
-            <rect width="154" height="54" rx="16" fill="#fff" opacity=".94" />
-            <circle cx="27" cy="27" r="13" fill="#AFD3E2" />
-            <path
-              d="M21 27l4 4 8-9"
+      {/* CTA Pill button and subline */}
+      <div className="subline" id="subline">
+        <button
+          className="arrow-pill"
+          onClick={() => navigate('/complaint/new')}
+          title={language === 'hi' ? 'शिकायत दर्ज करें' : 'Report Civic Issue'}
+        >
+          {language === 'hi' ? 'शिकायत दर्ज करें' : 'Report Civic Issue'}
+          <span className="ar">
+            <svg
+              width="12"
+              height="12"
+              viewBox="0 0 24 24"
               fill="none"
-              stroke="#146C94"
+              stroke="currentColor"
               strokeWidth="2.5"
               strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <rect x="49" y="18" width="82" height="6" rx="3" fill="#146C94" opacity=".75" />
-            <rect x="49" y="30" width="59" height="5" rx="2.5" fill="#146C94" opacity=".25" />
-          </g>
-        </svg>
+            >
+              <line x1="7" y1="17" x2="17" y2="7" />
+              <polyline points="7 7 17 7 17 17" />
+            </svg>
+          </span>
+        </button>
+        <div className="subline-text">
+          {language === 'hi'
+            ? '8 नगर पालिका वार्ड • 100% सत्यापित समाधान • त्वरित कार्रवाई'
+            : '8 municipal wards. 100% verified resolution. Zero delay.'}
+        </div>
       </div>
     </section>
   );
