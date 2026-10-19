@@ -72,28 +72,28 @@ export const StatsSection: React.FC = () => {
       label: t(language, 'totalComplaints'),
       value: stats.total,
       icon: <TrendingUp size={18} />,
-      color: 'var(--burgundy)',
+      color: '#146C94',
     },
     {
       key: 'pending',
       label: t(language, 'pendingComplaints'),
       value: stats.pending,
       icon: <Clock size={18} />,
-      color: 'var(--status-pending)',
+      color: '#19A7CE',
     },
     {
       key: 'resolved',
       label: t(language, 'resolvedComplaints'),
       value: stats.resolved,
       icon: <CheckCircle2 size={18} />,
-      color: 'var(--burgundy)',
+      color: '#146C94',
     },
     {
       key: 'verified',
       label: t(language, 'verifiedComplaints'),
       value: stats.verified,
       icon: <ShieldCheck size={18} />,
-      color: 'var(--burgundy)',
+      color: '#AFD3E2',
     },
   ];
 
@@ -105,11 +105,11 @@ export const StatsSection: React.FC = () => {
             key={card.key}
             className="stat-card"
             style={{
-              background: 'var(--surface)',
-              border: '1px solid rgba(0, 0, 0, 0.04)',
+              background: '#F6F1F1',
+              border: '1px solid rgba(20, 108, 148, 0.08)',
               borderRadius: 20,
               padding: 'clamp(14px, 2vw, 20px)',
-              boxShadow: '0 10px 24px -12px rgba(0, 0, 0, 0.06)',
+              boxShadow: '0 10px 24px -12px rgba(20, 108, 148, 0.08)',
               animation: loaded ? `fadeIn 0.3s ease ${i * 0.08}s forwards` : 'none',
               opacity: loaded ? 1 : 0,
               transition: 'all 0.4s ease',
@@ -121,7 +121,7 @@ export const StatsSection: React.FC = () => {
                 width: 36,
                 height: 36,
                 borderRadius: 12,
-                background: card.key === 'pending' ? 'var(--status-pending-bg)' : 'rgba(20, 108, 148, 0.08)',
+                background: card.key === 'pending' ? 'rgba(25, 167, 206, 0.12)' : 'rgba(20, 108, 148, 0.08)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -151,7 +151,7 @@ export const StatsSection: React.FC = () => {
               style={{
                 fontFamily: 'var(--font-primary)',
                 fontSize: 10,
-                color: 'var(--mute)',
+                color: '#6b8a99',
                 fontWeight: 500,
                 fontStyle: 'normal',
                 letterSpacing: '0.06em',
