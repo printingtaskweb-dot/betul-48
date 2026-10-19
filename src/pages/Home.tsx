@@ -64,7 +64,7 @@ export const Home: React.FC = () => {
   return (
     <div className="home-page" style={{
       minHeight: '100vh',
-      background: 'radial-gradient(120% 70% at 50% 0%, #FFFFFF 0%, #F6F1F1 60%, #AFD3E2 150%)',
+      background: 'var(--page-background)',
       paddingBottom: 100,
     }}>
       {/* ── Top Bar / Header ── */}
@@ -93,7 +93,7 @@ export const Home: React.FC = () => {
               background: 'var(--burgundy)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff',
-              fontFamily: '"Fraunces", serif',
+              fontFamily: 'var(--font-primary)',
               fontWeight: 600, fontSize: 20, fontStyle: 'normal',
               boxShadow: '0 6px 14px -4px rgba(20, 108, 148, 0.28)',
             }}
@@ -102,14 +102,14 @@ export const Home: React.FC = () => {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             <span style={{
-              fontFamily: '"Fraunces", serif',
+              fontFamily: 'var(--font-primary)',
               fontWeight: 600, fontSize: 17,
               letterSpacing: '0.01em', color: '#1C1B1A',
             }}>
               Jila Betul
             </span>
             <span style={{
-              fontFamily: '"Geist Mono", monospace', fontSize: 9,
+              fontFamily: 'var(--font-primary)', fontSize: 9,
               fontWeight: 500, fontStyle: 'normal',
               letterSpacing: '0.08em', color: '#8E8A86',
               textTransform: 'uppercase' as const,
@@ -125,7 +125,7 @@ export const Home: React.FC = () => {
           <Link
             to="/complaint/new"
             style={{
-              fontFamily: '"Geist Mono", monospace',
+              fontFamily: 'var(--font-primary)',
               fontSize: '0.82rem', fontWeight: 500, fontStyle: 'normal',
               textTransform: 'uppercase', letterSpacing: '0.06em',
               color: '#4A4744', transition: 'all 0.3s ease',
@@ -136,7 +136,7 @@ export const Home: React.FC = () => {
           <Link
             to="/department/green"
             style={{
-              fontFamily: '"Geist Mono", monospace',
+              fontFamily: 'var(--font-primary)',
               fontSize: '0.82rem', fontWeight: 500, fontStyle: 'normal',
               textTransform: 'uppercase', letterSpacing: '0.06em',
               color: 'var(--burgundy)', transition: 'all 0.3s ease',
@@ -147,7 +147,7 @@ export const Home: React.FC = () => {
           <Link
             to="/track"
             style={{
-              fontFamily: '"Geist Mono", monospace',
+              fontFamily: 'var(--font-primary)',
               fontSize: '0.82rem', fontWeight: 500, fontStyle: 'normal',
               textTransform: 'uppercase', letterSpacing: '0.06em',
               color: '#4A4744', transition: 'all 0.3s ease',
@@ -158,7 +158,7 @@ export const Home: React.FC = () => {
           <Link
             to="/dept/login"
             style={{
-              fontFamily: '"Geist Mono", monospace',
+              fontFamily: 'var(--font-primary)',
               fontSize: '0.82rem', fontWeight: 500, fontStyle: 'normal',
               textTransform: 'uppercase', letterSpacing: '0.06em',
               color: 'var(--burgundy)',
@@ -331,13 +331,13 @@ export const Home: React.FC = () => {
                 width: 28, height: 28, borderRadius: 8,
                 background: 'var(--burgundy)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontFamily: '"Fraunces", serif',
+                color: '#fff', fontFamily: 'var(--font-primary)',
                 fontSize: 14, fontWeight: 600, fontStyle: 'normal',
               }}>
                 B
               </div>
               <span style={{
-                fontFamily: '"Fraunces", serif',
+                fontFamily: 'var(--font-primary)',
                 fontWeight: 600, fontSize: 16, color: '#1C1B1A',
               }}>
                 Jila Betul
@@ -345,7 +345,7 @@ export const Home: React.FC = () => {
             </div>
             <p style={{
               margin: 0, fontSize: 12, color: '#8E8A86',
-              fontFamily: '"Geist", sans-serif', fontWeight: 400, fontStyle: 'normal',
+              fontFamily: 'var(--font-primary)', fontWeight: 400, fontStyle: 'normal',
               maxWidth: 360, lineHeight: 1.5,
             }}>
               {language === 'hi'
@@ -358,7 +358,7 @@ export const Home: React.FC = () => {
             <div>
               <p style={{
                 margin: '0 0 8px',
-                fontFamily: '"Geist Mono", monospace',
+                fontFamily: 'var(--font-primary)',
                 fontSize: 10, fontWeight: 500, fontStyle: 'normal', color: '#8E8A86',
                 textTransform: 'uppercase' as const, letterSpacing: '0.08em',
               }}>
@@ -368,7 +368,7 @@ export const Home: React.FC = () => {
                 <Link
                   to="/dept/login"
                   style={{
-                    fontFamily: '"Geist", sans-serif',
+                    fontFamily: 'var(--font-primary)',
                     fontSize: 13, fontWeight: 500,
                     color: 'var(--burgundy)', textDecoration: 'none',
                     display: 'flex', alignItems: 'center', gap: 6,
@@ -379,7 +379,7 @@ export const Home: React.FC = () => {
                 </Link>
                 <Link
                   to="/admin"
-                  style={{ fontFamily: '"Geist", sans-serif', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}
+                  style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}
                 >
                   {language === 'hi' ? 'नगर निगम एडमिन कंसोल' : 'Municipal Admin Console'}
                 </Link>
@@ -389,23 +389,23 @@ export const Home: React.FC = () => {
             <div>
               <p style={{
                 margin: '0 0 8px',
-                fontFamily: '"Geist Mono", monospace',
+                fontFamily: 'var(--font-primary)',
                 fontSize: 10, fontWeight: 500, fontStyle: 'normal', color: '#8E8A86',
                 textTransform: 'uppercase' as const, letterSpacing: '0.08em',
               }}>
                 {language === 'hi' ? 'नागरिक सेवाएं' : 'Citizen Quick Links'}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <Link to="/complaint/new" style={{ fontFamily: '"Geist", sans-serif', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
+                <Link to="/complaint/new" style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
                   {t(language, 'reportIssue')}
                 </Link>
-                <Link to="/track" style={{ fontFamily: '"Geist", sans-serif', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
+                <Link to="/track" style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
                   {t(language, 'trackComplaint')}
                 </Link>
-                <Link to="/callback" style={{ fontFamily: '"Geist", sans-serif', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
+                <Link to="/callback" style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
                   {language === 'hi' ? 'कॉल बैक का अनुरोध करें' : 'Request a callback'}
                 </Link>
-                <Link to="/department/green" style={{ fontFamily: '"Geist", sans-serif', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
+                <Link to="/department/green" style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
                   🌿 {language === 'hi' ? 'हरित अपशिष्ट संग्रहण' : 'Green Waste Pickup'}
                 </Link>
               </div>

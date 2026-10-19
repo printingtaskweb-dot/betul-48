@@ -134,7 +134,7 @@ export const StatsSection: React.FC = () => {
             <div
               className="stat-value"
               style={{
-                fontFamily: '"Fraunces", Georgia, serif',
+                fontFamily: 'var(--font-primary)',
                 fontSize: 'clamp(1.5rem, 2vw, 2.2rem)',
                 fontWeight: 600,
                 fontStyle: 'normal',
@@ -149,7 +149,7 @@ export const StatsSection: React.FC = () => {
             <div
               className="stat-label"
               style={{
-                fontFamily: '"Geist Mono", monospace',
+                fontFamily: 'var(--font-primary)',
                 fontSize: 10,
                 color: 'var(--mute)',
                 fontWeight: 500,

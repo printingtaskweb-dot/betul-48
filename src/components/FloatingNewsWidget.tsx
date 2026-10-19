@@ -266,6 +266,9 @@ export const FloatingNewsWidget: React.FC = () => {
       {/* ── NEWS & THOUGHTS DRAWER / MODAL ── */}
       {isOpen && (
         <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="local-news-drawer-title"
           style={{
             position: 'fixed',
             inset: 0,
@@ -307,7 +310,7 @@ export const FloatingNewsWidget: React.FC = () => {
               <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <span style={{ fontSize: '1.4rem' }}>📢</span>
                 <div>
-                  <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800 }}>
+                  <h3 id="local-news-drawer-title" style={{ margin: 0, fontSize: '1.05rem', fontWeight: 800 }}>
                     {language === 'hi' ? 'आस-पास के समाचार और विचार' : 'Nearby News & Thoughts'}
                   </h3>
                   <p style={{ margin: 0, fontSize: '0.72rem', color: 'rgba(255,255,255,0.8)' }}>

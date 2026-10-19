@@ -12,7 +12,7 @@ export const AuthLayout: React.FC<Props> = ({
   onLanguageChange,
   children,
 }) => (
-  <div style={{ minHeight: '100vh', background: 'var(--gray-50)' }}>
+  <div style={{ minHeight: '100vh', background: 'var(--page-background)' }}>
     <div
       style={{
         background:

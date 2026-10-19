@@ -48,7 +48,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className = ''
         display: 'inline-block',
         padding: '6px 12px',
         borderRadius: 999,
-        fontFamily: '"Geist Mono", monospace',
+        fontFamily: 'var(--font-primary)',
         fontSize: 9,
         letterSpacing: '0.08em',
         textTransform: 'uppercase' as const,

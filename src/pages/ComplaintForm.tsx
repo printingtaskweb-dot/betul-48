@@ -367,7 +367,7 @@ export const ComplaintForm: React.FC = () => {
     <div
       style={{
         minHeight: '100vh',
-        background: 'var(--gray-50)',
+        background: 'var(--page-background)',
         paddingBottom: 90,
       }}
     >

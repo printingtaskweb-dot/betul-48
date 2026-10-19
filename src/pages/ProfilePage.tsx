@@ -149,12 +149,12 @@ const ProfilePage: React.FC = () => {
 
   /* ─── Main render ─── */
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--theme-bg, #F6F1F1)', paddingBottom: 90 }}>
+    <div style={{ minHeight: '100vh', background: 'var(--page-background)', paddingBottom: 90 }}>
 
       {/* ── Header card (maroon gradient) ── */}
       <div
         style={{
-          background: 'linear-gradient(135deg, #146C94 0%, #0E526F 60%, #99004d 100%)',
+          background: 'var(--header-gradient)',
           color: '#fff',
           padding: '20px 20px 32px',
         }}

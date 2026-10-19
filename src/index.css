@@ -15,6 +15,7 @@
   /* Backgrounds */
   --bg-1: #F6F1F1;
   --bg-2: #AFD3E2;
+  --page-background: radial-gradient(120% 70% at 50% 0%, #FFFFFF 0%, #F6F1F1 60%, #AFD3E2 150%);
   --surface: #FFFFFF;
   --surface-2: #F6F1F1;
 
@@ -145,10 +146,7 @@ html {
 
 html,
 body {
-  background: radial-gradient(
-    120% 70% at 50% 0%,
-    #FFFFFF 0%, #F6F1F1 65%, #AFD3E2 150%
-  ) fixed;
+  background: var(--page-background) fixed;
   color: var(--ink);
   font-family: var(--font-primary);
   min-height: 100vh;
@@ -171,7 +169,7 @@ body {
 }
 
 /* Typography */
-/* Hero Title: Poppins, 600, Upright, Sentence */
+/* Hero title */
 h1, .hero-title {
   font-family: var(--font-serif);
   font-weight: 600;
@@ -182,7 +180,7 @@ h1, .hero-title {
   text-transform: none;
 }
 
-/* Section Headers: Poppins, 600, Upright, Sentence */
+/* Section headers */
 h2, h3, .section-header, .serif {
   font-family: var(--font-serif);
   font-weight: 600;
@@ -197,7 +195,7 @@ h1 { font-size: var(--text-2xl); }
 h2 { font-size: var(--text-xl); }
 h3 { font-size: var(--text-lg); }
 
-/* Card Titles: Poppins, 600, Upright, Sentence */
+/* Card titles */
 h4, h5, .card-title {
   font-family: var(--font-primary);
   font-weight: 600;
@@ -207,7 +205,7 @@ h4, h5, .card-title {
   text-transform: none;
 }
 
-/* Body / Desc: Poppins, 400, Upright, Sentence */
+/* Body text */
 p, .body-desc, .body-text {
   font-family: var(--font-primary);
   font-weight: 400;
@@ -215,7 +213,7 @@ p, .body-desc, .body-text {
   line-height: 1.5;
 }
 
-/* Labels / IDs: Poppins, 500, Upright, UPPERCASE */
+/* Labels and IDs */
 label, .badge, .status-badge, .id-label, .mono-label {
   font-family: var(--font-mono);
   font-weight: 500;
@@ -1859,6 +1857,16 @@ body.gsap-ready .special-service { opacity: 0; transform: translateY(20px); }
     min-width: 0 !important;
   }
 
+  .bottom-nav-link > span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .bottom-nav-action {
+    appearance: none;
+  }
+
   .bottom-nav-report {
     gap: 2px;
     padding: 3px 8px;
@@ -1882,7 +1890,7 @@ body.gsap-ready .special-service { opacity: 0; transform: translateY(20px); }
   }
 
   .floating-news-btn {
-    bottom: 92px !important;
+    display: none !important;
   }
 }
 

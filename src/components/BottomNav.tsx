@@ -1,17 +1,29 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { t } from '../lib/i18n';
-import { Home, Plus, Search, ShieldCheck, User } from 'lucide-react';
+import { Home, Newspaper, Plus, Search, ShieldCheck, User } from 'lucide-react';
+
+interface BottomNavItem {
+  path: string;
+  icon: React.ReactNode;
+  label: string;
+  onClick?: () => void;
+}
 
 export const BottomNav: React.FC = () => {
   const { language, user, isAdmin } = useAuth();
   const loc = useLocation();
 
-  const items = [
-    { path: '/', icon: <Home size={20} />, label: t(language, 'home') },
-    { path: '/complaint/new', icon: <Plus size={24} />, label: t(language, 'reportIssue') },
-    { path: '/track', icon: <Search size={20} />, label: t(language, 'trackComplaint') },
+  const items: BottomNavItem[] = [
+    { path: '/', icon: <Home size={20} />, label: language === 'hi' ? 'होम' : 'Home' },
+    {
+      path: '/news',
+      icon: <Newspaper size={20} />,
+      label: language === 'hi' ? 'समाचार' : 'News',
+      onClick: () => window.dispatchEvent(new Event('open-local-news')),
+    },
+    { path: '/complaint/new', icon: <Plus size={24} />, label: language === 'hi' ? 'शिकायत' : 'Report' },
+    { path: '/track', icon: <Search size={20} />, label: language === 'hi' ? 'स्थिति' : 'Track' },
     // Admin button visible ONLY to admin users
     ...(isAdmin
       ? [
@@ -19,15 +31,13 @@ export const BottomNav: React.FC = () => {
             path: '/admin/dashboard',
             icon: <ShieldCheck size={20} />,
             label: language === 'hi' ? 'एडमिन' : 'Admin',
-            isAdminBadge: true,
           },
         ]
       : [
           {
             path: user ? '/profile' : '/auth',
             icon: <User size={20} />,
-            label: user ? (language === 'hi' ? 'प्रोफ़ाइल' : 'Profile') : t(language, 'login'),
-            isAdminBadge: false,
+            label: user ? (language === 'hi' ? 'खाता' : 'Account') : (language === 'hi' ? 'लॉगिन' : 'Login'),
           },
         ]),
   ];
@@ -43,6 +53,12 @@ export const BottomNav: React.FC = () => {
           min-width: 56px;
           gap: 2px;
           transition: color 0.2s ease, transform 0.2s ease;
+        }
+        .bottom-nav-action {
+          background: transparent;
+          border: 0;
+          padding: 0;
+          cursor: pointer;
         }
         .bottom-nav-icon-box {
           display: flex;
@@ -82,10 +98,10 @@ export const BottomNav: React.FC = () => {
           left: 0,
           right: 0,
           zIndex: 1000,
-          background: 'rgba(255, 255, 255, 0.9)',
+          background: 'rgba(255, 255, 255, 0.94)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
-          borderTop: '1px solid rgba(28, 27, 26, 0.12)',
+          borderTop: '1px solid var(--hairline)',
           boxShadow: '0 -10px 30px -10px rgba(0, 0, 0, 0.03)',
           display: 'flex',
           alignItems: 'center',
@@ -97,19 +113,10 @@ export const BottomNav: React.FC = () => {
         {items.map((item) => {
           const active = loc.pathname === item.path;
           const isFab = item.path === '/complaint/new';
-
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`bottom-nav-link${isFab ? ' bottom-nav-report' : ''}`}
-              aria-current={active ? 'page' : undefined}
-              style={{
-                color: active || isFab ? 'var(--burgundy, #146C94)' : 'var(--mute, #8E8A86)',
-              }}
-            >
+          const content = (
+            <>
               {isFab ? (
-                <div className="bottom-nav-fab" aria-label={item.label}>
+                <div className="bottom-nav-fab" aria-hidden="true">
                   <Plus size={24} color="#FFFFFF" strokeWidth={2.4} />
                 </div>
               ) : (
@@ -125,17 +132,41 @@ export const BottomNav: React.FC = () => {
               )}
               <span
                 style={{
-                  fontFamily: "var(--font-mono, 'Geist Mono', monospace)",
+                  fontFamily: 'var(--font-primary)',
                   fontSize: '10px',
-                  textTransform: 'none',
-                  letterSpacing: 0,
-                  fontWeight: active ? 700 : 500,
+                  fontWeight: active || isFab ? 700 : 500,
                   color: active || isFab ? 'var(--burgundy, #146C94)' : 'var(--mute, #8E8A86)',
                   lineHeight: 1.2,
                 }}
               >
                 {item.label}
               </span>
+            </>
+          );
+
+          return item.onClick ? (
+            <button
+              key={item.path}
+              type="button"
+              className="bottom-nav-link bottom-nav-action"
+              onClick={item.onClick}
+              aria-label={language === 'hi' ? 'स्थानीय समाचार खोलें' : 'Open local news'}
+              aria-haspopup="dialog"
+              style={{ color: 'var(--mute, #8E8A86)' }}
+            >
+              {content}
+            </button>
+          ) : (
+            <Link
+              key={item.path}
+              to={item.path}
+              className={`bottom-nav-link${isFab ? ' bottom-nav-report' : ''}`}
+              aria-current={active ? 'page' : undefined}
+              style={{
+                color: active || isFab ? 'var(--burgundy, #146C94)' : 'var(--mute, #8E8A86)',
+              }}
+            >
+              {content}
             </Link>
           );
         })}

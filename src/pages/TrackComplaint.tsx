@@ -190,11 +190,11 @@ export const TrackComplaint: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--gray-50)', paddingBottom: 90 }}>
+    <div style={{ minHeight: '100vh', background: 'var(--page-background)', paddingBottom: 90 }}>
       {/* Header */}
       <header
         style={{
-          background: 'linear-gradient(135deg, #15803d 0%, #16a34a 100%)',
+          background: 'var(--header-gradient)',
           padding: '14px 20px',
           color: '#fff',
           boxShadow: 'var(--shadow-sm)',
