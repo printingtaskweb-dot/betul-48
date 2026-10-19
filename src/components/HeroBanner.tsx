@@ -299,7 +299,7 @@ export const HeroBanner: React.FC = () => {
           --accent-4: #e2f0f7;
 
           position: relative;
-          min-height: 78vh;
+          min-height: 88vh;                 /* ✅ CHANGED: was 78vh — extra headroom for lowered pill */
           padding: 40px 24px 50px;
           display: flex;
           flex-direction: column;
@@ -448,7 +448,7 @@ export const HeroBanner: React.FC = () => {
 
         /* Report Civic Issue pill placed lower to avoid overlapping cards */
         .hero-animation-section .subline {
-          margin-top: 250px;
+          margin-top: 340px;               /* ✅ CHANGED: was 250px — clears the 320px cards-row at top:48% */
           text-align: center;
           z-index: 10;
           position: relative;
@@ -505,7 +505,7 @@ export const HeroBanner: React.FC = () => {
         @media (max-width: 750px) {
           .hero-animation-section {
             padding: 30px 16px 36px;
-            min-height: 72vh;
+            min-height: 82vh;              /* ✅ CHANGED: was 72vh — extra headroom for lowered pill */
           }
           .hero-animation-section .small-team {
             font-size: 11vw;
@@ -515,7 +515,7 @@ export const HeroBanner: React.FC = () => {
           }
           .hero-animation-section .cards-row {
             height: 220px;
-            top: 50%;
+            top: 46%;                      /* ✅ CHANGED: was 50% — pulls cards up for more gap below */
           }
           .hero-animation-section .card-1 { width: 80px; height: 110px; left: 0%; top: 20px; }
           .hero-animation-section .card-2 { width: 90px; height: 130px; left: 10%; top: 35px; }
@@ -526,7 +526,19 @@ export const HeroBanner: React.FC = () => {
           .hero-animation-section .card-7 { width: 100px; height: 140px; left: 74%; top: 20px; }
           .hero-animation-section .card-8 { width: 80px; height: 110px; left: 87%; top: 35px; }
           .hero-animation-section .subline {
-            margin-top: 175px;
+            margin-top: 260px;             /* ✅ CHANGED: was 175px — clears the 220px cards-row */
+          }
+        }
+
+        /* ✅ NEW: extra clearance on very small phones */
+        @media (max-width: 420px) {
+          .hero-animation-section .subline {
+            margin-top: 300px;
+          }
+          .hero-animation-section .subline-text {
+            font-size: 11px;
+            padding: 0 8px;
+            line-height: 1.5;
           }
         }
       `}</style>
