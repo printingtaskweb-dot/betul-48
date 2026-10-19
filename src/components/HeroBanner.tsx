@@ -537,11 +537,11 @@ export const HeroBanner: React.FC = () => {
       {/* Masked reveal title */}
       <h1 className="small-team" id="smallTeam">
         <span className="word">
-          <span>{language === 'hi' ? 'छोटा' : 'Small'}</span>
+          <span>{language === 'hi' ? 'एक ' : 'One'}</span>
         </span>
         &nbsp;
         <span className="word">
-          <span>{language === 'hi' ? 'दल,' : 'team,'}</span>
+          <span>{language === 'hi' ? 'कदम,' : 'Step,'}</span>
         </span>
       </h1>
 
