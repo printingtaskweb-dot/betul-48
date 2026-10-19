@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
-import { createTimeline, scrambleText } from 'https://esm.sh/animejs';
+import { createTimeline, scrambleText } from 'animejs';
 
 interface BannerSlide {
   id: number;
@@ -106,23 +106,30 @@ export const HeroBanner: React.FC = () => {
   useEffect(() => {
     if (!contentRef.current) return;
 
-    const tagEl = contentRef.current.querySelector('.hero-badge span:last-child') as HTMLElement | null;
-    const titleEl = contentRef.current.querySelector('.hero-title') as HTMLElement | null;
-    const descEl = contentRef.current.querySelector('.hero-desc-full') as HTMLElement | null;
-    const shortEl = contentRef.current.querySelector('.hero-desc-short') as HTMLElement | null;
+    const tagEl = contentRef.current.querySelector(
+      '.hero-badge span:last-child'
+    ) as HTMLElement | null;
+    const titleEl = contentRef.current.querySelector(
+      '.hero-title'
+    ) as HTMLElement | null;
+    const descEl = contentRef.current.querySelector(
+      '.hero-desc-full'
+    ) as HTMLElement | null;
+    const shortEl = contentRef.current.querySelector(
+      '.hero-desc-short'
+    ) as HTMLElement | null;
 
     if (!tagEl || !titleEl || !descEl || !shortEl) return;
 
-    // Set the final texts (so scramble has a target)
+    // Set final texts as the scramble targets
     tagEl.textContent = slide.tag;
     titleEl.textContent = slide.title;
     descEl.textContent = slide.subtitle;
     shortEl.textContent = slide.subtitleShort ?? slide.subtitle;
 
-    // Create a timeline that runs the scramble effect
+    // Run scramble timeline
     const tl = createTimeline();
 
-    // Scramble the tag
     tl.add(tagEl, {
       innerHTML: scrambleText({
         override: ' ',
@@ -133,42 +140,56 @@ export const HeroBanner: React.FC = () => {
       }),
     });
 
-    // Scramble the title
-    tl.add(titleEl, {
-      innerHTML: scrambleText({
-        override: ' ',
-        from: 'center',
-        duration: 600,
-        cursor: '░▒▓█',
-        perturbation: 0.3,
-      }),
-    }, '<+=50');
+    tl.add(
+      titleEl,
+      {
+        innerHTML: scrambleText({
+          override: ' ',
+          from: 'center',
+          duration: 600,
+          cursor: '░▒▓█',
+          perturbation: 0.3,
+        }),
+      },
+      '<+=50'
+    );
 
-    // Scramble the subtitle (full text)
-    tl.add(descEl, {
-      innerHTML: scrambleText({
-        override: ' ',
-        from: 'center',
-        duration: 500,
-        cursor: '░▒▓',
-        perturbation: 0.2,
-        revealDelay: 200,
-      }),
-    }, '<+=100');
+    tl.add(
+      descEl,
+      {
+        innerHTML: scrambleText({
+          override: ' ',
+          from: 'center',
+          duration: 500,
+          cursor: '░▒▓',
+          perturbation: 0.2,
+          revealDelay: 200,
+        }),
+      },
+      '<+=100'
+    );
 
-    // Scramble the short subtitle (mobile)
-    tl.add(shortEl, {
-      innerHTML: scrambleText({
-        override: ' ',
-        from: 'center',
-        duration: 500,
-        cursor: '░▒▓',
-        perturbation: 0.2,
-        revealDelay: 200,
-      }),
-    }, '<');
+    tl.add(
+      shortEl,
+      {
+        innerHTML: scrambleText({
+          override: ' ',
+          from: 'center',
+          duration: 500,
+          cursor: '░▒▓',
+          perturbation: 0.2,
+          revealDelay: 200,
+        }),
+      },
+      '<'
+    );
 
     tl.init();
+
+    // Cleanup: reset any running animation on unmount / slide change
+    return () => {
+      tl.pause();
+    };
   }, [current, slide]);
 
   return (
@@ -186,8 +207,15 @@ export const HeroBanner: React.FC = () => {
             </linearGradient>
           </defs>
           <circle cx="390" cy="86" r="49" fill="#AFD3E2" opacity=".9" />
-          <path d="M0 221c71-59 127-64 193-20 51 34 94 19 143-29 68-66 127-57 184-19v207H0z" fill="url(#hero-hill)" />
-          <path d="M0 276c69-51 137-43 193-9 65 39 111 33 171-13 61-46 112-38 156-7v113H0z" fill="#146C94" opacity=".88" />
+          <path
+            d="M0 221c71-59 127-64 193-20 51 34 94 19 143-29 68-66 127-57 184-19v207H0z"
+            fill="url(#hero-hill)"
+          />
+          <path
+            d="M0 276c69-51 137-43 193-9 65 39 111 33 171-13 61-46 112-38 156-7v113H0z"
+            fill="#146C94"
+            opacity=".88"
+          />
           <path d="M72 249h48v85H72z" fill="#F6F1F1" />
           <path d="M82 227h28v22H82z" fill="#19A7CE" />
           <path d="M150 223h61v111h-61z" fill="#F6F1F1" />
@@ -197,22 +225,62 @@ export const HeroBanner: React.FC = () => {
           <path d="M298 210h32v21h-32z" fill="#19A7CE" />
           <path d="M358 267h43v67h-43z" fill="#F6F1F1" />
           <g fill="#19A7CE">
-            <circle cx="58" cy="274" r="21" /><circle cx="51" cy="261" r="13" />
-            <circle cx="422" cy="266" r="24" /><circle cx="432" cy="250" r="15" />
-            <circle cx="471" cy="287" r="17" /><circle cx="465" cy="274" r="11" />
+            <circle cx="58" cy="274" r="21" />
+            <circle cx="51" cy="261" r="13" />
+            <circle cx="422" cy="266" r="24" />
+            <circle cx="432" cy="250" r="15" />
+            <circle cx="471" cy="287" r="17" />
+            <circle cx="465" cy="274" r="11" />
           </g>
-          <path d="M178 334c47-29 88-35 132-23 28 8 49 8 80-3" fill="none" stroke="url(#hero-road)" strokeWidth="9" strokeLinecap="round" />
-          <path d="M253 311l10 2m26 8 10 3m27 1 10-2" stroke="#146C94" strokeWidth="2" strokeLinecap="round" />
+          <path
+            d="M178 334c47-29 88-35 132-23 28 8 49 8 80-3"
+            fill="none"
+            stroke="url(#hero-road)"
+            strokeWidth="9"
+            strokeLinecap="round"
+          />
+          <path
+            d="M253 311l10 2m26 8 10 3m27 1 10-2"
+            stroke="#146C94"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
           <g transform="translate(365 129)">
-            <path d="M25 0c-14 0-25 11-25 25 0 18 25 43 25 43s25-25 25-43C50 11 39 0 25 0z" fill="#19A7CE" />
+            <path
+              d="M25 0c-14 0-25 11-25 25 0 18 25 43 25 43s25-25 25-43C50 11 39 0 25 0z"
+              fill="#19A7CE"
+            />
             <circle cx="25" cy="25" r="9" fill="#F6F1F1" />
           </g>
           <g transform="translate(31 112)">
             <rect width="154" height="54" rx="16" fill="#fff" opacity=".94" />
             <circle cx="27" cy="27" r="13" fill="#AFD3E2" />
-            <path d="M21 27l4 4 8-9" fill="none" stroke="#146C94" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-            <rect x="49" y="18" width="82" height="6" rx="3" fill="#146C94" opacity=".75" />
-            <rect x="49" y="30" width="59" height="5" rx="2.5" fill="#146C94" opacity=".25" />
+            <path
+              d="M21 27l4 4 8-9"
+              fill="none"
+              stroke="#146C94"
+              strokeWidth="2.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+            <rect
+              x="49"
+              y="18"
+              width="82"
+              height="6"
+              rx="3"
+              fill="#146C94"
+              opacity=".75"
+            />
+            <rect
+              x="49"
+              y="30"
+              width="59"
+              height="5"
+              rx="2.5"
+              fill="#146C94"
+              opacity=".25"
+            />
           </g>
         </svg>
       </div>

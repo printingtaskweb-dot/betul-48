@@ -23,12 +23,14 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
+    "animejs": "^4.5.0",
     "firebase": "^13.0.0",
     "firebase-admin": "^14.5.0",
     "lucide-react": "^1.51.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-router-dom": "^7.18.4"
+    "react-router-dom": "^7.18.4",
+    "webflow": "^0.0.1-security.1"
   },
   "devDependencies": {
     "@types/node": "^24.13.3",
