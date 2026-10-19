@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { t } from '../lib/i18n';
@@ -9,10 +9,15 @@ import { RecentComplaints } from '../components/RecentComplaints';
 import { LocalNewsSection } from '../components/LocalNewsSection';
 import { BottomNav } from '../components/BottomNav';
 import { Globe, LogOut, Building2, Camera, Search } from 'lucide-react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 export const Home: React.FC = () => {
   const { language, setLanguage, user, profile, signOut } = useAuth();
   const navigate = useNavigate();
+  const pageRef = useRef<HTMLDivElement>(null);
 
   const handleLogout = async () => {
     await signOut();
@@ -20,32 +25,64 @@ export const Home: React.FC = () => {
   };
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined' || !pageRef.current) return;
 
-    const gsap = (window as any).gsap;
-    if (!gsap) return;
+    const ctx = gsap.context(() => {
+      // Set initial states
+      gsap.set('.top-nav', { opacity: 0, y: -20 });
+      gsap.set('.quick-actions', { opacity: 0, y: 30 });
+      gsap.set('.special-service', { opacity: 0, y: 40 });
 
-    const ScrollTrigger = (window as any).ScrollTrigger;
-    if (ScrollTrigger) {
-      gsap.registerPlugin(ScrollTrigger);
-    }
+      // Intro timeline
+      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+      tl.to('.top-nav', { opacity: 1, y: 0, duration: 0.8 }, 0.1)
+        .to('.quick-actions', { opacity: 1, y: 0, duration: 0.8 }, 0.5);
 
-    document.body.classList.add('gsap-ready');
-
-    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-    tl.to('.top-nav', { opacity: 1, y: 0, duration: 0.8 }, 0.1)
-      .to('.hero-section', { opacity: 1, scale: 1, duration: 1.0, ease: 'back.out(1.2)' }, 0.25)
-      .to('.quick-actions', { opacity: 1, y: 0, duration: 0.8 }, 0.5);
-
-    if (ScrollTrigger) {
+      // Scroll-triggered reveal for special service
       gsap.to('.special-service', {
-        opacity: 1, y: 0, duration: 0.9, ease: 'power3.out',
-        scrollTrigger: { trigger: '.special-service', start: 'top 85%' }
+        opacity: 1,
+        y: 0,
+        duration: 0.9,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: '.special-service',
+          start: 'top 85%',
+        },
       });
-    }
+
+      // Button press feedback
+      const handlePress = (btn: HTMLElement) => {
+        gsap.fromTo(
+          btn,
+          { scale: 1 },
+          {
+            scale: 0.93,
+            duration: 0.12,
+            yoyo: true,
+            repeat: 1,
+            ease: 'power2.inOut',
+          }
+        );
+      };
+
+      const buttons = pageRef.current?.querySelectorAll('.btn-outline, .btn-solid, .action-card');
+      buttons?.forEach((btn) => {
+        const handler = () => handlePress(btn as HTMLElement);
+        btn.addEventListener('click', handler);
+        (btn as any)._pressHandler = handler;
+      });
+
+      // Cleanup handlers
+      return () => {
+        buttons?.forEach((btn) => {
+          const handler = (btn as any)._pressHandler;
+          if (handler) btn.removeEventListener('click', handler);
+        });
+      };
+    }, pageRef);
 
     return () => {
-      document.body.classList.remove('gsap-ready');
+      ctx.revert();
     };
   }, []);
 
@@ -61,11 +98,15 @@ export const Home: React.FC = () => {
   };
 
   return (
-    <div className="home-page" style={{
-      minHeight: '100vh',
-      background: '#F6F1F1',
-      paddingBottom: 100,
-    }}>
+    <div
+      ref={pageRef}
+      className="home-page"
+      style={{
+        minHeight: '100vh',
+        background: '#F6F1F1',
+        paddingBottom: 100,
+      }}
+    >
       {/* ── Top Bar / Header ── */}
       <header
         className="top-nav"
@@ -82,6 +123,7 @@ export const Home: React.FC = () => {
           top: 0,
           zIndex: 100,
           boxShadow: '0 4px 20px -10px rgba(20, 108, 148, 0.06)',
+          opacity: 0,
         }}
       >
         {/* Logo & City Title */}
@@ -219,11 +261,11 @@ export const Home: React.FC = () => {
         </div>
       </header>
 
-      {/* ── Hero Carousel (replaces Clinical Framework section) ── */}
+      {/* ── Hero Carousel ── */}
       <HeroBanner />
 
       {/* ── Quick Action Cards ── */}
-      <div className="quick-actions">
+      <div className="quick-actions" style={{ opacity: 0 }}>
         <Link to="/complaint/new" style={{ textDecoration: 'none' }}>
           <div
             className="action-card"
@@ -267,7 +309,7 @@ export const Home: React.FC = () => {
       {/* ── Green Waste Pickup Highlight Card ── */}
       <section style={{ padding: 0 }}>
         <Link to="/department/green" style={{ textDecoration: 'none' }}>
-          <div className="special-service">
+          <div className="special-service" style={{ opacity: 0 }}>
             <svg
               className="leaf-bg"
               viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5"
