@@ -213,7 +213,9 @@ export const HeroBanner: React.FC = () => {
                 },
 
                 onComplete: () => {
-                  char.textContent = char.dataset.orig;
+                  // ✅ FIX: dataset values are `string | undefined`;
+                  // coalesce to '' so textContent (string | null) type-checks.
+                  char.textContent = char.dataset.orig ?? '';
                   char.style.border = 'none';
                 },
               }
