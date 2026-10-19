@@ -15,8 +15,8 @@
   /* Backgrounds */
   --bg-1: #F6F1F1;
   --bg-2: #AFD3E2;
-  --surface: #AFD3E2;
-  --surface-2: #AFD3E2;
+  --surface: #F6F1F1;
+  --surface-2: #F6F1F1;
 
   /* Shared accent palette: softer tones for supporting UI, deeper green for primary actions */
   --peach: #FFC799;
