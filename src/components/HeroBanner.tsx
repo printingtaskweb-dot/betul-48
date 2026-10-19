@@ -1,5 +1,6 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import { createTimeline, scrambleText } from 'https://esm.sh/animejs';
 
 interface BannerSlide {
   id: number;
@@ -67,6 +68,7 @@ const SLIDES: BannerSlide[] = [
 export const HeroBanner: React.FC = () => {
   const [current, setCurrent] = useState(0);
   const [animating, setAnimating] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   const goTo = useCallback(
     (idx: number) => {
@@ -99,6 +101,75 @@ export const HeroBanner: React.FC = () => {
   }, []);
 
   const slide = SLIDES[current];
+
+  // ── Scramble text animation on slide change ─────────────────
+  useEffect(() => {
+    if (!contentRef.current) return;
+
+    const tagEl = contentRef.current.querySelector('.hero-badge span:last-child') as HTMLElement | null;
+    const titleEl = contentRef.current.querySelector('.hero-title') as HTMLElement | null;
+    const descEl = contentRef.current.querySelector('.hero-desc-full') as HTMLElement | null;
+    const shortEl = contentRef.current.querySelector('.hero-desc-short') as HTMLElement | null;
+
+    if (!tagEl || !titleEl || !descEl || !shortEl) return;
+
+    // Set the final texts (so scramble has a target)
+    tagEl.textContent = slide.tag;
+    titleEl.textContent = slide.title;
+    descEl.textContent = slide.subtitle;
+    shortEl.textContent = slide.subtitleShort ?? slide.subtitle;
+
+    // Create a timeline that runs the scramble effect
+    const tl = createTimeline();
+
+    // Scramble the tag
+    tl.add(tagEl, {
+      innerHTML: scrambleText({
+        override: ' ',
+        from: 'center',
+        duration: 400,
+        cursor: '░▒▓',
+        perturbation: 0.25,
+      }),
+    });
+
+    // Scramble the title
+    tl.add(titleEl, {
+      innerHTML: scrambleText({
+        override: ' ',
+        from: 'center',
+        duration: 600,
+        cursor: '░▒▓█',
+        perturbation: 0.3,
+      }),
+    }, '<+=50');
+
+    // Scramble the subtitle (full text)
+    tl.add(descEl, {
+      innerHTML: scrambleText({
+        override: ' ',
+        from: 'center',
+        duration: 500,
+        cursor: '░▒▓',
+        perturbation: 0.2,
+        revealDelay: 200,
+      }),
+    }, '<+=100');
+
+    // Scramble the short subtitle (mobile)
+    tl.add(shortEl, {
+      innerHTML: scrambleText({
+        override: ' ',
+        from: 'center',
+        duration: 500,
+        cursor: '░▒▓',
+        perturbation: 0.2,
+        revealDelay: 200,
+      }),
+    }, '<');
+
+    tl.init();
+  }, [current, slide]);
 
   return (
     <section className="hero-section">
@@ -146,6 +217,7 @@ export const HeroBanner: React.FC = () => {
         </svg>
       </div>
       <div
+        ref={contentRef}
         className={`hero-content ${animating ? 'hero-fading' : ''}`}
         aria-live="polite"
       >
