@@ -1,8 +1,12 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { t } from '../lib/i18n';
 import { TrendingUp, Clock, CheckCircle2, ShieldCheck } from 'lucide-react';
+import { gsap } from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 interface Stats {
   total: number;
@@ -12,7 +16,7 @@ interface Stats {
   verified: number;
 }
 
-const AnimatedNumber: React.FC<{ value: number }> = ({ value }) => {
+const AnimatedNumber: React.FC<{ value: number; delay?: number }> = ({ value, delay = 0 }) => {
   const [display, setDisplay] = useState(0);
 
   useEffect(() => {
@@ -47,6 +51,10 @@ export const StatsSection: React.FC = () => {
     verified: 0,
   });
   const [loaded, setLoaded] = useState(false);
+  const sectionRef = useRef<HTMLDivElement>(null);
+  const innerRef = useRef<HTMLDivElement>(null);
+  const statRefs = useRef<Array<HTMLDivElement | null>>([]);
+  const animatedRef = useRef(false);
 
   useEffect(() => {
     supabase
@@ -66,6 +74,74 @@ export const StatsSection: React.FC = () => {
       });
   }, []);
 
+  // ── GSAP reveal + counter animations ─────────────────────────────────────
+  useEffect(() => {
+    if (!innerRef.current || !sectionRef.current) return;
+
+    // Set initial state
+    gsap.set(innerRef.current, { opacity: 0, y: 60, scale: 0.97 });
+    statRefs.current.forEach((el) => {
+      if (el) gsap.set(el, { opacity: 0, y: 30 });
+    });
+
+    const ctx = gsap.context(() => {
+      // Reveal container
+      gsap.to(innerRef.current, {
+        opacity: 1,
+        y: 0,
+        scale: 1,
+        duration: 1.2,
+        ease: 'power3.out',
+        scrollTrigger: {
+          trigger: sectionRef.current,
+          start: 'top 80%',
+        },
+        onComplete: () => {
+          if (animatedRef.current) return;
+          animatedRef.current = true;
+          // Trigger counters
+          document.querySelectorAll('.stat-block .num').forEach((el) => {
+            const target = parseFloat((el as HTMLElement).dataset.count || '0');
+            const span = el.querySelector('span');
+            if (!span) return;
+            gsap.to(
+              { v: 0 },
+              {
+                v: target,
+                duration: 2,
+                ease: 'power2.out',
+                onUpdate: function () {
+                  span.textContent = Math.floor(this.targets()[0].v).toLocaleString();
+                },
+              }
+            );
+          });
+        },
+      });
+
+      // Stagger stat blocks
+      statRefs.current.forEach((el, i) => {
+        if (!el) return;
+        gsap.to(el, {
+          opacity: 1,
+          y: 0,
+          duration: 0.8,
+          delay: 0.15 * i,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: 'top 80%',
+          },
+        });
+      });
+    }, sectionRef);
+
+    return () => {
+      ctx.revert();
+      ScrollTrigger.getAll().forEach((t) => t.kill());
+    };
+  }, []);
+
   const cards = [
     {
       key: 'total',
@@ -73,6 +149,7 @@ export const StatsSection: React.FC = () => {
       value: stats.total,
       icon: <TrendingUp size={18} />,
       color: '#146C94',
+      count: '15',
     },
     {
       key: 'pending',
@@ -80,6 +157,7 @@ export const StatsSection: React.FC = () => {
       value: stats.pending,
       icon: <Clock size={18} />,
       color: '#19A7CE',
+      count: '8',
     },
     {
       key: 'resolved',
@@ -87,6 +165,7 @@ export const StatsSection: React.FC = () => {
       value: stats.resolved,
       icon: <CheckCircle2 size={18} />,
       color: '#146C94',
+      count: '1',
     },
     {
       key: 'verified',
@@ -94,24 +173,26 @@ export const StatsSection: React.FC = () => {
       value: stats.verified,
       icon: <ShieldCheck size={18} />,
       color: '#AFD3E2',
+      count: '2',
     },
   ];
 
   return (
-    <div className="app-container" style={{ paddingTop: 16, paddingBottom: 16 }}>
-      <div className="stats-grid-responsive">
+    <div ref={sectionRef} className="app-container" style={{ paddingTop: 16, paddingBottom: 16 }}>
+      <div ref={innerRef} className="stats-grid-responsive">
         {cards.map((card, i) => (
           <div
             key={card.key}
+            ref={(el) => { statRefs.current[i] = el; }}
             className="stat-card"
+            data-count={card.count}
             style={{
               background: '#F6F1F1',
               border: '1px solid rgba(20, 108, 148, 0.08)',
               borderRadius: 20,
               padding: 'clamp(14px, 2vw, 20px)',
               boxShadow: '0 10px 24px -12px rgba(20, 108, 148, 0.08)',
-              animation: loaded ? `fadeIn 0.3s ease ${i * 0.08}s forwards` : 'none',
-              opacity: loaded ? 1 : 0,
+              opacity: 0,
               transition: 'all 0.4s ease',
             }}
           >
@@ -132,7 +213,7 @@ export const StatsSection: React.FC = () => {
               {card.icon}
             </div>
             <div
-              className="stat-value"
+              className="stat-value stat-block"
               style={{
                 fontFamily: 'var(--font-primary)',
                 fontSize: 'clamp(1.5rem, 2vw, 2.2rem)',
