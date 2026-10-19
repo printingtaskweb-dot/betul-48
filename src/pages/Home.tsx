@@ -23,14 +23,13 @@ export const Home: React.FC = () => {
     if (typeof window === 'undefined') return;
 
     const gsap = (window as any).gsap;
-    if (!gsap) return; // GSAP not loaded → leave page visible (safety net in CSS)
+    if (!gsap) return;
 
     const ScrollTrigger = (window as any).ScrollTrigger;
     if (ScrollTrigger) {
       gsap.registerPlugin(ScrollTrigger);
     }
 
-    // Mark body so CSS can apply the "pre-animation" hidden state
     document.body.classList.add('gsap-ready');
 
     const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
@@ -64,7 +63,7 @@ export const Home: React.FC = () => {
   return (
     <div className="home-page" style={{
       minHeight: '100vh',
-      background: 'var(--page-background)',
+      background: '#F6F1F1',
       paddingBottom: 100,
     }}>
       {/* ── Top Bar / Header ── */}
@@ -75,14 +74,14 @@ export const Home: React.FC = () => {
           justifyContent: 'space-between',
           alignItems: 'center',
           padding: '14px 20px',
-          background: 'rgba(255, 255, 255, 0.85)',
+          background: 'rgba(246, 241, 241, 0.9)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
-          borderBottom: '1px solid rgba(28, 27, 26, 0.12)',
+          borderBottom: '1px solid rgba(20, 108, 148, 0.12)',
           position: 'sticky',
           top: 0,
           zIndex: 100,
-          boxShadow: '0 4px 20px -10px rgba(0,0,0,0.03)',
+          boxShadow: '0 4px 20px -10px rgba(20, 108, 148, 0.06)',
         }}
       >
         {/* Logo & City Title */}
@@ -90,7 +89,7 @@ export const Home: React.FC = () => {
           <div
             style={{
               width: 38, height: 38, borderRadius: 12,
-              background: 'var(--burgundy)',
+              background: '#146C94',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff',
               fontFamily: 'var(--font-primary)',
@@ -104,14 +103,14 @@ export const Home: React.FC = () => {
             <span style={{
               fontFamily: 'var(--font-primary)',
               fontWeight: 600, fontSize: 17,
-              letterSpacing: '0.01em', color: '#1C1B1A',
+              letterSpacing: '0.01em', color: '#0f1f26',
             }}>
               Jila Betul
             </span>
             <span style={{
               fontFamily: 'var(--font-primary)', fontSize: 9,
               fontWeight: 500, fontStyle: 'normal',
-              letterSpacing: '0.08em', color: '#8E8A86',
+              letterSpacing: '0.08em', color: '#6b8a99',
               textTransform: 'uppercase' as const,
               marginTop: 1,
             }}>
@@ -128,7 +127,7 @@ export const Home: React.FC = () => {
               fontFamily: 'var(--font-primary)',
               fontSize: '0.82rem', fontWeight: 500, fontStyle: 'normal',
               textTransform: 'uppercase', letterSpacing: '0.06em',
-              color: '#4A4744', transition: 'all 0.3s ease',
+              color: '#1f3540', transition: 'all 0.3s ease',
             }}
           >
             {t(language, 'reportIssue')}
@@ -139,7 +138,7 @@ export const Home: React.FC = () => {
               fontFamily: 'var(--font-primary)',
               fontSize: '0.82rem', fontWeight: 500, fontStyle: 'normal',
               textTransform: 'uppercase', letterSpacing: '0.06em',
-              color: 'var(--burgundy)', transition: 'all 0.3s ease',
+              color: '#146C94', transition: 'all 0.3s ease',
             }}
           >
             🌿 {language === 'hi' ? 'हरित कचरा' : 'Green Waste'}
@@ -150,7 +149,7 @@ export const Home: React.FC = () => {
               fontFamily: 'var(--font-primary)',
               fontSize: '0.82rem', fontWeight: 500, fontStyle: 'normal',
               textTransform: 'uppercase', letterSpacing: '0.06em',
-              color: '#4A4744', transition: 'all 0.3s ease',
+              color: '#1f3540', transition: 'all 0.3s ease',
             }}
           >
             {t(language, 'trackComplaint')}
@@ -161,7 +160,7 @@ export const Home: React.FC = () => {
               fontFamily: 'var(--font-primary)',
               fontSize: '0.82rem', fontWeight: 500, fontStyle: 'normal',
               textTransform: 'uppercase', letterSpacing: '0.06em',
-              color: 'var(--burgundy)',
+              color: '#146C94',
               display: 'flex', alignItems: 'center', gap: 5,
               transition: 'all 0.3s ease',
             }}
@@ -188,7 +187,7 @@ export const Home: React.FC = () => {
                 to="/profile"
                 style={{
                   width: 34, height: 34, borderRadius: '50%',
-                  background: 'var(--burgundy)',
+                  background: '#146C94',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: '#fff', fontSize: '0.85rem', fontWeight: 700,
                   textDecoration: 'none', cursor: 'pointer',
@@ -202,14 +201,14 @@ export const Home: React.FC = () => {
                 onClick={handleLogout}
                 style={{
                   border: 'none',
-                  background: 'rgba(28, 27, 26, 0.06)',
+                  background: 'rgba(20, 108, 148, 0.08)',
                   borderRadius: 8,
                   cursor: 'pointer', padding: 7,
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}
                 title={t(language, 'logout')}
               >
-                <LogOut size={16} color="#4A4744" />
+                <LogOut size={16} color="#1f3540" />
               </button>
             </div>
           ) : (
@@ -220,7 +219,7 @@ export const Home: React.FC = () => {
         </div>
       </header>
 
-      {/* ── Hero Carousel ── */}
+      {/* ── Hero Carousel (replaces Clinical Framework section) ── */}
       <HeroBanner />
 
       {/* ── Quick Action Cards ── */}
@@ -265,41 +264,40 @@ export const Home: React.FC = () => {
       {/* ── Live Stats ── */}
       <StatsSection />
 
-     
-   {/* ── Green Waste Pickup Highlight Card ── */}
-<section style={{ padding: 0 }}>
-  <Link to="/department/green" style={{ textDecoration: 'none' }}>
-    <div className="special-service">
-      <svg
-        className="leaf-bg"
-        viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5"
-      >
-        <path d="M50 10 C 30 30, 20 60, 50 90 C 80 60, 70 30, 50 10 Z" />
-        <path d="M50 10 L 50 90" />
-        <path d="M50 30 L 35 45" />
-        <path d="M50 50 L 65 65" />
-      </svg>
+      {/* ── Green Waste Pickup Highlight Card ── */}
+      <section style={{ padding: 0 }}>
+        <Link to="/department/green" style={{ textDecoration: 'none' }}>
+          <div className="special-service">
+            <svg
+              className="leaf-bg"
+              viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5"
+            >
+              <path d="M50 10 C 30 30, 20 60, 50 90 C 80 60, 70 30, 50 10 Z" />
+              <path d="M50 10 L 50 90" />
+              <path d="M50 30 L 35 45" />
+              <path d="M50 50 L 65 65" />
+            </svg>
 
-      <div style={{ position: 'relative', zIndex: 2 }}>
-        <div className="special-badge">
-          <span className="dot" />
-          {language === 'hi' ? 'विशिष्ट सेवा' : 'Featured Service'}
-        </div>
+            <div style={{ position: 'relative', zIndex: 2 }}>
+              <div className="special-badge">
+                <span className="dot" />
+                {language === 'hi' ? 'विशिष्ट सेवा' : 'Featured Service'}
+              </div>
 
-        <h2 className="special-title">
-          {t(language, 'greenDeptTitle')}
-        </h2>
-        <p className="special-desc">
-          {t(language, 'greenDeptSubtitle')} (Fallen leaves, tree pruning, garden waste & fallen trees)
-        </p>
+              <h2 className="special-title">
+                {t(language, 'greenDeptTitle')}
+              </h2>
+              <p className="special-desc">
+                {t(language, 'greenDeptSubtitle')} (Fallen leaves, tree pruning, garden waste & fallen trees)
+              </p>
 
-        <span className="special-cta">
-          {language === 'hi' ? 'हरित कचरा रिपोर्ट करें' : 'Request Green Waste Pickup'} →
-        </span>
-      </div>
-    </div>
-  </Link>
-</section>
+              <span className="special-cta">
+                {language === 'hi' ? 'हरित कचरा रिपोर्ट करें' : 'Request Green Waste Pickup'} →
+              </span>
+            </div>
+          </div>
+        </Link>
+      </section>
 
       {/* ── Municipal Services Grid ── */}
       <ServicesGrid />
@@ -317,19 +315,19 @@ export const Home: React.FC = () => {
             background: '#FFFFFF',
             borderRadius: 24,
             padding: '24px',
-            border: '1px solid rgba(0, 0, 0, 0.04)',
+            border: '1px solid rgba(20, 108, 148, 0.06)',
             display: 'flex',
             flexWrap: 'wrap' as const,
             justifyContent: 'space-between',
             gap: 20,
-            boxShadow: '0 10px 24px -12px rgba(0, 0, 0, 0.06)',
+            boxShadow: '0 10px 24px -12px rgba(20, 108, 148, 0.08)',
           }}
         >
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
               <div style={{
                 width: 28, height: 28, borderRadius: 8,
-                background: 'var(--burgundy)',
+                background: '#146C94',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: '#fff', fontFamily: 'var(--font-primary)',
                 fontSize: 14, fontWeight: 600, fontStyle: 'normal',
@@ -338,13 +336,13 @@ export const Home: React.FC = () => {
               </div>
               <span style={{
                 fontFamily: 'var(--font-primary)',
-                fontWeight: 600, fontSize: 16, color: '#1C1B1A',
+                fontWeight: 600, fontSize: 16, color: '#0f1f26',
               }}>
                 Jila Betul
               </span>
             </div>
             <p style={{
-              margin: 0, fontSize: 12, color: '#8E8A86',
+              margin: 0, fontSize: 12, color: '#6b8a99',
               fontFamily: 'var(--font-primary)', fontWeight: 400, fontStyle: 'normal',
               maxWidth: 360, lineHeight: 1.5,
             }}>
@@ -359,7 +357,7 @@ export const Home: React.FC = () => {
               <p style={{
                 margin: '0 0 8px',
                 fontFamily: 'var(--font-primary)',
-                fontSize: 10, fontWeight: 500, fontStyle: 'normal', color: '#8E8A86',
+                fontSize: 10, fontWeight: 500, fontStyle: 'normal', color: '#6b8a99',
                 textTransform: 'uppercase' as const, letterSpacing: '0.08em',
               }}>
                 {language === 'hi' ? 'विभागीय पोर्टल' : 'Department Portals'}
@@ -370,7 +368,7 @@ export const Home: React.FC = () => {
                   style={{
                     fontFamily: 'var(--font-primary)',
                     fontSize: 13, fontWeight: 500,
-                    color: 'var(--burgundy)', textDecoration: 'none',
+                    color: '#146C94', textDecoration: 'none',
                     display: 'flex', alignItems: 'center', gap: 6,
                   }}
                 >
@@ -379,7 +377,7 @@ export const Home: React.FC = () => {
                 </Link>
                 <Link
                   to="/admin"
-                  style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}
+                  style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#1f3540', textDecoration: 'none' }}
                 >
                   {language === 'hi' ? 'नगर निगम एडमिन कंसोल' : 'Municipal Admin Console'}
                 </Link>
@@ -390,22 +388,22 @@ export const Home: React.FC = () => {
               <p style={{
                 margin: '0 0 8px',
                 fontFamily: 'var(--font-primary)',
-                fontSize: 10, fontWeight: 500, fontStyle: 'normal', color: '#8E8A86',
+                fontSize: 10, fontWeight: 500, fontStyle: 'normal', color: '#6b8a99',
                 textTransform: 'uppercase' as const, letterSpacing: '0.08em',
               }}>
                 {language === 'hi' ? 'नागरिक सेवाएं' : 'Citizen Quick Links'}
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <Link to="/complaint/new" style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
+                <Link to="/complaint/new" style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#1f3540', textDecoration: 'none' }}>
                   {t(language, 'reportIssue')}
                 </Link>
-                <Link to="/track" style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
+                <Link to="/track" style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#1f3540', textDecoration: 'none' }}>
                   {t(language, 'trackComplaint')}
                 </Link>
-                <Link to="/callback" style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
+                <Link to="/callback" style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#1f3540', textDecoration: 'none' }}>
                   {language === 'hi' ? 'कॉल बैक का अनुरोध करें' : 'Request a callback'}
                 </Link>
-                <Link to="/department/green" style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#5A5652', textDecoration: 'none' }}>
+                <Link to="/department/green" style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#1f3540', textDecoration: 'none' }}>
                   🌿 {language === 'hi' ? 'हरित अपशिष्ट संग्रहण' : 'Green Waste Pickup'}
                 </Link>
               </div>
