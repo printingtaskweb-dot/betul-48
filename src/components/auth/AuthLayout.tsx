@@ -16,7 +16,7 @@ export const AuthLayout: React.FC<Props> = ({
     <div
       style={{
         background:
-          'var(--header-gradient, linear-gradient(135deg, #4d0026 0%, #660033 50%, #800040 100%))',
+          'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
         padding: '40px 24px 60px',
         textAlign: 'center',
         position: 'relative',

@@ -109,7 +109,7 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({ departmentSlug }
               border: '1.5px solid var(--theme-component-border, #bfbfbf)',
               fontSize: '0.88rem',
               outline: 'none',
-              background: 'var(--theme-bg, #fff4e7)',
+              background: 'var(--theme-bg, #F6F1F1)',
               boxSizing: 'border-box',
             }}
           />
@@ -129,8 +129,8 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({ departmentSlug }
                   fontSize: '0.78rem',
                   fontWeight: 700,
                   border: '1.5px solid',
-                  borderColor: isActive ? 'var(--theme-primary, #660033)' : 'var(--theme-component-border, #bfbfbf)',
-                  background: isActive ? 'var(--theme-primary, #660033)' : 'var(--theme-component, #d9d9d9)',
+                  borderColor: isActive ? 'var(--theme-primary, #146C94)' : 'var(--theme-component-border, #bfbfbf)',
+                  background: isActive ? 'var(--theme-primary, #146C94)' : 'var(--theme-component, #d9d9d9)',
                   color: isActive ? '#fff' : 'var(--gray-700)',
                   cursor: 'pointer',
                   transition: 'var(--transition)',

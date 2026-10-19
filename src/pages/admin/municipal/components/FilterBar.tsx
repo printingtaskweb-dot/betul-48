@@ -64,7 +64,7 @@ export const FilterBar: React.FC<Props> = ({
         onClick={onToggleRadar}
         style={{
           ...primaryBtn,
-          background: showRadar ? PRIMARY : 'var(--theme-bg, #fff4e7)',
+          background: showRadar ? PRIMARY : 'var(--theme-bg, #F6F1F1)',
           color: showRadar ? '#fff' : PRIMARY,
           border: `1.5px solid ${PRIMARY}`,
         }}

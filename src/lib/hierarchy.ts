@@ -109,7 +109,7 @@ export const TIER_LABEL: Record<
     en: 'Municipal / Organisation Head',
     hi: 'नगर पालिका / संगठन प्रमुख',
     short: 'Municipal Head',
-    badgeColor: '#660033',
+    badgeColor: '#146C94',
     icon: '👑',
   },
   1: {

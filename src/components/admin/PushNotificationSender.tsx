@@ -31,7 +31,7 @@ const ROLES = [
 ];
 
 const BORDER  = '1.5px solid var(--theme-component-border, #bfbfbf)';
-const PRIMARY = 'var(--theme-primary, #660033)';
+const PRIMARY = 'var(--theme-primary, #146C94)';
 
 /* ─── Component ─────────────────────────────────────────── */
 export const PushNotificationSender: React.FC = () => {
@@ -231,7 +231,7 @@ export const PushNotificationSender: React.FC = () => {
     padding: '10px 14px',
     border: BORDER,
     borderRadius: 'var(--radius-md, 8px)',
-    background: 'var(--theme-bg, #fff4e7)',
+    background: 'var(--theme-bg, #F6F1F1)',
     fontSize: '0.88rem',
     outline: 'none',
     boxSizing: 'border-box',
@@ -251,7 +251,7 @@ export const PushNotificationSender: React.FC = () => {
     padding: '10px 8px',
     border: `1.5px solid ${active ? PRIMARY : 'var(--theme-component-border, #bfbfbf)'}`,
     borderRadius: 'var(--radius-md, 8px)',
-    background: active ? PRIMARY : 'var(--theme-bg, #fff4e7)',
+    background: active ? PRIMARY : 'var(--theme-bg, #F6F1F1)',
     color: active ? '#fff' : 'var(--gray-700)',
     fontWeight: 800,
     fontSize: '0.78rem',
@@ -267,7 +267,7 @@ export const PushNotificationSender: React.FC = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
 
       {/* ── Header ── */}
-      <div style={{ ...card, background: 'var(--header-gradient, linear-gradient(135deg,#4d0026,#660033,#800040))', color: '#fff' }}>
+      <div style={{ ...card, background: 'var(--header-gradient, linear-gradient(135deg,#0E526F,#146C94,#0E526F))', color: '#fff' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <BellRing size={28} />
           <div>
@@ -290,7 +290,7 @@ export const PushNotificationSender: React.FC = () => {
               onClick={handleRegisterThisDevice}
               disabled={registeringDevice}
               style={{
-                background: 'linear-gradient(135deg, #660033, #800040)',
+                background: 'linear-gradient(135deg, #146C94, #0E526F)',
                 color: '#fff',
                 border: 'none',
                 borderRadius: 6,
@@ -301,7 +301,7 @@ export const PushNotificationSender: React.FC = () => {
                 gap: 5,
                 fontSize: '0.76rem',
                 fontWeight: 800,
-                boxShadow: '0 2px 6px rgba(102, 0, 51, 0.2)',
+                boxShadow: '0 2px 6px rgba(20, 108, 148, 0.2)',
               }}
             >
               <Smartphone size={13} /> {registeringDevice ? 'Registering…' : '📱 Register This Browser Device'}
@@ -346,7 +346,7 @@ export const PushNotificationSender: React.FC = () => {
                 const count = tokens.filter(t => t.user?.role === r.value).length;
                 if (!count) return null;
                 return (
-                  <span key={r.value} style={{ background: 'var(--theme-bg, #fff4e7)', border: BORDER, borderRadius: 20, padding: '4px 12px', fontSize: '0.76rem', fontWeight: 700, color: PRIMARY }}>
+                  <span key={r.value} style={{ background: 'var(--theme-bg, #F6F1F1)', border: BORDER, borderRadius: 20, padding: '4px 12px', fontSize: '0.76rem', fontWeight: 700, color: PRIMARY }}>
                     {r.label}: {count}
                   </span>
                 );
@@ -446,7 +446,7 @@ export const PushNotificationSender: React.FC = () => {
           <div style={{ marginBottom: 16 }}>
             <label style={labelStyle}>Search User</label>
             {selectedUserId ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--theme-bg,#fff4e7)', border: BORDER, borderRadius: 8 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--theme-bg,#F6F1F1)', border: BORDER, borderRadius: 8 }}>
                 <span style={{ fontWeight: 700, fontSize: '0.88rem', color: PRIMARY }}>{selectedUserName}</span>
                 <button onClick={() => { setSelectedUserId(''); setSelectedUserName(''); setUserSearch(''); }}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-500)', fontWeight: 800 }}>✕</button>
@@ -460,7 +460,7 @@ export const PushNotificationSender: React.FC = () => {
                   style={inputStyle}
                 />
                 {userResults.length > 0 && (
-                  <div style={{ border: BORDER, borderRadius: 8, marginTop: 4, overflow: 'hidden', background: 'var(--theme-bg,#fff4e7)' }}>
+                  <div style={{ border: BORDER, borderRadius: 8, marginTop: 4, overflow: 'hidden', background: 'var(--theme-bg,#F6F1F1)' }}>
                     {userResults.map(u => (
                       <button key={u.id}
                         onClick={() => { setSelectedUserId(u.id); setSelectedUserName(u.full_name || u.email || u.id); setUserResults([]); setUserSearch(''); }}
@@ -476,7 +476,7 @@ export const PushNotificationSender: React.FC = () => {
         )}
 
         {/* Target summary */}
-        <div style={{ padding: '10px 14px', background: 'var(--theme-bg,#fff4e7)', border: BORDER, borderRadius: 8, marginBottom: 18, fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ padding: '10px 14px', background: 'var(--theme-bg,#F6F1F1)', border: BORDER, borderRadius: 8, marginBottom: 18, fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 8 }}>
           <Bell size={14} color={PRIMARY} />
           <span>
             This will send to <strong style={{ color: PRIMARY }}>{targetTokens.length} device(s)</strong>
@@ -490,7 +490,7 @@ export const PushNotificationSender: React.FC = () => {
           <div style={{
             padding: '11px 16px', borderRadius: 8, marginBottom: 14, fontSize: '0.85rem', fontWeight: 700,
             display: 'flex', alignItems: 'center', gap: 8,
-            background: status === 'success' ? '#f0fdf4' : status === 'error' ? '#fef2f2' : 'var(--theme-bg,#fff4e7)',
+            background: status === 'success' ? '#f0fdf4' : status === 'error' ? '#fef2f2' : 'var(--theme-bg,#F6F1F1)',
             border: `1px solid ${status === 'success' ? '#bbf7d0' : status === 'error' ? '#fecaca' : BORDER}`,
             color: status === 'success' ? '#15803d' : status === 'error' ? '#dc2626' : PRIMARY,
           }}>
@@ -508,7 +508,7 @@ export const PushNotificationSender: React.FC = () => {
           style={{
             width: '100%', padding: '13px 0', border: 'none',
             borderRadius: 'var(--radius-md, 8px)',
-            background: 'var(--primary-gradient, linear-gradient(135deg,#660033,#800040))',
+            background: 'var(--primary-gradient, linear-gradient(135deg,#146C94,#0E526F))',
             color: '#fff', fontWeight: 900, fontSize: '0.95rem', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
             opacity: (status === 'sending' || !title.trim() || !body.trim()) ? 0.6 : 1,
@@ -530,13 +530,13 @@ export const PushNotificationSender: React.FC = () => {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: 300, overflowY: 'auto' }}>
             {tokens.map(t => (
-              <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 12px', background: 'var(--theme-bg,#fff4e7)', border: BORDER, borderRadius: 8, fontSize: '0.8rem' }}>
+              <div key={t.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '9px 12px', background: 'var(--theme-bg,#F6F1F1)', border: BORDER, borderRadius: 8, fontSize: '0.8rem' }}>
                 <div>
                   <span style={{ fontWeight: 800 }}>{t.user?.full_name || t.user?.email || 'Unknown'}</span>
                   <span style={{ color: 'var(--gray-500)', marginLeft: 8 }}>{t.user?.role}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                  <span style={{ fontSize: '0.7rem', background: '#e0e7ff', color: '#3730a3', padding: '2px 7px', borderRadius: 10, fontWeight: 700 }}>{t.platform}</span>
+                  <span style={{ fontSize: '0.7rem', background: 'var(--primary-100)', color: 'var(--burgundy)', padding: '2px 7px', borderRadius: 10, fontWeight: 700 }}>{t.platform}</span>
                   <span style={{ color: 'var(--gray-400)', fontSize: '0.72rem' }}>{new Date(t.updated_at).toLocaleDateString()}</span>
                 </div>
               </div>

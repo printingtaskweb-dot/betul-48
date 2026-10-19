@@ -80,7 +80,7 @@ export const ComplaintsTab: React.FC<Props> = ({
       {selection.size > 0 && (
         <div style={{
           padding: '12px 14px', borderRadius: 10,
-          background: 'var(--theme-bg, #fff4e7)', border: `1.5px dashed ${PRIMARY}`,
+          background: 'var(--theme-bg, #F6F1F1)', border: `1.5px dashed ${PRIMARY}`,
         }}>
           <div style={{ fontSize: '0.78rem', fontWeight: 900, color: PRIMARY, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
             <Users size={14} /> Cascade Preview — {Object.keys(selectionByDept).length} department(s) affected
@@ -102,7 +102,7 @@ export const ComplaintsTab: React.FC<Props> = ({
                   <span style={{ color: 'var(--gray-500)' }}>·</span>
                   <span>{comps.length} complaint(s)</span>
                   <ChevronRight size={12} />
-                  <span style={{ color: head ? '#15803d' : '#b45309', fontWeight: 700 }}>
+                  <span style={{ color: head ? '#15803d' : 'var(--status-pending)', fontWeight: 700 }}>
                     {head ? `→ ${head.full_name} (Dept Head)` : '→ ⚠️ No dept head assigned'}
                   </span>
                 </div>
@@ -142,7 +142,7 @@ export const ComplaintsTab: React.FC<Props> = ({
                   key={c.id}
                   style={{
                     padding: '14px 16px', borderRadius: 10,
-                    background: isSelected ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
+                    background: isSelected ? 'var(--theme-bg, #F6F1F1)' : 'rgba(255,255,255,0.4)',
                     border: isSelected ? `2px solid ${PRIMARY}` : BORDER,
                     display: 'flex', flexWrap: 'wrap', alignItems: 'center',
                     justifyContent: 'space-between', gap: 12,
@@ -157,7 +157,7 @@ export const ComplaintsTab: React.FC<Props> = ({
                     </button>
                     <div style={{
                       width: 44, height: 44, borderRadius: 8,
-                      background: 'var(--theme-bg, #fff4e7)', border: BORDER,
+                      background: 'var(--theme-bg, #F6F1F1)', border: BORDER,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: '1.3rem', flexShrink: 0,
                     }}>

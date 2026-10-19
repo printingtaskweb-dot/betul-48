@@ -158,7 +158,7 @@ export const StaffApprovalTable: React.FC = () => {
         {/* Status Filter Buttons */}
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           {[
-            { id: 'pending_staff', label: `Pending Approvals (${pendingCount})`, color: '#d97706', bg: '#fef3c7' },
+            { id: 'pending_staff', label: `Pending Approvals (${pendingCount})`, color: 'var(--status-pending)', bg: 'var(--status-pending-bg)' },
             { id: 'dept_staff', label: 'Approved Staff', color: '#16a34a', bg: '#dcfce7' },
             { id: 'rejected_staff', label: 'Rejected', color: '#dc2626', bg: '#fee2e2' },
             { id: 'all', label: 'All Registrations', color: 'var(--gray-700)', bg: 'var(--gray-100)' },
@@ -339,8 +339,8 @@ export const StaffApprovalTable: React.FC = () => {
                               gap: 4,
                               padding: '3px 8px',
                               borderRadius: 'var(--radius-sm)',
-                              background: '#fef3c7',
-                              color: '#92400e',
+                              background: 'var(--status-pending-bg)',
+                              color: 'var(--status-pending)',
                               fontWeight: 700,
                               fontSize: '0.78rem',
                             }}

@@ -107,6 +107,12 @@ export const FloatingNewsWidget: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    const openNews = () => setIsOpen(true);
+    window.addEventListener('open-local-news', openNews);
+    return () => window.removeEventListener('open-local-news', openNews);
+  }, []);
+
+  useEffect(() => {
     if (isOpen) {
       fetchApprovedPosts();
     }
@@ -224,7 +230,7 @@ export const FloatingNewsWidget: React.FC = () => {
         style={{
           position: 'fixed',
           zIndex: 990,
-          background: 'var(--primary-gradient, linear-gradient(135deg, #660033 0%, #800040 100%))',
+          background: 'var(--primary-gradient, linear-gradient(135deg, #146C94 0%, #0E526F 100%))',
           color: '#fff',
           border: '2px solid rgba(255,244,231,0.3)',
           borderRadius: 999,
@@ -244,8 +250,8 @@ export const FloatingNewsWidget: React.FC = () => {
         {posts.length > 0 && (
           <span
             style={{
-              background: '#fff4e7',
-              color: '#660033',
+              background: '#F6F1F1',
+              color: '#146C94',
               borderRadius: 999,
               padding: '1px 7px',
               fontSize: '0.72rem',
@@ -289,7 +295,7 @@ export const FloatingNewsWidget: React.FC = () => {
             {/* Drawer Header */}
             <div
               style={{
-                background: 'var(--header-gradient, linear-gradient(135deg, #4d0026 0%, #660033 50%, #800040 100%))',
+                background: 'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
                 padding: '16px 20px',
                 color: '#fff',
                 display: 'flex',
@@ -352,7 +358,7 @@ export const FloatingNewsWidget: React.FC = () => {
             <div
               style={{
                 padding: '12px 16px',
-                background: 'var(--theme-bg, #fff4e7)',
+                background: 'var(--theme-bg, #F6F1F1)',
                 borderBottom: '1px solid var(--theme-component-border, #bfbfbf)',
                 display: 'flex',
                 alignItems: 'center',
@@ -362,7 +368,7 @@ export const FloatingNewsWidget: React.FC = () => {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.78rem', color: 'var(--gray-700)', fontWeight: 600 }}>
-                <ShieldCheck size={16} color="var(--theme-primary, #660033)" />
+                <ShieldCheck size={16} color="var(--theme-primary, #146C94)" />
                 <span>{language === 'hi' ? 'केवल स्वीकृत पोस्ट लाइव दिखती हैं' : 'Only approved posts are shown'}</span>
               </div>
 
@@ -412,8 +418,8 @@ export const FloatingNewsWidget: React.FC = () => {
                     padding: '3px 10px',
                     borderRadius: 'var(--radius-full)',
                     border: '1px solid',
-                    borderColor: selectedCategory === 'all' ? 'var(--theme-primary, #660033)' : 'var(--theme-component-border, #bfbfbf)',
-                    background: selectedCategory === 'all' ? 'var(--theme-primary, #660033)' : 'var(--theme-bg, #fff4e7)',
+                    borderColor: selectedCategory === 'all' ? 'var(--theme-primary, #146C94)' : 'var(--theme-component-border, #bfbfbf)',
+                    background: selectedCategory === 'all' ? 'var(--theme-primary, #146C94)' : 'var(--theme-bg, #F6F1F1)',
                     color: selectedCategory === 'all' ? '#fff' : 'var(--gray-800)',
                     fontSize: '0.74rem',
                     fontWeight: 700,
@@ -437,8 +443,8 @@ export const FloatingNewsWidget: React.FC = () => {
                         padding: '3px 10px',
                         borderRadius: 'var(--radius-full)',
                         border: '1px solid',
-                        borderColor: isSel ? 'var(--theme-primary, #660033)' : 'var(--theme-component-border, #bfbfbf)',
-                        background: isSel ? 'var(--theme-primary, #660033)' : 'var(--theme-bg, #fff4e7)',
+                        borderColor: isSel ? 'var(--theme-primary, #146C94)' : 'var(--theme-component-border, #bfbfbf)',
+                        background: isSel ? 'var(--theme-primary, #146C94)' : 'var(--theme-bg, #F6F1F1)',
                         color: isSel ? '#fff' : 'var(--gray-800)',
                         fontSize: '0.74rem',
                         fontWeight: 700,
@@ -465,8 +471,8 @@ export const FloatingNewsWidget: React.FC = () => {
                         padding: '2px 8px',
                         borderRadius: 'var(--radius-full)',
                         border: '1px solid',
-                        borderColor: isSel ? 'var(--theme-primary, #660033)' : 'var(--theme-component-border, #bfbfbf)',
-                        background: isSel ? 'var(--theme-primary, #660033)' : 'transparent',
+                        borderColor: isSel ? 'var(--theme-primary, #146C94)' : 'var(--theme-component-border, #bfbfbf)',
+                        background: isSel ? 'var(--theme-primary, #146C94)' : 'transparent',
                         color: isSel ? '#fff' : 'var(--gray-700)',
                         fontSize: '0.72rem',
                         fontWeight: isSel ? 800 : 600,
@@ -495,7 +501,7 @@ export const FloatingNewsWidget: React.FC = () => {
                 /* Empty state with zero dummy data */
                 <div
                   style={{
-                    background: 'var(--theme-bg, #fff4e7)',
+                    background: 'var(--theme-bg, #F6F1F1)',
                     borderRadius: 'var(--radius-lg)',
                     padding: '32px 16px',
                     textAlign: 'center',
@@ -545,7 +551,7 @@ export const FloatingNewsWidget: React.FC = () => {
                     <article
                       key={post.id}
                       style={{
-                        background: 'var(--theme-bg, #fff4e7)',
+                        background: 'var(--theme-bg, #F6F1F1)',
                         borderRadius: 'var(--radius-md)',
                         border: '1.5px solid var(--theme-component-border, #bfbfbf)',
                         padding: '14px',
@@ -564,7 +570,7 @@ export const FloatingNewsWidget: React.FC = () => {
                             gap: 3,
                             background: 'var(--theme-component, #d9d9d9)',
                             border: '1px solid var(--theme-component-border, #bfbfbf)',
-                            color: 'var(--theme-primary, #660033)',
+                            color: 'var(--theme-primary, #146C94)',
                             borderRadius: 'var(--radius-full)',
                             padding: '2px 8px',
                             fontSize: '0.72rem',
@@ -581,7 +587,7 @@ export const FloatingNewsWidget: React.FC = () => {
                             alignItems: 'center',
                             gap: 3,
                             background: 'rgba(102,0,51,0.08)',
-                            color: 'var(--theme-primary, #660033)',
+                            color: 'var(--theme-primary, #146C94)',
                             borderRadius: 'var(--radius-full)',
                             padding: '2px 8px',
                             fontSize: '0.7rem',
@@ -663,15 +669,15 @@ export const FloatingNewsWidget: React.FC = () => {
                             display: 'flex',
                             alignItems: 'center',
                             gap: 4,
-                            color: isLiked ? 'var(--theme-primary, #660033)' : 'var(--gray-600)',
+                            color: isLiked ? 'var(--theme-primary, #146C94)' : 'var(--gray-600)',
                             fontWeight: 700,
                             fontSize: '0.74rem',
                           }}
                         >
                           <Heart
                             size={12}
-                            fill={isLiked ? 'var(--theme-primary, #660033)' : 'none'}
-                            color={isLiked ? 'var(--theme-primary, #660033)' : 'currentColor'}
+                            fill={isLiked ? 'var(--theme-primary, #146C94)' : 'none'}
+                            color={isLiked ? 'var(--theme-primary, #146C94)' : 'currentColor'}
                           />
                           <span>{post.likes_count || 0}</span>
                         </button>
@@ -718,7 +724,7 @@ export const FloatingNewsWidget: React.FC = () => {
             {/* Modal Header */}
             <div
               style={{
-                background: 'var(--header-gradient, linear-gradient(135deg, #4d0026 0%, #660033 50%, #800040 100%))',
+                background: 'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
                 padding: '14px 18px',
                 color: '#fff',
                 display: 'flex',
@@ -766,7 +772,7 @@ export const FloatingNewsWidget: React.FC = () => {
                       alignItems: 'center',
                       justifyContent: 'center',
                       margin: '0 auto 12px',
-                      color: 'var(--theme-primary, #660033)',
+                      color: 'var(--theme-primary, #146C94)',
                     }}
                   >
                     <CheckCircle2 size={32} />
@@ -799,7 +805,7 @@ export const FloatingNewsWidget: React.FC = () => {
                 <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   <div
                     style={{
-                      background: 'var(--theme-bg, #fff4e7)',
+                      background: 'var(--theme-bg, #F6F1F1)',
                       border: '1px solid var(--theme-component-border, #bfbfbf)',
                       borderRadius: 'var(--radius-md)',
                       padding: '8px 12px',
@@ -807,7 +813,7 @@ export const FloatingNewsWidget: React.FC = () => {
                       alignItems: 'center',
                       gap: 8,
                       fontSize: '0.78rem',
-                      color: 'var(--theme-primary, #660033)',
+                      color: 'var(--theme-primary, #146C94)',
                       fontWeight: 600,
                     }}
                   >
@@ -851,7 +857,7 @@ export const FloatingNewsWidget: React.FC = () => {
                           padding: '8px 10px',
                           borderRadius: 'var(--radius-sm)',
                           border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                          background: 'var(--theme-bg, #fff4e7)',
+                          background: 'var(--theme-bg, #F6F1F1)',
                           fontSize: '0.82rem',
                           color: 'var(--gray-900)',
                         }}
@@ -874,7 +880,7 @@ export const FloatingNewsWidget: React.FC = () => {
                           padding: '8px 10px',
                           borderRadius: 'var(--radius-sm)',
                           border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                          background: 'var(--theme-bg, #fff4e7)',
+                          background: 'var(--theme-bg, #F6F1F1)',
                           fontSize: '0.82rem',
                           color: 'var(--gray-900)',
                         }}
@@ -898,7 +904,7 @@ export const FloatingNewsWidget: React.FC = () => {
                         padding: '8px 10px',
                         borderRadius: 'var(--radius-sm)',
                         border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                        background: 'var(--theme-bg, #fff4e7)',
+                        background: 'var(--theme-bg, #F6F1F1)',
                         fontSize: '0.82rem',
                         color: 'var(--gray-900)',
                       }}
@@ -923,8 +929,8 @@ export const FloatingNewsWidget: React.FC = () => {
                               padding: '6px 8px',
                               borderRadius: 'var(--radius-sm)',
                               border: '1.5px solid',
-                              borderColor: isSel ? 'var(--theme-primary, #660033)' : 'var(--theme-component-border, #bfbfbf)',
-                              background: isSel ? 'var(--theme-primary, #660033)' : 'var(--theme-bg, #fff4e7)',
+                              borderColor: isSel ? 'var(--theme-primary, #146C94)' : 'var(--theme-component-border, #bfbfbf)',
+                              background: isSel ? 'var(--theme-primary, #146C94)' : 'var(--theme-bg, #F6F1F1)',
                               color: isSel ? '#fff' : 'var(--gray-800)',
                               fontSize: '0.72rem',
                               fontWeight: 700,
@@ -958,7 +964,7 @@ export const FloatingNewsWidget: React.FC = () => {
                         padding: '8px 10px',
                         borderRadius: 'var(--radius-sm)',
                         border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                        background: 'var(--theme-bg, #fff4e7)',
+                        background: 'var(--theme-bg, #F6F1F1)',
                         fontSize: '0.82rem',
                         color: 'var(--gray-900)',
                       }}
@@ -981,7 +987,7 @@ export const FloatingNewsWidget: React.FC = () => {
                         padding: '8px 10px',
                         borderRadius: 'var(--radius-sm)',
                         border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                        background: 'var(--theme-bg, #fff4e7)',
+                        background: 'var(--theme-bg, #F6F1F1)',
                         fontSize: '0.82rem',
                         color: 'var(--gray-900)',
                       }}
@@ -1023,7 +1029,7 @@ export const FloatingNewsWidget: React.FC = () => {
                       <label
                         style={{
                           border: '1.5px dashed var(--theme-component-border, #bfbfbf)',
-                          background: 'var(--theme-bg, #fff4e7)',
+                          background: 'var(--theme-bg, #F6F1F1)',
                           borderRadius: 'var(--radius-sm)',
                           padding: '10px',
                           display: 'flex',
@@ -1033,7 +1039,7 @@ export const FloatingNewsWidget: React.FC = () => {
                           cursor: 'pointer',
                           fontSize: '0.78rem',
                           fontWeight: 700,
-                          color: 'var(--theme-primary, #660033)',
+                          color: 'var(--theme-primary, #146C94)',
                         }}
                       >
                         <Upload size={14} />

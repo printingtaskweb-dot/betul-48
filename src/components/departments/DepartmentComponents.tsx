@@ -40,7 +40,7 @@ export const GreenDeptInfo: React.FC = () => (
 );
 
 export const WaterDeptInfo: React.FC = () => (
-  <div style={{ padding: '10px 14px', background: '#eff6ff', borderRadius: 8, fontSize: 13, color: '#1e40af', marginBottom: 10 }}>
+  <div style={{ padding: '10px 14px', background: 'var(--primary-100)', borderRadius: 8, fontSize: 13, color: 'var(--burgundy)', marginBottom: 10 }}>
     💡 <strong>Tip:</strong> For burst pipes, turn off nearby valves if accessible and include photo of the burst point.
   </div>
 );

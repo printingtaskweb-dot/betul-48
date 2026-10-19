@@ -53,10 +53,10 @@ const genPassword = () => {
 
 const S = {
   label: { display: 'block', fontWeight: 700, fontSize: '0.82rem', marginBottom: 6, color: 'var(--gray-700)' } as React.CSSProperties,
-  select: { width: '100%', padding: '11px 36px 11px 40px', border: '1.5px solid var(--theme-component-border, #bfbfbf)', borderRadius: 'var(--radius-md)', fontSize: '0.9rem', background: 'var(--theme-bg, #fff4e7)', outline: 'none', boxSizing: 'border-box', appearance: 'none', cursor: 'pointer' } as React.CSSProperties,
-  input: { width: '100%', padding: '11px 14px 11px 40px', border: '1.5px solid var(--theme-component-border, #bfbfbf)', borderRadius: 'var(--radius-md)', fontSize: '0.9rem', background: 'var(--theme-bg, #fff4e7)', outline: 'none', boxSizing: 'border-box' } as React.CSSProperties,
-  btnPrimary: { width: '100%', padding: 13, border: 'none', borderRadius: 'var(--radius-md)', background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))', color: '#fff', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 } as React.CSSProperties,
-  btnSecondary: { padding: '11px 16px', border: '1.5px solid var(--theme-component-border, #bfbfbf)', borderRadius: 'var(--radius-md)', background: 'var(--theme-bg, #fff4e7)', color: 'var(--gray-700)', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } as React.CSSProperties,
+  select: { width: '100%', padding: '11px 36px 11px 40px', border: '1.5px solid var(--theme-component-border, #bfbfbf)', borderRadius: 'var(--radius-md)', fontSize: '0.9rem', background: 'var(--theme-bg, #F6F1F1)', outline: 'none', boxSizing: 'border-box', appearance: 'none', cursor: 'pointer' } as React.CSSProperties,
+  input: { width: '100%', padding: '11px 14px 11px 40px', border: '1.5px solid var(--theme-component-border, #bfbfbf)', borderRadius: 'var(--radius-md)', fontSize: '0.9rem', background: 'var(--theme-bg, #F6F1F1)', outline: 'none', boxSizing: 'border-box' } as React.CSSProperties,
+  btnPrimary: { width: '100%', padding: 13, border: 'none', borderRadius: 'var(--radius-md)', background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))', color: '#fff', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 } as React.CSSProperties,
+  btnSecondary: { padding: '11px 16px', border: '1.5px solid var(--theme-component-border, #bfbfbf)', borderRadius: 'var(--radius-md)', background: 'var(--theme-bg, #F6F1F1)', color: 'var(--gray-700)', fontWeight: 700, fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 } as React.CSSProperties,
   row: { padding: '10px 12px', border: 'none', borderBottom: '1px solid var(--theme-component-border, #bfbfbf)', background: 'var(--theme-component, #d9d9d9)', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' } as React.CSSProperties,
   h2: { margin: '0 0 4px', fontSize: '1.05rem', fontWeight: 900 } as React.CSSProperties,
   sub: { margin: '0 0 16px', fontSize: '0.8rem', color: 'var(--gray-500)' } as React.CSSProperties,
@@ -498,7 +498,7 @@ const GENERIC_DEFAULT_DESIGNATIONS: Designation[] = [
       {stage !== 'done' && (
         <div style={{ display: 'flex', gap: 3, padding: '0 24px', marginTop: 16 }}>
           {flow.map((s, i) => (
-            <div key={s} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= stepIdx ? 'var(--theme-primary, #660033)' : 'var(--theme-component-border, #bfbfbf)' }} />
+            <div key={s} style={{ flex: 1, height: 4, borderRadius: 2, background: i <= stepIdx ? 'var(--theme-primary, #146C94)' : 'var(--theme-component-border, #bfbfbf)' }} />
           ))}
         </div>
       )}
@@ -623,13 +623,13 @@ const GENERIC_DEFAULT_DESIGNATIONS: Designation[] = [
                       onClick={() => { setSelectedDesig(d); setSupervisor(null); setSearchResults([]); setSearched(false); }}
                       style={{
                         padding: '12px 14px', textAlign: 'left', cursor: 'pointer',
-                        border: active ? '2px solid var(--theme-primary, #660033)' : '1.5px solid var(--theme-component-border, #bfbfbf)',
-                        borderRadius: 'var(--radius-md)', background: active ? 'var(--theme-component, #d9d9d9)' : 'var(--theme-bg, #fff4e7)',
+                        border: active ? '2px solid var(--theme-primary, #146C94)' : '1.5px solid var(--theme-component-border, #bfbfbf)',
+                        borderRadius: 'var(--radius-md)', background: active ? 'var(--theme-component, #d9d9d9)' : 'var(--theme-bg, #F6F1F1)',
                         display: 'flex', alignItems: 'center', gap: 10,
                       }}>
-                      <Briefcase size={16} color={active ? 'var(--theme-primary, #660033)' : '#9ca3af'} />
+                      <Briefcase size={16} color={active ? 'var(--theme-primary, #146C94)' : '#9ca3af'} />
                       <div>
-                        <p style={{ margin: 0, fontWeight: 800, fontSize: '0.85rem', color: active ? 'var(--theme-primary, #660033)' : 'var(--gray-800)' }}>{d.name}</p>
+                        <p style={{ margin: 0, fontWeight: 800, fontSize: '0.85rem', color: active ? 'var(--theme-primary, #146C94)' : 'var(--gray-800)' }}>{d.name}</p>
                         <p style={{ margin: 0, fontSize: '0.7rem', color: 'var(--gray-500)' }}>
                           {d.hierarchy_code ? d.hierarchy_code.replace(/_/g, ' ') : `Tier ${d.tier}`}
                         </p>
@@ -654,19 +654,19 @@ const GENERIC_DEFAULT_DESIGNATIONS: Designation[] = [
             </p>
 
             {supervisor ? (
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'var(--theme-bg, #fff4e7)', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--theme-component-border, #bfbfbf)', marginBottom: 12 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'var(--theme-bg, #F6F1F1)', borderRadius: 'var(--radius-md)', border: '1.5px solid var(--theme-component-border, #bfbfbf)', marginBottom: 12 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <BadgeCheck size={20} color="var(--theme-primary, #660033)" />
+                  <BadgeCheck size={20} color="var(--theme-primary, #146C94)" />
                   <div>
-                    <p style={{ margin: 0, fontWeight: 800, fontSize: '0.88rem', color: 'var(--theme-primary, #660033)' }}>{supervisor.full_name}</p>
-                    <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--theme-primary, #660033)' }}>
+                    <p style={{ margin: 0, fontWeight: 800, fontSize: '0.88rem', color: 'var(--theme-primary, #146C94)' }}>{supervisor.full_name}</p>
+                    <p style={{ margin: 0, fontSize: '0.72rem', color: 'var(--theme-primary, #146C94)' }}>
                       {(supervisor.designation_name || supervisor.hierarchy_code || '').replace(/_/g, ' ')}
                       {supervisor.staff_code ? ` • ${supervisor.staff_code}` : ''}
                     </p>
                   </div>
                 </div>
                 <button type="button" onClick={() => { setSupervisor(null); setSearched(false); }}
-                  style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--theme-primary, #660033)', padding: 4 }}>
+                  style={{ border: 'none', background: 'none', cursor: 'pointer', color: 'var(--theme-primary, #146C94)', padding: 4 }}>
                   <X size={16} />
                 </button>
               </div>
@@ -676,7 +676,7 @@ const GENERIC_DEFAULT_DESIGNATIONS: Designation[] = [
                   <button
                     type="button"
                     onClick={() => { setSupervisor(null); validateOfficer(); }}
-                    style={{ background: 'none', border: 'none', color: 'var(--theme-primary, #660033)', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
+                    style={{ background: 'none', border: 'none', color: 'var(--theme-primary, #146C94)', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer', textDecoration: 'underline' }}
                   >
                     Skip (No reporting officer / Top Level) →
                   </button>
@@ -691,7 +691,7 @@ const GENERIC_DEFAULT_DESIGNATIONS: Designation[] = [
                       style={S.input} />
                   </div>
                   <button type="button" onClick={runSearch} disabled={searching}
-                    style={{ padding: '0 16px', border: 'none', borderRadius: 'var(--radius-md)', background: 'var(--primary-gradient, linear-gradient(135deg,#660033,#800040))', color: '#fff', fontWeight: 800, fontSize: '0.82rem', cursor: searching ? 'wait' : 'pointer' }}>
+                    style={{ padding: '0 16px', border: 'none', borderRadius: 'var(--radius-md)', background: 'var(--primary-gradient, linear-gradient(135deg,#146C94,#0E526F))', color: '#fff', fontWeight: 800, fontSize: '0.82rem', cursor: searching ? 'wait' : 'pointer' }}>
                     {searching ? '…' : 'Find'}
                   </button>
                 </div>
@@ -729,7 +729,7 @@ const GENERIC_DEFAULT_DESIGNATIONS: Designation[] = [
             <h2 style={S.h2}>Staff details</h2>
             <p style={S.sub}>Review and create the account</p>
 
-            <div style={{ padding: '12px 14px', background: 'var(--theme-bg, #fff4e7)', borderRadius: 'var(--radius-md)', border: '1px solid var(--theme-component-border, #bfbfbf)', marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 4, fontSize: '0.78rem', color: 'var(--gray-700)' }}>
+            <div style={{ padding: '12px 14px', background: 'var(--theme-bg, #F6F1F1)', borderRadius: 'var(--radius-md)', border: '1px solid var(--theme-component-border, #bfbfbf)', marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 4, fontSize: '0.78rem', color: 'var(--gray-700)' }}>
               <span><b>Email:</b> {email}</span>
               <span><b>City:</b> {cities.find(c => c.id === selectedCity)?.name}</span>
               {isDeptRole && <span><b>Dept:</b> {departments.find(d => d.id === selectedDept)?.name}</span>}
@@ -756,24 +756,24 @@ const GENERIC_DEFAULT_DESIGNATIONS: Designation[] = [
           <>
             <div style={{ textAlign: 'center', marginBottom: 16 }}>
               <div style={{ width: 56, height: 56, borderRadius: '50%', background: 'var(--theme-component, #d9d9d9)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                <BadgeCheck size={28} color="var(--theme-primary, #660033)" />
+                <BadgeCheck size={28} color="var(--theme-primary, #146C94)" />
               </div>
               <h2 style={S.h2}>Staff account created</h2>
               <p style={{ ...S.sub, margin: 0 }}>Share these credentials with the staff member. The password is not shown again.</p>
             </div>
 
-            <div style={{ padding: '14px 16px', background: 'var(--theme-bg, #fff4e7)', border: '1.5px solid var(--theme-component-border, #bfbfbf)', borderRadius: 'var(--radius-md)', fontSize: '0.88rem', lineHeight: 1.9 }}>
+            <div style={{ padding: '14px 16px', background: 'var(--theme-bg, #F6F1F1)', border: '1.5px solid var(--theme-component-border, #bfbfbf)', borderRadius: 'var(--radius-md)', fontSize: '0.88rem', lineHeight: 1.9 }}>
               {created.staffCode && (
                 <div>
                   <b>Staff ID / Dept ID:</b>{' '}
-                  <code style={{ fontWeight: 800, color: 'var(--theme-primary, #660033)' }}>{created.staffCode}</code>
+                  <code style={{ fontWeight: 800, color: 'var(--theme-primary, #146C94)' }}>{created.staffCode}</code>
                 </div>
               )}
               <div><b>Email:</b> {created.email}</div>
               <div><b>Password:</b> <code>{created.password}</code></div>
             </div>
 
-            <p style={{ margin: '12px 0 0', fontSize: '0.78rem', color: 'var(--theme-primary, #660033)', fontWeight: 700 }}>
+            <p style={{ margin: '12px 0 0', fontSize: '0.78rem', color: 'var(--theme-primary, #146C94)', fontWeight: 700 }}>
               ✅ The account has been created and automatically approved. The staff member can now log in immediately.
             </p>
 

@@ -28,8 +28,8 @@ import {
 
 // ─── Status Config ──────────────────────────────────────────────────────────
 const STATUS_CONFIG: Record<string, { label: string; labelHi: string; color: string; bg: string; Icon: typeof Clock }> = {
-  pending:     { label: 'Pending',     labelHi: 'लंबित',      color: '#92400e', bg: '#fef3c7', Icon: Clock },
-  in_progress: { label: 'In Progress', labelHi: 'प्रगति में',   color: '#1d4ed8', bg: '#dbeafe', Icon: AlertCircle },
+  pending:     { label: 'Pending',     labelHi: 'लंबित',      color: 'var(--status-pending)', bg: 'var(--status-pending-bg)', Icon: Clock },
+  in_progress: { label: 'In Progress', labelHi: 'प्रगति में',   color: 'var(--burgundy)', bg: 'var(--primary-100)', Icon: AlertCircle },
   resolved:    { label: 'Resolved',    labelHi: 'हल किया',     color: '#065f46', bg: '#d1fae5', Icon: CheckCircle },
   verified:    { label: 'Verified ✓',  labelHi: 'सत्यापित ✓', color: '#5b21b6', bg: '#ede9fe', Icon: CheckSquare },
   rejected:    { label: 'Rejected',    labelHi: 'अस्वीकृत',   color: '#991b1b', bg: '#fee2e2', Icon: XCircle },
@@ -113,7 +113,7 @@ function ResolveModal({ complaint, resolvedBy, language, onClose, onResolved, re
         overflow: 'hidden', maxHeight: '90vh', overflowY: 'auto',
         border: '1.5px solid var(--theme-component-border, #bfbfbf)',
       }}>
-        <div style={{ background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))', padding: '20px 24px' }}>
+        <div style={{ background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))', padding: '20px 24px' }}>
           <h2 style={{ margin: 0, color: '#fff', fontSize: '1.1rem', fontWeight: 800 }}>
             ✅ {hi ? 'शिकायत हल करें' : 'Mark as Resolved'}
           </h2>
@@ -143,7 +143,7 @@ function ResolveModal({ complaint, resolvedBy, language, onClose, onResolved, re
               style={{
                 width: '100%', padding: '11px 14px', borderRadius: 'var(--radius-md)',
                 border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                background: 'var(--theme-bg, #fff4e7)', fontSize: '0.9rem',
+                background: 'var(--theme-bg, #F6F1F1)', fontSize: '0.9rem',
                 outline: 'none', boxSizing: 'border-box', fontFamily: 'var(--font-primary)',
               }}
             />
@@ -158,7 +158,7 @@ function ResolveModal({ complaint, resolvedBy, language, onClose, onResolved, re
               style={{
                 border: '2px dashed var(--theme-component-border, #bfbfbf)',
                 borderRadius: 'var(--radius-md)', padding: 18, textAlign: 'center',
-                cursor: 'pointer', background: 'var(--theme-bg, #fff4e7)',
+                cursor: 'pointer', background: 'var(--theme-bg, #F6F1F1)',
               }}
             >
               {preview ? (
@@ -170,7 +170,7 @@ function ResolveModal({ complaint, resolvedBy, language, onClose, onResolved, re
                 </div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-                  <Camera size={26} color="var(--theme-primary, #660033)" />
+                  <Camera size={26} color="var(--theme-primary, #146C94)" />
                   <span style={{ fontSize: '0.84rem', fontWeight: 700, color: 'var(--gray-700)' }}>
                     {hi ? 'फोटो अपलोड करने के लिए क्लिक करें' : 'Click to take/upload photo'}
                   </span>
@@ -194,7 +194,7 @@ function ResolveModal({ complaint, resolvedBy, language, onClose, onResolved, re
               onClick={onClose}
               style={{
                 flex: 1, padding: '12px', border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                borderRadius: 'var(--radius-md)', background: 'var(--theme-bg, #fff4e7)',
+                borderRadius: 'var(--radius-md)', background: 'var(--theme-bg, #F6F1F1)',
                 color: 'var(--gray-800)', fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem',
               }}
             >
@@ -206,7 +206,7 @@ function ResolveModal({ complaint, resolvedBy, language, onClose, onResolved, re
               style={{
                 flex: 2, padding: '12px', border: 'none',
                 borderRadius: 'var(--radius-md)',
-                background: submitting ? 'var(--gray-300)' : 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                background: submitting ? 'var(--gray-300)' : 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
                 color: '#fff', fontWeight: 800, cursor: submitting ? 'not-allowed' : 'pointer',
                 fontSize: '0.9rem', display: 'flex', alignItems: 'center',
                 justifyContent: 'center', gap: 7,
@@ -229,13 +229,13 @@ interface CreateDeptModalProps {
 }
 
 const EMOJI_OPTIONS = ['🏢', '🧹', '🚰', '💡', '🛣️', '🌳', '🚒', '🏥', '🏗️', '📋', '⚡', '🚌', '🐕', '🛡️', '🌿', '🚿'];
-const COLOR_OPTIONS = ['#660033', '#800040', '#4d0026', '#831843', '#9d174d', '#701a75', '#581c87', '#312e81', '#1e3a8a'];
+const COLOR_OPTIONS = ['#146C94', '#0E526F', '#0E526F', '#831843', '#9d174d', '#701a75', '#581c87', '#312e81', '#1e3a8a'];
 
 function CreateDeptModal({ language, onClose, onCreated }: CreateDeptModalProps) {
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
   const [icon, setIcon] = useState('🏢');
-  const [color, setColor] = useState('#660033');
+  const [color, setColor] = useState('#146C94');
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [err, setErr] = useState<string | null>(null);
@@ -293,7 +293,7 @@ function CreateDeptModal({ language, onClose, onCreated }: CreateDeptModalProps)
   const inp: React.CSSProperties = {
     width: '100%', padding: '11px 14px', borderRadius: 'var(--radius-md)',
     border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-    background: 'var(--theme-bg, #fff4e7)', fontSize: '0.9rem',
+    background: 'var(--theme-bg, #F6F1F1)', fontSize: '0.9rem',
     outline: 'none', boxSizing: 'border-box',
   };
 
@@ -311,7 +311,7 @@ function CreateDeptModal({ language, onClose, onCreated }: CreateDeptModalProps)
         overflow: 'hidden', maxHeight: '90vh', overflowY: 'auto',
         border: '1.5px solid var(--theme-component-border, #bfbfbf)',
       }}>
-        <div style={{ background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))', padding: '20px 24px' }}>
+        <div style={{ background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))', padding: '20px 24px' }}>
           <h2 style={{ margin: 0, color: '#fff', fontSize: '1.15rem', fontWeight: 800 }}>
             🏢 {hi ? 'नया विभाग / श्रेणी जोड़ें' : 'Create New Department / Category'}
           </h2>
@@ -362,8 +362,8 @@ function CreateDeptModal({ language, onClose, onCreated }: CreateDeptModalProps)
                   onClick={() => setIcon(em)}
                   style={{
                     width: 38, height: 38, borderRadius: 8, fontSize: '1.2rem',
-                    border: icon === em ? '2px solid var(--theme-primary, #660033)' : '1px solid var(--theme-component-border, #bfbfbf)',
-                    background: icon === em ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
+                    border: icon === em ? '2px solid var(--theme-primary, #146C94)' : '1px solid var(--theme-component-border, #bfbfbf)',
+                    background: icon === em ? 'var(--theme-bg, #F6F1F1)' : 'rgba(255,255,255,0.4)',
                     cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
                   }}
                 >
@@ -383,7 +383,7 @@ function CreateDeptModal({ language, onClose, onCreated }: CreateDeptModalProps)
                   style={{
                     width: 32, height: 32, borderRadius: '50%', background: c, cursor: 'pointer',
                     border: color === c ? '3px solid #fff' : '2px solid transparent',
-                    boxShadow: color === c ? '0 0 0 2px #660033' : 'none',
+                    boxShadow: color === c ? '0 0 0 2px #146C94' : 'none',
                   }}
                 />
               ))}
@@ -407,7 +407,7 @@ function CreateDeptModal({ language, onClose, onCreated }: CreateDeptModalProps)
               onClick={onClose}
               style={{
                 flex: 1, padding: '12px', border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                borderRadius: 'var(--radius-md)', background: 'var(--theme-bg, #fff4e7)',
+                borderRadius: 'var(--radius-md)', background: 'var(--theme-bg, #F6F1F1)',
                 color: 'var(--gray-800)', fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem',
               }}
             >
@@ -419,7 +419,7 @@ function CreateDeptModal({ language, onClose, onCreated }: CreateDeptModalProps)
               style={{
                 flex: 2, padding: '12px', border: 'none',
                 borderRadius: 'var(--radius-md)',
-                background: submitting ? 'var(--gray-300)' : 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                background: submitting ? 'var(--gray-300)' : 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
                 color: '#fff', fontWeight: 800, cursor: submitting ? 'not-allowed' : 'pointer',
                 fontSize: '0.9rem', display: 'flex', alignItems: 'center',
                 justifyContent: 'center', gap: 7,
@@ -468,7 +468,7 @@ function ComplaintDetailCard({
       >
         <div style={{
           width: 60, height: 60, borderRadius: 'var(--radius-md)',
-          background: 'var(--theme-bg, #fff4e7)', flexShrink: 0, overflow: 'hidden',
+          background: 'var(--theme-bg, #F6F1F1)', flexShrink: 0, overflow: 'hidden',
           border: '1px solid var(--theme-component-border, #bfbfbf)',
         }}>
           {c.photo_url ? (
@@ -484,8 +484,8 @@ function ComplaintDetailCard({
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
               <span style={{
-                fontSize: '0.8rem', fontWeight: 800, color: 'var(--theme-primary, #660033)',
-                background: 'var(--theme-bg, #fff4e7)', padding: '2px 8px', borderRadius: 20,
+                fontSize: '0.8rem', fontWeight: 800, color: 'var(--theme-primary, #146C94)',
+                background: 'var(--theme-bg, #F6F1F1)', padding: '2px 8px', borderRadius: 20,
                 border: '1px solid var(--theme-component-border, #bfbfbf)'
               }}>
                 #{c.ticket_number}
@@ -493,7 +493,7 @@ function ComplaintDetailCard({
               {c.dept_name && (
                 <span style={{
                   fontSize: '0.74rem', fontWeight: 700, color: '#374151',
-                  background: 'var(--theme-bg, #fff4e7)', padding: '2px 8px', borderRadius: 20,
+                  background: 'var(--theme-bg, #F6F1F1)', padding: '2px 8px', borderRadius: 20,
                   border: '1px solid var(--theme-component-border, #bfbfbf)',
                 }}>
                   {c.dept_icon} {c.dept_name}
@@ -520,7 +520,7 @@ function ComplaintDetailCard({
             <div style={{ display: 'flex', gap: 10, fontSize: '0.76rem', color: 'var(--gray-600)', flexWrap: 'wrap' }}>
               <span>{fmtDate(c.created_at)}</span>
               {c.assigned_name && (
-                <span style={{ fontWeight: 700, color: 'var(--theme-primary, #660033)' }}>
+                <span style={{ fontWeight: 700, color: 'var(--theme-primary, #146C94)' }}>
                   👤 {c.assigned_name} ({roleLabel(c.assigned_role, language)})
                 </span>
               )}
@@ -533,9 +533,9 @@ function ComplaintDetailCard({
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 6,
                     padding: '6px 14px', borderRadius: 'var(--radius-sm)',
-                    background: 'var(--theme-bg, #fff4e7)',
-                    color: 'var(--theme-primary, #660033)',
-                    border: '1.5px solid var(--theme-primary, #660033)',
+                    background: 'var(--theme-bg, #F6F1F1)',
+                    color: 'var(--theme-primary, #146C94)',
+                    border: '1.5px solid var(--theme-primary, #146C94)',
                     fontWeight: 800, fontSize: '0.8rem', cursor: 'pointer',
                   }}
                 >
@@ -550,7 +550,7 @@ function ComplaintDetailCard({
                   style={{
                     display: 'inline-flex', alignItems: 'center', gap: 6,
                     padding: '6px 14px', borderRadius: 'var(--radius-sm)',
-                    background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                    background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
                     color: '#fff', fontWeight: 800, fontSize: '0.8rem', border: 'none', cursor: 'pointer',
                   }}
                 >
@@ -571,15 +571,15 @@ function ComplaintDetailCard({
         <div style={{ padding: 18, background: 'rgba(255,255,255,0.2)' }}>
           {c.assigned_to && (
             <div style={{
-              background: 'var(--theme-bg, #fff4e7)', padding: '12px 14px',
+              background: 'var(--theme-bg, #F6F1F1)', padding: '12px 14px',
               borderRadius: 'var(--radius-md)', border: '1px solid var(--theme-component-border, #bfbfbf)', marginBottom: 14,
             }}>
-              <p style={{ margin: '0 0 4px', fontSize: '0.78rem', fontWeight: 800, color: 'var(--theme-primary, #660033)' }}>
+              <p style={{ margin: '0 0 4px', fontSize: '0.78rem', fontWeight: 800, color: 'var(--theme-primary, #146C94)' }}>
                 📌 {hi ? 'कार्य आवंटन विवरण' : 'Task Allotment Details'}
               </p>
               <div style={{ display: 'flex', gap: 12, fontSize: '0.8rem', color: 'var(--gray-800)', flexWrap: 'wrap' }}>
                 <span><strong>Officer:</strong> {c.assigned_name || 'Staff Member'}</span>
-                {c.assigned_phone && <span><strong>Phone:</strong> <a href={`tel:${c.assigned_phone}`} style={{ color: 'var(--theme-primary, #660033)' }}>{c.assigned_phone}</a></span>}
+                {c.assigned_phone && <span><strong>Phone:</strong> <a href={`tel:${c.assigned_phone}`} style={{ color: 'var(--theme-primary, #146C94)' }}>{c.assigned_phone}</a></span>}
                 {c.assigned_role && <span><strong>Role:</strong> {roleLabel(c.assigned_role, language)}</span>}
                 {c.assigned_at && <span><strong>Allotted:</strong> {fmtDate(c.assigned_at)}</span>}
               </div>
@@ -591,7 +591,7 @@ function ComplaintDetailCard({
             </div>
           )}
 
-          <div style={{ marginBottom: 14, padding: '10px 14px', background: 'var(--theme-bg, #fff4e7)',
+          <div style={{ marginBottom: 14, padding: '10px 14px', background: 'var(--theme-bg, #F6F1F1)',
             borderRadius: 'var(--radius-md)', border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
             <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--gray-800)', lineHeight: 1.6 }}>{c.description}</p>
           </div>
@@ -599,14 +599,14 @@ function ComplaintDetailCard({
           <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 14 }}>
             {c.citizen_name && (
               <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.8rem',
-                color: 'var(--gray-700)', background: 'var(--theme-bg, #fff4e7)', padding: '5px 10px',
+                color: 'var(--gray-700)', background: 'var(--theme-bg, #F6F1F1)', padding: '5px 10px',
                 borderRadius: 20, border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
                 <User size={13} /> {c.citizen_name}
               </span>
             )}
             {c.citizen_phone && (
               <a href={`tel:${c.citizen_phone}`} style={{ display: 'flex', alignItems: 'center', gap: 5,
-                fontSize: '0.8rem', color: 'var(--theme-primary, #660033)', background: 'var(--theme-bg, #fff4e7)',
+                fontSize: '0.8rem', color: 'var(--theme-primary, #146C94)', background: 'var(--theme-bg, #F6F1F1)',
                 padding: '5px 10px', borderRadius: 20, textDecoration: 'none', border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
                 <Phone size={13} /> {c.citizen_phone}
               </a>
@@ -614,7 +614,7 @@ function ComplaintDetailCard({
           </div>
 
           {(c.address || (c.latitude && c.longitude)) && (
-            <div style={{ marginBottom: 14, padding: '10px 14px', background: 'var(--theme-bg, #fff4e7)',
+            <div style={{ marginBottom: 14, padding: '10px 14px', background: 'var(--theme-bg, #F6F1F1)',
               borderRadius: 'var(--radius-md)', border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
               {c.address && <p style={{ margin: '0 0 6px', fontSize: '0.82rem', color: 'var(--gray-700)' }}>📍 {c.address}</p>}
               {c.latitude && c.longitude && (
@@ -626,9 +626,9 @@ function ComplaintDetailCard({
           )}
 
           {c.resolution_note && (
-            <div style={{ marginBottom: 14, padding: '12px 14px', background: 'var(--theme-bg, #fff4e7)',
+            <div style={{ marginBottom: 14, padding: '12px 14px', background: 'var(--theme-bg, #F6F1F1)',
               borderRadius: 'var(--radius-md)', border: '1.5px solid var(--theme-component-border, #bfbfbf)' }}>
-              <p style={{ margin: '0 0 4px', fontSize: '0.75rem', fontWeight: 700, color: 'var(--theme-primary, #660033)', textTransform: 'uppercase' }}>
+              <p style={{ margin: '0 0 4px', fontSize: '0.75rem', fontWeight: 700, color: 'var(--theme-primary, #146C94)', textTransform: 'uppercase' }}>
                 ✅ {hi ? 'हल का विवरण' : 'Resolution Note'}
               </p>
               <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--gray-800)' }}>{c.resolution_note}</p>
@@ -1008,7 +1008,7 @@ export default function DeptDashboard() {
   if (profileLoading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'var(--theme-bg, #fff4e7)' }}>
+        background: 'var(--theme-bg, #F6F1F1)' }}>
         <div style={{ textAlign: 'center' }}>
           <div className="spinner" style={{ width: 40, height: 40, margin: '0 auto 16px' }} />
           <p style={{ color: 'var(--gray-700)', fontWeight: 700 }}>{hi ? 'विभाग डैशबोर्ड लोड हो रहा है...' : 'Loading Department Portal...'}</p>
@@ -1023,7 +1023,7 @@ export default function DeptDashboard() {
   if (noDept) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        background: 'var(--theme-bg, #fff4e7)', padding: 20 }}>
+        background: 'var(--theme-bg, #F6F1F1)', padding: 20 }}>
         <div style={{ maxWidth: 420, textAlign: 'center', background: 'var(--theme-component, #d9d9d9)',
           padding: 28, borderRadius: 'var(--radius-xl)', border: '1.5px solid var(--theme-component-border, #bfbfbf)' }}>
           <ShieldAlert size={36} color="#dc2626" style={{ margin: '0 auto 10px', display: 'block' }} />
@@ -1034,7 +1034,7 @@ export default function DeptDashboard() {
             {hi ? 'कृपया एडमिन से अपने खाते में विभाग जोड़ने को कहें।' : 'Please ask the admin to link your account to a department.'}
           </p>
           <button onClick={handleLogout} style={{ padding: '9px 18px', borderRadius: 'var(--radius-md)', border: 'none',
-            background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))', color: '#fff', fontWeight: 800, cursor: 'pointer' }}>
+            background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))', color: '#fff', fontWeight: 800, cursor: 'pointer' }}>
             {hi ? 'लॉगआउट' : 'Logout'}
           </button>
         </div>
@@ -1092,11 +1092,11 @@ export default function DeptDashboard() {
   ];
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--theme-bg, #fff4e7)', fontFamily: 'var(--font-primary)' }}>
+    <div style={{ minHeight: '100vh', background: 'var(--theme-bg, #F6F1F1)', fontFamily: 'var(--font-primary)' }}>
 
       {/* ── Header ── */}
       <header style={{
-        background: 'var(--header-gradient, linear-gradient(135deg, #4d0026 0%, #660033 50%, #800040 100%))',
+        background: 'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
         padding: '0 clamp(16px, 4vw, 32px)', position: 'sticky', top: 0, zIndex: 100,
         boxShadow: '0 2px 14px rgba(0,0,0,0.25)',
       }}>
@@ -1167,14 +1167,14 @@ export default function DeptDashboard() {
         }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.84rem', color: 'var(--gray-800)' }}>
-              <Info size={16} color="var(--theme-primary, #660033)" style={{ flexShrink: 0 }} />
+              <Info size={16} color="var(--theme-primary, #146C94)" style={{ flexShrink: 0 }} />
               <span>{bannerText}</span>
             </div>
             {orgLevel && (
               <button
                 onClick={() => setShowCreateDept(true)}
                 style={{ padding: '7px 14px', borderRadius: 'var(--radius-sm)',
-                  background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                  background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
                   color: '#fff', border: 'none', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', gap: 6 }}
               >
@@ -1198,16 +1198,16 @@ export default function DeptDashboard() {
                 style={{
                   display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', borderRadius: '8px 8px 0 0',
                   border: 'none', background: active ? 'var(--theme-component, #d9d9d9)' : 'transparent',
-                  color: active ? 'var(--theme-primary, #660033)' : 'var(--gray-700)',
+                  color: active ? 'var(--theme-primary, #146C94)' : 'var(--gray-700)',
                   fontWeight: active ? 900 : 700, fontSize: '0.9rem', cursor: 'pointer',
-                  borderBottom: active ? '3px solid var(--theme-primary, #660033)' : '3px solid transparent',
+                  borderBottom: active ? '3px solid var(--theme-primary, #146C94)' : '3px solid transparent',
                   marginBottom: -6,
                 }}
               >
                 <Icon size={16} />
                 <span>{tab.label}</span>
                 <span style={{ padding: '2px 7px', borderRadius: 12,
-                  background: active ? 'var(--theme-primary, #660033)' : 'var(--theme-component-border, #bfbfbf)',
+                  background: active ? 'var(--theme-primary, #146C94)' : 'var(--theme-component-border, #bfbfbf)',
                   color: active ? '#fff' : 'var(--gray-800)', fontSize: '0.74rem', fontWeight: 800 }}>
                   {tab.count}
                 </span>
@@ -1221,9 +1221,9 @@ export default function DeptDashboard() {
           <>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 24 }}>
               {[
-                { key: 'all', label: hi ? 'कुल शिकायतें' : 'Total', val: stats.total, color: '#1e40af', bg: '#dbeafe', icon: Hash },
-                { key: 'pending', label: hi ? 'लंबित' : 'Pending', val: stats.pending, color: '#92400e', bg: '#fef3c7', icon: Clock },
-                { key: 'in_progress', label: hi ? 'प्रगति में' : 'In Progress', val: stats.in_progress, color: '#1d4ed8', bg: '#bfdbfe', icon: AlertCircle },
+                { key: 'all', label: hi ? 'कुल शिकायतें' : 'Total', val: stats.total, color: 'var(--burgundy)', bg: 'var(--primary-100)', icon: Hash },
+                { key: 'pending', label: hi ? 'लंबित' : 'Pending', val: stats.pending, color: 'var(--status-pending)', bg: 'var(--status-pending-bg)', icon: Clock },
+                { key: 'in_progress', label: hi ? 'प्रगति में' : 'In Progress', val: stats.in_progress, color: 'var(--burgundy)', bg: 'var(--primary-100)', icon: AlertCircle },
                 { key: 'resolved', label: hi ? 'हल किए' : 'Resolved', val: stats.resolved, color: '#065f46', bg: '#d1fae5', icon: CheckCircle },
                 ...(canAllotAnything
                   ? [{ key: 'unallotted', label: hi ? 'अनआवंटित' : 'Unallotted', val: stats.unallotted, color: '#dc2626', bg: '#fee2e2', icon: ShieldAlert }]
@@ -1240,7 +1240,7 @@ export default function DeptDashboard() {
                     }}
                     style={{
                       background: 'var(--theme-component, #d9d9d9)', borderRadius: 'var(--radius-lg)', padding: 16,
-                      border: isSelected ? '2px solid var(--theme-primary, #660033)' : '1.5px solid var(--theme-component-border, #bfbfbf)',
+                      border: isSelected ? '2px solid var(--theme-primary, #146C94)' : '1.5px solid var(--theme-component-border, #bfbfbf)',
                       boxShadow: 'var(--shadow-sm)', cursor: 'pointer',
                     }}
                   >
@@ -1270,7 +1270,7 @@ export default function DeptDashboard() {
                     style={{ width: '100%', padding: '10px 14px 10px 36px',
                       border: '1.5px solid var(--theme-component-border, #bfbfbf)', borderRadius: 'var(--radius-md)',
                       fontSize: '0.88rem', outline: 'none', boxSizing: 'border-box',
-                      background: 'var(--theme-bg, #fff4e7)', fontFamily: 'var(--font-primary)' }}
+                      background: 'var(--theme-bg, #F6F1F1)', fontFamily: 'var(--font-primary)' }}
                   />
                 </div>
                 <div style={{ position: 'relative' }}>
@@ -1279,7 +1279,7 @@ export default function DeptDashboard() {
                     value={statusFilter}
                     onChange={e => { setStatusFilter(e.target.value); setUnallottedOnly(false); }}
                     style={{ padding: '10px 14px 10px 32px', border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                      borderRadius: 'var(--radius-md)', fontSize: '0.88rem', background: 'var(--theme-bg, #fff4e7)',
+                      borderRadius: 'var(--radius-md)', fontSize: '0.88rem', background: 'var(--theme-bg, #F6F1F1)',
                       outline: 'none', cursor: 'pointer', fontFamily: 'var(--font-primary)' }}
                   >
                     <option value="all">{hi ? 'सभी स्थिति' : 'All Status'}</option>
@@ -1292,7 +1292,7 @@ export default function DeptDashboard() {
                 </div>
                 <button type="submit"
                   style={{ padding: '10px 18px', border: 'none', borderRadius: 'var(--radius-md)',
-                    background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                    background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
                     color: '#fff', fontWeight: 800, fontSize: '0.88rem', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', gap: 6 }}>
                   <Search size={14} /> {hi ? 'खोजें' : 'Search'}
@@ -1300,7 +1300,7 @@ export default function DeptDashboard() {
                 <button type="button"
                   onClick={() => { setSearch(''); setStatusFilter('all'); setUnallottedOnly(false); setTimeout(() => fetchComplaints(), 50); }}
                   style={{ padding: '10px 14px', border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                    borderRadius: 'var(--radius-md)', background: 'var(--theme-bg, #fff4e7)',
+                    borderRadius: 'var(--radius-md)', background: 'var(--theme-bg, #F6F1F1)',
                     color: 'var(--gray-800)', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', gap: 5 }}>
                   <RefreshCw size={13} /> {hi ? 'रिफ्रेश' : 'Refresh'}
@@ -1368,7 +1368,7 @@ export default function DeptDashboard() {
             }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
                 <div>
-                  <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900, color: 'var(--theme-primary, #660033)' }}>
+                  <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900, color: 'var(--theme-primary, #146C94)' }}>
                     🏢 {orgLevel
                       ? (hi ? 'विभाग चयन एवं प्रशासनिक संरचना' : 'Department Selection & Staff Hierarchy')
                       : (hi ? `विभाग संरचना: ${profile?.dept_name}` : `Department Hierarchy: ${profile?.dept_name}`)}
@@ -1384,7 +1384,7 @@ export default function DeptDashboard() {
                   <button
                     onClick={() => setShowCreateDept(true)}
                     style={{ padding: '8px 16px', borderRadius: 'var(--radius-sm)',
-                      background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                      background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
                       color: '#fff', border: 'none', fontWeight: 800, fontSize: '0.84rem', cursor: 'pointer',
                       display: 'flex', alignItems: 'center', gap: 6 }}
                   >
@@ -1411,9 +1411,9 @@ export default function DeptDashboard() {
                         style={{
                           display: 'flex', alignItems: 'center', gap: 8, padding: '9px 14px',
                           borderRadius: 'var(--radius-md)', cursor: 'pointer', whiteSpace: 'nowrap',
-                          border: isSelected ? '2px solid var(--theme-primary, #660033)' : '1px solid var(--theme-component-border, #bfbfbf)',
-                          background: isSelected ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
-                          color: isSelected ? 'var(--theme-primary, #660033)' : 'var(--gray-800)',
+                          border: isSelected ? '2px solid var(--theme-primary, #146C94)' : '1px solid var(--theme-component-border, #bfbfbf)',
+                          background: isSelected ? 'var(--theme-bg, #F6F1F1)' : 'rgba(255,255,255,0.4)',
+                          color: isSelected ? 'var(--theme-primary, #146C94)' : 'var(--gray-800)',
                           fontWeight: isSelected ? 900 : 700, fontSize: '0.84rem',
                           boxShadow: isSelected ? '0 2px 8px rgba(102,0,51,0.15)' : 'none',
                         }}
@@ -1422,7 +1422,7 @@ export default function DeptDashboard() {
                         <span>{d.name}</span>
                         <span style={{
                           padding: '2px 7px', borderRadius: 12, fontSize: '0.72rem', fontWeight: 800,
-                          background: isSelected ? 'var(--theme-primary, #660033)' : 'var(--theme-component-border, #bfbfbf)',
+                          background: isSelected ? 'var(--theme-primary, #146C94)' : 'var(--theme-component-border, #bfbfbf)',
                           color: isSelected ? '#fff' : 'var(--gray-800)',
                         }}>
                           {staffCount} {hi ? 'स्टाफ' : 'staff'}
@@ -1450,7 +1450,7 @@ export default function DeptDashboard() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                       <div style={{
                         width: 54, height: 54, borderRadius: 12,
-                        background: 'var(--theme-bg, #fff4e7)', border: '1.5px solid var(--theme-component-border, #bfbfbf)',
+                        background: 'var(--theme-bg, #F6F1F1)', border: '1.5px solid var(--theme-component-border, #bfbfbf)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.9rem',
                       }}>
                         {activeDetailDept.icon || '🏢'}
@@ -1482,7 +1482,7 @@ export default function DeptDashboard() {
                         }}
                         style={{
                           padding: '8px 16px', borderRadius: 'var(--radius-sm)',
-                          background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                          background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
                           color: '#fff', border: 'none', fontWeight: 800, fontSize: '0.82rem',
                           cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
                         }}
@@ -1495,7 +1495,7 @@ export default function DeptDashboard() {
 
                   {activeDetailDept.description && (
                     <div style={{
-                      background: 'var(--theme-bg, #fff4e7)', padding: '12px 16px',
+                      background: 'var(--theme-bg, #F6F1F1)', padding: '12px 16px',
                       borderRadius: 'var(--radius-md)', border: '1px solid var(--theme-component-border, #bfbfbf)',
                       fontSize: '0.86rem', color: 'var(--gray-800)', lineHeight: 1.5,
                     }}>
@@ -1513,7 +1513,7 @@ export default function DeptDashboard() {
                   boxShadow: 'var(--shadow-sm)',
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-                    <Award size={20} color="var(--theme-primary, #660033)" />
+                    <Award size={20} color="var(--theme-primary, #146C94)" />
                     <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: 'var(--gray-900)' }}>
                       {hi ? 'विभाग प्रमुख (Department Head - Tier 2)' : 'Department Head (Tier 2 Authority)'}
                     </h3>
@@ -1521,9 +1521,9 @@ export default function DeptDashboard() {
 
                   {activeDeptHead ? (
                     <div style={{
-                      background: 'var(--theme-bg, #fff4e7)',
+                      background: 'var(--theme-bg, #F6F1F1)',
                       borderRadius: 'var(--radius-lg)',
-                      border: '2px solid var(--theme-primary, #660033)',
+                      border: '2px solid var(--theme-primary, #146C94)',
                       padding: 20,
                       display: 'flex',
                       flexDirection: 'column',
@@ -1533,7 +1533,7 @@ export default function DeptDashboard() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
                           <div style={{
                             width: 56, height: 56, borderRadius: '50%',
-                            background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                            background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
                             color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: '1.6rem', flexShrink: 0,
                           }}>
@@ -1541,12 +1541,12 @@ export default function DeptDashboard() {
                           </div>
                           <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                              <h4 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900, color: 'var(--theme-primary, #660033)' }}>
+                              <h4 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900, color: 'var(--theme-primary, #146C94)' }}>
                                 {activeDeptHead.full_name || 'Designated Department Head'}
                               </h4>
                               <span style={{
                                 fontSize: '0.72rem', fontWeight: 800, padding: '2px 8px', borderRadius: 12,
-                                background: 'var(--theme-primary, #660033)', color: '#fff',
+                                background: 'var(--theme-primary, #146C94)', color: '#fff',
                               }}>
                                 🏢 {roleLabel('department_head', language)}
                               </span>
@@ -1569,7 +1569,7 @@ export default function DeptDashboard() {
                                 padding: '8px 14px', borderRadius: 'var(--radius-sm)',
                                 background: 'var(--theme-component, #d9d9d9)',
                                 border: '1px solid var(--theme-component-border, #bfbfbf)',
-                                color: 'var(--theme-primary, #660033)', fontWeight: 800,
+                                color: 'var(--theme-primary, #146C94)', fontWeight: 800,
                                 fontSize: '0.82rem', textDecoration: 'none',
                               }}
                             >
@@ -1603,7 +1603,7 @@ export default function DeptDashboard() {
                           <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--gray-700)', textTransform: 'uppercase' }}>
                             {hi ? 'अधीनस्थ कार्यकर्ता' : 'Staff Under Head'}
                           </span>
-                          <p style={{ margin: '2px 0 0', fontSize: '1.25rem', fontWeight: 900, color: 'var(--theme-primary, #660033)' }}>
+                          <p style={{ margin: '2px 0 0', fontSize: '1.25rem', fontWeight: 900, color: 'var(--theme-primary, #146C94)' }}>
                             {totalWorkersUnderHead} {hi ? 'सदस्य' : 'members'}
                           </p>
                         </div>
@@ -1611,7 +1611,7 @@ export default function DeptDashboard() {
                           <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--gray-700)', textTransform: 'uppercase' }}>
                             {hi ? 'विभाग की कुल शिकायतें' : 'Total Grievances'}
                           </span>
-                          <p style={{ margin: '2px 0 0', fontSize: '1.25rem', fontWeight: 900, color: '#1e40af' }}>
+                          <p style={{ margin: '2px 0 0', fontSize: '1.25rem', fontWeight: 900, color: 'var(--burgundy)' }}>
                             {activeDeptComplaints.length}
                           </p>
                         </div>
@@ -1627,7 +1627,7 @@ export default function DeptDashboard() {
                           <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--gray-700)', textTransform: 'uppercase' }}>
                             {hi ? 'निवारण दर' : 'Resolution Rate'}
                           </span>
-                          <p style={{ margin: '2px 0 0', fontSize: '1.25rem', fontWeight: 900, color: 'var(--theme-primary, #660033)' }}>
+                          <p style={{ margin: '2px 0 0', fontSize: '1.25rem', fontWeight: 900, color: 'var(--theme-primary, #146C94)' }}>
                             {activeDeptComplaints.length > 0
                               ? Math.round((activeDeptComplaints.filter(c => ['resolved', 'verified'].includes(c.status)).length / activeDeptComplaints.length) * 100)
                               : 100}%
@@ -1637,7 +1637,7 @@ export default function DeptDashboard() {
                     </div>
                   ) : (
                     <div style={{
-                      background: 'var(--theme-bg, #fff4e7)', borderRadius: 'var(--radius-lg)',
+                      background: 'var(--theme-bg, #F6F1F1)', borderRadius: 'var(--radius-lg)',
                       border: '1.5px dashed var(--theme-component-border, #bfbfbf)', padding: 20, textAlign: 'center',
                     }}>
                       <p style={{ margin: '0 0 6px', fontWeight: 800, color: 'var(--gray-800)', fontSize: '0.95rem' }}>
@@ -1660,12 +1660,12 @@ export default function DeptDashboard() {
                 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Users size={20} color="var(--theme-primary, #660033)" />
+                      <Users size={20} color="var(--theme-primary, #146C94)" />
                       <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: 'var(--gray-900)' }}>
                         {hi ? 'विभाग प्रमुख के अधीन कार्यरत कर्मचारी संख्या' : 'Workers Hierarchy Breakdown Under Head'}
                       </h3>
                     </div>
-                    <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--theme-primary, #660033)' }}>
+                    <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--theme-primary, #146C94)' }}>
                       {hi ? `कुल कार्यकर्ता: ${totalWorkersUnderHead}` : `Total Workforce: ${totalWorkersUnderHead}`}
                     </span>
                   </div>
@@ -1675,8 +1675,8 @@ export default function DeptDashboard() {
                     <div
                       onClick={() => setDeptStaffTierFilter('all')}
                       style={{
-                        background: 'var(--theme-bg, #fff4e7)', borderRadius: 'var(--radius-lg)', padding: 16,
-                        border: deptStaffTierFilter === 'all' ? '2px solid var(--theme-primary, #660033)' : '1px solid var(--theme-component-border, #bfbfbf)',
+                        background: 'var(--theme-bg, #F6F1F1)', borderRadius: 'var(--radius-lg)', padding: 16,
+                        border: deptStaffTierFilter === 'all' ? '2px solid var(--theme-primary, #146C94)' : '1px solid var(--theme-component-border, #bfbfbf)',
                         cursor: 'pointer', boxShadow: 'var(--shadow-sm)',
                       }}
                     >
@@ -1686,7 +1686,7 @@ export default function DeptDashboard() {
                         </span>
                         <span style={{ fontSize: '1.2rem' }}>👥</span>
                       </div>
-                      <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: 'var(--theme-primary, #660033)' }}>
+                      <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: 'var(--theme-primary, #146C94)' }}>
                         {totalWorkersUnderHead}
                       </p>
                       <p style={{ margin: '4px 0 0', fontSize: '0.74rem', color: 'var(--gray-600)' }}>
@@ -1698,8 +1698,8 @@ export default function DeptDashboard() {
                     <div
                       onClick={() => setDeptStaffTierFilter('3')}
                       style={{
-                        background: 'var(--theme-bg, #fff4e7)', borderRadius: 'var(--radius-lg)', padding: 16,
-                        border: deptStaffTierFilter === '3' ? '2px solid var(--theme-primary, #660033)' : '1px solid var(--theme-component-border, #bfbfbf)',
+                        background: 'var(--theme-bg, #F6F1F1)', borderRadius: 'var(--radius-lg)', padding: 16,
+                        border: deptStaffTierFilter === '3' ? '2px solid var(--theme-primary, #146C94)' : '1px solid var(--theme-component-border, #bfbfbf)',
                         cursor: 'pointer', boxShadow: 'var(--shadow-sm)',
                       }}
                     >
@@ -1721,8 +1721,8 @@ export default function DeptDashboard() {
                     <div
                       onClick={() => setDeptStaffTierFilter('4')}
                       style={{
-                        background: 'var(--theme-bg, #fff4e7)', borderRadius: 'var(--radius-lg)', padding: 16,
-                        border: deptStaffTierFilter === '4' ? '2px solid var(--theme-primary, #660033)' : '1px solid var(--theme-component-border, #bfbfbf)',
+                        background: 'var(--theme-bg, #F6F1F1)', borderRadius: 'var(--radius-lg)', padding: 16,
+                        border: deptStaffTierFilter === '4' ? '2px solid var(--theme-primary, #146C94)' : '1px solid var(--theme-component-border, #bfbfbf)',
                         cursor: 'pointer', boxShadow: 'var(--shadow-sm)',
                       }}
                     >
@@ -1744,8 +1744,8 @@ export default function DeptDashboard() {
                     <div
                       onClick={() => setDeptStaffTierFilter('5')}
                       style={{
-                        background: 'var(--theme-bg, #fff4e7)', borderRadius: 'var(--radius-lg)', padding: 16,
-                        border: deptStaffTierFilter === '5' ? '2px solid var(--theme-primary, #660033)' : '1px solid var(--theme-component-border, #bfbfbf)',
+                        background: 'var(--theme-bg, #F6F1F1)', borderRadius: 'var(--radius-lg)', padding: 16,
+                        border: deptStaffTierFilter === '5' ? '2px solid var(--theme-primary, #146C94)' : '1px solid var(--theme-component-border, #bfbfbf)',
                         cursor: 'pointer', boxShadow: 'var(--shadow-sm)',
                       }}
                     >
@@ -1797,8 +1797,8 @@ export default function DeptDashboard() {
                           onClick={() => setDeptStaffTierFilter(f.id as any)}
                           style={{
                             padding: '6px 12px', borderRadius: 20, fontSize: '0.76rem', fontWeight: 800,
-                            border: deptStaffTierFilter === f.id ? '1.5px solid var(--theme-primary, #660033)' : '1px solid var(--theme-component-border, #bfbfbf)',
-                            background: deptStaffTierFilter === f.id ? 'var(--theme-primary, #660033)' : 'var(--theme-bg, #fff4e7)',
+                            border: deptStaffTierFilter === f.id ? '1.5px solid var(--theme-primary, #146C94)' : '1px solid var(--theme-component-border, #bfbfbf)',
+                            background: deptStaffTierFilter === f.id ? 'var(--theme-primary, #146C94)' : 'var(--theme-bg, #F6F1F1)',
                             color: deptStaffTierFilter === f.id ? '#fff' : 'var(--gray-800)',
                             cursor: 'pointer',
                           }}
@@ -1820,7 +1820,7 @@ export default function DeptDashboard() {
                       style={{
                         width: '100%', padding: '10px 14px 10px 36px',
                         border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                        borderRadius: 'var(--radius-md)', background: 'var(--theme-bg, #fff4e7)',
+                        borderRadius: 'var(--radius-md)', background: 'var(--theme-bg, #F6F1F1)',
                         fontSize: '0.88rem', outline: 'none', boxSizing: 'border-box',
                         fontFamily: 'var(--font-primary)',
                       }}
@@ -1830,7 +1830,7 @@ export default function DeptDashboard() {
                   {/* Staff Cards Grid */}
                   {filteredDeptWorkers.length === 0 ? (
                     <div style={{
-                      padding: '36px 20px', textAlign: 'center', background: 'var(--theme-bg, #fff4e7)',
+                      padding: '36px 20px', textAlign: 'center', background: 'var(--theme-bg, #F6F1F1)',
                       borderRadius: 'var(--radius-lg)', border: '1px solid var(--theme-component-border, #bfbfbf)',
                     }}>
                       <Inbox size={32} color="var(--gray-500)" style={{ margin: '0 auto 8px', display: 'block' }} />
@@ -1849,7 +1849,7 @@ export default function DeptDashboard() {
                           <div
                             key={st.id}
                             style={{
-                              background: 'var(--theme-bg, #fff4e7)',
+                              background: 'var(--theme-bg, #F6F1F1)',
                               border: '1.5px solid var(--theme-component-border, #bfbfbf)',
                               borderRadius: 'var(--radius-lg)',
                               padding: 16,
@@ -1905,7 +1905,7 @@ export default function DeptDashboard() {
                                     href={`tel:${st.phone}`}
                                     style={{
                                       display: 'inline-flex', alignItems: 'center', gap: 4,
-                                      color: 'var(--theme-primary, #660033)', fontWeight: 800, textDecoration: 'none',
+                                      color: 'var(--theme-primary, #146C94)', fontWeight: 800, textDecoration: 'none',
                                     }}
                                   >
                                     <Phone size={12} /> {st.phone}
@@ -1933,7 +1933,7 @@ export default function DeptDashboard() {
                                   <span style={{ fontSize: '0.68rem', fontWeight: 700, color: 'var(--gray-600)' }}>
                                     {hi ? 'प्रगति में' : 'Open'}
                                   </span>
-                                  <p style={{ margin: '2px 0 0', fontWeight: 900, fontSize: '1rem', color: '#1d4ed8' }}>
+                                  <p style={{ margin: '2px 0 0', fontWeight: 900, fontSize: '1rem', color: 'var(--burgundy)' }}>
                                     {sStats.pending + sStats.inProg}
                                   </p>
                                 </div>
@@ -1994,7 +1994,7 @@ export default function DeptDashboard() {
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: 'var(--theme-primary, #660033)' }}>
+                <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: 'var(--theme-primary, #146C94)' }}>
                   👥 {hi ? 'कर्मचारी कार्य रिपोर्ट एवं प्रदर्शन' : 'Subordinate Staff Work Reports & Performance'}
                 </h2>
                 <p style={{ margin: '3px 0 0', fontSize: '0.82rem', color: 'var(--gray-600)' }}>
@@ -2011,7 +2011,7 @@ export default function DeptDashboard() {
                     style={{
                       padding: '8px 12px', borderRadius: 'var(--radius-md)',
                       border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                      background: 'var(--theme-bg, #fff4e7)', fontSize: '0.84rem',
+                      background: 'var(--theme-bg, #F6F1F1)', fontSize: '0.84rem',
                       fontWeight: 700, outline: 'none', cursor: 'pointer',
                     }}
                   >
@@ -2028,7 +2028,7 @@ export default function DeptDashboard() {
                   style={{
                     padding: '8px 12px', borderRadius: 'var(--radius-md)',
                     border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                    background: 'var(--theme-bg, #fff4e7)', fontSize: '0.84rem',
+                    background: 'var(--theme-bg, #F6F1F1)', fontSize: '0.84rem',
                     fontWeight: 700, outline: 'none', cursor: 'pointer',
                   }}
                 >
@@ -2052,7 +2052,7 @@ export default function DeptDashboard() {
                 style={{
                   width: '100%', padding: '10px 14px 10px 36px',
                   border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                  borderRadius: 'var(--radius-md)', background: 'var(--theme-bg, #fff4e7)',
+                  borderRadius: 'var(--radius-md)', background: 'var(--theme-bg, #F6F1F1)',
                   fontSize: '0.88rem', outline: 'none', boxSizing: 'border-box',
                   fontFamily: 'var(--font-primary)',
                 }}
@@ -2064,7 +2064,7 @@ export default function DeptDashboard() {
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.86rem' }}>
                   <thead>
-                    <tr style={{ background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))', color: '#fff' }}>
+                    <tr style={{ background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))', color: '#fff' }}>
                       {[
                         hi ? 'कर्मचारी' : 'Staff Member',
                         hi ? 'विभाग' : 'Department',
@@ -2090,24 +2090,24 @@ export default function DeptDashboard() {
                         background: idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.2)' }}>
                         <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--gray-900)' }}>
                           <div>{st.full_name || 'Officer'}</div>
-                          {st.staff_code && <span style={{ fontSize: '0.72rem', color: 'var(--theme-primary, #660033)', fontFamily: 'monospace' }}>{st.staff_code}</span>}
+                          {st.staff_code && <span style={{ fontSize: '0.72rem', color: 'var(--theme-primary, #146C94)', fontFamily: 'monospace' }}>{st.staff_code}</span>}
                         </td>
                         <td style={{ padding: '12px 16px', fontSize: '0.8rem', color: 'var(--gray-800)', fontWeight: 600 }}>
                           {st.deptIcon} {st.deptName}
                         </td>
                         <td style={{ padding: '12px 16px' }}>
-                          <span style={{ padding: '3px 8px', borderRadius: 4, background: 'var(--theme-bg, #fff4e7)',
+                          <span style={{ padding: '3px 8px', borderRadius: 4, background: 'var(--theme-bg, #F6F1F1)',
                             border: '1px solid var(--theme-component-border, #bfbfbf)', fontSize: '0.76rem', fontWeight: 700 }}>
                             {roleLabel(st.role, language)}
                           </span>
                         </td>
                         <td style={{ padding: '12px 16px', fontSize: '0.8rem' }}>
                           {st.phone
-                            ? <a href={`tel:${st.phone}`} style={{ color: 'var(--theme-primary, #660033)', textDecoration: 'none', fontWeight: 700 }}>📞 {st.phone}</a>
+                            ? <a href={`tel:${st.phone}`} style={{ color: 'var(--theme-primary, #146C94)', textDecoration: 'none', fontWeight: 700 }}>📞 {st.phone}</a>
                             : (st.email || '—')}
                         </td>
                         <td style={{ padding: '12px 16px', fontWeight: 800 }}>{st.totalAssigned}</td>
-                        <td style={{ padding: '12px 16px', fontWeight: 700, color: '#1d4ed8' }}>{st.inProg + st.pending}</td>
+                        <td style={{ padding: '12px 16px', fontWeight: 700, color: 'var(--burgundy)' }}>{st.inProg + st.pending}</td>
                         <td style={{ padding: '12px 16px', fontWeight: 800, color: '#065f46' }}>{st.done}</td>
                         <td style={{ padding: '12px 16px' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>

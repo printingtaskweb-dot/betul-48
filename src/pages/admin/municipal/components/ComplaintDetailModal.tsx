@@ -37,7 +37,7 @@ export const ComplaintDetailModal: React.FC<Props> = ({
       width: '100%', maxWidth: 720, maxHeight: '88vh', overflowY: 'auto',
     }}>
       <div style={{
-        background: 'var(--header-gradient, linear-gradient(135deg, #4d0026, #660033, #800040))',
+        background: 'var(--header-gradient, linear-gradient(135deg, #0E526F, #146C94, #0E526F))',
         padding: '16px 20px', color: '#fff',
         display: 'flex', justifyContent: 'space-between', alignItems: 'center',
       }}>
@@ -67,7 +67,7 @@ export const ComplaintDetailModal: React.FC<Props> = ({
           />
         )}
 
-        <div style={{ ...field, lineHeight: 1.5, background: 'var(--theme-bg, #fff4e7)' }}>
+        <div style={{ ...field, lineHeight: 1.5, background: 'var(--theme-bg, #F6F1F1)' }}>
           <b>Description:</b>
           <div style={{ marginTop: 4 }}>{detail.description}</div>
         </div>
@@ -144,7 +144,7 @@ export const ComplaintDetailModal: React.FC<Props> = ({
 
         <details style={{ fontSize: '0.78rem' }}>
           <summary style={{ cursor: 'pointer', fontWeight: 800 }}>Full complaint record</summary>
-          <pre style={{ maxHeight: 260, overflow: 'auto', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', padding: 10, background: 'var(--theme-bg, #fff4e7)', borderRadius: 6 }}>
+          <pre style={{ maxHeight: 260, overflow: 'auto', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', padding: 10, background: 'var(--theme-bg, #F6F1F1)', borderRadius: 6 }}>
             {JSON.stringify(detail, null, 2)}
           </pre>
         </details>

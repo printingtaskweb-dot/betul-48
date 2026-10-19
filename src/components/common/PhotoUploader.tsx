@@ -160,7 +160,7 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
               padding: '10px 18px',
               borderRadius: 8,
               border: 'none',
-              background: 'var(--primary-gradient, #660033)',
+              background: 'var(--primary-gradient, #146C94)',
               color: '#fff',
               fontWeight: 600,
               cursor: disabled || uploading ? 'not-allowed' : 'pointer',

@@ -213,7 +213,7 @@ export const AdminNewsModeration: React.FC = () => {
         <button
           onClick={() => fetchAllPosts()}
           style={{
-            background: 'var(--theme-bg, #fff4e7)',
+            background: 'var(--theme-bg, #F6F1F1)',
             border: '1.5px solid var(--theme-component-border, #bfbfbf)',
             borderRadius: 'var(--radius-md)',
             padding: '8px 14px',
@@ -234,11 +234,11 @@ export const AdminNewsModeration: React.FC = () => {
       {errorMsg && (
         <div
           style={{
-            background: '#fff4e7',
-            border: '1.5px solid #660033',
+            background: '#F6F1F1',
+            border: '1.5px solid #146C94',
             borderRadius: 'var(--radius-md)',
             padding: '12px 16px',
-            color: '#660033',
+            color: '#146C94',
             fontSize: '0.86rem',
             display: 'flex',
             alignItems: 'center',
@@ -268,8 +268,8 @@ export const AdminNewsModeration: React.FC = () => {
               padding: '8px 14px',
               borderRadius: 'var(--radius-md)',
               border: '1.5px solid',
-              borderColor: activeTab === 'pending' ? 'var(--theme-primary, #660033)' : 'var(--theme-component-border, #bfbfbf)',
-              background: activeTab === 'pending' ? 'var(--theme-primary, #660033)' : 'var(--theme-component, #d9d9d9)',
+              borderColor: activeTab === 'pending' ? 'var(--status-pending)' : 'var(--theme-component-border, #bfbfbf)',
+              background: activeTab === 'pending' ? 'var(--status-pending)' : 'var(--theme-component, #d9d9d9)',
               color: activeTab === 'pending' ? '#fff' : 'var(--gray-800)',
               fontWeight: 800,
               fontSize: '0.84rem',
@@ -283,8 +283,8 @@ export const AdminNewsModeration: React.FC = () => {
             <span>Pending Review</span>
             <span
               style={{
-                background: activeTab === 'pending' ? '#fff' : 'var(--theme-primary, #660033)',
-                color: activeTab === 'pending' ? 'var(--theme-primary, #660033)' : '#fff',
+                background: activeTab === 'pending' ? '#fff' : 'var(--status-pending)',
+                color: activeTab === 'pending' ? 'var(--status-pending)' : '#fff',
                 borderRadius: 'var(--radius-full)',
                 padding: '1px 7px',
                 fontSize: '0.72rem',
@@ -301,8 +301,8 @@ export const AdminNewsModeration: React.FC = () => {
               padding: '8px 14px',
               borderRadius: 'var(--radius-md)',
               border: '1.5px solid',
-              borderColor: activeTab === 'approved' ? 'var(--theme-primary, #660033)' : 'var(--theme-component-border, #bfbfbf)',
-              background: activeTab === 'approved' ? 'var(--theme-primary, #660033)' : 'var(--theme-component, #d9d9d9)',
+              borderColor: activeTab === 'approved' ? 'var(--theme-primary, #146C94)' : 'var(--theme-component-border, #bfbfbf)',
+              background: activeTab === 'approved' ? 'var(--theme-primary, #146C94)' : 'var(--theme-component, #d9d9d9)',
               color: activeTab === 'approved' ? '#fff' : 'var(--gray-800)',
               fontWeight: 800,
               fontSize: '0.84rem',
@@ -317,7 +317,7 @@ export const AdminNewsModeration: React.FC = () => {
             <span
               style={{
                 background: activeTab === 'approved' ? '#fff' : 'rgba(0,0,0,0.15)',
-                color: activeTab === 'approved' ? 'var(--theme-primary, #660033)' : 'var(--gray-800)',
+                color: activeTab === 'approved' ? 'var(--theme-primary, #146C94)' : 'var(--gray-800)',
                 borderRadius: 'var(--radius-full)',
                 padding: '1px 7px',
                 fontSize: '0.72rem',
@@ -334,8 +334,8 @@ export const AdminNewsModeration: React.FC = () => {
               padding: '8px 14px',
               borderRadius: 'var(--radius-md)',
               border: '1.5px solid',
-              borderColor: activeTab === 'rejected' ? 'var(--theme-primary, #660033)' : 'var(--theme-component-border, #bfbfbf)',
-              background: activeTab === 'rejected' ? 'var(--theme-primary, #660033)' : 'var(--theme-component, #d9d9d9)',
+              borderColor: activeTab === 'rejected' ? 'var(--theme-primary, #146C94)' : 'var(--theme-component-border, #bfbfbf)',
+              background: activeTab === 'rejected' ? 'var(--theme-primary, #146C94)' : 'var(--theme-component, #d9d9d9)',
               color: activeTab === 'rejected' ? '#fff' : 'var(--gray-800)',
               fontWeight: 800,
               fontSize: '0.84rem',
@@ -350,7 +350,7 @@ export const AdminNewsModeration: React.FC = () => {
             <span
               style={{
                 background: activeTab === 'rejected' ? '#fff' : 'rgba(0,0,0,0.15)',
-                color: activeTab === 'rejected' ? 'var(--theme-primary, #660033)' : 'var(--gray-800)',
+                color: activeTab === 'rejected' ? 'var(--theme-primary, #146C94)' : 'var(--gray-800)',
                 borderRadius: 'var(--radius-full)',
                 padding: '1px 7px',
                 fontSize: '0.72rem',
@@ -367,8 +367,8 @@ export const AdminNewsModeration: React.FC = () => {
               padding: '8px 14px',
               borderRadius: 'var(--radius-md)',
               border: '1.5px solid',
-              borderColor: activeTab === 'all' ? 'var(--theme-primary, #660033)' : 'var(--theme-component-border, #bfbfbf)',
-              background: activeTab === 'all' ? 'var(--theme-primary, #660033)' : 'var(--theme-component, #d9d9d9)',
+              borderColor: activeTab === 'all' ? 'var(--theme-primary, #146C94)' : 'var(--theme-component-border, #bfbfbf)',
+              background: activeTab === 'all' ? 'var(--theme-primary, #146C94)' : 'var(--theme-component, #d9d9d9)',
               color: activeTab === 'all' ? '#fff' : 'var(--gray-800)',
               fontWeight: 800,
               fontSize: '0.84rem',
@@ -399,7 +399,7 @@ export const AdminNewsModeration: React.FC = () => {
               padding: '8px 12px 8px 34px',
               borderRadius: 'var(--radius-md)',
               border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-              background: 'var(--theme-bg, #fff4e7)',
+              background: 'var(--theme-bg, #F6F1F1)',
               fontSize: '0.84rem',
               color: 'var(--gray-900)',
             }}
@@ -482,16 +482,16 @@ export const AdminNewsModeration: React.FC = () => {
                         fontWeight: 900,
                         textTransform: 'uppercase',
                         background: isPending
-                          ? 'rgba(102,0,51,0.12)'
+                          ? 'var(--status-pending-bg)'
                           : isApproved
-                          ? 'var(--theme-primary, #660033)'
+                          ? 'var(--theme-primary, #146C94)'
                           : 'rgba(0,0,0,0.1)',
                         color: isPending
-                          ? 'var(--theme-primary, #660033)'
+                          ? 'var(--status-pending)'
                           : isApproved
                           ? '#fff'
                           : 'var(--gray-700)',
-                        border: isPending ? '1px solid var(--theme-primary, #660033)' : 'none',
+                        border: isPending ? '1px solid var(--status-pending)' : 'none',
                       }}
                     >
                       {isPending && <Clock3 size={12} />}
@@ -510,9 +510,9 @@ export const AdminNewsModeration: React.FC = () => {
                         borderRadius: 'var(--radius-full)',
                         fontSize: '0.74rem',
                         fontWeight: 800,
-                        background: 'var(--theme-bg, #fff4e7)',
+                        background: 'var(--theme-bg, #F6F1F1)',
                         border: '1px solid var(--theme-component-border, #bfbfbf)',
-                        color: 'var(--theme-primary, #660033)',
+                        color: 'var(--theme-primary, #146C94)',
                       }}
                     >
                       <MapPin size={12} />
@@ -595,7 +595,7 @@ export const AdminNewsModeration: React.FC = () => {
                             alignItems: 'center',
                             gap: 4,
                             fontSize: '0.78rem',
-                            color: 'var(--theme-primary, #660033)',
+                            color: 'var(--theme-primary, #146C94)',
                             textDecoration: 'none',
                             fontWeight: 700,
                           }}
@@ -661,7 +661,7 @@ export const AdminNewsModeration: React.FC = () => {
                           onClick={() => handleApprove(post.id)}
                           disabled={actionLoading === post.id}
                           style={{
-                            background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                            background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
                             color: '#fff',
                             border: 'none',
                             borderRadius: 'var(--radius-sm)',
@@ -710,9 +710,9 @@ export const AdminNewsModeration: React.FC = () => {
                     <div
                       style={{
                         fontSize: '0.76rem',
-                        color: 'var(--theme-primary, #660033)',
+                        color: 'var(--theme-primary, #146C94)',
                         fontWeight: 800,
-                        background: 'var(--theme-bg, #fff4e7)',
+                        background: 'var(--theme-bg, #F6F1F1)',
                         border: '1px solid var(--theme-component-border, #bfbfbf)',
                         padding: '6px 12px',
                         borderRadius: 6,
@@ -836,7 +836,7 @@ export const AdminNewsModeration: React.FC = () => {
                 padding: '10px 12px',
                 borderRadius: 'var(--radius-sm)',
                 border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                background: 'var(--theme-bg, #fff4e7)',
+                background: 'var(--theme-bg, #F6F1F1)',
                 fontSize: '0.85rem',
                 color: 'var(--gray-900)',
                 marginBottom: 16,

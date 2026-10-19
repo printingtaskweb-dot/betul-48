@@ -36,7 +36,7 @@ export const LanguageSwitcher: React.FC<Props> = ({ value, onChange }) => (
               : 'transparent',
           color:
             value === opt.code
-              ? 'var(--theme-primary, #660033)'
+              ? 'var(--theme-primary, #146C94)'
               : 'rgba(255,255,255,0.85)',
           fontWeight: value === opt.code ? 700 : 500,
           fontSize: 13,

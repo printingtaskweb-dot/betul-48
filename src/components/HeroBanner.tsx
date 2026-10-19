@@ -102,6 +102,49 @@ export const HeroBanner: React.FC = () => {
 
   return (
     <section className="hero-section">
+      <div className="hero-art" aria-hidden="true">
+        <svg viewBox="0 0 520 360" role="presentation">
+          <defs>
+            <linearGradient id="hero-hill" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stopColor="#AFD3E2" />
+              <stop offset="100%" stopColor="#19A7CE" />
+            </linearGradient>
+            <linearGradient id="hero-road" x1="0" x2="1" y1="0" y2="1">
+              <stop offset="0%" stopColor="#F6F1F1" />
+              <stop offset="100%" stopColor="#AFD3E2" />
+            </linearGradient>
+          </defs>
+          <circle cx="390" cy="86" r="49" fill="#AFD3E2" opacity=".9" />
+          <path d="M0 221c71-59 127-64 193-20 51 34 94 19 143-29 68-66 127-57 184-19v207H0z" fill="url(#hero-hill)" />
+          <path d="M0 276c69-51 137-43 193-9 65 39 111 33 171-13 61-46 112-38 156-7v113H0z" fill="#146C94" opacity=".88" />
+          <path d="M72 249h48v85H72z" fill="#F6F1F1" />
+          <path d="M82 227h28v22H82z" fill="#19A7CE" />
+          <path d="M150 223h61v111h-61z" fill="#F6F1F1" />
+          <path d="M160 203h41v20h-41z" fill="#AFD3E2" />
+          <path d="M225 252h44v82h-44z" fill="#AFD3E2" />
+          <path d="M286 231h56v103h-56z" fill="#F6F1F1" />
+          <path d="M298 210h32v21h-32z" fill="#19A7CE" />
+          <path d="M358 267h43v67h-43z" fill="#F6F1F1" />
+          <g fill="#19A7CE">
+            <circle cx="58" cy="274" r="21" /><circle cx="51" cy="261" r="13" />
+            <circle cx="422" cy="266" r="24" /><circle cx="432" cy="250" r="15" />
+            <circle cx="471" cy="287" r="17" /><circle cx="465" cy="274" r="11" />
+          </g>
+          <path d="M178 334c47-29 88-35 132-23 28 8 49 8 80-3" fill="none" stroke="url(#hero-road)" strokeWidth="9" strokeLinecap="round" />
+          <path d="M253 311l10 2m26 8 10 3m27 1 10-2" stroke="#146C94" strokeWidth="2" strokeLinecap="round" />
+          <g transform="translate(365 129)">
+            <path d="M25 0c-14 0-25 11-25 25 0 18 25 43 25 43s25-25 25-43C50 11 39 0 25 0z" fill="#19A7CE" />
+            <circle cx="25" cy="25" r="9" fill="#F6F1F1" />
+          </g>
+          <g transform="translate(31 112)">
+            <rect width="154" height="54" rx="16" fill="#fff" opacity=".94" />
+            <circle cx="27" cy="27" r="13" fill="#AFD3E2" />
+            <path d="M21 27l4 4 8-9" fill="none" stroke="#146C94" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            <rect x="49" y="18" width="82" height="6" rx="3" fill="#146C94" opacity=".75" />
+            <rect x="49" y="30" width="59" height="5" rx="2.5" fill="#146C94" opacity=".25" />
+          </g>
+        </svg>
+      </div>
       <div
         className={`hero-content ${animating ? 'hero-fading' : ''}`}
         aria-live="polite"

@@ -53,7 +53,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             alignItems: 'center',
             justifyContent: 'center',
             padding: 24,
-            background: '#fff4e7',
+            background: '#F6F1F1',
             fontFamily: 'sans-serif',
             textAlign: 'center',
           }}
@@ -70,7 +70,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
             }}
           >
             <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
-            <h2 style={{ color: '#660033', margin: '0 0 10px', fontWeight: 800 }}>
+            <h2 style={{ color: '#146C94', margin: '0 0 10px', fontWeight: 800 }}>
               Application Encountered an Error
             </h2>
             <p style={{ color: '#383838', fontSize: '0.9rem', marginBottom: 20, lineHeight: 1.5 }}>
@@ -85,7 +85,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                 padding: '12px 24px',
                 borderRadius: 8,
                 border: 'none',
-                background: 'linear-gradient(135deg, #660033, #800040)',
+                background: 'linear-gradient(135deg, #146C94, #0E526F)',
                 color: '#fff',
                 fontWeight: 800,
                 fontSize: '0.95rem',

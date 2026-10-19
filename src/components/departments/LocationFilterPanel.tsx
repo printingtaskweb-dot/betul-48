@@ -11,7 +11,7 @@ import {
 import type { DeptComplaint } from '../../hooks/useDeptComplaints';
 
 const BORDER = '1.5px solid var(--theme-component-border, #bfbfbf)';
-const PRIMARY = 'var(--theme-primary, #660033)';
+const PRIMARY = 'var(--theme-primary, #146C94)';
 
 const card: React.CSSProperties = {
   background: 'var(--theme-component, #d9d9d9)',
@@ -22,14 +22,14 @@ const field: React.CSSProperties = {
   padding: '9px 12px',
   borderRadius: 'var(--radius-md, 8px)',
   border: BORDER,
-  background: 'var(--theme-bg, #fff4e7)',
+  background: 'var(--theme-bg, #F6F1F1)',
   fontSize: '0.84rem',
   boxSizing: 'border-box',
   width: '100%',
   fontFamily: 'var(--font-primary)',
 };
 const primaryBtn: React.CSSProperties = {
-  background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+  background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
   color: '#fff',
   border: 'none',
   borderRadius: 'var(--radius-sm, 6px)',
@@ -206,7 +206,7 @@ export const LocationFilterPanel: React.FC<Props> = ({
                   style={{
                     padding: '7px 14px', borderRadius: 999, fontSize: '0.76rem', fontWeight: 800,
                     border: `1.5px solid ${active ? PRIMARY : 'var(--theme-component-border, #bfbfbf)'}`,
-                    background: active ? PRIMARY : 'var(--theme-bg, #fff4e7)',
+                    background: active ? PRIMARY : 'var(--theme-bg, #F6F1F1)',
                     color: active ? '#fff' : 'var(--gray-700)',
                     cursor: 'pointer',
                   }}
@@ -298,7 +298,7 @@ export const LocationFilterPanel: React.FC<Props> = ({
             <div
               style={{
                 padding: '8px 12px', borderRadius: 8,
-                background: 'var(--theme-bg, #fff4e7)', border: BORDER,
+                background: 'var(--theme-bg, #F6F1F1)', border: BORDER,
                 fontSize: '0.76rem', fontWeight: 700,
                 display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
               }}
@@ -419,8 +419,8 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
     status === 'resolved' || status === 'verified'
       ? { bg: '#dcfce7', fg: '#166534' }
       : status === 'pending'
-      ? { bg: '#fef3c7', fg: '#b45309' }
-      : { bg: '#e0e7ff', fg: '#3730a3' };
+      ? { bg: 'var(--status-pending-bg)', fg: 'var(--status-pending)' }
+      : { bg: 'var(--primary-100)', fg: 'var(--burgundy)' };
   return (
     <span
       style={{

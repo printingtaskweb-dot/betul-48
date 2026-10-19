@@ -72,10 +72,10 @@ export default function DeptLogin() {
     setIdentifier(''); setPassword(''); setError('');
   };
 
-  const pageBg = 'var(--header-gradient, linear-gradient(135deg, #4d0026 0%, #660033 50%, #800040 100%))';
+  const pageBg = 'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))';
   const btnPrimary: React.CSSProperties = {
     width: '100%', padding: 13, border: 'none', borderRadius: 'var(--radius-md)',
-    background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))', color: '#fff', fontWeight: 800,
+    background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))', color: '#fff', fontWeight: 800,
     fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center',
     justifyContent: 'center', gap: 8, boxShadow: '0 4px 14px rgba(102,0,51,0.35)',
   };
@@ -90,8 +90,8 @@ export default function DeptLogin() {
     return (
       <div style={{ minHeight: '100vh', background: pageBg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <div style={{ maxWidth: 440, width: '100%', background: 'var(--theme-component, #d9d9d9)', borderRadius: 'var(--radius-xl)', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', padding: 36, textAlign: 'center', border: '1.5px solid var(--theme-component-border, #bfbfbf)' }}>
-          <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'var(--theme-bg, #fff4e7)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
-            <Clock size={32} color="var(--theme-primary, #660033)" />
+          <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'var(--theme-bg, #F6F1F1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
+            <Clock size={32} color={isPending ? 'var(--status-pending)' : 'var(--theme-primary, #146C94)'} />
           </div>
           <h2 style={{ margin: '0 0 10px', fontSize: '1.25rem', fontWeight: 900 }}>
             {isPending ? (hi ? 'अनुमोदन की प्रतीक्षा' : 'Awaiting Approval')
@@ -115,7 +115,7 @@ export default function DeptLogin() {
   return (
     <div style={{ minHeight: '100vh', background: pageBg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
       <div style={{ width: '100%', maxWidth: 440, background: 'var(--theme-component, #d9d9d9)', borderRadius: 'var(--radius-xl)', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', overflow: 'hidden', border: '1.5px solid var(--theme-component-border, #bfbfbf)' }}>
-        <div style={{ background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))', padding: '22px 26px', textAlign: 'center' }}>
+        <div style={{ background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))', padding: '22px 26px', textAlign: 'center' }}>
           <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
             <Building2 size={26} color="#fff" />
           </div>

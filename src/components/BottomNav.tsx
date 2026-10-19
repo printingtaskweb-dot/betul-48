@@ -39,39 +39,39 @@ export const BottomNav: React.FC = () => {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 4px;
           text-decoration: none;
-          min-width: 64px;
+          min-width: 56px;
+          gap: 2px;
           transition: color 0.2s ease, transform 0.2s ease;
         }
         .bottom-nav-icon-box {
           display: flex;
           align-items: center;
           justify-content: center;
-          padding: 6px 12px;
+          padding: 5px 12px;
           border-radius: 12px;
           transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
         }
         .bottom-nav-link:hover .bottom-nav-icon-box:not(.is-active) {
-          background-color: rgba(74, 14, 31, 0.03);
+          background-color: rgba(20, 108, 148, 0.03);
         }
         .bottom-nav-fab {
-          width: 56px;
-          height: 56px;
+          width: 48px;
+          height: 48px;
           border-radius: 50%;
-          margin-top: -20px;
-          background: var(--burgundy, #4A0E1F);
+          margin-top: -14px;
+          background: var(--burgundy, #146C94);
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 10px 24px -6px rgba(74, 14, 31, 0.4);
+          box-shadow: 0 10px 24px -6px rgba(20, 108, 148, 0.4);
           border: 3px solid var(--bg-1, #F4F2EF);
           transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
         }
         .bottom-nav-fab:hover {
           transform: translateY(-2px) scale(1.1);
           background-color: var(--burgundy-light, #5E1A2C);
-          box-shadow: 0 14px 28px -4px rgba(74, 14, 31, 0.45);
+          box-shadow: 0 14px 28px -4px rgba(20, 108, 148, 0.45);
         }
       `}</style>
       <nav
@@ -90,8 +90,9 @@ export const BottomNav: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-around',
-          padding: '10px 16px 14px',
+          padding: '8px 12px calc(8px + env(safe-area-inset-bottom))',
         }}
+        aria-label={language === 'hi' ? 'मुख्य नेविगेशन' : 'Main navigation'}
       >
         {items.map((item) => {
           const active = loc.pathname === item.path;
@@ -101,9 +102,10 @@ export const BottomNav: React.FC = () => {
             <Link
               key={item.path}
               to={item.path}
-              className="bottom-nav-link"
+              className={`bottom-nav-link${isFab ? ' bottom-nav-report' : ''}`}
+              aria-current={active ? 'page' : undefined}
               style={{
-                color: active ? 'var(--burgundy, #4A0E1F)' : 'var(--mute, #8E8A86)',
+                color: active || isFab ? 'var(--burgundy, #146C94)' : 'var(--mute, #8E8A86)',
               }}
             >
               {isFab ? (
@@ -114,8 +116,8 @@ export const BottomNav: React.FC = () => {
                 <div
                   className={`bottom-nav-icon-box ${active ? 'is-active' : ''}`}
                   style={{
-                    backgroundColor: active ? 'rgba(74, 14, 31, 0.06)' : 'transparent',
-                    color: active ? 'var(--burgundy, #4A0E1F)' : 'var(--mute, #8E8A86)',
+                    backgroundColor: active ? 'rgba(20, 108, 148, 0.06)' : 'transparent',
+                    color: active ? 'var(--burgundy, #146C94)' : 'var(--mute, #8E8A86)',
                   }}
                 >
                   {item.icon}
@@ -124,11 +126,11 @@ export const BottomNav: React.FC = () => {
               <span
                 style={{
                   fontFamily: "var(--font-mono, 'Geist Mono', monospace)",
-                  fontSize: '9px',
-                  textTransform: 'uppercase',
-                  letterSpacing: '0.06em',
+                  fontSize: '10px',
+                  textTransform: 'none',
+                  letterSpacing: 0,
                   fontWeight: active ? 700 : 500,
-                  color: active ? 'var(--burgundy, #4A0E1F)' : 'var(--mute, #8E8A86)',
+                  color: active || isFab ? 'var(--burgundy, #146C94)' : 'var(--mute, #8E8A86)',
                   lineHeight: 1.2,
                 }}
               >

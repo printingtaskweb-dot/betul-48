@@ -8,7 +8,7 @@ import { isValidMobile, lettersAndSpaces, mobileDigits } from '../lib/inputValid
 const input: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box', padding: '10px 12px',
   borderRadius: 6, border: '1px solid var(--theme-component-border, #bfbfbf)',
-  background: 'var(--theme-bg, #fff4e7)', font: 'inherit',
+  background: 'var(--theme-bg, #F6F1F1)', font: 'inherit',
 };
 
 export default function CitizenCallbackPage() {
@@ -67,11 +67,11 @@ export default function CitizenCallbackPage() {
   };
 
   return (
-    <main style={{ minHeight: '100vh', padding: '24px 16px', background: 'var(--theme-bg, #fff4e7)' }}>
+    <main style={{ minHeight: '100vh', padding: '24px 16px', background: 'var(--theme-bg, #F6F1F1)' }}>
       <div style={{ maxWidth: 620, margin: '0 auto', display: 'grid', gap: 16 }}>
-        <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--theme-primary, #660033)', textDecoration: 'none', fontWeight: 700 }}><ArrowLeft size={16} />{hi ? 'होम' : 'Home'}</Link>
+        <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--theme-primary, #146C94)', textDecoration: 'none', fontWeight: 700 }}><ArrowLeft size={16} />{hi ? 'होम' : 'Home'}</Link>
         <section style={{ background: 'var(--theme-component, #d9d9d9)', border: '1px solid var(--theme-component-border, #bfbfbf)', borderRadius: 8, padding: 22 }}>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}><PhoneCall size={22} color="var(--theme-primary, #660033)" /><h1 style={{ margin: 0, fontSize: '1.25rem' }}>{hi ? 'कॉल बैक अनुरोध' : 'Request a callback'}</h1></div>
+          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}><PhoneCall size={22} color="var(--theme-primary, #146C94)" /><h1 style={{ margin: 0, fontSize: '1.25rem' }}>{hi ? 'कॉल बैक अनुरोध' : 'Request a callback'}</h1></div>
           {submitted ? (
             <div role="status" style={{ marginTop: 18, color: '#166534', fontWeight: 700 }}>{hi ? 'आपका अनुरोध कंट्रोल रूम को भेज दिया गया है।' : 'Your request has been sent to the municipal control room.'}</div>
           ) : (
@@ -83,7 +83,7 @@ export default function CitizenCallbackPage() {
               <label style={{ display: 'grid', gap: 5, fontSize: '0.8rem', fontWeight: 700 }}>{hi ? 'टिकट नंबर (वैकल्पिक)' : 'Complaint ticket (optional)'}<input value={ticket} onChange={(e) => setTicket(e.target.value)} style={input} /></label>
               <label style={{ display: 'grid', gap: 5, fontSize: '0.8rem', fontWeight: 700 }}>{hi ? 'किस बारे में सहायता चाहिए?' : 'How can we help?'}<textarea required rows={4} value={message} onChange={(e) => setMessage(e.target.value)} style={input} /></label>
               <label style={{ display: 'grid', gap: 5, fontSize: '0.8rem', fontWeight: 700 }}>{hi ? 'कॉल का पसंदीदा समय (वैकल्पिक)' : 'Preferred callback time (optional)'}<input type="datetime-local" value={preferredAt} onChange={(e) => setPreferredAt(e.target.value)} style={input} /></label>
-              <button type="submit" disabled={saving} style={{ justifySelf: 'start', display: 'inline-flex', alignItems: 'center', gap: 7, padding: '10px 14px', border: 0, borderRadius: 6, background: 'var(--theme-primary, #660033)', color: '#fff', fontWeight: 800, cursor: 'pointer' }}><Send size={14} />{saving ? (hi ? 'भेज रहे हैं…' : 'Sending…') : (hi ? 'अनुरोध भेजें' : 'Send request')}</button>
+              <button type="submit" disabled={saving} style={{ justifySelf: 'start', display: 'inline-flex', alignItems: 'center', gap: 7, padding: '10px 14px', border: 0, borderRadius: 6, background: 'var(--theme-primary, #146C94)', color: '#fff', fontWeight: 800, cursor: 'pointer' }}><Send size={14} />{saving ? (hi ? 'भेज रहे हैं…' : 'Sending…') : (hi ? 'अनुरोध भेजें' : 'Send request')}</button>
             </form>
           )}
         </section>

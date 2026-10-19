@@ -10,7 +10,7 @@ import {
 } from '../../lib/wardTypes';
 
 const BORDER  = '1.5px solid var(--theme-component-border, #bfbfbf)';
-const PRIMARY = 'var(--theme-primary, #660033)';
+const PRIMARY = 'var(--theme-primary, #146C94)';
 
 const card: React.CSSProperties = {
   background: 'var(--theme-component, #d9d9d9)',
@@ -19,11 +19,11 @@ const card: React.CSSProperties = {
 };
 const field: React.CSSProperties = {
   padding: '9px 12px', borderRadius: 'var(--radius-md, 8px)',
-  border: BORDER, background: 'var(--theme-bg, #fff4e7)',
+  border: BORDER, background: 'var(--theme-bg, #F6F1F1)',
   fontSize: '0.84rem', boxSizing: 'border-box', width: '100%',
 };
 const primaryBtn: React.CSSProperties = {
-  background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+  background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
   color: '#fff', border: 'none', borderRadius: 'var(--radius-sm, 6px)',
   padding: '8px 16px', fontSize: '0.78rem', fontWeight: 800,
   cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
@@ -203,7 +203,7 @@ export const LocationComplaintFilter: React.FC<Props> = ({
                   style={{
                     padding: '7px 14px', borderRadius: 999, fontSize: '0.76rem', fontWeight: 800,
                     border: `1.5px solid ${active ? PRIMARY : 'var(--theme-component-border, #bfbfbf)'}`,
-                    background: active ? PRIMARY : 'var(--theme-bg, #fff4e7)',
+                    background: active ? PRIMARY : 'var(--theme-bg, #F6F1F1)',
                     color: active ? '#fff' : 'var(--gray-700)', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', gap: 5, transition: 'all 0.15s',
                   }}
@@ -379,7 +379,7 @@ const Chip: React.FC<{ label: string; onClear: () => void }> = ({ label, onClear
   <span style={{
     display: 'inline-flex', alignItems: 'center', gap: 6,
     padding: '4px 10px', borderRadius: 999,
-    background: 'var(--theme-bg, #fff4e7)',
+    background: 'var(--theme-bg, #F6F1F1)',
     border: '1.5px solid var(--theme-component-border, #bfbfbf)',
     fontSize: '0.72rem', fontWeight: 800, color: 'var(--gray-800)',
   }}>
@@ -395,8 +395,8 @@ const StatusBadge: React.FC<{ status: string }> = ({ status }) => {
     status === 'resolved' || status === 'verified'
       ? { bg: '#dcfce7', fg: '#166534' }
       : status === 'pending'
-      ? { bg: '#fef3c7', fg: '#b45309' }
-      : { bg: '#e0e7ff', fg: '#3730a3' };
+      ? { bg: 'var(--status-pending-bg)', fg: 'var(--status-pending)' }
+      : { bg: 'var(--primary-100)', fg: 'var(--burgundy)' };
   return (
     <span style={{
       fontSize: '0.66rem', fontWeight: 800, padding: '2px 8px', borderRadius: 10,

@@ -4,5 +4,5 @@ export const statusStyle = (s: string) =>
   isDone(s)
     ? { bg: '#dcfce7', fg: '#15803d' }
     : s === 'pending'
-    ? { bg: '#fef3c7', fg: '#b45309' }
-    : { bg: '#e0e7ff', fg: '#3730a3' };
+    ? { bg: 'var(--status-pending-bg)', fg: 'var(--status-pending)' }
+    : { bg: 'var(--primary-100)', fg: 'var(--burgundy)' };

@@ -59,7 +59,7 @@ export const WardsTab: React.FC<Props> = ({
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{
             fontSize: '0.78rem', fontWeight: 800, padding: '6px 12px', borderRadius: 20,
-            background: 'var(--theme-bg, #fff4e7)', border: BORDER, color: PRIMARY,
+            background: 'var(--theme-bg, #F6F1F1)', border: BORDER, color: PRIMARY,
           }}>
             {wards.length} ward{wards.length !== 1 ? 's' : ''} registered
           </span>
@@ -82,7 +82,7 @@ export const WardsTab: React.FC<Props> = ({
       {wards.length === 0 ? (
         <div style={{
           padding: '60px 20px', textAlign: 'center',
-          background: 'var(--theme-bg, #fff4e7)',
+          background: 'var(--theme-bg, #F6F1F1)',
           borderRadius: 'var(--radius-lg)',
           border: '1.5px dashed var(--theme-component-border, #bfbfbf)',
         }}>
@@ -139,8 +139,8 @@ export const WardsTab: React.FC<Props> = ({
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem', fontWeight: 700 }}>
                     <span style={{ color: '#15803d' }}>Resolved: {entry.resolved}</span>
-                    <span style={{ color: '#3730a3' }}>In Progress: {entry.inProgress}</span>
-                    <span style={{ color: '#b45309' }}>Pending: {entry.pending}</span>
+                    <span style={{ color: 'var(--burgundy)' }}>In Progress: {entry.inProgress}</span>
+                    <span style={{ color: 'var(--status-pending)' }}>Pending: {entry.pending}</span>
                   </div>
 
                   <div style={{ fontSize: '0.72rem', color: 'var(--gray-700)', marginTop: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -187,7 +187,7 @@ export const WardsTab: React.FC<Props> = ({
                   {isExpanded && (
                     <div style={{
                       marginTop: 6, padding: 8, borderRadius: 8,
-                      background: 'var(--theme-bg, #fff4e7)', border: BORDER,
+                      background: 'var(--theme-bg, #F6F1F1)', border: BORDER,
                       maxHeight: 180, overflowY: 'auto',
                       display: 'flex', flexDirection: 'column', gap: 6,
                     }}>

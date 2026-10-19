@@ -13,7 +13,7 @@ import {
 } from '../../lib/wardTypes';
 
 const BORDER = '1.5px solid var(--theme-component-border, #bfbfbf)';
-const PRIMARY = 'var(--theme-primary, #660033)';
+const PRIMARY = 'var(--theme-primary, #146C94)';
 
 const card: React.CSSProperties = {
   background: 'var(--theme-component, #d9d9d9)',
@@ -24,14 +24,14 @@ const field: React.CSSProperties = {
   padding: '9px 12px',
   borderRadius: 'var(--radius-md, 8px)',
   border: BORDER,
-  background: 'var(--theme-bg, #fff4e7)',
+  background: 'var(--theme-bg, #F6F1F1)',
   fontSize: '0.84rem',
   boxSizing: 'border-box',
   width: '100%',
   fontFamily: 'var(--font-primary)',
 };
 const primaryBtn: React.CSSProperties = {
-  background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+  background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
   color: '#fff',
   border: 'none',
   borderRadius: 'var(--radius-sm, 6px)',
@@ -45,7 +45,7 @@ const primaryBtn: React.CSSProperties = {
 };
 const outlineBtn: React.CSSProperties = {
   ...primaryBtn,
-  background: 'var(--theme-bg, #fff4e7)',
+  background: 'var(--theme-bg, #F6F1F1)',
   color: PRIMARY,
   border: `1.5px solid ${PRIMARY}`,
 };
@@ -407,7 +407,7 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
           <div style={{ ...card, width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto', padding: 0 }}>
             <div
               style={{
-                background: 'var(--header-gradient, linear-gradient(135deg, #4d0026, #660033, #800040))',
+                background: 'var(--header-gradient, linear-gradient(135deg, #0E526F, #146C94, #0E526F))',
                 padding: '16px 20px', color: '#fff',
                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
               }}

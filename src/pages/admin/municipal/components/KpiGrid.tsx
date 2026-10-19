@@ -21,10 +21,10 @@ export const KpiGrid: React.FC<Props> = ({
   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 12 }}>
     <KpiCard label="Total Complaints" value={total} color={PRIMARY}
       sub={`Across ${deptCount} departments · ${wardCount} wards`} />
-    <KpiCard label="Pending Allotment" value={pending} color="#b45309"
-      sub="Requires officer allocation" labelColor="#b45309" />
-    <KpiCard label="In Progress / Dispatched" value={inProgress} color="#3730a3"
-      sub="Under field supervisor / worker action" labelColor="#3730a3" />
+    <KpiCard label="Pending Allotment" value={pending} color="var(--status-pending)"
+      sub="Requires officer allocation" labelColor="var(--status-pending)" />
+    <KpiCard label="In Progress / Dispatched" value={inProgress} color="var(--burgundy)"
+      sub="Under field supervisor / worker action" labelColor="var(--burgundy)" />
     <KpiCard label="Resolved & Verified" value={resolved} color="#15803d"
       sub={<>Resolution efficiency: <b>{resolutionRate}%</b></>} labelColor="#15803d" />
     <KpiCard label="SLA Compliance" value={`${slaCompliant} / ${total || 1}`} color={PRIMARY}

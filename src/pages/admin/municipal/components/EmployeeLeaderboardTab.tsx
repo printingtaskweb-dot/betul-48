@@ -98,7 +98,7 @@ export const EmployeeLeaderboardTab: React.FC<Props> = ({ employees, departments
                   <td style={{ padding: '10px 12px' }}>
                     <span style={{
                       fontSize: '0.7rem', fontWeight: 800, padding: '3px 8px', borderRadius: 12,
-                      background: 'var(--theme-bg, #fff4e7)', border: BORDER, color: tierBadge.badgeColor,
+                      background: 'var(--theme-bg, #F6F1F1)', border: BORDER, color: tierBadge.badgeColor,
                     }}>{tierBadge.short}</span>
                   </td>
                   <td style={{ padding: '10px 12px', color: 'var(--gray-800)' }}>{deptObj?.name || 'City-wide'}</td>
@@ -107,7 +107,7 @@ export const EmployeeLeaderboardTab: React.FC<Props> = ({ employees, departments
                   </td>
                   <td style={{ padding: '10px 12px', fontWeight: 800 }}>{emp.assignedCount}</td>
                   <td style={{ padding: '10px 12px', fontWeight: 800, color: '#15803d' }}>{emp.solvedCount}</td>
-                  <td style={{ padding: '10px 12px', fontWeight: 800, color: '#b45309' }}>{emp.pendingCount}</td>
+                  <td style={{ padding: '10px 12px', fontWeight: 800, color: 'var(--status-pending)' }}>{emp.pendingCount}</td>
                   <td style={{ padding: '10px 12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <div style={{ width: 60, height: 6, borderRadius: 3, background: 'var(--theme-component-border, #bfbfbf)', overflow: 'hidden' }}>

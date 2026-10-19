@@ -77,7 +77,7 @@ export const AdminLogin: React.FC = () => {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          background: 'var(--header-gradient, linear-gradient(135deg, #4d0026 0%, #660033 50%, #800040 100%))',
+          background: 'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
         }}
       >
         <div style={{ color: '#fff', fontWeight: 700, fontSize: '1rem' }}>Checking administrator authentication…</div>
@@ -92,7 +92,7 @@ export const AdminLogin: React.FC = () => {
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'var(--header-gradient, linear-gradient(135deg, #4d0026 0%, #660033 50%, #800040 100%))',
+        background: 'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
         padding: 20,
       }}
     >
@@ -130,8 +130,8 @@ export const AdminLogin: React.FC = () => {
               width: 56,
               height: 56,
               borderRadius: '50%',
-              background: 'var(--theme-bg, #fff4e7)',
-              color: 'var(--theme-primary, #660033)',
+              background: 'var(--theme-bg, #F6F1F1)',
+              color: 'var(--theme-primary, #146C94)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
@@ -193,7 +193,7 @@ export const AdminLogin: React.FC = () => {
                 padding: '11px 14px',
                 borderRadius: 'var(--radius-md)',
                 border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                background: 'var(--theme-bg, #fff4e7)',
+                background: 'var(--theme-bg, #F6F1F1)',
                 fontSize: '0.9rem',
                 color: 'var(--gray-900)',
                 outline: 'none',
@@ -225,7 +225,7 @@ export const AdminLogin: React.FC = () => {
                 padding: '11px 14px',
                 borderRadius: 'var(--radius-md)',
                 border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                background: 'var(--theme-bg, #fff4e7)',
+                background: 'var(--theme-bg, #F6F1F1)',
                 fontSize: '0.9rem',
                 color: 'var(--gray-900)',
                 outline: 'none',
@@ -242,7 +242,7 @@ export const AdminLogin: React.FC = () => {
               padding: '13px 0',
               borderRadius: 'var(--radius-md)',
               border: 'none',
-              background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+              background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
               color: '#fff',
               fontWeight: 800,
               fontSize: '0.95rem',
@@ -263,7 +263,7 @@ export const AdminLogin: React.FC = () => {
           style={{
             marginTop: 18,
             padding: '10px 12px',
-            background: 'var(--theme-bg, #fff4e7)',
+            background: 'var(--theme-bg, #F6F1F1)',
             border: '1px solid var(--theme-component-border, #bfbfbf)',
             borderRadius: 'var(--radius-sm)',
             fontSize: '0.8rem',
@@ -273,8 +273,8 @@ export const AdminLogin: React.FC = () => {
             gap: 8,
           }}
         >
-          <Lock size={14} color="var(--theme-primary, #660033)" style={{ flexShrink: 0 }} />
-          <span>Department Heads & Staff: Please use the <strong><Link to="/dept/login" style={{ color: 'var(--theme-primary, #660033)' }}>Department Login Portal</Link></strong>.</span>
+          <Lock size={14} color="var(--theme-primary, #146C94)" style={{ flexShrink: 0 }} />
+          <span>Department Heads & Staff: Please use the <strong><Link to="/dept/login" style={{ color: 'var(--theme-primary, #146C94)' }}>Department Login Portal</Link></strong>.</span>
         </div>
 
         <p style={{ textAlign: 'center', marginTop: 18, fontSize: '0.78rem', color: 'var(--gray-500)', margin: '18px 0 0' }}>

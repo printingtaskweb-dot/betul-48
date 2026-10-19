@@ -65,12 +65,12 @@ const panel: React.CSSProperties = {
 const input: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box', padding: '9px 10px',
   borderRadius: 6, border: '1px solid var(--theme-component-border, #bfbfbf)',
-  background: 'var(--theme-bg, #fff4e7)', color: 'var(--gray-900)', font: 'inherit',
+  background: 'var(--theme-bg, #F6F1F1)', color: 'var(--gray-900)', font: 'inherit',
 };
 const button: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7,
   padding: '9px 12px', border: 0, borderRadius: 6, cursor: 'pointer',
-  color: '#fff', background: 'var(--theme-primary, #7DB668)', fontWeight: 800,
+  color: '#fff', background: 'var(--theme-primary, #146C94)', fontWeight: 800,
 };
 
 export default function ControlRoomDashboard() {
@@ -369,13 +369,13 @@ export default function ControlRoomDashboard() {
     <main style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px', display: 'grid', gap: 16 }}>
       <header style={{ ...panel, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Building2 size={24} color="var(--theme-primary, #660033)" />
+          <Building2 size={24} color="var(--theme-primary, #146C94)" />
           <div>
             <h1 style={{ margin: 0, fontSize: '1.25rem' }}>Municipal Control Room</h1>
             <p style={{ margin: '4px 0 0', color: 'var(--gray-600)', fontSize: '0.82rem' }}>Citizen intake, routing support, callbacks, and external coordination</p>
           </div>
         </div>
-        <button type="button" onClick={() => void load()} style={{ ...button, background: 'var(--theme-bg, #fff4e7)', color: 'var(--theme-primary, #660033)', border: '1px solid var(--theme-primary, #660033)' }}><RefreshCw size={14} /> Refresh</button>
+        <button type="button" onClick={() => void load()} style={{ ...button, background: 'var(--theme-bg, #F6F1F1)', color: 'var(--theme-primary, #146C94)', border: '1px solid var(--theme-primary, #146C94)' }}><RefreshCw size={14} /> Refresh</button>
       </header>
 
       {error && <div role="alert" style={{ ...panel, color: '#991b1b', borderColor: '#fca5a5' }}>{error}</div>}
@@ -383,7 +383,7 @@ export default function ControlRoomDashboard() {
 
       <nav style={{ display: 'flex', gap: 6, overflowX: 'auto', borderBottom: '1px solid var(--theme-component-border, #bfbfbf)' }}>
         {tabs.map((tab) => (
-          <button key={tab.id} type="button" onClick={() => { setActiveTab(tab.id); setMessage(''); setError(''); }} style={{ ...button, flex: '0 0 auto', borderRadius: '6px 6px 0 0', background: activeTab === tab.id ? 'var(--theme-primary, #660033)' : 'transparent', color: activeTab === tab.id ? '#fff' : 'var(--gray-700)' }}>
+          <button key={tab.id} type="button" onClick={() => { setActiveTab(tab.id); setMessage(''); setError(''); }} style={{ ...button, flex: '0 0 auto', borderRadius: '6px 6px 0 0', background: activeTab === tab.id ? 'var(--theme-primary, #146C94)' : 'transparent', color: activeTab === tab.id ? '#fff' : 'var(--gray-700)' }}>
             {tab.icon}{tab.label}
           </button>
         ))}

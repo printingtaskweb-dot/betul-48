@@ -49,12 +49,12 @@ const card: React.CSSProperties = {
 const input: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box', padding: '9px 10px',
   borderRadius: 6, border: '1px solid var(--theme-component-border, #bfbfbf)',
-  background: 'var(--theme-bg, #fff4e7)', color: 'var(--gray-900)', font: 'inherit',
+  background: 'var(--theme-bg, #F6F1F1)', color: 'var(--gray-900)', font: 'inherit',
 };
 const button: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7,
   padding: '9px 12px', border: 0, borderRadius: 6, cursor: 'pointer',
-  color: '#fff', background: 'var(--theme-primary, #660033)', fontWeight: 800,
+  color: '#fff', background: 'var(--theme-primary, #146C94)', fontWeight: 800,
 };
 const typeLabel: Record<Request['request_type'], string> = {
   citizen_dissatisfied: 'Citizen dissatisfied',
@@ -252,10 +252,10 @@ export default function VerifierDashboard() {
     <main style={{ maxWidth: 1280, margin: '0 auto', padding: '24px 16px', display: 'grid', gap: 16 }}>
       <header style={{ ...card, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <ShieldCheck size={25} color="var(--theme-primary, #660033)" />
+          <ShieldCheck size={25} color="var(--theme-primary, #146C94)" />
           <div><h1 style={{ margin: 0, fontSize: '1.25rem' }}>Independent Verification & Appeals</h1><p style={{ margin: '4px 0 0', color: 'var(--gray-600)', fontSize: '0.82rem' }}>Review dissatisfaction, missed responses, and requested inspections</p></div>
         </div>
-        <button type="button" onClick={() => void load()} style={{ ...button, background: 'var(--theme-bg, #fff4e7)', color: 'var(--theme-primary, #660033)', border: '1px solid var(--theme-primary, #660033)' }}><RefreshCw size={14} /> Refresh</button>
+        <button type="button" onClick={() => void load()} style={{ ...button, background: 'var(--theme-bg, #F6F1F1)', color: 'var(--theme-primary, #146C94)', border: '1px solid var(--theme-primary, #146C94)' }}><RefreshCw size={14} /> Refresh</button>
       </header>
 
       {error && <div role="alert" style={{ ...card, color: '#991b1b', borderColor: '#fca5a5' }}>{error}</div>}
@@ -275,7 +275,7 @@ export default function VerifierDashboard() {
           {eligibleRequests.map((request) => {
             const overdue = new Date(request.deadline_at).getTime() < Date.now();
             const assignedElsewhere = !!request.assigned_verifier_id && request.assigned_verifier_id !== user?.id;
-            return <button key={request.id} type="button" onClick={() => void openRequest(request)} style={{ ...card, textAlign: 'left', cursor: 'pointer', borderColor: request.id === selectedId ? 'var(--theme-primary, #660033)' : overdue ? '#fca5a5' : undefined, display: 'grid', gap: 6 }}>
+            return <button key={request.id} type="button" onClick={() => void openRequest(request)} style={{ ...card, textAlign: 'left', cursor: 'pointer', borderColor: request.id === selectedId ? 'var(--theme-primary, #146C94)' : overdue ? '#fca5a5' : undefined, display: 'grid', gap: 6 }}>
               <span style={{ display: 'flex', justifyContent: 'space-between', gap: 8, alignItems: 'center' }}><b>#{request.complaint.ticket_number}</b><span style={{ fontSize: '0.72rem', fontWeight: 800, color: overdue ? '#991b1b' : '#854d0e' }}>{overdue && <AlertTriangle size={12} />} {typeLabel[request.request_type]}</span></span>
               <span style={{ fontSize: '0.78rem', color: 'var(--gray-700)' }}>{request.complaint.description}</span>
               <span style={{ display: 'flex', justifyContent: 'space-between', gap: 8, fontSize: '0.7rem', color: 'var(--gray-600)' }}><span><Clock3 size={12} style={{ verticalAlign: 'middle' }} /> Due {new Date(request.deadline_at).toLocaleString()}</span><span>{assignedElsewhere ? 'Assigned to another verifier' : request.status.replace('_', ' ')}</span></span>

@@ -172,7 +172,7 @@ export const WardAssignmentPanel: React.FC<Props> = ({
       {searched && <>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', borderTop: BORDER, paddingTop: 10 }}>
           <span style={{ fontSize: '0.78rem', color: 'var(--gray-700)' }}>{assignableStaff.length} matching staff · {selectedStaffIds.size} selected</span>
-          <button type="button" onClick={toggleAllVisible} style={{ ...primaryBtn, background: 'var(--theme-bg, #fff4e7)', border: `1px solid ${PRIMARY}`, color: PRIMARY }}><Users size={14} />{allVisibleSelected ? 'Clear selection' : 'Select all results'}</button>
+          <button type="button" onClick={toggleAllVisible} style={{ ...primaryBtn, background: 'var(--theme-bg, #F6F1F1)', border: `1px solid ${PRIMARY}`, color: PRIMARY }}><Users size={14} />{allVisibleSelected ? 'Clear selection' : 'Select all results'}</button>
         </div>
         {assignableStaff.map((person) => {
           const assignedWard = wards.find((ward) => ward.id === person.assigned_ward_id);

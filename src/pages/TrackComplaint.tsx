@@ -265,7 +265,7 @@ export const TrackComplaint: React.FC = () => {
               padding: '10px 20px',
               borderRadius: 'var(--radius-sm)',
               border: 'none',
-              background: 'var(--theme-primary, #660033)',
+              background: 'var(--theme-primary, #146C94)',
               color: '#fff',
               fontWeight: 700,
               cursor: 'pointer',
@@ -372,10 +372,10 @@ export const TrackComplaint: React.FC = () => {
                 >
                   {/* Exact Coordinates Row */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--theme-primary, #660033)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--theme-primary, #146C94)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                       🎯 {language === 'hi' ? 'सटीक GPS स्थान' : 'Exact GPS Coordinates'}
                     </span>
-                    <code style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--theme-primary, #660033)', background: 'var(--theme-bg, #fff4e7)', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
+                    <code style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--theme-primary, #146C94)', background: 'var(--theme-bg, #F6F1F1)', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
                       {complaint.latitude.toFixed(6)}, {complaint.longitude.toFixed(6)}
                     </code>
                   </div>
@@ -394,7 +394,7 @@ export const TrackComplaint: React.FC = () => {
                         gap: 6,
                         padding: '10px 14px',
                         borderRadius: 'var(--radius-sm)',
-                        background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                        background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
                         color: '#fff',
                         fontWeight: 800,
                         fontSize: '0.85rem',
@@ -417,11 +417,11 @@ export const TrackComplaint: React.FC = () => {
                         padding: '10px 14px',
                         borderRadius: 'var(--radius-sm)',
                         background: 'var(--theme-component, #d9d9d9)',
-                        color: 'var(--theme-primary, #660033)',
+                        color: 'var(--theme-primary, #146C94)',
                         fontWeight: 700,
                         fontSize: '0.85rem',
                         textDecoration: 'none',
-                        border: '1.5px solid var(--theme-primary, #660033)',
+                        border: '1.5px solid var(--theme-primary, #146C94)',
                       }}
                     >
                       <Compass size={15} />
@@ -564,6 +564,7 @@ export const TrackComplaint: React.FC = () => {
 
               {/* Status Timeline */}
               <div
+                className="status-timeline"
                 style={{
                   marginTop: 20,
                   padding: '16px 18px',
@@ -572,45 +573,49 @@ export const TrackComplaint: React.FC = () => {
                   border: '1px solid var(--gray-200)',
                 }}
               >
-                <h4 style={{ margin: '0 0 14px', fontSize: '0.88rem', color: 'var(--gray-800)', fontWeight: 800 }}>
+                <h4 className="status-timeline-title" style={{ margin: '0 0 14px', fontSize: '0.88rem', color: 'var(--gray-800)', fontWeight: 800 }}>
                   {language === 'hi' ? 'निराकरण समयरेखा' : 'Redressal Timeline'}
                 </h4>
-                {(['pending', 'in_progress', 'resolved', 'verified'] as const).map((s, i) => {
-                  const statuses = ['pending', 'in_progress', 'resolved', 'verified'];
-                  const currentIdx = statuses.indexOf(complaint.status);
-                  const stepIdx = statuses.indexOf(s);
-                  const isDone = currentIdx >= stepIdx;
-                  return (
-                    <div
-                      key={s}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 12,
-                        marginBottom: i < 3 ? 10 : 0,
-                      }}
-                    >
+                <div className="status-timeline-steps">
+                  {(['pending', 'in_progress', 'resolved', 'verified'] as const).map((s, i) => {
+                    const statuses = ['pending', 'in_progress', 'resolved', 'verified'];
+                    const currentIdx = statuses.indexOf(complaint.status);
+                    const stepIdx = statuses.indexOf(s);
+                    const isDone = currentIdx >= stepIdx;
+                    return (
                       <div
+                        key={s}
+                        className="status-timeline-step"
                         style={{
-                          width: 24,
-                          height: 24,
-                          borderRadius: '50%',
-                          background: isDone ? 'var(--green-600)' : 'var(--gray-200)',
                           display: 'flex',
                           alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0,
-                          color: '#fff',
-                          fontSize: 12,
-                          fontWeight: 700,
+                          gap: 12,
+                          marginBottom: i < 3 ? 10 : 0,
                         }}
                       >
-                        {isDone ? '✓' : i + 1}
+                        <div
+                          className="status-timeline-marker"
+                          style={{
+                            width: 24,
+                            height: 24,
+                            borderRadius: '50%',
+                            background: isDone ? 'var(--green-600)' : 'var(--gray-200)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            color: '#fff',
+                            fontSize: 12,
+                            fontWeight: 700,
+                          }}
+                        >
+                          {isDone ? '✓' : i + 1}
+                        </div>
+                        <StatusBadge status={s} />
                       </div>
-                      <StatusBadge status={s} />
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Verification Panel – when status is 'resolved' */}
@@ -643,11 +648,11 @@ export const TrackComplaint: React.FC = () => {
                         marginTop: 20,
                         padding: '16px 18px',
                         background: 'var(--theme-component, #d9d9d9)',
-                        border: '2px solid var(--theme-primary, #660033)',
+                        border: '2px solid var(--theme-primary, #146C94)',
                         borderRadius: 'var(--radius-md)',
                       }}
                     >
-                      <p style={{ margin: '0 0 4px', fontSize: '0.72rem', fontWeight: 800, color: 'var(--theme-primary, #660033)', textTransform: 'uppercase' }}>
+                      <p style={{ margin: '0 0 4px', fontSize: '0.72rem', fontWeight: 800, color: 'var(--theme-primary, #146C94)', textTransform: 'uppercase' }}>
                         👑 {language === 'hi' ? 'नगर निगम एडमिन सत्यापन' : 'Municipal Admin Verification'}
                       </p>
                       <p style={{ margin: '0 0 12px', fontSize: '0.9rem', fontWeight: 700, color: 'var(--gray-900)' }}>
@@ -664,7 +669,7 @@ export const TrackComplaint: React.FC = () => {
                             padding: '11px 0',
                             borderRadius: 'var(--radius-sm)',
                             border: 'none',
-                            background: 'var(--theme-primary, #660033)',
+                            background: 'var(--theme-primary, #146C94)',
                             color: '#fff',
                             fontWeight: 700,
                             cursor: 'pointer',
@@ -733,7 +738,7 @@ export const TrackComplaint: React.FC = () => {
                             padding: '11px 0',
                             borderRadius: 'var(--radius-sm)',
                             border: 'none',
-                            background: 'var(--theme-primary, #660033)',
+                            background: 'var(--theme-primary, #146C94)',
                             color: '#fff',
                             fontWeight: 700,
                             cursor: 'pointer',
@@ -826,7 +831,7 @@ export const TrackComplaint: React.FC = () => {
             {/* Modal Header */}
             <div
               style={{
-                background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
                 padding: '20px 24px',
                 display: 'flex',
                 alignItems: 'center',
@@ -971,7 +976,7 @@ export const TrackComplaint: React.FC = () => {
                   onClick={() => setResolvingModal(false)}
                   style={{
                     flex: 1, padding: '12px', borderRadius: 'var(--radius-sm)',
-                    border: '1.5px solid var(--theme-component-border, #bfbfbf)', background: 'var(--theme-bg, #fff4e7)',
+                    border: '1.5px solid var(--theme-component-border, #bfbfbf)', background: 'var(--theme-bg, #F6F1F1)',
                     color: 'var(--gray-700)', fontWeight: 700, cursor: 'pointer',
                   }}
                 >
@@ -982,7 +987,7 @@ export const TrackComplaint: React.FC = () => {
                   disabled={submittingResolve}
                   style={{
                     flex: 2, padding: '12px', borderRadius: 'var(--radius-sm)',
-                    border: 'none', background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                    border: 'none', background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
                     color: '#fff', fontWeight: 800, fontSize: '0.9rem',
                     cursor: submittingResolve ? 'not-allowed' : 'pointer',
                     display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,

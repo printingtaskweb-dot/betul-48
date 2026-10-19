@@ -71,7 +71,7 @@ export const AdminDashboard: React.FC = () => {
     border: 'none',
     cursor: 'pointer',
     marginBottom,
-    background: active ? 'var(--theme-primary, #660033)' : 'transparent',
+    background: active ? 'var(--theme-primary, #146C94)' : 'transparent',
     color: active ? '#fff' : 'var(--gray-700)',
     fontWeight: active ? 800 : 600,
     fontSize: '0.88rem',
@@ -112,7 +112,7 @@ export const AdminDashboard: React.FC = () => {
       {/* ── Top Bar ── */}
       <header
         style={{
-          background: 'var(--header-gradient, linear-gradient(135deg, #4d0026 0%, #660033 50%, #800040 100%))',
+          background: 'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
           padding: '12px clamp(12px, 3vw, 24px)',
           display: 'flex',
           alignItems: 'center',
@@ -287,8 +287,8 @@ export const AdminDashboard: React.FC = () => {
             {pendingNewsCount > 0 && (
               <span
                 style={{
-                  background: activeTab === 'local_news' ? '#fff' : 'var(--theme-primary, #660033)',
-                  color: activeTab === 'local_news' ? 'var(--theme-primary, #660033)' : '#fff',
+                  background: activeTab === 'local_news' ? '#fff' : 'var(--theme-primary, #146C94)',
+                  color: activeTab === 'local_news' ? 'var(--theme-primary, #146C94)' : '#fff',
                   borderRadius: 'var(--radius-full)',
                   padding: '1px 7px',
                   fontSize: '0.72rem',
@@ -428,7 +428,7 @@ export const AdminDashboard: React.FC = () => {
           ) : activeTab === 'register' ? (
             <div>
               {sectionHeader(
-                <UserPlus size={22} color="var(--theme-primary, #660033)" />,
+                <UserPlus size={22} color="var(--theme-primary, #146C94)" />,
                 'Register Staff',
                 'Create a staff login and give the email and password to the officer',
               )}
@@ -441,7 +441,7 @@ export const AdminDashboard: React.FC = () => {
           ) : activeTab === 'staff_approvals' ? (
             <div>
               {sectionHeader(
-                <ClipboardCheck size={22} color="var(--theme-primary, #660033)" />,
+                <ClipboardCheck size={22} color="var(--theme-primary, #146C94)" />,
                 'Staff Approvals',
                 'Review and approve or reject pending staff registration requests',
               )}
@@ -450,7 +450,7 @@ export const AdminDashboard: React.FC = () => {
           ) : activeTab === 'staff_directory' ? (
             <div>
               {sectionHeader(
-                <ShieldCheck size={22} color="var(--theme-primary, #660033)" />,
+                <ShieldCheck size={22} color="var(--theme-primary, #146C94)" />,
                 'Staff Approval Table',
                 'Manage department staff applications — approve, reject, or revoke access',
               )}

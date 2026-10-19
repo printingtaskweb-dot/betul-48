@@ -192,19 +192,19 @@ export const NotificationPrompt: React.FC = () => {
                   width: 44,
                   height: 44,
                   borderRadius: 12,
-                  background: 'linear-gradient(135deg, #660033, #800040)',
+                  background: 'linear-gradient(135deg, #146C94, #0E526F)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#fff',
                   flexShrink: 0,
-                  boxShadow: '0 4px 12px rgba(102, 0, 51, 0.25)',
+                  boxShadow: '0 4px 12px rgba(20, 108, 148, 0.25)',
                 }}
               >
                 <BellRing size={22} />
               </div>
               <div>
-                <div style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#660033' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#146C94' }}>
                   {isHindi ? 'आईफोन सूचनाएं' : 'iPhone Notifications'}
                 </div>
                 <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800, color: '#111827', lineHeight: 1.25 }}>
@@ -218,7 +218,7 @@ export const NotificationPrompt: React.FC = () => {
                 : 'To receive push notifications on iOS: tap the Share button in Safari and select "Add to Home Screen".'}
             </p>
             <div style={{ display: 'flex', gap: 8, background: '#f3f4f6', padding: '10px 12px', borderRadius: 8, fontSize: '0.78rem', color: '#374151', marginBottom: 14 }}>
-              <Share size={16} color="#660033" />
+              <Share size={16} color="#146C94" />
               <span>Tap <strong>Share</strong> ➔ <strong>Add to Home Screen</strong> <PlusSquare size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /></span>
             </div>
             <button
@@ -228,7 +228,7 @@ export const NotificationPrompt: React.FC = () => {
                 padding: '10px 0',
                 borderRadius: 8,
                 border: 'none',
-                background: 'linear-gradient(135deg, #660033, #800040)',
+                background: 'linear-gradient(135deg, #146C94, #0E526F)',
                 color: '#fff',
                 fontWeight: 800,
                 fontSize: '0.86rem',
@@ -247,19 +247,19 @@ export const NotificationPrompt: React.FC = () => {
                   width: 44,
                   height: 44,
                   borderRadius: 12,
-                  background: 'linear-gradient(135deg, #660033, #800040)',
+                  background: 'linear-gradient(135deg, #146C94, #0E526F)',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   color: '#fff',
                   flexShrink: 0,
-                  boxShadow: '0 4px 12px rgba(102, 0, 51, 0.25)',
+                  boxShadow: '0 4px 12px rgba(20, 108, 148, 0.25)',
                 }}
               >
                 <BellRing size={22} style={{ animation: 'pulseFCM 2s infinite ease-in-out' }} />
               </div>
               <div>
-                <div style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#660033' }}>
+                <div style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#146C94' }}>
                   {isHindi ? 'नगर पालिका बैतूल' : 'IMC Betul 311'}
                 </div>
                 <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#111827', lineHeight: 1.25 }}>
@@ -283,7 +283,7 @@ export const NotificationPrompt: React.FC = () => {
                   padding: '11px 16px',
                   borderRadius: 10,
                   border: 'none',
-                  background: status === 'requesting' ? '#999' : 'linear-gradient(135deg, #660033, #800040)',
+                  background: status === 'requesting' ? '#999' : 'linear-gradient(135deg, #146C94, #0E526F)',
                   color: '#fff',
                   fontWeight: 800,
                   fontSize: '0.86rem',
@@ -292,7 +292,7 @@ export const NotificationPrompt: React.FC = () => {
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: 6,
-                  boxShadow: '0 4px 14px rgba(102, 0, 51, 0.25)',
+                  boxShadow: '0 4px 14px rgba(20, 108, 148, 0.25)',
                 }}
               >
                 <BellRing size={15} />

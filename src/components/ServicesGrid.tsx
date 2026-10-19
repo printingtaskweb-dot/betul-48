@@ -32,7 +32,7 @@ const SERVICES: Service[] = [
   {
     slug: 'water',
     image: '/rain-droplet-into-rings_78370-3843.avif',
-    gradient: 'linear-gradient(135deg, #1e40af, #2563eb)',
+    gradient: 'linear-gradient(135deg, #146C94, #19A7CE)',
     shadow: 'rgba(37,99,235,0.3)',
     route: '/complaint/new?dept=water',
     svgIcon: (

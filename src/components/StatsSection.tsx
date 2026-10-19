@@ -79,7 +79,7 @@ export const StatsSection: React.FC = () => {
       label: t(language, 'pendingComplaints'),
       value: stats.pending,
       icon: <Clock size={18} />,
-      color: '#92400e',
+      color: 'var(--status-pending)',
     },
     {
       key: 'resolved',
@@ -103,6 +103,7 @@ export const StatsSection: React.FC = () => {
         {cards.map((card, i) => (
           <div
             key={card.key}
+            className="stat-card"
             style={{
               background: 'var(--surface)',
               border: '1px solid rgba(0, 0, 0, 0.04)',
@@ -115,11 +116,12 @@ export const StatsSection: React.FC = () => {
             }}
           >
             <div
+              className="stat-icon"
               style={{
                 width: 36,
                 height: 36,
                 borderRadius: 12,
-                background: card.key === 'pending' ? 'rgba(146, 64, 14, 0.08)' : 'rgba(74, 14, 31, 0.06)',
+                background: card.key === 'pending' ? 'var(--status-pending-bg)' : 'rgba(20, 108, 148, 0.08)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -130,6 +132,7 @@ export const StatsSection: React.FC = () => {
               {card.icon}
             </div>
             <div
+              className="stat-value"
               style={{
                 fontFamily: '"Fraunces", Georgia, serif',
                 fontSize: 'clamp(1.5rem, 2vw, 2.2rem)',
@@ -144,6 +147,7 @@ export const StatsSection: React.FC = () => {
               {loaded ? <AnimatedNumber value={card.value} /> : '—'}
             </div>
             <div
+              className="stat-label"
               style={{
                 fontFamily: '"Geist Mono", monospace',
                 fontSize: 10,

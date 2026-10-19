@@ -123,7 +123,7 @@ const SubmitButton: React.FC<{ loading: boolean; label: string }> = ({
       border: 'none',
       background: loading
         ? 'var(--gray-300)'
-        : 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+        : 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
       color: '#fff',
       fontWeight: 700,
       fontSize: 16,

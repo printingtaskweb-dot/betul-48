@@ -33,8 +33,8 @@ export const OverviewTab: React.FC<Props> = ({
           </div>
           <div style={{ display: 'flex', gap: 12, fontSize: '0.72rem', fontWeight: 700 }}>
             <LegendDot color="#15803d" label="Resolved" />
-            <LegendDot color="#3730a3" label="In Progress" />
-            <LegendDot color="#b45309" label="Pending" />
+            <LegendDot color="var(--burgundy)" label="In Progress" />
+            <LegendDot color="var(--status-pending)" label="Pending" />
             <LegendDot color="#991b1b" label="Overdue" />
           </div>
         </div>
@@ -65,8 +65,8 @@ export const OverviewTab: React.FC<Props> = ({
                 <div style={{ position: 'relative', height: 22, background: 'rgba(0,0,0,0.05)', borderRadius: 6 }}>
                   <div style={{ display: 'flex', height: '100%', width: `${widthPct}%`, borderRadius: 6, overflow: 'hidden', transition: 'width 0.4s ease' }}>
                     {m.resolved > 0 && <div style={{ width: `${(m.resolved / m.total) * 100}%`, background: '#15803d' }} />}
-                    {m.inProgress > 0 && <div style={{ width: `${(m.inProgress / m.total) * 100}%`, background: '#3730a3' }} />}
-                    {m.pending > 0 && <div style={{ width: `${(m.pending / m.total) * 100}%`, background: '#b45309' }} />}
+                    {m.inProgress > 0 && <div style={{ width: `${(m.inProgress / m.total) * 100}%`, background: 'var(--burgundy)' }} />}
+                    {m.pending > 0 && <div style={{ width: `${(m.pending / m.total) * 100}%`, background: 'var(--status-pending)' }} />}
                   </div>
                   {m.overdue > 0 && (
                     <div
@@ -82,7 +82,7 @@ export const OverviewTab: React.FC<Props> = ({
                 <div style={{ display: 'flex', gap: 8, fontSize: '0.74rem', whiteSpace: 'nowrap' }}>
                   <b style={{ color: PRIMARY }}>{m.total}</b>
                   <span style={{ color: '#15803d' }}>✓ {m.resolved}</span>
-                  <span style={{ color: '#b45309' }}>⌛ {m.pending}</span>
+                  <span style={{ color: 'var(--status-pending)' }}>⌛ {m.pending}</span>
                   {m.overdue > 0 && <span style={{ color: '#991b1b', fontWeight: 800 }}>⚠ {m.overdue}</span>}
                   <span style={{ color: 'var(--gray-600)' }}>({m.rate}%)</span>
                 </div>

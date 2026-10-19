@@ -51,19 +51,19 @@ export function HierarchyFlow({
                 fontWeight: 800,
                 whiteSpace: 'nowrap',
                 background: isTarget
-                  ? 'var(--theme-primary, #660033)'
+                  ? 'var(--theme-primary, #146C94)'
                   : isCurrentAssigner
-                  ? 'var(--theme-bg, #fff4e7)'
+                  ? 'var(--theme-bg, #F6F1F1)'
                   : 'rgba(255,255,255,0.4)',
                 color: isTarget
                   ? '#fff'
                   : isCurrentAssigner
-                  ? 'var(--theme-primary, #660033)'
+                  ? 'var(--theme-primary, #146C94)'
                   : 'var(--gray-600)',
                 border: isCurrentAssigner
-                  ? '2px solid var(--theme-primary, #660033)'
+                  ? '2px solid var(--theme-primary, #146C94)'
                   : isTarget
-                  ? '2px solid var(--theme-primary, #660033)'
+                  ? '2px solid var(--theme-primary, #146C94)'
                   : '1px solid var(--theme-component-border, #bfbfbf)',
               }}
             >
@@ -203,7 +203,7 @@ export function AllotModal({
   };
 
   const border = '1.5px solid var(--theme-component-border, #bfbfbf)';
-  const primaryColor = 'var(--theme-primary, #660033)';
+  const primaryColor = 'var(--theme-primary, #146C94)';
 
   return (
     <div
@@ -252,7 +252,7 @@ export function AllotModal({
               </h3>
               <span
                 style={{
-                  background: 'var(--theme-bg, #fff4e7)',
+                  background: 'var(--theme-bg, #F6F1F1)',
                   border: '1px solid var(--theme-component-border, #bfbfbf)',
                   padding: '2px 8px',
                   borderRadius: 12,
@@ -271,7 +271,7 @@ export function AllotModal({
           <button
             onClick={onClose}
             style={{
-              background: 'var(--theme-bg, #fff4e7)',
+              background: 'var(--theme-bg, #F6F1F1)',
               border: border,
               borderRadius: 8,
               width: 32,
@@ -292,7 +292,7 @@ export function AllotModal({
         <div
           style={{
             padding: '10px 20px',
-            background: 'var(--theme-bg, #fff4e7)',
+            background: 'var(--theme-bg, #F6F1F1)',
             borderBottom: border,
             display: 'flex',
             flexDirection: 'column',
@@ -365,7 +365,7 @@ export function AllotModal({
                     fontSize: '0.76rem',
                     fontWeight: 800,
                     cursor: 'pointer',
-                    background: activeStep === 2 ? primaryColor : 'var(--theme-bg, #fff4e7)',
+                    background: activeStep === 2 ? primaryColor : 'var(--theme-bg, #F6F1F1)',
                     color: activeStep === 2 ? '#fff' : 'var(--gray-800)',
                     border: activeStep === 2 ? `2px solid ${primaryColor}` : border,
                     display: 'flex',
@@ -389,7 +389,7 @@ export function AllotModal({
                     fontSize: '0.76rem',
                     fontWeight: 800,
                     cursor: 'pointer',
-                    background: activeStep === 3 ? primaryColor : 'var(--theme-bg, #fff4e7)',
+                    background: activeStep === 3 ? primaryColor : 'var(--theme-bg, #F6F1F1)',
                     color: activeStep === 3 ? '#fff' : 'var(--gray-800)',
                     border: activeStep === 3 ? `2px solid ${primaryColor}` : border,
                     display: 'flex',
@@ -413,7 +413,7 @@ export function AllotModal({
                     fontSize: '0.76rem',
                     fontWeight: 800,
                     cursor: 'pointer',
-                    background: activeStep === 4 ? primaryColor : 'var(--theme-bg, #fff4e7)',
+                    background: activeStep === 4 ? primaryColor : 'var(--theme-bg, #F6F1F1)',
                     color: activeStep === 4 ? '#fff' : 'var(--gray-800)',
                     border: activeStep === 4 ? `2px solid ${primaryColor}` : border,
                     display: 'flex',
@@ -436,7 +436,7 @@ export function AllotModal({
                   fontSize: '0.76rem',
                   fontWeight: 800,
                   cursor: 'pointer',
-                  background: activeStep === 5 ? primaryColor : 'var(--theme-bg, #fff4e7)',
+                  background: activeStep === 5 ? primaryColor : 'var(--theme-bg, #F6F1F1)',
                   color: activeStep === 5 ? '#fff' : 'var(--gray-800)',
                   border: activeStep === 5 ? `2px solid ${primaryColor}` : border,
                   display: 'flex',
@@ -464,7 +464,7 @@ export function AllotModal({
                     padding: '8px 12px 8px 32px',
                     borderRadius: 8,
                     border,
-                    background: 'var(--theme-bg, #fff4e7)',
+                    background: 'var(--theme-bg, #F6F1F1)',
                     fontSize: '0.82rem',
                     boxSizing: 'border-box',
                   }}
@@ -481,7 +481,7 @@ export function AllotModal({
                       padding: '8px 12px',
                       borderRadius: 8,
                       border,
-                      background: 'var(--theme-bg, #fff4e7)',
+                      background: 'var(--theme-bg, #F6F1F1)',
                       fontSize: '0.82rem',
                       cursor: 'pointer',
                     }}
@@ -518,7 +518,7 @@ export function AllotModal({
                           style={{
                             padding: '10px 14px',
                             borderRadius: 10,
-                            background: isSelected ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
+                            background: isSelected ? 'var(--theme-bg, #F6F1F1)' : 'rgba(255,255,255,0.4)',
                             border: isSelected ? `2px solid ${primaryColor}` : border,
                             cursor: 'pointer',
                             display: 'flex',
@@ -566,7 +566,7 @@ export function AllotModal({
                           style={{
                             padding: '10px 14px',
                             borderRadius: 10,
-                            background: isSelected ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
+                            background: isSelected ? 'var(--theme-bg, #F6F1F1)' : 'rgba(255,255,255,0.4)',
                             border: isSelected ? `2px solid ${primaryColor}` : border,
                             cursor: 'pointer',
                             display: 'flex',
@@ -614,7 +614,7 @@ export function AllotModal({
                           style={{
                             padding: '10px 14px',
                             borderRadius: 10,
-                            background: isSelected ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
+                            background: isSelected ? 'var(--theme-bg, #F6F1F1)' : 'rgba(255,255,255,0.4)',
                             border: isSelected ? `2px solid ${primaryColor}` : border,
                             cursor: 'pointer',
                             display: 'flex',
@@ -662,7 +662,7 @@ export function AllotModal({
                           style={{
                             padding: '10px 14px',
                             borderRadius: 10,
-                            background: isSelected ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
+                            background: isSelected ? 'var(--theme-bg, #F6F1F1)' : 'rgba(255,255,255,0.4)',
                             border: isSelected ? `2px solid ${primaryColor}` : border,
                             cursor: 'pointer',
                             display: 'flex',
@@ -707,7 +707,7 @@ export function AllotModal({
                   padding: '8px 12px',
                   borderRadius: 8,
                   border,
-                  background: 'var(--theme-bg, #fff4e7)',
+                  background: 'var(--theme-bg, #F6F1F1)',
                   fontSize: '0.82rem',
                   boxSizing: 'border-box',
                   resize: 'vertical',
@@ -761,7 +761,7 @@ export function AllotModal({
                   padding: '8px 16px',
                   borderRadius: 8,
                   border,
-                  background: 'var(--theme-bg, #fff4e7)',
+                  background: 'var(--theme-bg, #F6F1F1)',
                   color: 'var(--gray-800)',
                   fontSize: '0.82rem',
                   fontWeight: 700,
@@ -778,7 +778,7 @@ export function AllotModal({
                   padding: '8px 18px',
                   borderRadius: 8,
                   border: 'none',
-                  background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                  background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
                   color: '#fff',
                   fontSize: '0.82rem',
                   fontWeight: 800,

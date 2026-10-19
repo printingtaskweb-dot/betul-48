@@ -4,15 +4,15 @@ import type { ComplaintStatus } from '../../lib/supabase';
 const STATUS_CONFIG: Record<ComplaintStatus, { label: string; color: string; bg: string; border: string }> = {
   pending: {
     label: 'Pending',
-    color: '#4A0E1F',
-    bg: 'rgba(74, 14, 31, 0.06)',
-    border: 'rgba(74, 14, 31, 0.1)',
+    color: 'var(--status-pending, #C62828)',
+    bg: 'var(--status-pending-bg, #FEE2E2)',
+    border: 'var(--status-pending-border, #FECACA)',
   },
   in_progress: {
     label: 'In Progress',
-    color: '#1e40af',
-    bg: 'rgba(30, 64, 175, 0.06)',
-    border: 'rgba(30, 64, 175, 0.1)',
+    color: 'var(--burgundy, #146C94)',
+    bg: 'var(--primary-100, #AFD3E2)',
+    border: 'rgba(20, 108, 148, 0.2)',
   },
   resolved: {
     label: 'Resolved',
@@ -43,7 +43,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className = ''
   const cfg = STATUS_CONFIG[status];
   return (
     <span
-      className={className}
+      className={`status-badge ${className}`.trim()}
       style={{
         display: 'inline-block',
         padding: '6px 12px',

@@ -258,16 +258,16 @@ export default function StaffApprovals({ cityId = null }: Props) {
     tabBtn: (active: boolean) => ({
       display: 'flex', alignItems: 'center', gap: 6, padding: '9px 16px', border: 'none',
       borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: active ? 800 : 600, fontSize: '0.85rem',
-      background: active ? 'var(--theme-primary, #660033)' : 'var(--theme-bg, #fff4e7)', color: active ? '#fff' : 'var(--gray-700)',
+      background: active ? 'var(--theme-primary, #146C94)' : 'var(--theme-bg, #F6F1F1)', color: active ? '#fff' : 'var(--gray-700)',
     }) as React.CSSProperties,
     card: { border: '1.5px solid var(--theme-component-border, #bfbfbf)', borderRadius: 'var(--radius-md)', padding: 14, marginBottom: 10, background: 'var(--theme-component, #d9d9d9)' } as React.CSSProperties,
     meta: { display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.76rem', color: 'var(--gray-600)' } as React.CSSProperties,
-    badge: { display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: 'var(--theme-bg, #fff4e7)', color: 'var(--theme-primary, #660033)', fontWeight: 700, fontSize: '0.7rem', border: '1px solid var(--theme-component-border, #bfbfbf)' } as React.CSSProperties,
+    badge: { display: 'inline-block', padding: '2px 8px', borderRadius: 999, background: 'var(--theme-bg, #F6F1F1)', color: 'var(--theme-primary, #146C94)', fontWeight: 700, fontSize: '0.7rem', border: '1px solid var(--theme-component-border, #bfbfbf)' } as React.CSSProperties,
     btn: (bg: string, color = '#fff') => ({
       display: 'flex', alignItems: 'center', gap: 5, padding: '8px 14px', border: 'none',
       borderRadius: 'var(--radius-md)', background: bg, color, fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
     }) as React.CSSProperties,
-    select: { width: '100%', padding: '9px 10px', border: '1.5px solid var(--theme-component-border, #bfbfbf)', borderRadius: 'var(--radius-md)', fontSize: '0.85rem', background: 'var(--theme-bg, #fff4e7)' } as React.CSSProperties,
+    select: { width: '100%', padding: '9px 10px', border: '1.5px solid var(--theme-component-border, #bfbfbf)', borderRadius: 'var(--radius-md)', fontSize: '0.85rem', background: 'var(--theme-bg, #F6F1F1)' } as React.CSSProperties,
     label: { display: 'block', fontSize: '0.72rem', fontWeight: 700, color: 'var(--gray-600)', marginBottom: 4 } as React.CSSProperties,
   };
 

@@ -6,7 +6,7 @@ import { supabase } from '../../lib/supabase';
 import type { Ward, Area } from '../../lib/wardTypes';
 
 const BORDER  = '1.5px solid var(--theme-component-border, #bfbfbf)';
-const PRIMARY = 'var(--theme-primary, #660033)';
+const PRIMARY = 'var(--theme-primary, #146C94)';
 
 const card: React.CSSProperties = {
   background: 'var(--theme-component, #d9d9d9)',
@@ -17,19 +17,19 @@ const field: React.CSSProperties = {
   padding: '9px 12px',
   borderRadius: 'var(--radius-md, 8px)',
   border: BORDER,
-  background: 'var(--theme-bg, #fff4e7)',
+  background: 'var(--theme-bg, #F6F1F1)',
   fontSize: '0.84rem',
   boxSizing: 'border-box',
   width: '100%',
 };
 const primaryBtn: React.CSSProperties = {
-  background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+  background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
   color: '#fff', border: 'none', borderRadius: 'var(--radius-sm, 6px)',
   padding: '8px 16px', fontSize: '0.78rem', fontWeight: 800,
   cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
 };
 const outlineBtn: React.CSSProperties = {
-  ...primaryBtn, background: 'var(--theme-bg, #fff4e7)',
+  ...primaryBtn, background: 'var(--theme-bg, #F6F1F1)',
   color: PRIMARY, border: `1.5px solid ${PRIMARY}`,
 };
 
@@ -311,7 +311,7 @@ export const WardManagement: React.FC<Props> = ({ onWardSelect, selectedWardId }
                 style={{
                   ...card, padding: '14px 16px',
                   border: isActive ? `2px solid ${PRIMARY}` : BORDER,
-                  background: isActive ? 'var(--theme-bg, #fff4e7)' : 'rgba(255,255,255,0.4)',
+                  background: isActive ? 'var(--theme-bg, #F6F1F1)' : 'rgba(255,255,255,0.4)',
                   cursor: 'pointer', transition: 'all 0.15s ease',
                 }}
               >
@@ -383,7 +383,7 @@ export const WardManagement: React.FC<Props> = ({ onWardSelect, selectedWardId }
                 {areasFor(activeWard.id).map((area) => (
                   <div key={area.id} style={{
                     padding: '10px 12px', borderRadius: 8,
-                    background: 'var(--theme-bg, #fff4e7)', border: BORDER,
+                    background: 'var(--theme-bg, #F6F1F1)', border: BORDER,
                     display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8,
                   }}>
                     <div>
@@ -422,7 +422,7 @@ export const WardManagement: React.FC<Props> = ({ onWardSelect, selectedWardId }
         >
           <div style={{ ...card, width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto', padding: 0 }}>
             <div style={{
-              background: 'var(--header-gradient, linear-gradient(135deg, #4d0026, #660033, #800040))',
+              background: 'var(--header-gradient, linear-gradient(135deg, #0E526F, #146C94, #0E526F))',
               padding: '16px 20px', color: '#fff',
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}>
@@ -524,7 +524,7 @@ export const WardManagement: React.FC<Props> = ({ onWardSelect, selectedWardId }
         >
           <div style={{ ...card, width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto', padding: 0 }}>
             <div style={{
-              background: 'var(--header-gradient, linear-gradient(135deg, #4d0026, #660033, #800040))',
+              background: 'var(--header-gradient, linear-gradient(135deg, #0E526F, #146C94, #0E526F))',
               padding: '16px 20px', color: '#fff',
               display: 'flex', justifyContent: 'space-between', alignItems: 'center',
             }}>

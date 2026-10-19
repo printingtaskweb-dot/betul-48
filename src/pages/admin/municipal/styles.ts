@@ -11,13 +11,13 @@ export const field: React.CSSProperties = {
   padding: '9px 12px',
   borderRadius: 'var(--radius-md, 8px)',
   border: BORDER,
-  background: 'var(--theme-bg, #fff4e7)',
+  background: 'var(--theme-bg, #F6F1F1)',
   fontSize: '0.84rem',
   boxSizing: 'border-box',
 };
 
 export const primaryBtn: React.CSSProperties = {
-  background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+  background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
   color: '#fff',
   border: 'none',
   borderRadius: 'var(--radius-sm, 6px)',
@@ -32,7 +32,7 @@ export const primaryBtn: React.CSSProperties = {
 
 export const outlineBtn: React.CSSProperties = {
   ...primaryBtn,
-  background: 'var(--theme-bg, #fff4e7)',
+  background: 'var(--theme-bg, #F6F1F1)',
   color: PRIMARY,
   border: `1.5px solid ${PRIMARY}`,
 };

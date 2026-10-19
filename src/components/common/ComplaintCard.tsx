@@ -61,7 +61,7 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
         onFocus={(e) => {
           if (!interactive) return;
           (e.currentTarget as HTMLDivElement).style.boxShadow =
-            '0 0 0 2px var(--theme-primary, #660033)';
+            '0 0 0 2px var(--theme-primary, #146C94)';
         }}
         onBlur={(e) => {
           if (!interactive) return;

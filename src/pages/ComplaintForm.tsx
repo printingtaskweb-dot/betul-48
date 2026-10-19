@@ -291,7 +291,7 @@ export const ComplaintForm: React.FC = () => {
           <div
             style={{
               background: 'var(--theme-component, #d9d9d9)',
-              border: '2px solid var(--theme-primary, #660033)',
+              border: '2px solid var(--theme-primary, #146C94)',
               borderRadius: 'var(--radius-md)',
               padding: '16px 24px',
               marginBottom: 20,
@@ -302,7 +302,7 @@ export const ComplaintForm: React.FC = () => {
               style={{
                 fontSize: 'clamp(1.2rem, 2vw, 1.8rem)',
                 fontWeight: 900,
-                color: 'var(--theme-primary, #660033)',
+                color: 'var(--theme-primary, #146C94)',
                 letterSpacing: 2,
                 fontFamily: 'monospace',
               }}
@@ -330,7 +330,7 @@ export const ComplaintForm: React.FC = () => {
                 borderRadius: 'var(--radius-sm)',
                 border: 'none',
                 background:
-                  'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                  'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
                 color: '#fff',
                 fontWeight: 700,
                 cursor: 'pointer',
@@ -374,7 +374,7 @@ export const ComplaintForm: React.FC = () => {
       <header
         style={{
           background:
-            'var(--header-gradient, linear-gradient(135deg, #4d0026 0%, #660033 50%, #800040 100%))',
+            'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
           padding: '14px 20px',
           color: '#fff',
           boxShadow: 'var(--shadow-sm)',
@@ -522,7 +522,7 @@ export const ComplaintForm: React.FC = () => {
                       left: 0,
                       right: 0,
                       zIndex: 60,
-                      background: 'var(--theme-bg, #fff4e7)',
+                      background: 'var(--theme-bg, #F6F1F1)',
                       border:
                         '1.5px solid var(--theme-component-border, #bfbfbf)',
                       borderRadius: 'var(--radius-md)',
@@ -808,7 +808,7 @@ export const ComplaintForm: React.FC = () => {
               background:
                 submitting || uploading || watermarking
                   ? 'var(--gray-300)'
-                  : 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                  : 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
               color: '#fff',
               fontWeight: 800,
               fontSize: '1rem',
@@ -855,5 +855,5 @@ const inputStyle: React.CSSProperties = {
   fontSize: '0.88rem',
   color: 'var(--gray-900)',
   outline: 'none',
-  background: 'var(--theme-bg, #fff4e7)',
+  background: 'var(--theme-bg, #F6F1F1)',
 };

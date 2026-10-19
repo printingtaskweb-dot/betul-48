@@ -19,7 +19,7 @@ export const ExecutiveHeader: React.FC<Props> = ({ myTier, loading, onRefresh })
         ...card,
         padding: '20px 24px',
         background:
-          'var(--header-gradient, linear-gradient(135deg, #4d0026 0%, #660033 50%, #800040 100%))',
+          'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
         color: '#fff',
         display: 'flex',
         flexWrap: 'wrap',
@@ -68,7 +68,7 @@ export const ExecutiveHeader: React.FC<Props> = ({ myTier, loading, onRefresh })
         <button
           onClick={onRefresh}
           style={{
-            background: 'var(--theme-bg, #fff4e7)',
+            background: 'var(--theme-bg, #F6F1F1)',
             color: PRIMARY,
             border: 'none',
             borderRadius: 'var(--radius-sm, 6px)',

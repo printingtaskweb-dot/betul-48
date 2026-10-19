@@ -62,7 +62,7 @@ const COMMON_AREAS = [
 ];
 
 const BORDER = '1.5px solid var(--theme-component-border, #bfbfbf)';
-const PRIMARY = 'var(--theme-primary, #660033)';
+const PRIMARY = 'var(--theme-primary, #146C94)';
 
 const card: React.CSSProperties = {
   background: 'var(--theme-component, #d9d9d9)',
@@ -73,12 +73,12 @@ const field: React.CSSProperties = {
   padding: '9px 12px',
   borderRadius: 'var(--radius-md, 8px)',
   border: BORDER,
-  background: 'var(--theme-bg, #fff4e7)',
+  background: 'var(--theme-bg, #F6F1F1)',
   fontSize: '0.84rem',
   boxSizing: 'border-box',
 };
 const primaryBtn: React.CSSProperties = {
-  background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+  background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
   color: '#fff',
   border: 'none',
   borderRadius: 'var(--radius-sm, 6px)',
@@ -92,7 +92,7 @@ const primaryBtn: React.CSSProperties = {
 };
 const outlineBtn: React.CSSProperties = {
   ...primaryBtn,
-  background: 'var(--theme-bg, #fff4e7)',
+  background: 'var(--theme-bg, #F6F1F1)',
   color: PRIMARY,
   border: `1.5px solid ${PRIMARY}`,
 };
@@ -103,8 +103,8 @@ const statusStyle = (s: string) =>
   isDone(s)
     ? { bg: '#dcfce7', fg: '#15803d' }
     : s === 'pending'
-    ? { bg: '#fef3c7', fg: '#b45309' }
-    : { bg: '#e0e7ff', fg: '#3730a3' };
+    ? { bg: 'var(--status-pending-bg)', fg: 'var(--status-pending)' }
+    : { bg: 'var(--primary-100)', fg: 'var(--burgundy)' };
 
 type ViewTab =
   | 'overview'
@@ -474,7 +474,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
           ...card,
           padding: '20px 24px',
           background:
-            'var(--header-gradient, linear-gradient(135deg, #4d0026 0%, #660033 50%, #800040 100%))',
+            'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
           color: '#fff',
           display: 'flex',
           flexWrap: 'wrap',
@@ -531,7 +531,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
           <button
             onClick={fetchData}
             style={{
-              background: 'var(--theme-bg, #fff4e7)',
+              background: 'var(--theme-bg, #F6F1F1)',
               color: PRIMARY,
               border: 'none',
               borderRadius: 'var(--radius-sm, 6px)',
@@ -582,13 +582,13 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
             style={{
               fontSize: '0.72rem',
               fontWeight: 800,
-              color: '#b45309',
+              color: 'var(--status-pending)',
               textTransform: 'uppercase',
             }}
           >
             Pending Allotment
           </div>
-          <div style={{ fontSize: '1.7rem', fontWeight: 900, color: '#b45309', marginTop: 4 }}>
+          <div style={{ fontSize: '1.7rem', fontWeight: 900, color: 'var(--status-pending)', marginTop: 4 }}>
             {pending}
           </div>
           <div style={{ fontSize: '0.74rem', color: 'var(--gray-600)', marginTop: 4 }}>
@@ -601,13 +601,13 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
             style={{
               fontSize: '0.72rem',
               fontWeight: 800,
-              color: '#3730a3',
+              color: 'var(--burgundy)',
               textTransform: 'uppercase',
             }}
           >
             In Progress / Dispatched
           </div>
-          <div style={{ fontSize: '1.7rem', fontWeight: 900, color: '#3730a3', marginTop: 4 }}>
+          <div style={{ fontSize: '1.7rem', fontWeight: 900, color: 'var(--burgundy)', marginTop: 4 }}>
             {inProgress}
           </div>
           <div style={{ fontSize: '0.74rem', color: 'var(--gray-600)', marginTop: 4 }}>
@@ -930,7 +930,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
             onClick={() => setShowRadar(!showRadar)}
             style={{
               ...primaryBtn,
-              background: showRadar ? PRIMARY : 'var(--theme-bg, #fff4e7)',
+              background: showRadar ? PRIMARY : 'var(--theme-bg, #F6F1F1)',
               color: showRadar ? '#fff' : PRIMARY,
               border: `1.5px solid ${PRIMARY}`,
             }}
@@ -1093,7 +1093,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                   fontWeight: 800,
                   padding: '4px 10px',
                   borderRadius: 12,
-                  background: 'var(--theme-bg, #fff4e7)',
+                  background: 'var(--theme-bg, #F6F1F1)',
                   border: BORDER,
                   color: PRIMARY,
                 }}
@@ -1125,7 +1125,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                       padding: '12px 16px',
                       borderRadius: 10,
                       background: isSelected
-                        ? 'var(--theme-bg, #fff4e7)'
+                        ? 'var(--theme-bg, #F6F1F1)'
                         : 'rgba(255,255,255,0.4)',
                       border: isSelected ? `2px solid ${PRIMARY}` : BORDER,
                       cursor: isDeputyOrHigher ? 'pointer' : 'default',
@@ -1164,10 +1164,10 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                         <span style={{ color: '#15803d', fontWeight: 800 }}>
                           Resolved: {deptResolved}
                         </span>
-                        <span style={{ color: '#3730a3', fontWeight: 700 }}>
+                        <span style={{ color: 'var(--burgundy)', fontWeight: 700 }}>
                           In Progress: {deptInProgress}
                         </span>
-                        <span style={{ color: '#b45309', fontWeight: 700 }}>
+                        <span style={{ color: 'var(--status-pending)', fontWeight: 700 }}>
                           Pending: {deptPending}
                         </span>
                         <span style={{ fontWeight: 900, color: PRIMARY, marginLeft: 4 }}>
@@ -1198,14 +1198,14 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                           <div
                             style={{
                               width: `${(deptInProgress / deptTotal) * 100}%`,
-                              background: '#3730a3',
+                              background: 'var(--burgundy)',
                               transition: 'width 0.4s ease',
                             }}
                           />
                           <div
                             style={{
                               width: `${(deptPending / deptTotal) * 100}%`,
-                              background: '#b45309',
+                              background: 'var(--status-pending)',
                               transition: 'width 0.4s ease',
                             }}
                           />
@@ -1363,7 +1363,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                   fontSize: '0.78rem',
                   color: PRIMARY,
                   fontWeight: 800,
-                  background: 'var(--theme-bg, #fff4e7)',
+                  background: 'var(--theme-bg, #F6F1F1)',
                   padding: '4px 10px',
                   borderRadius: 12,
                   border: BORDER,
@@ -1422,7 +1422,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                           width: 44,
                           height: 44,
                           borderRadius: 8,
-                          background: 'var(--theme-bg, #fff4e7)',
+                          background: 'var(--theme-bg, #F6F1F1)',
                           border: BORDER,
                           display: 'flex',
                           alignItems: 'center',
@@ -1566,7 +1566,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                             </span>
                           </div>
                         ) : (
-                          <span style={{ color: '#b45309', fontWeight: 700 }}>
+                          <span style={{ color: 'var(--status-pending)', fontWeight: 700 }}>
                             ⚠️ Unassigned
                           </span>
                         )}
@@ -1696,7 +1696,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                             fontWeight: 800,
                             padding: '3px 8px',
                             borderRadius: 12,
-                            background: 'var(--theme-bg, #fff4e7)',
+                            background: 'var(--theme-bg, #F6F1F1)',
                             border: BORDER,
                             color: tierBadge.badgeColor,
                           }}
@@ -1726,7 +1726,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                         style={{
                           padding: '10px 12px',
                           fontWeight: 800,
-                          color: '#b45309',
+                          color: 'var(--status-pending)',
                         }}
                       >
                         {emp.pendingCount}
@@ -1887,7 +1887,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                     }}
                   >
                     <span style={{ color: '#15803d' }}>Resolved: {w.resolved}</span>
-                    <span style={{ color: '#b45309' }}>Pending: {w.pending}</span>
+                    <span style={{ color: 'var(--status-pending)' }}>Pending: {w.pending}</span>
                   </div>
                   <div
                     style={{
@@ -1989,7 +1989,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                     padding: '14px 16px',
                     borderRadius: 10,
                     background: isSelected
-                      ? 'var(--theme-bg, #fff4e7)'
+                      ? 'var(--theme-bg, #F6F1F1)'
                       : 'rgba(255,255,255,0.4)',
                     border: isSelected ? `2px solid ${PRIMARY}` : BORDER,
                     cursor: isDeputyOrHigher ? 'pointer' : 'default',
@@ -2022,7 +2022,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                     <span>
                       Total Complaints: <b>{deptComps.length}</b>
                     </span>
-                    <span style={{ color: '#b45309' }}>
+                    <span style={{ color: 'var(--status-pending)' }}>
                       Open: <b>{open}</b>
                     </span>
                   </div>
@@ -2079,7 +2079,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
             <div
               style={{
                 background:
-                  'var(--header-gradient, linear-gradient(135deg, #4d0026, #660033, #800040))',
+                  'var(--header-gradient, linear-gradient(135deg, #0E526F, #146C94, #0E526F))',
                 padding: '16px 20px',
                 color: '#fff',
                 display: 'flex',
@@ -2140,7 +2140,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                 style={{
                   ...field,
                   lineHeight: 1.5,
-                  background: 'var(--theme-bg, #fff4e7)',
+                  background: 'var(--theme-bg, #F6F1F1)',
                 }}
               >
                 <b>Description:</b>

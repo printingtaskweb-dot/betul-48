@@ -21,12 +21,12 @@ interface Props {
 const input: React.CSSProperties = {
   width: '100%', boxSizing: 'border-box', padding: '9px 10px',
   borderRadius: 6, border: '1px solid var(--theme-component-border, #bfbfbf)',
-  background: 'var(--theme-bg, #fff4e7)', color: 'var(--gray-900)', font: 'inherit',
+  background: 'var(--theme-bg, #F6F1F1)', color: 'var(--gray-900)', font: 'inherit',
 };
 const button: React.CSSProperties = {
   display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: 7,
   padding: '9px 12px', border: 0, borderRadius: 6, cursor: 'pointer',
-  color: '#fff', background: 'var(--theme-primary, #7DB668)', fontWeight: 800,
+  color: '#fff', background: 'var(--theme-primary, #146C94)', fontWeight: 800,
 };
 
 export const ControlRoomComplaintSearch: React.FC<Props> = ({
@@ -105,7 +105,7 @@ export const ControlRoomComplaintSearch: React.FC<Props> = ({
       {selected && (
         <div style={{ fontSize: '0.76rem', color: 'var(--gray-700)' }}>
           Selected: <b>#{selected.ticket_number}</b> · {selected.citizen_name || 'Anonymous'} · {selected.description.slice(0, 90)}
-          <button type="button" onClick={() => { setSelectedResult(null); onChange(''); }} style={{ marginLeft: 8, border: 0, background: 'none', color: 'var(--theme-primary, #660033)', cursor: 'pointer', fontWeight: 800 }}>Clear</button>
+          <button type="button" onClick={() => { setSelectedResult(null); onChange(''); }} style={{ marginLeft: 8, border: 0, background: 'none', color: 'var(--theme-primary, #146C94)', cursor: 'pointer', fontWeight: 800 }}>Clear</button>
         </div>
       )}
 
@@ -118,7 +118,7 @@ export const ControlRoomComplaintSearch: React.FC<Props> = ({
               key={complaint.id}
               type="button"
               onClick={() => { setSelectedResult(complaint); onChange(complaint.id); }}
-              style={{ padding: '8px 10px', textAlign: 'left', borderRadius: 5, border: '1px solid var(--theme-component-border, #bfbfbf)', background: 'var(--theme-bg, #fff4e7)', color: 'var(--gray-900)', cursor: 'pointer' }}
+              style={{ padding: '8px 10px', textAlign: 'left', borderRadius: 5, border: '1px solid var(--theme-component-border, #bfbfbf)', background: 'var(--theme-bg, #F6F1F1)', color: 'var(--gray-900)', cursor: 'pointer' }}
             >
               <b>#{complaint.ticket_number}</b> · {complaint.citizen_name || 'Anonymous'}{complaint.citizen_phone ? ` · ${complaint.citizen_phone}` : ''}
               <small style={{ display: 'block', marginTop: 3, color: 'var(--gray-600)' }}>{complaint.description.slice(0, 160)}</small>

@@ -33,10 +33,10 @@ interface UserComplaint {
 }
 
 const BORDER = '1.5px solid var(--theme-component-border, #bfbfbf)';
-const PRIMARY = 'var(--theme-primary, #660033)';
+const PRIMARY = 'var(--theme-primary, #146C94)';
 
 const metricPill: React.CSSProperties = {
-  background: 'var(--theme-bg, #fff4e7)',
+  background: 'var(--theme-bg, #F6F1F1)',
   border: '1px solid var(--theme-component-border, #bfbfbf)',
   padding: '4px 10px',
   borderRadius: 'var(--radius-full)',
@@ -183,7 +183,7 @@ export const AdminUserDirectory: React.FC = () => {
           <button
             onClick={fetchUsers}
             style={{
-              background: 'var(--theme-bg, #fff4e7)', border: BORDER, borderRadius: 'var(--radius-md)',
+              background: 'var(--theme-bg, #F6F1F1)', border: BORDER, borderRadius: 'var(--radius-md)',
               padding: '8px 12px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6,
               fontSize: '0.8rem', fontWeight: 700,
             }}
@@ -207,7 +207,7 @@ export const AdminUserDirectory: React.FC = () => {
             placeholder="Search by User Name, Mobile Number, Email, Staff ID, or Ward..."
             style={{
               width: '100%', padding: '11px 16px 11px 42px', borderRadius: 'var(--radius-md)',
-              border: BORDER, background: 'var(--theme-bg, #fff4e7)', fontSize: '0.88rem',
+              border: BORDER, background: 'var(--theme-bg, #F6F1F1)', fontSize: '0.88rem',
               color: 'var(--gray-900)', outline: 'none', boxSizing: 'border-box',
             }}
           />
@@ -233,7 +233,7 @@ export const AdminUserDirectory: React.FC = () => {
               style={{
                 padding: '4px 12px', borderRadius: 'var(--radius-full)', border: '1px solid',
                 borderColor: roleFilter === r.key ? PRIMARY : 'var(--theme-component-border, #bfbfbf)',
-                background: roleFilter === r.key ? PRIMARY : 'var(--theme-bg, #fff4e7)',
+                background: roleFilter === r.key ? PRIMARY : 'var(--theme-bg, #F6F1F1)',
                 color: roleFilter === r.key ? '#fff' : 'var(--gray-800)',
                 fontSize: '0.76rem', fontWeight: 700, cursor: 'pointer',
               }}
@@ -282,7 +282,7 @@ export const AdminUserDirectory: React.FC = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 260 }}>
                   <div style={{
                     width: 44, height: 44, borderRadius: '50%',
-                    background: isHead ? 'linear-gradient(135deg, #660033, #800040)' : isStaff ? 'var(--primary-gradient)' : 'var(--gray-400)',
+                    background: isHead ? 'linear-gradient(135deg, #146C94, #0E526F)' : isStaff ? 'var(--primary-gradient)' : 'var(--gray-400)',
                     color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontSize: '1.1rem', fontWeight: 800, flexShrink: 0,
                   }}>
@@ -295,7 +295,7 @@ export const AdminUserDirectory: React.FC = () => {
                         {u.full_name || 'Unnamed Citizen'}
                       </span>
                       <span style={{
-                        background: isHead ? PRIMARY : isStaff ? 'rgba(102,0,51,0.15)' : 'var(--theme-bg, #fff4e7)',
+                        background: isHead ? PRIMARY : isStaff ? 'rgba(102,0,51,0.15)' : 'var(--theme-bg, #F6F1F1)',
                         color: isHead ? '#fff' : PRIMARY,
                         border: '1px solid var(--theme-component-border, #bfbfbf)',
                         borderRadius: 'var(--radius-full)', padding: '1px 8px', fontSize: '0.7rem', fontWeight: 800,
@@ -333,7 +333,7 @@ export const AdminUserDirectory: React.FC = () => {
                       onClick={() => handleCopy(u.staff_code!, u.id)}
                       title="Click to copy Staff ID"
                       style={{
-                        background: 'var(--theme-bg, #fff4e7)', border: '1px solid var(--theme-component-border, #bfbfbf)',
+                        background: 'var(--theme-bg, #F6F1F1)', border: '1px solid var(--theme-component-border, #bfbfbf)',
                         borderRadius: 'var(--radius-sm)', padding: '3px 8px', cursor: 'pointer',
                         display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.74rem', fontWeight: 700, color: PRIMARY,
                       }}
@@ -383,7 +383,7 @@ export const AdminUserDirectory: React.FC = () => {
             maxHeight: '85vh', overflowY: 'auto', boxShadow: 'var(--shadow-xl)',
           }}>
             <div style={{
-              background: 'var(--header-gradient, linear-gradient(135deg, #4d0026 0%, #660033 50%, #800040 100%))',
+              background: 'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
               padding: '14px 20px', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
               <div>
@@ -404,7 +404,7 @@ export const AdminUserDirectory: React.FC = () => {
 
             <div style={{ padding: '16px 20px' }}>
               <div style={{
-                background: 'var(--theme-bg, #fff4e7)', borderRadius: 'var(--radius-md)',
+                background: 'var(--theme-bg, #F6F1F1)', borderRadius: 'var(--radius-md)',
                 border: '1px solid var(--theme-component-border, #bfbfbf)', padding: '12px 14px', marginBottom: 16,
                 display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, fontSize: '0.78rem',
               }}>
@@ -422,7 +422,7 @@ export const AdminUserDirectory: React.FC = () => {
                 <div style={{ textAlign: 'center', padding: 20, color: 'var(--gray-600)' }}>Loading complaints...</div>
               ) : userComplaints.length === 0 ? (
                 <div style={{
-                  background: 'var(--theme-bg, #fff4e7)', borderRadius: 'var(--radius-md)', padding: '24px 16px',
+                  background: 'var(--theme-bg, #F6F1F1)', borderRadius: 'var(--radius-md)', padding: '24px 16px',
                   textAlign: 'center', border: '1.5px dashed var(--theme-component-border, #bfbfbf)',
                 }}>
                   <p style={{ margin: 0, fontSize: '0.84rem', color: 'var(--gray-600)' }}>No complaints recorded for this user yet.</p>
@@ -435,7 +435,7 @@ export const AdminUserDirectory: React.FC = () => {
                       <div
                         key={c.id}
                         style={{
-                          background: 'var(--theme-bg, #fff4e7)', borderRadius: 'var(--radius-md)',
+                          background: 'var(--theme-bg, #F6F1F1)', borderRadius: 'var(--radius-md)',
                           border: '1px solid var(--theme-component-border, #bfbfbf)', padding: '10px 14px',
                           display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10,
                         }}
@@ -444,7 +444,8 @@ export const AdminUserDirectory: React.FC = () => {
                           <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                             <span style={{ fontWeight: 800, fontSize: '0.82rem', color: PRIMARY }}>#{c.ticket_number}</span>
                             <span style={{
-                              background: done ? '#dcfce7' : '#fef3c7', color: done ? '#15803d' : '#b45309',
+                              background: c.status === 'pending' ? 'var(--status-pending-bg)' : done ? '#dcfce7' : '#dbeafe',
+                              color: c.status === 'pending' ? 'var(--status-pending)' : done ? '#15803d' : '#146C94',
                               padding: '1px 6px', borderRadius: 4, fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
                             }}>
                               {c.status}

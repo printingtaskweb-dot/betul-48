@@ -18,8 +18,8 @@ interface Complaint {
 
 /* ─── Status helpers ─── */
 const STATUS_STYLES: Record<string, { bg: string; color: string; label_en: string; label_hi: string; icon: React.ReactNode }> = {
-  pending:     { bg: '#fef3c7', color: '#92400e', label_en: 'Pending',     label_hi: 'लंबित',      icon: <Clock size={13} /> },
-  in_progress: { bg: '#dbeafe', color: '#1e40af', label_en: 'In Progress', label_hi: 'प्रगति में', icon: <Clock size={13} /> },
+  pending:     { bg: 'var(--status-pending-bg)', color: 'var(--status-pending)', label_en: 'Pending',     label_hi: 'लंबित',      icon: <Clock size={13} /> },
+  in_progress: { bg: 'var(--primary-100)', color: 'var(--burgundy)', label_en: 'In Progress', label_hi: 'प्रगति में', icon: <Clock size={13} /> },
   resolved:    { bg: '#d1fae5', color: '#065f46', label_en: 'Resolved',    label_hi: 'हल किया',    icon: <CheckCircle size={13} /> },
   verified:    { bg: '#ede9fe', color: '#5b21b6', label_en: 'Verified',    label_hi: 'सत्यापित',   icon: <ShieldCheck size={13} /> },
   rejected:    { bg: '#fee2e2', color: '#991b1b', label_en: 'Rejected',    label_hi: 'अस्वीकृत',  icon: <XCircle size={13} /> },
@@ -119,10 +119,10 @@ const ProfilePage: React.FC = () => {
   /* ─── Not logged in ─── */
   if (!authLoading && !user) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--theme-bg, #fff4e7)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+      <div style={{ minHeight: '100vh', background: 'var(--theme-bg, #F6F1F1)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <div style={{ background: 'var(--theme-component, #d9d9d9)', borderRadius: 16, padding: '32px 24px', maxWidth: 380, width: '100%', textAlign: 'center', border: '1.5px solid var(--theme-component-border, #bfbfbf)' }}>
-          <User size={48} color="var(--theme-primary, #660033)" style={{ marginBottom: 16 }} />
-          <h2 style={{ color: '#660033', margin: '0 0 10px', fontWeight: 800 }}>
+          <User size={48} color="var(--theme-primary, #146C94)" style={{ marginBottom: 16 }} />
+          <h2 style={{ color: '#146C94', margin: '0 0 10px', fontWeight: 800 }}>
             {language === 'hi' ? 'लॉगिन करें' : 'Login Required'}
           </h2>
           <p style={{ color: '#555', fontSize: '0.9rem', marginBottom: 20 }}>
@@ -132,7 +132,7 @@ const ProfilePage: React.FC = () => {
           </p>
           <button
             onClick={() => navigate('/auth')}
-            style={{ padding: '12px 28px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#660033,#800040)', color: '#fff', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer' }}
+            style={{ padding: '12px 28px', borderRadius: 8, border: 'none', background: 'linear-gradient(135deg,#146C94,#0E526F)', color: '#fff', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer' }}
           >
             {language === 'hi' ? 'लॉगिन / पंजीकरण' : 'Login / Register'}
           </button>
@@ -149,12 +149,12 @@ const ProfilePage: React.FC = () => {
 
   /* ─── Main render ─── */
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--theme-bg, #fff4e7)', paddingBottom: 90 }}>
+    <div style={{ minHeight: '100vh', background: 'var(--theme-bg, #F6F1F1)', paddingBottom: 90 }}>
 
       {/* ── Header card (maroon gradient) ── */}
       <div
         style={{
-          background: 'linear-gradient(135deg, #660033 0%, #800040 60%, #99004d 100%)',
+          background: 'linear-gradient(135deg, #146C94 0%, #0E526F 60%, #99004d 100%)',
           color: '#fff',
           padding: '20px 20px 32px',
         }}
@@ -204,9 +204,9 @@ const ProfilePage: React.FC = () => {
         {/* ── Quick stats ── */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 10, marginTop: -20, marginBottom: 20 }}>
           {[
-            { label: language === 'hi' ? 'कुल' : 'Total', value: total, color: '#660033' },
+            { label: language === 'hi' ? 'कुल' : 'Total', value: total, color: '#146C94' },
             { label: language === 'hi' ? 'हल किए' : 'Resolved', value: resolved, color: '#065f46' },
-            { label: language === 'hi' ? 'लंबित' : 'Pending', value: pending, color: '#92400e' },
+            { label: language === 'hi' ? 'लंबित' : 'Pending', value: pending, color: 'var(--status-pending)' },
           ].map(stat => (
             <div key={stat.label} style={{ background: 'var(--theme-component, #d9d9d9)', borderRadius: 12, padding: '14px 8px', textAlign: 'center', border: '1.5px solid var(--theme-component-border, #bfbfbf)', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
               <div style={{ fontSize: '1.6rem', fontWeight: 900, color: stat.color, lineHeight: 1 }}>{stat.value}</div>
@@ -217,7 +217,7 @@ const ProfilePage: React.FC = () => {
 
         {/* ── Editable profile form ── */}
         <section style={{ background: 'var(--theme-component, #d9d9d9)', borderRadius: 14, border: '1.5px solid var(--theme-component-border, #bfbfbf)', padding: '18px 16px', marginBottom: 20 }}>
-          <h3 style={{ margin: '0 0 16px', color: '#660033', fontWeight: 800, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <h3 style={{ margin: '0 0 16px', color: '#146C94', fontWeight: 800, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
             <Edit2 size={18} />
             {language === 'hi' ? 'प्रोफ़ाइल संपादित करें' : 'Edit Profile'}
           </h3>
@@ -275,9 +275,9 @@ const ProfilePage: React.FC = () => {
                       flex: 1,
                       padding: '9px 0',
                       borderRadius: 8,
-                      border: language === lang ? '2px solid #660033' : '1.5px solid #bfbfbf',
-                      background: language === lang ? 'linear-gradient(135deg,#660033,#800040)' : '#fff4e7',
-                      color: language === lang ? '#fff' : '#660033',
+                      border: language === lang ? '2px solid #146C94' : '1.5px solid #bfbfbf',
+                      background: language === lang ? 'linear-gradient(135deg,#146C94,#0E526F)' : '#F6F1F1',
+                      color: language === lang ? '#fff' : '#146C94',
                       fontWeight: 700,
                       fontSize: '0.88rem',
                       cursor: 'pointer',
@@ -294,7 +294,7 @@ const ProfilePage: React.FC = () => {
             <button
               type="submit"
               disabled={saving}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 0', borderRadius: 10, border: 'none', background: saving ? '#999' : 'linear-gradient(135deg,#660033,#800040)', color: '#fff', fontWeight: 800, fontSize: '0.95rem', cursor: saving ? 'wait' : 'pointer', marginTop: 4 }}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 0', borderRadius: 10, border: 'none', background: saving ? '#999' : 'linear-gradient(135deg,#146C94,#0E526F)', color: '#fff', fontWeight: 800, fontSize: '0.95rem', cursor: saving ? 'wait' : 'pointer', marginTop: 4 }}
             >
               <Save size={16} />
               {saving
@@ -312,7 +312,7 @@ const ProfilePage: React.FC = () => {
 
         {/* ── Push Notifications ── */}
         <section style={{ background: 'var(--theme-component, #d9d9d9)', borderRadius: 14, border: '1.5px solid var(--theme-component-border, #bfbfbf)', padding: '18px 16px', marginBottom: 20 }}>
-          <h3 style={{ margin: '0 0 12px', color: '#660033', fontWeight: 800, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <h3 style={{ margin: '0 0 12px', color: '#146C94', fontWeight: 800, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
             <Bell size={18} />
             {language === 'hi' ? 'सूचनाएं' : 'Notifications'}
           </h3>
@@ -342,7 +342,7 @@ const ProfilePage: React.FC = () => {
               <button
                 onClick={requestPermission}
                 disabled={fcmLoading}
-                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '11px 0', borderRadius: 10, border: 'none', background: fcmLoading ? '#999' : 'linear-gradient(135deg,#660033,#800040)', color: '#fff', fontWeight: 800, fontSize: '0.92rem', cursor: fcmLoading ? 'wait' : 'pointer' }}
+                style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '11px 0', borderRadius: 10, border: 'none', background: fcmLoading ? '#999' : 'linear-gradient(135deg,#146C94,#0E526F)', color: '#fff', fontWeight: 800, fontSize: '0.92rem', cursor: fcmLoading ? 'wait' : 'pointer' }}
               >
                 <Bell size={16} />
                 {fcmLoading
@@ -355,7 +355,7 @@ const ProfilePage: React.FC = () => {
 
         {/* ── My Complaints ── */}
         <section style={{ marginBottom: 20 }}>
-          <h3 style={{ margin: '0 0 12px', color: '#660033', fontWeight: 800, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <h3 style={{ margin: '0 0 12px', color: '#146C94', fontWeight: 800, fontSize: '1rem', display: 'flex', alignItems: 'center', gap: 8 }}>
             <FileText size={18} />
             {language === 'hi' ? 'मेरी शिकायतें' : 'My Complaints'}
           </h3>
@@ -394,7 +394,7 @@ const ProfilePage: React.FC = () => {
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
                       <div>
-                        <div style={{ fontWeight: 800, color: '#660033', fontSize: '0.9rem', marginBottom: 2 }}>
+                        <div style={{ fontWeight: 800, color: '#146C94', fontSize: '0.9rem', marginBottom: 2 }}>
                           #{c.ticket_number}
                         </div>
                         <div style={{ fontSize: '0.78rem', color: '#555', marginBottom: 4 }}>
@@ -457,7 +457,7 @@ const inputStyle: React.CSSProperties = {
   padding: '10px 12px',
   borderRadius: 8,
   border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-  background: 'var(--theme-bg, #fff4e7)',
+  background: 'var(--theme-bg, #F6F1F1)',
   color: '#1a1a1a',
   fontSize: '0.9rem',
   outline: 'none',

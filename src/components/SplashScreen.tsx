@@ -23,7 +23,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onDone }) => {
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
         fontFamily: 'var(--font-primary)',
-        background: 'linear-gradient(145deg, #006A4E 0%, #00402F 100%)',
+        background: 'linear-gradient(145deg, #146C94 0%, #0E526F 100%)',
         opacity: exiting ? 0 : 1,
         transition: 'opacity 0.5s ease',
         pointerEvents: exiting ? 'none' : 'auto',
@@ -36,8 +36,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onDone }) => {
           to   { opacity: 1; transform: translateY(0); }
         }
         @keyframes splash-pulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(125, 182, 104, 0.5); }
-          50%      { box-shadow: 0 0 0 14px rgba(125, 182, 104, 0); }
+          0%, 100% { box-shadow: 0 0 0 0 rgba(25, 167, 206, 0.5); }
+          50%      { box-shadow: 0 0 0 14px rgba(25, 167, 206, 0); }
         }
         @keyframes splash-logo-pop {
           0%   { transform: scale(0.85); opacity: 0; }
@@ -54,14 +54,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onDone }) => {
       <div style={{
         position: 'absolute', top: -160, right: -100,
         width: 420, height: 420, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(125, 182, 104, 0.45), transparent 65%)',
+        background: 'radial-gradient(circle, rgba(25, 167, 206, 0.35), transparent 65%)',
         filter: 'blur(40px)',
         pointerEvents: 'none',
       }} />
       <div style={{
         position: 'absolute', bottom: -120, left: -100,
         width: 320, height: 320, borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(255, 155, 170, 0.25), transparent 65%)',
+        background: 'radial-gradient(circle, rgba(175, 211, 226, 0.28), transparent 65%)',
         filter: 'blur(40px)',
         pointerEvents: 'none',
       }} />
@@ -76,10 +76,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onDone }) => {
         <div style={{
           width: 110, height: 110, borderRadius: '50%',
           background: '#FFFFFF',
-          border: '2px solid rgba(125, 182, 104, 0.4)',
+          border: '2px solid rgba(25, 167, 206, 0.4)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           overflow: 'hidden',
-          boxShadow: '0 0 40px rgba(125, 182, 104, 0.35), inset 0 1px 0 rgba(255,255,255,0.1)',
+          boxShadow: '0 0 40px rgba(25, 167, 206, 0.35), inset 0 1px 0 rgba(255,255,255,0.1)',
           animation: 'splash-pulse 2s ease-in-out infinite, splash-logo-pop 0.8s ease forwards',
         }}>
           <img
@@ -121,9 +121,9 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onDone }) => {
         <div style={{
           marginTop: 8,
           padding: '8px 20px',
-          background: 'rgba(255, 155, 170, 0.12)',
+          background: 'rgba(175, 211, 226, 0.12)',
           borderRadius: 999,
-          border: '1px solid rgba(255, 155, 170, 0.4)',
+          border: '1px solid rgba(175, 211, 226, 0.4)',
           display: 'inline-flex',
           alignItems: 'center',
           gap: 8,

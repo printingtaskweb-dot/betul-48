@@ -6,6 +6,7 @@ import { HeroBanner } from '../components/HeroBanner';
 import { StatsSection } from '../components/StatsSection';
 import { ServicesGrid } from '../components/ServicesGrid';
 import { RecentComplaints } from '../components/RecentComplaints';
+import { LocalNewsSection } from '../components/LocalNewsSection';
 import { BottomNav } from '../components/BottomNav';
 import { Globe, LogOut, Building2, Camera, Search } from 'lucide-react';
 
@@ -61,9 +62,9 @@ export const Home: React.FC = () => {
   };
 
   return (
-    <div style={{
+    <div className="home-page" style={{
       minHeight: '100vh',
-      background: 'radial-gradient(120% 70% at 50% 0%, #FFFFFF 0%, #F4F2EF 60%, #EBE7E2 100%)',
+      background: 'radial-gradient(120% 70% at 50% 0%, #FFFFFF 0%, #F6F1F1 60%, #AFD3E2 150%)',
       paddingBottom: 100,
     }}>
       {/* ── Top Bar / Header ── */}
@@ -89,12 +90,12 @@ export const Home: React.FC = () => {
           <div
             style={{
               width: 38, height: 38, borderRadius: 12,
-              background: '#4A0E1F',
+              background: 'var(--burgundy)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               color: '#fff',
               fontFamily: '"Fraunces", serif',
               fontWeight: 600, fontSize: 20, fontStyle: 'normal',
-              boxShadow: '0 6px 14px -4px rgba(74, 14, 31, 0.3)',
+              boxShadow: '0 6px 14px -4px rgba(20, 108, 148, 0.28)',
             }}
           >
             B
@@ -138,7 +139,7 @@ export const Home: React.FC = () => {
               fontFamily: '"Geist Mono", monospace',
               fontSize: '0.82rem', fontWeight: 500, fontStyle: 'normal',
               textTransform: 'uppercase', letterSpacing: '0.06em',
-              color: '#4A0E1F', transition: 'all 0.3s ease',
+              color: 'var(--burgundy)', transition: 'all 0.3s ease',
             }}
           >
             🌿 {language === 'hi' ? 'हरित कचरा' : 'Green Waste'}
@@ -160,7 +161,7 @@ export const Home: React.FC = () => {
               fontFamily: '"Geist Mono", monospace',
               fontSize: '0.82rem', fontWeight: 500, fontStyle: 'normal',
               textTransform: 'uppercase', letterSpacing: '0.06em',
-              color: '#4A0E1F',
+              color: 'var(--burgundy)',
               display: 'flex', alignItems: 'center', gap: 5,
               transition: 'all 0.3s ease',
             }}
@@ -187,11 +188,11 @@ export const Home: React.FC = () => {
                 to="/profile"
                 style={{
                   width: 34, height: 34, borderRadius: '50%',
-                  background: '#4A0E1F',
+                  background: 'var(--burgundy)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   color: '#fff', fontSize: '0.85rem', fontWeight: 700,
                   textDecoration: 'none', cursor: 'pointer',
-                  boxShadow: '0 4px 12px -4px rgba(74, 14, 31, 0.3)',
+                  boxShadow: '0 4px 12px -4px rgba(20, 108, 148, 0.28)',
                 }}
                 title={user.email || 'User Profile'}
               >
@@ -303,6 +304,9 @@ export const Home: React.FC = () => {
       {/* ── Municipal Services Grid ── */}
       <ServicesGrid />
 
+      {/* ── Local Community News ── */}
+      <LocalNewsSection />
+
       {/* ── Recent Complaints Activity ── */}
       <RecentComplaints />
 
@@ -325,7 +329,7 @@ export const Home: React.FC = () => {
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
               <div style={{
                 width: 28, height: 28, borderRadius: 8,
-                background: '#4A0E1F',
+                background: 'var(--burgundy)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: '#fff', fontFamily: '"Fraunces", serif',
                 fontSize: 14, fontWeight: 600, fontStyle: 'normal',
@@ -366,7 +370,7 @@ export const Home: React.FC = () => {
                   style={{
                     fontFamily: '"Geist", sans-serif',
                     fontSize: 13, fontWeight: 500,
-                    color: '#4A0E1F', textDecoration: 'none',
+                    color: 'var(--burgundy)', textDecoration: 'none',
                     display: 'flex', alignItems: 'center', gap: 6,
                   }}
                 >

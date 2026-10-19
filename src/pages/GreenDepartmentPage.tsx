@@ -358,7 +358,7 @@ export const GreenDepartmentPage: React.FC = () => {
       <header
         style={{
           background:
-            'var(--header-gradient, linear-gradient(135deg, #4d0026 0%, #660033 50%, #800040 100%))',
+            'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
           padding: '16px 20px 24px',
           color: '#fff',
           boxShadow: 'var(--shadow-sm)',
@@ -473,7 +473,7 @@ export const GreenDepartmentPage: React.FC = () => {
             {/* Helpful Tip Callout */}
             <div
               style={{
-                background: 'var(--theme-bg, #fff4e7)',
+                background: 'var(--theme-bg, #F6F1F1)',
                 border: '1.5px solid var(--theme-component-border, #bfbfbf)',
                 borderRadius: 'var(--radius-md)',
                 padding: '12px 14px',
@@ -728,7 +728,7 @@ export const GreenDepartmentPage: React.FC = () => {
                 background:
                   submitting || uploading || watermarking
                     ? 'var(--gray-300)'
-                    : 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))',
+                    : 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
                 color: '#fff',
                 fontWeight: 800,
                 fontSize: '1rem',
@@ -830,5 +830,5 @@ const inputStyle: React.CSSProperties = {
   fontSize: '0.88rem',
   color: 'var(--gray-900)',
   outline: 'none',
-  background: 'var(--theme-bg, #fff4e7)',
+  background: 'var(--theme-bg, #F6F1F1)',
 };
