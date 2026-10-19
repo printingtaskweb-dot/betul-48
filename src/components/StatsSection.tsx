@@ -16,7 +16,7 @@ interface Stats {
   verified: number;
 }
 
-const AnimatedNumber: React.FC<{ value: number; delay?: number }> = ({ value, delay = 0 }) => {
+const AnimatedNumber: React.FC<{ value: number; delay?: number }> = ({ value, delay: _delay = 0 }) => {
   const [display, setDisplay] = useState(0);
 
   useEffect(() => {

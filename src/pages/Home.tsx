@@ -309,7 +309,7 @@ export const Home: React.FC = () => {
       {/* ── Green Waste Pickup Highlight Card ── */}
       <section style={{ padding: 0 }}>
         <Link to="/department/green" style={{ textDecoration: 'none' }}>
-          <div className="special-service" style={{ opacity: 0 }}>
+          <div className="special-service">
             <svg
               className="leaf-bg"
               viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5"

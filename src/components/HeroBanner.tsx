@@ -264,7 +264,7 @@ export const HeroBanner: React.FC = () => {
           y: 0,
           opacity: 1,
           scale: 1,
-          rotation: (i: number, el: HTMLElement) => parseFloat(el.dataset.restRot || '0'),
+          rotation: (_i: number, el: HTMLElement) => parseFloat(el.dataset.restRot || '0'),
           duration: 1.1,
           stagger: { each: 0.1, from: 'center' },
           ease: 'back.out(1.4)',
