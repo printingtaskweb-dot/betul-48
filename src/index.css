@@ -10,7 +10,7 @@
 
 :root {
   /* =========================================================================
-     🎨 BETUL CIVIC PALETTE
+     🎨 BETUL CIVIC PALETTE — UPDATED
      ========================================================================= */
   /* Backgrounds */
   --bg-1: #F6F1F1;
@@ -18,9 +18,9 @@
   --surface: #F6F1F1;
   --surface-2: #F6F1F1;
 
-  /* Shared accent palette: softer tones for supporting UI, deeper green for primary actions */
-  --peach: #FFC799;
-  --rose: #FF9BAA;
+  /* Shared accent palette: softer tones for supporting UI, deeper blue for primary actions */
+  --peach: #AFD3E2;
+  --rose: #19A7CE;
   --civic-green: #19A7CE;
   --civic-green-dark: #146C94;
   --burgundy: var(--civic-green-dark);
@@ -37,8 +37,8 @@
   /* Structural */
   --hairline: rgba(28, 27, 26, 0.12);
   --accent: var(--rose);
-  --warning-bg: rgba(255, 199, 153, 0.24);
-  --warning: #8A451B;
+  --warning-bg: rgba(175, 211, 226, 0.24);
+  --warning: #146C94;
 
   /* Theme aliases (backwards compat with components) */
   --theme-bg: var(--bg-1);
@@ -56,8 +56,8 @@
   /* Primary Palette */
   --primary-50:  #FFFAF6;
   --primary-100: #FFF8F2;
-  --primary-200: #FFC799;
-  --primary-300: #FF9BAA;
+  --primary-200: #AFD3E2;
+  --primary-300: #19A7CE;
   --primary-400: #7DB668;
   --primary-500: #006A4E;
   --primary-600: var(--burgundy);
@@ -65,11 +65,11 @@
   --primary-800: #004A37;
   --primary-900: #003024;
 
-  /* Green/Civic palette */
+  /* Green/Civic palette — now mapped to blue civic tones */
   --green-50:  var(--surface-2);
-  --green-100: rgba(125, 182, 104, 0.12);
-  --green-200: rgba(125, 182, 104, 0.24);
-  --green-300: rgba(125, 182, 104, 0.4);
+  --green-100: rgba(25, 167, 206, 0.12);
+  --green-200: rgba(25, 167, 206, 0.24);
+  --green-300: rgba(25, 167, 206, 0.4);
   --green-400: var(--civic-green);
   --green-500: var(--civic-green-dark);
   --green-600: var(--civic-green-dark);
@@ -90,11 +90,11 @@
   --gray-900: var(--ink);
 
   /* Indigo mapped */
-  --indigo-50: rgba(125, 182, 104, 0.12);
+  --indigo-50: rgba(25, 167, 206, 0.12);
   --indigo-600: var(--burgundy);
 
   /* Amber mapped */
-  --amber-500: #8A451B;
+  --amber-500: #146C94;
 
   /* Gradients */
   --primary-gradient: linear-gradient(135deg, var(--burgundy) 0%, var(--burgundy-light) 100%);
@@ -122,7 +122,7 @@
   --shadow-sm: 0 4px 14px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 12px 28px -12px rgba(0, 0, 0, 0.08);
   --shadow-lg: 0 24px 48px -18px rgba(0, 0, 0, 0.12);
-  --shadow-glow: 0 0 24px rgba(0, 106, 78, 0.15);
+  --shadow-glow: 0 0 24px rgba(20, 108, 148, 0.15);
   --shadow-pill: 0 12px 28px -8px rgba(0, 0, 0, 0.1);
 
   /* Border radius */
@@ -144,7 +144,7 @@ html,
 body {
   background: radial-gradient(
     120% 70% at 50% 0%,
-    #FFFFFF 0%, #FFF8F2 60%, #FFF1E8 100%
+    #FFFFFF 0%, #F6F1F1 60%, #E8F0F4 100%
   ) fixed;
   color: var(--ink);
   font-family: var(--font-primary);
@@ -271,14 +271,14 @@ input, textarea, select {
 }
 input:focus, textarea:focus, select:focus {
   border-color: var(--burgundy) !important;
-  box-shadow: 0 0 0 3px rgba(0, 106, 78, 0.16) !important;
+  box-shadow: 0 0 0 3px rgba(20, 108, 148, 0.16) !important;
   outline: none;
 }
 
 /* Scrollbar */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #FFC799; border-radius: 999px; }
+::-webkit-scrollbar-thumb { background: #AFD3E2; border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--mute); }
 
 /* Global Component & Card Defaults (Premium Editorial) */
@@ -396,8 +396,8 @@ input:focus, textarea:focus, select:focus {
 .fade-in { animation: fadeIn 0.3s ease forwards; }
 
 @keyframes pulse-burgundy {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 106, 78, 0.3); }
-  50%       { box-shadow: 0 0 0 10px rgba(0, 106, 78, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(20, 108, 148, 0.3); }
+  50%       { box-shadow: 0 0 0 10px rgba(20, 108, 148, 0); }
 }
 
 .admin-badge-pulse {
@@ -471,12 +471,12 @@ input:focus, textarea:focus, select:focus {
   font-weight: 500;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  box-shadow: 0 6px 16px -6px rgba(0, 106, 78, 0.4);
+  box-shadow: 0 6px 16px -6px rgba(20, 108, 148, 0.4);
 }
 .btn-solid:hover {
   background: var(--burgundy-light);
   transform: translateY(-2px);
-  box-shadow: 0 10px 24px -6px rgba(0, 106, 78, 0.55);
+  box-shadow: 0 10px 24px -6px rgba(20, 108, 148, 0.55);
 }
 
 /* ============================================================
@@ -486,11 +486,11 @@ input:focus, textarea:focus, select:focus {
   position: relative;
   margin: 16px 20px;
   border-radius: 32px;
-  background: linear-gradient(145deg, #006A4E 0%, #00402F 100%);
+  background: linear-gradient(145deg, #146C94 0%, #0B4A68 100%);
   padding: 48px 32px;
   color: #fff;
   overflow: hidden;
-  box-shadow: 0 30px 60px -20px rgba(50, 8, 19, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+  box-shadow: 0 30px 60px -20px rgba(11, 74, 104, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
   transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
 }
 .hero-section::before {
@@ -499,7 +499,7 @@ input:focus, textarea:focus, select:focus {
   width: 420px;
   height: 420px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(125, 182, 104, 0.45), transparent 65%);
+  background: radial-gradient(circle, rgba(25, 167, 206, 0.45), transparent 65%);
   top: -160px;
   right: -100px;
   filter: blur(40px);
@@ -524,14 +524,14 @@ input:focus, textarea:focus, select:focus {
   gap: 8px;
   padding: 8px 16px;
   border-radius: 999px;
-  background: rgba(255, 155, 170, 0.12);
-  border: 1px solid rgba(255, 155, 170, 0.4);
+  background: rgba(175, 211, 226, 0.12);
+  border: 1px solid rgba(175, 211, 226, 0.4);
   font-family: var(--font-mono);
   font-size: 10px;
   font-weight: 500;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--rose);
+  color: #AFD3E2;
   width: fit-content;
   max-width: 100%;
   overflow: hidden;
@@ -799,7 +799,7 @@ input:focus, textarea:focus, select:focus {
 }
 .action-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(28, 27, 26, 0.04), 0 24px 48px -12px rgba(0, 106, 78, 0.14);
+  box-shadow: 0 8px 16px rgba(28, 27, 26, 0.04), 0 24px 48px -12px rgba(20, 108, 148, 0.14);
 }
 .action-icon {
   width: 54px;
@@ -815,9 +815,9 @@ input:focus, textarea:focus, select:focus {
   transition: all 0.3s ease;
 }
 .action-card:hover .action-icon {
-  background: rgba(0, 106, 78, 0.08);
+  background: rgba(20, 108, 148, 0.08);
   color: var(--burgundy);
-  border-color: rgba(0, 106, 78, 0.2);
+  border-color: rgba(20, 108, 148, 0.2);
   transform: scale(1.08);
 }
 .action-text h4 {
@@ -846,11 +846,11 @@ input:focus, textarea:focus, select:focus {
   position: relative;
   margin: 28px 20px;
   border-radius: 32px;
-  background: linear-gradient(145deg, #006A4E 0%, #00402F 100%);
+  background: linear-gradient(145deg, #146C94 0%, #0B4A68 100%);
   padding: 40px 28px;
   color: #fff;
   overflow: hidden;
-  box-shadow: 0 30px 60px -20px rgba(50, 8, 19, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
+  box-shadow: 0 30px 60px -20px rgba(11, 74, 104, 0.5), inset 0 1px 0 rgba(255,255,255,0.1);
   cursor: pointer;
   transition: all 0.4s ease;
   display: block;
@@ -862,7 +862,7 @@ input:focus, textarea:focus, select:focus {
   width: 320px;
   height: 320px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(125, 182, 104, 0.4), transparent 65%);
+  background: radial-gradient(circle, rgba(25, 167, 206, 0.4), transparent 65%);
   bottom: -120px;
   right: -100px;
   filter: blur(40px);
@@ -1034,8 +1034,8 @@ input:focus, textarea:focus, select:focus {
   transition: all 0.4s cubic-bezier(0.6, 0, 0.2, 1);
 }
 .service-item:hover .service-icon {
-  box-shadow: 0 4px 12px rgba(0, 106, 78, 0.04), 0 20px 40px -10px rgba(0, 106, 78, 0.18);
-  border-color: rgba(0, 106, 78, 0.25);
+  box-shadow: 0 4px 12px rgba(20, 108, 148, 0.04), 0 20px 40px -10px rgba(20, 108, 148, 0.18);
+  border-color: rgba(20, 108, 148, 0.25);
   background: var(--surface-2);
   transform: rotate(-8deg) scale(1.08);
 }
@@ -1080,7 +1080,7 @@ input:focus, textarea:focus, select:focus {
 }
 .complaint-card:hover {
   transform: translateX(6px);
-  box-shadow: 0 8px 16px rgba(28, 27, 26, 0.04), 0 24px 48px -12px rgba(0, 106, 78, 0.12);
+  box-shadow: 0 8px 16px rgba(28, 27, 26, 0.04), 0 24px 48px -12px rgba(20, 108, 148, 0.12);
 }
 .complaint-icon {
   width: 48px;
