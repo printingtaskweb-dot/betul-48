@@ -63,17 +63,18 @@ export const OverviewTab: React.FC<Props> = ({
                   </span>
                 </div>
 
-                <div style={{ position: 'relative', height: 22, background: 'rgba(0,0,0,0.05)', borderRadius: 6 }}>
-                  <div style={{ display: 'flex', height: '100%', width: `${widthPct}%`, borderRadius: 6, overflow: 'hidden', transition: 'width 0.4s ease' }}>
-                    {m.resolved > 0 && <div style={{ width: `${(m.resolved / m.total) * 100}%`, background: '#15803d' }} />}
-                    {m.inProgress > 0 && <div style={{ width: `${(m.inProgress / m.total) * 100}%`, background: 'var(--burgundy)' }} />}
-                    {m.pending > 0 && <div style={{ width: `${(m.pending / m.total) * 100}%`, background: 'var(--status-pending)' }} />}
+                {/* ── Thinner bar track (height 10, radius 4) ── */}
+                <div style={{ position: 'relative', height: 10, background: 'rgba(0,0,0,0.05)', borderRadius: 4 }}>
+                  <div style={{ display: 'flex', height: '100%', width: `${widthPct}%`, borderRadius: 4, overflow: 'hidden', transition: 'width 0.4s ease' }}>
+                    {m.resolved > 0 && <div style={{ height: '100%', width: `${(m.resolved / m.total) * 100}%`, background: '#15803d' }} />}
+                    {m.inProgress > 0 && <div style={{ height: '100%', width: `${(m.inProgress / m.total) * 100}%`, background: 'var(--burgundy)' }} />}
+                    {m.pending > 0 && <div style={{ height: '100%', width: `${(m.pending / m.total) * 100}%`, background: 'var(--status-pending)' }} />}
                   </div>
                   {m.overdue > 0 && (
                     <div
                       title={`${m.overdue} overdue`}
                       style={{
-                        position: 'absolute', right: -4, top: -4, bottom: -4, width: 3,
+                        position: 'absolute', right: -4, top: -2, bottom: -2, width: 2,
                         background: '#991b1b', borderRadius: 2,
                       }}
                     />
