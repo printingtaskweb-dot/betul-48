@@ -1089,7 +1089,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                     {/* Progress bar — thinner by half (height 6px, maxWidth 210px) */}
                     <div
                       style={{
-                        height: 5,
+                        height: 2,
                         borderRadius: 3,
                         background: 'var(--theme-component-border, #bfbfbf)',
                         display: 'flex',
