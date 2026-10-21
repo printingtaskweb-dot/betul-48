@@ -107,6 +107,7 @@ const AppRoutes: React.FC = () => (
   <Routes>
     {/* Citizen routes */}
     <Route path="/" element={<Home />} />
+    <Route path="/news" element={<Home />} />
     <Route path="/auth" element={<AuthPage />} />
     <Route path="/profile" element={<ProfilePage />} />
     <Route path="/complaint/new" element={<ComplaintForm />} />

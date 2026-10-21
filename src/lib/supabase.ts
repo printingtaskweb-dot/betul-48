@@ -89,8 +89,19 @@ export interface Verification {
 export type LocalNewsStatus = 'pending' | 'approved' | 'rejected';
 export type LocalNewsCategory = 'news' | 'alert' | 'event' | 'thought' | 'general';
 
+export interface LocalNewsAuthor {
+  id: string;
+  full_name?: string | null;
+  phone?: string | null;
+  ward_number?: string | null;
+  role?: string | null;
+  email?: string | null;
+  authority_role?: string | null;
+}
+
 export interface LocalNews {
   id: string;
+  author_id?: string | null;
   author_name: string;
   author_phone?: string | null;
   area: string;
@@ -103,6 +114,46 @@ export interface LocalNews {
   approved_at?: string | null;
   rejection_reason?: string | null;
   likes_count: number;
+  views_count?: number;
+  reshares_count?: number;
+  comments_count?: number;
   created_at: string;
   updated_at: string;
+  author?: LocalNewsAuthor;
+}
+
+export interface LocalNewsComment {
+  id: string;
+  news_id: string;
+  user_id: string;
+  author_name: string;
+  author_phone?: string | null;
+  content: string;
+  created_at: string;
+  updated_at: string;
+  author?: LocalNewsAuthor;
+}
+
+export interface LocalNewsLike {
+  id: string;
+  news_id: string;
+  user_id: string;
+  created_at: string;
+}
+
+export interface LocalNewsReshare {
+  id: string;
+  news_id: string;
+  user_id: string;
+  quote_comment?: string | null;
+  created_at: string;
+  author?: LocalNewsAuthor;
+  news?: LocalNews;
+}
+
+export interface UserFollow {
+  id: string;
+  follower_id: string;
+  following_id: string;
+  created_at: string;
 }

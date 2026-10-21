@@ -1,5 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { MapPin, Newspaper, Radio, Sparkles } from 'lucide-react';
+import {
+  MapPin,
+  Newspaper,
+  Radio,
+  Sparkles,
+  Heart,
+  MessageCircle,
+  Repeat,
+  Eye,
+  CheckCircle2,
+  ShieldCheck,
+  ArrowRight,
+  Camera,
+  ChevronDown,
+} from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import type { LocalNews, LocalNewsCategory } from '../lib/supabase';
@@ -17,6 +31,7 @@ export const LocalNewsSection: React.FC = () => {
   const [posts, setPosts] = useState<LocalNews[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [expandedPostIds, setExpandedPostIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     let isCurrent = true;
@@ -25,15 +40,36 @@ export const LocalNewsSection: React.FC = () => {
       try {
         const { data, error } = await supabase
           .from('local_news')
-          .select('*')
+          .select(`
+            *,
+            author:user_profiles (
+              id,
+              full_name,
+              ward_number,
+              role,
+              authority_role
+            )
+          `)
           .eq('status', 'approved')
           .order('created_at', { ascending: false })
           .limit(3);
 
         if (!isCurrent) return;
         if (error) {
-          console.error('Could not load local news:', error.message);
-          setHasError(true);
+          // Fallback without join in case FK is still syncing
+          const fallback = await supabase
+            .from('local_news')
+            .select('*')
+            .eq('status', 'approved')
+            .order('created_at', { ascending: false })
+            .limit(3);
+
+          if (fallback.error) {
+            console.error('Could not load local news:', fallback.error.message);
+            setHasError(true);
+          } else {
+            setPosts(fallback.data || []);
+          }
         } else {
           setPosts(data || []);
         }
@@ -51,7 +87,10 @@ export const LocalNewsSection: React.FC = () => {
     };
   }, []);
 
-  const openNews = () => window.dispatchEvent(new Event('open-local-news'));
+  const openNews = () => {
+    window.dispatchEvent(new Event('open-local-news'));
+  };
+
   const formatDate = (date: string) => {
     const timestamp = Date.parse(date);
     return new Intl.DateTimeFormat(language === 'hi' ? 'hi-IN' : 'en-IN', {
@@ -60,20 +99,166 @@ export const LocalNewsSection: React.FC = () => {
     }).format(timestamp);
   };
 
+  const toggleExpandPost = (e: React.MouseEvent, postId: string) => {
+    e.stopPropagation();
+    setExpandedPostIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(postId)) {
+        next.delete(postId);
+      } else {
+        next.add(postId);
+      }
+      return next;
+    });
+  };
+
   return (
     <section className="local-news-section" aria-labelledby="local-news-title">
+      <style>{`
+        .local-news-card {
+          cursor: pointer;
+          display: flex;
+          flex-direction: column;
+          border-radius: 18px;
+          overflow: hidden;
+          background: #ffffff;
+          border: 1px solid rgba(20, 108, 148, 0.14);
+          box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
+          transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+        }
+        .local-news-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 10px 28px rgba(20, 108, 148, 0.12);
+          border-color: rgba(20, 108, 148, 0.35);
+        }
+        /* Highlighted photo container */
+        .local-news-photo-wrapper {
+          position: relative;
+          width: 100%;
+          height: 210px;
+          overflow: hidden;
+          background: linear-gradient(135deg, #e2f0f7, #d0e7f3);
+          border-bottom: 1.5px solid rgba(20, 108, 148, 0.12);
+        }
+        .local-news-photo {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          display: block;
+          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .local-news-card:hover .local-news-photo {
+          transform: scale(1.04);
+        }
+        .local-news-photo-badge {
+          position: absolute;
+          bottom: 10px;
+          right: 10px;
+          display: inline-flex;
+          align-items: center;
+          gap: 5px;
+          background: rgba(15, 23, 42, 0.78);
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+          color: #ffffff;
+          font-size: 11px;
+          font-weight: 600;
+          padding: 4px 10px;
+          border-radius: 999px;
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .local-news-card-content {
+          padding: 16px;
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+        }
+        .local-news-author-row {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          margin-bottom: 8px;
+          font-size: 0.82rem;
+          color: #334155;
+        }
+        .local-news-author-avatar {
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #146C94, #19A7CE);
+          color: #fff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 0.72rem;
+          font-weight: 700;
+        }
+        .local-news-copy-wrap {
+          margin: 0 0 10px;
+        }
+        .local-news-copy {
+          margin: 0;
+          color: #334155;
+          font-size: 13.5px;
+          line-height: 1.5;
+          word-break: break-word;
+          white-space: pre-wrap;
+        }
+        .local-news-read-more-btn {
+          background: transparent;
+          border: none;
+          padding: 2px 0 0;
+          color: #146C94;
+          font-size: 12px;
+          font-weight: 700;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          cursor: pointer;
+          margin-top: 5px;
+          transition: color 0.15s;
+        }
+        .local-news-read-more-btn:hover {
+          color: #0E526F;
+          text-decoration: underline;
+        }
+        .local-news-twitter-stats {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-top: 10px;
+          padding-top: 10px;
+          border-top: 1px solid rgba(0, 0, 0, 0.06);
+          font-size: 0.75rem;
+          color: #64748b;
+        }
+        .local-news-stat-item {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        }
+        @media (max-width: 767px) {
+          .local-news-photo-wrapper {
+            height: 190px;
+          }
+        }
+      `}</style>
+
       <div className="local-news-heading">
         <div>
           <span className="local-news-eyebrow">
             <Radio size={13} />
             {language === 'hi' ? 'बेतूल से ताज़ा' : 'From around Betul'}
           </span>
-          <h2 id="local-news-title">{language === 'hi' ? 'स्थानीय समाचार' : 'Local news'}</h2>
-          <p>{language === 'hi' ? 'आपके समुदाय के अपडेट' : 'Updates from your community'}</p>
+          <h2 id="local-news-title">
+            {language === 'hi' ? 'स्थानीय समाचार व विचार' : 'Local news & thoughts'}
+          </h2>
+          <p>{language === 'hi' ? 'नागरिकों व नगर निगम के ताज़ा अपडेट्स' : 'Updates from your community'}</p>
         </div>
         <button type="button" className="local-news-view-all" onClick={openNews}>
           {language === 'hi' ? 'सभी अपडेट' : 'View all'}
-          <span aria-hidden="true">→</span>
+          <ArrowRight size={14} aria-hidden="true" />
         </button>
       </div>
 
@@ -90,27 +275,116 @@ export const LocalNewsSection: React.FC = () => {
         </div>
       ) : posts.length ? (
         <div className="local-news-grid">
-          {posts.map((post) => (
-            <article className="local-news-card" key={post.id}>
-              {post.photo_url && (
-                <img className="local-news-photo" src={post.photo_url} alt={post.title || post.content} loading="lazy" />
-              )}
-              <div className="local-news-card-content">
-                <div className="local-news-meta">
-                  <span className={`local-news-category local-news-category-${post.category}`}>
-                    {CATEGORY_LABELS[post.category][language === 'hi' ? 'hi' : 'en']}
-                  </span>
-                  <span className="local-news-time">{formatDate(post.created_at)}</span>
+          {posts.map((post) => {
+            const author = post.author;
+            const isOfficial =
+              author?.role === 'admin' ||
+              author?.role === 'municipal_administrator' ||
+              author?.role === 'dept_staff' ||
+              author?.authority_role != null;
+
+            const isExpanded = expandedPostIds.has(post.id);
+            const isLong = post.content && post.content.length > 115;
+            const displayText = !isLong || isExpanded
+              ? post.content
+              : `${post.content.slice(0, 115).trim()}...`;
+
+            return (
+              <article
+                className="local-news-card"
+                key={post.id}
+                onClick={openNews}
+              >
+                {/* ── HIGHLIGHTED USER-UPLOADED IMAGE ── */}
+                {post.photo_url && (
+                  <div className="local-news-photo-wrapper">
+                    <img
+                      className="local-news-photo"
+                      src={post.photo_url}
+                      alt={post.title || post.content}
+                      loading="lazy"
+                    />
+                    <div className="local-news-photo-badge">
+                      <Camera size={12} />
+                      <span>{language === 'hi' ? 'नागरिक फोटो' : 'Citizen Photo'}</span>
+                    </div>
+                  </div>
+                )}
+
+                <div className="local-news-card-content">
+                  <div className="local-news-meta">
+                    <span className={`local-news-category local-news-category-${post.category}`}>
+                      {CATEGORY_LABELS[post.category][language === 'hi' ? 'hi' : 'en']}
+                    </span>
+                    <span className="local-news-time">{formatDate(post.created_at)}</span>
+                  </div>
+
+                  {/* Author Name & Role */}
+                  <div className="local-news-author-row">
+                    <div className="local-news-author-avatar">
+                      {post.author_name ? post.author_name[0].toUpperCase() : 'B'}
+                    </div>
+                    <span style={{ fontWeight: 600 }}>{post.author_name}</span>
+                    {isOfficial ? (
+                      <ShieldCheck size={14} color="#15803d" />
+                    ) : (
+                      <CheckCircle2 size={13} color="#146C94" />
+                    )}
+                  </div>
+
+                  {post.title && <h3>{post.title}</h3>}
+
+                  {/* ── TRUNCATED COPY WITH READ MORE BUTTON ── */}
+                  <div className="local-news-copy-wrap">
+                    <p className="local-news-copy">{displayText}</p>
+                    {isLong && (
+                      <button
+                        type="button"
+                        className="local-news-read-more-btn"
+                        onClick={(e) => toggleExpandPost(e, post.id)}
+                      >
+                        {isExpanded
+                          ? (language === 'hi' ? 'कम पढ़ें' : 'Show less')
+                          : (language === 'hi' ? 'और पढ़ें' : 'Read more')}
+                        <ChevronDown
+                          size={13}
+                          style={{
+                            transform: isExpanded ? 'rotate(180deg)' : 'none',
+                            transition: 'transform 0.2s ease',
+                          }}
+                        />
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="local-news-area">
+                    <MapPin size={13} />
+                    <span>{post.area}</span>
+                  </div>
+
+                  {/* Twitter Engagement Counter Stats (Real views only) */}
+                  <div className="local-news-twitter-stats">
+                    <div className="local-news-stat-item" title="Replies">
+                      <MessageCircle size={13} />
+                      <span>{post.comments_count || 0}</span>
+                    </div>
+                    <div className="local-news-stat-item" title="Reshares">
+                      <Repeat size={13} />
+                      <span>{post.reshares_count || 0}</span>
+                    </div>
+                    <div className="local-news-stat-item" title="Likes">
+                      <Heart size={13} color="#e11d48" />
+                      <span>{post.likes_count || 0}</span>
+                    </div>
+                    <div className="local-news-stat-item" title="Views">
+                      <Eye size={13} />
+                      <span>{post.views_count || 0}</span>
+                    </div>
+                  </div>
                 </div>
-                <h3>{post.title || CATEGORY_LABELS[post.category][language === 'hi' ? 'hi' : 'en']}</h3>
-                <p className="local-news-copy">{post.content}</p>
-                <div className="local-news-area">
-                  <MapPin size={13} />
-                  <span>{post.area}</span>
-                </div>
-              </div>
-            </article>
-          ))}
+              </article>
+            );
+          })}
         </div>
       ) : (
         <div className="local-news-empty">
@@ -128,3 +402,5 @@ export const LocalNewsSection: React.FC = () => {
     </section>
   );
 };
+
+export default LocalNewsSection;

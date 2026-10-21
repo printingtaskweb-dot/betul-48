@@ -185,7 +185,7 @@ export const Home: React.FC = () => {
           >
             🌿 {language === 'hi' ? 'हरित कचरा' : 'Green Waste'}
           </Link>
-          <Link
+                    <Link
             to="/track"
             style={{
               fontFamily: 'var(--font-primary)',
