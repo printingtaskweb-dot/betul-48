@@ -14,7 +14,7 @@ import DeptLogin from './pages/DeptLogin';
 import DeptDashboard from './pages/DeptDashboard';
 import MunicipalAdministratorDashboard from './pages/admin/MunicipalAdministratorDashboard';
 import ProfilePage from './pages/ProfilePage';
-import { FloatingNewsWidget } from './components/FloatingNewsWidget';
+import LocalNewsPage from './pages/LocalNewsPage';
 import { FCMRegistrar } from './components/FCMRegistrar';
 import { NotificationPrompt } from './components/NotificationPrompt';
 import CitizenCallbackPage from './pages/CitizenCallbackPage';
@@ -107,7 +107,7 @@ const AppRoutes: React.FC = () => (
   <Routes>
     {/* Citizen routes */}
     <Route path="/" element={<Home />} />
-    <Route path="/news" element={<Home />} />
+    <Route path="/news" element={<LocalNewsPage />} />
     <Route path="/auth" element={<AuthPage />} />
     <Route path="/profile" element={<ProfilePage />} />
     <Route path="/complaint/new" element={<ComplaintForm />} />
@@ -152,7 +152,6 @@ const App: React.FC = () => {
         {!splashDone && <SplashScreen onDone={handleSplashDone} />}
         <BrowserRouter>
           <AppRoutes />
-          <FloatingNewsWidget />
           <NotificationPrompt />
         </BrowserRouter>
       </AuthProvider>

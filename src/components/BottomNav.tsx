@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { Home, Newspaper, Plus, Search, ShieldCheck, User } from 'lucide-react';
@@ -7,24 +7,11 @@ interface BottomNavItem {
   path: string;
   icon: React.ReactNode;
   label: string;
-  onClick?: () => void;
 }
 
 export const BottomNav: React.FC = () => {
   const { language, user, isAdmin } = useAuth();
   const loc = useLocation();
-  const [isNewsOpen, setIsNewsOpen] = useState(false);
-
-  useEffect(() => {
-    const handleOpen = () => setIsNewsOpen(true);
-    const handleClose = () => setIsNewsOpen(false);
-    window.addEventListener('open-local-news', handleOpen);
-    window.addEventListener('close-local-news', handleClose);
-    return () => {
-      window.removeEventListener('open-local-news', handleOpen);
-      window.removeEventListener('close-local-news', handleClose);
-    };
-  }, []);
 
   const items: BottomNavItem[] = [
     { path: '/', icon: <Home size={20} />, label: language === 'hi' ? 'होम' : 'Home' },
@@ -32,9 +19,6 @@ export const BottomNav: React.FC = () => {
       path: '/news',
       icon: <Newspaper size={20} />,
       label: language === 'hi' ? 'विचार' : 'Thoughts',
-      onClick: () => {
-        window.dispatchEvent(new Event('open-local-news'));
-      },
     },
     { path: '/complaint/new', icon: <Plus size={24} />, label: language === 'hi' ? 'शिकायत' : 'Report' },
     { path: '/track', icon: <Search size={20} />, label: language === 'hi' ? 'स्थिति' : 'Track' },
@@ -125,7 +109,7 @@ export const BottomNav: React.FC = () => {
         aria-label={language === 'hi' ? 'मुख्य नेविगेशन' : 'Main navigation'}
       >
         {items.map((item) => {
-          const active = item.path === '/news' ? isNewsOpen : loc.pathname === item.path;
+          const active = loc.pathname === item.path;
           const isFab = item.path === '/complaint/new';
           const content = (
             <>
@@ -159,19 +143,7 @@ export const BottomNav: React.FC = () => {
             </>
           );
 
-          return item.onClick ? (
-            <button
-              key={item.path}
-              type="button"
-              className="bottom-nav-link bottom-nav-action"
-              onClick={item.onClick}
-              aria-label={language === 'hi' ? 'स्थानीय समाचार व विचार' : 'Open thoughts'}
-              aria-haspopup="dialog"
-              style={{ color: active ? '#146C94' : 'var(--mute, #8E8A86)' }}
-            >
-              {content}
-            </button>
-          ) : (
+          return (
             <Link
               key={item.path}
               to={item.path}

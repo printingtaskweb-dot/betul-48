@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import type {
   LocalNews,
@@ -77,15 +78,60 @@ export const FloatingNewsWidget: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [selectedArea, setSelectedArea] = useState('All');
 
+  // Helpers for local follow persistence
+  const getStoredFollowedAuthors = (): Set<string> => {
+    try {
+      const raw = localStorage.getItem('betul_followed_authors');
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) return new Set(arr);
+      }
+    } catch {}
+    return new Set();
+  };
+
+  const saveStoredFollowedAuthors = (set: Set<string>) => {
+    try {
+      localStorage.setItem('betul_followed_authors', JSON.stringify(Array.from(set)));
+    } catch {}
+  };
+
   // Social interactions state
   const [likedPostIds, setLikedPostIds] = useState<Set<string>>(new Set());
   const [resharedPostIds, setResharedPostIds] = useState<Set<string>>(new Set());
-  const [followedAuthorIds, setFollowedAuthorIds] = useState<Set<string>>(new Set());
+  const [followedAuthorIds, setFollowedAuthorIds] = useState<Set<string>>(getStoredFollowedAuthors);
   const [expandedCommentsPostId, setExpandedCommentsPostId] = useState<string | null>(null);
   const [postComments, setPostComments] = useState<Record<string, LocalNewsComment[]>>({});
   const [loadingComments, setLoadingComments] = useState<Record<string, boolean>>({});
   const [newCommentText, setNewCommentText] = useState<Record<string, string>>({});
   const [submittingComment, setSubmittingComment] = useState<Record<string, boolean>>({});
+
+  // Follow check helpers
+  const isAuthorFollowed = (
+    authorId?: string | null,
+    targetAuthorName?: string | null,
+    followsSet: Set<string> = followedAuthorIds
+  ): boolean => {
+    if (authorId && followsSet.has(authorId)) return true;
+    if (targetAuthorName) {
+      const trimmed = targetAuthorName.trim();
+      if (followsSet.has(trimmed)) return true;
+      if (followsSet.has(trimmed.toLowerCase())) return true;
+      if (followsSet.has(`author_${trimmed.toLowerCase()}`)) return true;
+    }
+    return false;
+  };
+
+  const isSelfAuthor = (
+    authorId?: string | null,
+    targetAuthorName?: string | null
+  ): boolean => {
+    if (user?.id && authorId && user.id === authorId) return true;
+    if (profile?.full_name && targetAuthorName) {
+      if (profile.full_name.trim().toLowerCase() === targetAuthorName.trim().toLowerCase()) return true;
+    }
+    return false;
+  };
 
   // Compose Box State
   const [content, setContent] = useState('');
@@ -100,8 +146,18 @@ export const FloatingNewsWidget: React.FC = () => {
   // User Profile Modal (when clicking user circle just like X)
   const [viewingProfile, setViewingProfile] = useState<UserProfileModalData | null>(null);
   const [profileFollowerCount, setProfileFollowerCount] = useState<number>(0);
+  const [profileViewCount, setProfileViewCount] = useState<number>(0);
   const [expandedTweetIds, setExpandedTweetIds] = useState<Set<string>>(new Set());
   const [isComposeOpen, setIsComposeOpen] = useState(false);
+
+  const getVisitorToken = () => {
+    let token = localStorage.getItem('betul_visitor_token');
+    if (!token) {
+      token = 'v_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+      localStorage.setItem('betul_visitor_token', token);
+    }
+    return token;
+  };
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const feedRef = useRef<HTMLDivElement>(null);
@@ -131,8 +187,17 @@ export const FloatingNewsWidget: React.FC = () => {
 
   const closeDrawer = () => {
     setIsOpen(false);
+    setViewingProfile(null);
     window.dispatchEvent(new Event('close-local-news'));
   };
+
+  const location = useLocation();
+
+  // Automatically close thought drawer and profile modal on navigation to any other page/tab
+  useEffect(() => {
+    setIsOpen(false);
+    setViewingProfile(null);
+  }, [location.pathname, location.search, location.key]);
 
   // Listen for global open/close events & auto-open on /news
   useEffect(() => {
@@ -140,12 +205,17 @@ export const FloatingNewsWidget: React.FC = () => {
       setIsOpen(true);
     }
     const handleOpen = () => setIsOpen(true);
-    const handleClose = () => setIsOpen(false);
+    const handleClose = () => {
+      setIsOpen(false);
+      setViewingProfile(null);
+    };
     window.addEventListener('open-local-news', handleOpen);
     window.addEventListener('close-local-news', handleClose);
+    window.addEventListener('popstate', handleClose);
     return () => {
       window.removeEventListener('open-local-news', handleOpen);
       window.removeEventListener('close-local-news', handleClose);
+      window.removeEventListener('popstate', handleClose);
     };
   }, []);
 
@@ -160,7 +230,14 @@ export const FloatingNewsWidget: React.FC = () => {
 
       if (likesRes.data) setLikedPostIds(new Set(likesRes.data.map((l: any) => l.news_id)));
       if (resharesRes.data) setResharedPostIds(new Set(resharesRes.data.map((r: any) => r.news_id)));
-      if (followsRes.data) setFollowedAuthorIds(new Set(followsRes.data.map((f: any) => f.following_id)));
+      if (followsRes.data) {
+        setFollowedAuthorIds((prev) => {
+          const merged = new Set(prev);
+          followsRes.data.forEach((f: any) => merged.add(f.following_id));
+          saveStoredFollowedAuthors(merged);
+          return merged;
+        });
+      }
     } catch {
       // safe fallback
     }
@@ -187,6 +264,7 @@ export const FloatingNewsWidget: React.FC = () => {
         .order('created_at', { ascending: false })
         .limit(50);
 
+      let fetched: LocalNews[] = [];
       if (error) {
         // Fallback without join if column/table is still syncing
         const fallback = await supabase
@@ -196,10 +274,25 @@ export const FloatingNewsWidget: React.FC = () => {
           .order('created_at', { ascending: false })
           .limit(50);
 
-        setPosts(fallback.data || []);
+        fetched = fallback.data || [];
       } else {
-        setPosts(data || []);
+        fetched = data || [];
       }
+
+      setPosts(fetched);
+
+      // Record views for thoughts seen by this visitor
+      fetched.forEach((p: LocalNews) => {
+        const sessionKey = `viewed_thought_${p.id}`;
+        if (!sessionStorage.getItem(sessionKey)) {
+          sessionStorage.setItem(sessionKey, '1');
+          void supabase.rpc('increment_local_news_view', { target_news_id: p.id }).then(({ error: rpcErr }) => {
+            if (rpcErr) {
+              void supabase.from('local_news_views').insert({ news_id: p.id, viewer_ip_hash: getVisitorToken() });
+            }
+          });
+        }
+      });
     } catch (err) {
       console.error(err);
       setPosts([]);
@@ -362,41 +455,110 @@ export const FloatingNewsWidget: React.FC = () => {
     }
   };
 
-  // Follow Toggle
-  const handleToggleFollow = async (authorId?: string | null) => {
-    if (!authorId) return;
-    if (!user) {
-      showToast(language === 'hi' ? 'फ़ॉलो करने के लिए कृपया लॉगिन करें।' : 'Please login to follow.');
-      return;
-    }
-    if (authorId === user.id) return;
+  // Follow Toggle (Supports both authenticated citizens and guest visitors)
+  const handleToggleFollow = async (
+    targetAuthorId?: string | null,
+    targetAuthorName?: string | null
+  ) => {
+    const rawName = targetAuthorName?.trim() || '';
+    const authorSlug = rawName ? `author_${rawName.toLowerCase()}` : '';
 
-    const isFollowing = followedAuthorIds.has(authorId);
+    if (isSelfAuthor(targetAuthorId, targetAuthorName)) return;
+
+    const currentlyFollowing = isAuthorFollowed(targetAuthorId, targetAuthorName, followedAuthorIds);
+
+    // Optimistically update set & persist to localStorage immediately
     setFollowedAuthorIds((prev) => {
       const next = new Set(prev);
-      if (isFollowing) next.delete(authorId);
-      else next.add(authorId);
+      if (currentlyFollowing) {
+        if (targetAuthorId) next.delete(targetAuthorId);
+        if (rawName) {
+          next.delete(rawName);
+          next.delete(rawName.toLowerCase());
+        }
+        if (authorSlug) next.delete(authorSlug);
+      } else {
+        if (targetAuthorId) next.add(targetAuthorId);
+        if (rawName) {
+          next.add(rawName);
+          next.add(rawName.toLowerCase());
+        }
+        if (authorSlug) next.add(authorSlug);
+      }
+      saveStoredFollowedAuthors(next);
       return next;
     });
 
-    setProfileFollowerCount((prev) => Math.max(0, prev + (isFollowing ? -1 : 1)));
+    setProfileFollowerCount((prev) => Math.max(0, prev + (currentlyFollowing ? -1 : 1)));
 
-    try {
-      if (isFollowing) {
-        await supabase.from('user_follows').delete().eq('follower_id', user.id).eq('following_id', authorId);
-        showToast(language === 'hi' ? 'अनफ़ॉलो किया गया' : 'Unfollowed');
-      } else {
-        await supabase.from('user_follows').insert({ follower_id: user.id, following_id: authorId });
-        showToast(language === 'hi' ? 'फ़ॉलो कर रहे हैं! 👤' : 'Following author! 👤');
+    // Track local follower counts for non-db or anonymous users
+    const countKey = `followers_count_${targetAuthorId || authorSlug || 'anon'}`;
+    const curCount = parseInt(localStorage.getItem(countKey) || '0', 10);
+    localStorage.setItem(countKey, Math.max(0, curCount + (currentlyFollowing ? -1 : 1)).toString());
+
+    showToast(
+      currentlyFollowing
+        ? (language === 'hi' ? 'अनफ़ॉलो किया गया' : 'Unfollowed')
+        : (language === 'hi' ? 'फ़ॉलो कर रहे हैं! 👤' : 'Following author! 👤')
+    );
+
+    // If citizen is logged in, sync to Supabase user_follows
+    if (user?.id) {
+      let uuidToFollow = targetAuthorId;
+      const isUuid = uuidToFollow && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuidToFollow);
+
+      // If no valid UUID yet, try resolving from user_profiles by name
+      if (!isUuid && rawName) {
+        try {
+          const { data: matched } = await supabase
+            .from('user_profiles')
+            .select('id')
+            .ilike('full_name', rawName)
+            .limit(1)
+            .maybeSingle();
+          if (matched?.id) {
+            uuidToFollow = matched.id;
+          }
+        } catch {}
       }
-    } catch {
-      // safe fallback
+
+      const validUuid = uuidToFollow && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuidToFollow);
+
+      if (validUuid && uuidToFollow !== user.id) {
+        try {
+          if (currentlyFollowing) {
+            await supabase.from('user_follows').delete().eq('follower_id', user.id).eq('following_id', uuidToFollow);
+          } else {
+            await supabase.from('user_follows').insert({ follower_id: user.id, following_id: uuidToFollow });
+          }
+        } catch {
+          // safe fallback
+        }
+      }
     }
   };
 
   // Open User Profile Modal when clicking author circle
   const handleOpenUserProfile = async (post: LocalNews) => {
-    const author = post.author;
+    let resolvedAuthorId = post.author_id;
+    let author = post.author;
+
+    // If author_id is missing, look up from user_profiles by author_name
+    if (!resolvedAuthorId && post.author_name) {
+      try {
+        const { data: matched } = await supabase
+          .from('user_profiles')
+          .select('id, full_name, phone, ward_number, role, authority_role')
+          .ilike('full_name', post.author_name.trim())
+          .limit(1)
+          .maybeSingle();
+        if (matched) {
+          resolvedAuthorId = matched.id;
+          author = matched as any;
+        }
+      } catch {}
+    }
+
     const isOfficial =
       author?.role === 'admin' ||
       author?.role === 'municipal_administrator' ||
@@ -404,29 +566,88 @@ export const FloatingNewsWidget: React.FC = () => {
       author?.authority_role != null;
 
     setViewingProfile({
-      id: post.author_id,
+      id: resolvedAuthorId || null,
       name: post.author_name,
-      phone: post.author_phone,
+      phone: post.author_phone || author?.phone || null,
       ward: author?.ward_number || post.area,
       role: author?.role || 'citizen',
       authority_role: author?.authority_role || undefined,
       isOfficial,
     });
 
-    // Fetch author follower count if author_id exists
-    if (post.author_id) {
+    // Follower count (DB + local tracking)
+    const authorSlug = `author_${post.author_name.trim().toLowerCase()}`;
+    const countKey = `followers_count_${resolvedAuthorId || authorSlug}`;
+    const localFollowers = parseInt(localStorage.getItem(countKey) || '0', 10);
+
+    if (resolvedAuthorId) {
       try {
         const { count } = await supabase
           .from('user_follows')
           .select('id', { count: 'exact', head: true })
-          .eq('following_id', post.author_id);
+          .eq('following_id', resolvedAuthorId);
 
-        setProfileFollowerCount(count || 0);
+        setProfileFollowerCount(Math.max(count || 0, localFollowers));
       } catch {
-        setProfileFollowerCount(0);
+        setProfileFollowerCount(localFollowers);
       }
     } else {
-      setProfileFollowerCount(0);
+      setProfileFollowerCount(localFollowers);
+    }
+
+    // ── Track & Count Profile Views from different visitors ──
+    const authorId = resolvedAuthorId;
+    const authorKey = authorId || authorSlug;
+    const visitorToken = getVisitorToken();
+    const isSelf = user?.id && authorId && user.id === authorId;
+    const sessionViewKey = `profile_viewed_${authorKey}`;
+    const alreadyViewedInSession = sessionStorage.getItem(sessionViewKey);
+    const localViewsKey = `profile_views_${authorKey}`;
+    let currentLocalViews = parseInt(localStorage.getItem(localViewsKey) || '0', 10);
+
+    // If new visitor in this session and not viewing own profile:
+    if (!isSelf && !alreadyViewedInSession) {
+      sessionStorage.setItem(sessionViewKey, '1');
+      currentLocalViews += 1;
+      localStorage.setItem(localViewsKey, currentLocalViews.toString());
+
+      if (authorId) {
+        void supabase
+          .rpc('record_user_profile_view', {
+            target_profile_id: authorId,
+            viewer_user_id: user?.id || null,
+            visitor_token: visitorToken,
+          })
+          .then(({ error: rpcErr }) => {
+            if (rpcErr) {
+              void supabase.from('user_profile_views').insert({
+                profile_id: authorId,
+                viewer_id: user?.id || null,
+                viewer_token: visitorToken,
+              });
+            }
+          });
+      }
+    }
+
+    // Fetch total profile views
+    if (authorId) {
+      try {
+        const { count } = await supabase
+          .from('user_profile_views')
+          .select('id', { count: 'exact', head: true })
+          .eq('profile_id', authorId);
+
+        if (count != null && count > 0) {
+          setProfileViewCount(Math.max(count, currentLocalViews));
+        } else {
+          setProfileViewCount(Math.max(1, currentLocalViews));
+        }
+      } catch {
+        setProfileViewCount(Math.max(1, currentLocalViews));
+      }
+    } else {
+      setProfileViewCount(Math.max(1, currentLocalViews));
     }
   };
 
@@ -552,8 +773,8 @@ export const FloatingNewsWidget: React.FC = () => {
       selectedArea === 'All' || post.area.toLowerCase().includes(selectedArea.toLowerCase());
 
     if (activeTab === 'following') {
-      if (!post.author_id) return false;
-      return matchesArea && followedAuthorIds.has(post.author_id);
+      const isFollowed = isAuthorFollowed(post.author_id, post.author_name);
+      return matchesArea && isFollowed;
     }
     if (activeTab === 'alerts') {
       return matchesArea && (post.category === 'alert' || post.category === 'news');
@@ -953,6 +1174,36 @@ export const FloatingNewsWidget: React.FC = () => {
           gap: 5px;
           flex-wrap: wrap;
           margin-bottom: 2px;
+        }
+
+        .x-tweet-follow-btn {
+          margin-left: auto;
+          display: inline-flex;
+          align-items: center;
+          gap: 3px;
+          padding: 2px 8px;
+          border-radius: 99px;
+          font-size: 0.68rem;
+          font-weight: 700;
+          border: 1px solid #146C94;
+          background: #146C94;
+          color: #ffffff;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .x-tweet-follow-btn:hover {
+          background: #0E526F;
+          border-color: #0E526F;
+        }
+        .x-tweet-follow-btn.is-following {
+          background: #f1f5f9;
+          border-color: #cfd9de;
+          color: #0f1419;
+        }
+        .x-tweet-follow-btn.is-following:hover {
+          background: #fee2e2;
+          border-color: #fca5a5;
+          color: #dc2626;
         }
 
         .x-tweet-name {
@@ -1576,6 +1827,31 @@ export const FloatingNewsWidget: React.FC = () => {
                               ? `Ward ${author.ward_number}`
                               : 'Citizen'}
                           </span>
+
+                          {/* Direct Follow Button on card */}
+                          {!isSelfAuthor(post.author_id, post.author_name) && (
+                            <button
+                              type="button"
+                              className={`x-tweet-follow-btn ${isAuthorFollowed(post.author_id, post.author_name) ? 'is-following' : ''}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                void handleToggleFollow(post.author_id, post.author_name);
+                              }}
+                              title={isAuthorFollowed(post.author_id, post.author_name) ? 'Following' : 'Follow author'}
+                            >
+                              {isAuthorFollowed(post.author_id, post.author_name) ? (
+                                <>
+                                  <UserCheck size={11} />
+                                  <span>{language === 'hi' ? 'फ़ॉलो' : 'Following'}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <UserPlus size={11} />
+                                  <span>{language === 'hi' ? '+ फ़ॉलो' : '+ Follow'}</span>
+                                </>
+                              )}
+                            </button>
+                          )}
                         </div>
 
                         {/* Text with Read More */}
@@ -1831,31 +2107,48 @@ export const FloatingNewsWidget: React.FC = () => {
                   {viewingProfile.name ? viewingProfile.name[0].toUpperCase() : 'B'}
                 </div>
 
-                {/* Follow Button just like X */}
-                {viewingProfile.id && viewingProfile.id !== user?.id ? (
-                  <button
-                    className={`x-profile-follow-btn ${
-                      followedAuthorIds.has(viewingProfile.id) ? 'is-following' : ''
-                    }`}
-                    onClick={() => handleToggleFollow(viewingProfile.id)}
-                  >
-                    {followedAuthorIds.has(viewingProfile.id) ? (
-                      <>
-                        <UserCheck size={14} style={{ display: 'inline', marginRight: 4 }} />
-                        <span>{language === 'hi' ? 'फ़ॉलो कर रहे हैं' : 'Following'}</span>
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus size={14} style={{ display: 'inline', marginRight: 4 }} />
-                        <span>{language === 'hi' ? 'फ़ॉलो करें' : 'Follow'}</span>
-                      </>
-                    )}
-                  </button>
-                ) : (
-                  <div style={{ fontSize: '0.8rem', color: '#536471', fontWeight: 600 }}>
-                    {viewingProfile.id === user?.id ? (language === 'hi' ? 'आप' : 'You') : ''}
-                  </div>
-                )}
+                {/* Follow Button just like X - always visible unless viewing own profile */}
+                {(() => {
+                  if (isSelfAuthor(viewingProfile.id, viewingProfile.name)) {
+                    return (
+                      <div
+                        style={{
+                          fontSize: '0.78rem',
+                          color: '#536471',
+                          fontWeight: 700,
+                          padding: '6px 12px',
+                          background: '#f1f5f9',
+                          borderRadius: 99,
+                        }}
+                      >
+                        {language === 'hi' ? 'आपकी प्रोफ़ाइल' : 'Your Profile'}
+                      </div>
+                    );
+                  }
+
+                  const isFollowing = isAuthorFollowed(viewingProfile.id, viewingProfile.name);
+
+                  return (
+                    <button
+                      type="button"
+                      className={`x-profile-follow-btn ${isFollowing ? 'is-following' : ''}`}
+                      onClick={() => void handleToggleFollow(viewingProfile.id, viewingProfile.name)}
+                      title={isFollowing ? 'Unfollow' : 'Follow author'}
+                    >
+                      {isFollowing ? (
+                        <>
+                          <UserCheck size={14} style={{ display: 'inline', marginRight: 4 }} />
+                          <span>{language === 'hi' ? 'फ़ॉलो कर रहे हैं' : 'Following'}</span>
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus size={14} style={{ display: 'inline', marginRight: 4 }} />
+                          <span>{language === 'hi' ? 'फ़ॉलो करें' : 'Follow'}</span>
+                        </>
+                      )}
+                    </button>
+                  );
+                })()}
               </div>
 
               {/* Name & Badges */}
@@ -1912,6 +2205,10 @@ export const FloatingNewsWidget: React.FC = () => {
                     {posts.filter((p) => p.author_name === viewingProfile.name).length}
                   </strong>{' '}
                   {language === 'hi' ? 'विचार' : 'Thoughts'}
+                </div>
+                <div title={language === 'hi' ? 'विज़िटर्स द्वारा प्रोफ़ाइल दृश्य' : 'Profile views from different visitors'}>
+                  <strong style={{ color: '#0f1419' }}>{profileViewCount}</strong>{' '}
+                  {language === 'hi' ? 'व्यूज़' : 'Views'}
                 </div>
               </div>
             </div>

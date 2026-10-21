@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   MapPin,
   Newspaper,
@@ -13,6 +14,8 @@ import {
   ArrowRight,
   Camera,
   ChevronDown,
+  UserPlus,
+  UserCheck,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -27,11 +30,148 @@ const CATEGORY_LABELS: Record<LocalNewsCategory, { en: string; hi: string }> = {
 };
 
 export const LocalNewsSection: React.FC = () => {
-  const { language } = useAuth();
+  const navigate = useNavigate();
+  const { language, user, profile } = useAuth();
   const [posts, setPosts] = useState<LocalNews[]>([]);
   const [loading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [expandedPostIds, setExpandedPostIds] = useState<Set<string>>(new Set());
+
+  // Stored follow helpers
+  const getStoredFollowedAuthors = (): Set<string> => {
+    try {
+      const raw = localStorage.getItem('betul_followed_authors');
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) return new Set(arr);
+      }
+    } catch {}
+    return new Set();
+  };
+
+  const saveStoredFollowedAuthors = (set: Set<string>) => {
+    try {
+      localStorage.setItem('betul_followed_authors', JSON.stringify(Array.from(set)));
+    } catch {}
+  };
+
+  const [followedAuthorIds, setFollowedAuthorIds] = useState<Set<string>>(getStoredFollowedAuthors);
+
+  const isAuthorFollowed = (
+    authorId?: string | null,
+    targetAuthorName?: string | null,
+    followsSet: Set<string> = followedAuthorIds
+  ): boolean => {
+    if (authorId && followsSet.has(authorId)) return true;
+    if (targetAuthorName) {
+      const trimmed = targetAuthorName.trim();
+      if (followsSet.has(trimmed)) return true;
+      if (followsSet.has(trimmed.toLowerCase())) return true;
+      if (followsSet.has(`author_${trimmed.toLowerCase()}`)) return true;
+    }
+    return false;
+  };
+
+  const isSelfAuthor = (
+    authorId?: string | null,
+    targetAuthorName?: string | null
+  ): boolean => {
+    if (user?.id && authorId && user.id === authorId) return true;
+    if (profile?.full_name && targetAuthorName) {
+      if (profile.full_name.trim().toLowerCase() === targetAuthorName.trim().toLowerCase()) return true;
+    }
+    return false;
+  };
+
+  // Load user follows from Supabase and merge
+  useEffect(() => {
+    if (!user?.id) return;
+    void supabase
+      .from('user_follows')
+      .select('following_id')
+      .eq('follower_id', user.id)
+      .then(({ data }) => {
+        if (data) {
+          setFollowedAuthorIds((prev) => {
+            const merged = new Set(prev);
+            data.forEach((f: any) => merged.add(f.following_id));
+            saveStoredFollowedAuthors(merged);
+            return merged;
+          });
+        }
+      });
+  }, [user?.id]);
+
+  const handleToggleFollow = async (
+    e: React.MouseEvent,
+    targetAuthorId?: string | null,
+    targetAuthorName?: string | null
+  ) => {
+    e.stopPropagation();
+    const rawName = targetAuthorName?.trim() || '';
+    const authorSlug = rawName ? `author_${rawName.toLowerCase()}` : '';
+
+    if (isSelfAuthor(targetAuthorId, targetAuthorName)) return;
+
+    const currentlyFollowing = isAuthorFollowed(targetAuthorId, targetAuthorName, followedAuthorIds);
+
+    setFollowedAuthorIds((prev) => {
+      const next = new Set(prev);
+      if (currentlyFollowing) {
+        if (targetAuthorId) next.delete(targetAuthorId);
+        if (rawName) {
+          next.delete(rawName);
+          next.delete(rawName.toLowerCase());
+        }
+        if (authorSlug) next.delete(authorSlug);
+      } else {
+        if (targetAuthorId) next.add(targetAuthorId);
+        if (rawName) {
+          next.add(rawName);
+          next.add(rawName.toLowerCase());
+        }
+        if (authorSlug) next.add(authorSlug);
+      }
+      saveStoredFollowedAuthors(next);
+      return next;
+    });
+
+    const countKey = `followers_count_${targetAuthorId || authorSlug || 'anon'}`;
+    const curCount = parseInt(localStorage.getItem(countKey) || '0', 10);
+    localStorage.setItem(countKey, Math.max(0, curCount + (currentlyFollowing ? -1 : 1)).toString());
+
+    if (user?.id) {
+      let uuidToFollow = targetAuthorId;
+      const isUuid = uuidToFollow && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuidToFollow);
+
+      if (!isUuid && rawName) {
+        try {
+          const { data: matched } = await supabase
+            .from('user_profiles')
+            .select('id')
+            .ilike('full_name', rawName)
+            .limit(1)
+            .maybeSingle();
+          if (matched?.id) {
+            uuidToFollow = matched.id;
+          }
+        } catch {}
+      }
+
+      const validUuid = uuidToFollow && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(uuidToFollow);
+      if (validUuid && uuidToFollow !== user.id) {
+        try {
+          if (currentlyFollowing) {
+            await supabase.from('user_follows').delete().eq('follower_id', user.id).eq('following_id', uuidToFollow);
+          } else {
+            await supabase.from('user_follows').insert({ follower_id: user.id, following_id: uuidToFollow });
+          }
+        } catch {
+          // safe fallback
+        }
+      }
+    }
+  };
 
   useEffect(() => {
     let isCurrent = true;
@@ -87,8 +227,20 @@ export const LocalNewsSection: React.FC = () => {
     };
   }, []);
 
+  // Record views for posts shown to this visitor
+  useEffect(() => {
+    if (!posts.length) return;
+    posts.forEach((post) => {
+      const sessionKey = `viewed_thought_${post.id}`;
+      if (!sessionStorage.getItem(sessionKey)) {
+        sessionStorage.setItem(sessionKey, '1');
+        void supabase.rpc('increment_local_news_view', { target_news_id: post.id });
+      }
+    });
+  }, [posts]);
+
   const openNews = () => {
-    window.dispatchEvent(new Event('open-local-news'));
+    navigate('/news');
   };
 
   const formatDate = (date: string) => {
@@ -193,6 +345,35 @@ export const LocalNewsSection: React.FC = () => {
           justify-content: center;
           font-size: 0.72rem;
           font-weight: 700;
+        }
+        .local-news-follow-btn {
+          margin-left: auto;
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          padding: 3px 9px;
+          border-radius: 99px;
+          font-size: 0.72rem;
+          font-weight: 700;
+          border: 1px solid #146C94;
+          background: #146C94;
+          color: #ffffff;
+          cursor: pointer;
+          transition: all 0.15s ease;
+        }
+        .local-news-follow-btn:hover {
+          background: #0E526F;
+          border-color: #0E526F;
+        }
+        .local-news-follow-btn.is-following {
+          background: #f1f5f9;
+          border-color: #cbd5e1;
+          color: #334155;
+        }
+        .local-news-follow-btn.is-following:hover {
+          background: #fee2e2;
+          border-color: #fca5a5;
+          color: #dc2626;
         }
         .local-news-copy-wrap {
           margin: 0 0 10px;
@@ -319,16 +500,40 @@ export const LocalNewsSection: React.FC = () => {
                     <span className="local-news-time">{formatDate(post.created_at)}</span>
                   </div>
 
-                  {/* Author Name & Role */}
+                  {/* Author Name, Role, & Follow Button */}
                   <div className="local-news-author-row">
                     <div className="local-news-author-avatar">
                       {post.author_name ? post.author_name[0].toUpperCase() : 'B'}
                     </div>
-                    <span style={{ fontWeight: 600 }}>{post.author_name}</span>
-                    {isOfficial ? (
-                      <ShieldCheck size={14} color="#15803d" />
-                    ) : (
-                      <CheckCircle2 size={13} color="#146C94" />
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                      <span style={{ fontWeight: 600 }}>{post.author_name}</span>
+                      {isOfficial ? (
+                        <ShieldCheck size={14} color="#15803d" />
+                      ) : (
+                        <CheckCircle2 size={13} color="#146C94" />
+                      )}
+                    </div>
+
+                    {/* Follow button right on the news card */}
+                    {!isSelfAuthor(post.author_id, post.author_name) && (
+                      <button
+                        type="button"
+                        className={`local-news-follow-btn ${isAuthorFollowed(post.author_id, post.author_name) ? 'is-following' : ''}`}
+                        onClick={(e) => handleToggleFollow(e, post.author_id, post.author_name)}
+                        title={isAuthorFollowed(post.author_id, post.author_name) ? 'Following' : 'Follow author'}
+                      >
+                        {isAuthorFollowed(post.author_id, post.author_name) ? (
+                          <>
+                            <UserCheck size={11} />
+                            <span>{language === 'hi' ? 'फ़ॉलो' : 'Following'}</span>
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus size={11} />
+                            <span>{language === 'hi' ? '+ फ़ॉलो' : '+ Follow'}</span>
+                          </>
+                        )}
+                      </button>
                     )}
                   </div>
 

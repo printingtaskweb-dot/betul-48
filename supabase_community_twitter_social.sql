@@ -270,6 +270,47 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.increment_local_news_view(UUID) TO anon, authenticated;
 
+-- 9. USER PROFILE VIEWS TRACKING
+CREATE TABLE IF NOT EXISTS public.user_profile_views (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  profile_id UUID NOT NULL REFERENCES public.user_profiles(id) ON DELETE CASCADE,
+  viewer_id UUID REFERENCES public.user_profiles(id) ON DELETE SET NULL,
+  viewer_token TEXT,
+  viewed_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_profile_views_profile_id ON public.user_profile_views(profile_id);
+
+ALTER TABLE public.user_profile_views ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Anyone can view profile views" ON public.user_profile_views;
+CREATE POLICY "Anyone can view profile views" ON public.user_profile_views
+  FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Anyone can record profile view" ON public.user_profile_views;
+CREATE POLICY "Anyone can record profile view" ON public.user_profile_views
+  FOR INSERT WITH CHECK (true);
+
+-- RPC to record profile view from different visitors
+CREATE OR REPLACE FUNCTION public.record_user_profile_view(target_profile_id UUID, viewer_user_id UUID DEFAULT NULL, visitor_token TEXT DEFAULT NULL)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+BEGIN
+  -- Prevent recording self-view if logged in
+  IF viewer_user_id IS NOT NULL AND target_profile_id = viewer_user_id THEN
+    RETURN;
+  END IF;
+
+  INSERT INTO public.user_profile_views (profile_id, viewer_id, viewer_token)
+  VALUES (target_profile_id, viewer_user_id, visitor_token);
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.record_user_profile_view(UUID, UUID, TEXT) TO anon, authenticated;
+GRANT ALL ON public.user_profile_views TO anon, authenticated;
+
 -- Grant access on all new tables to public / authenticated
 GRANT ALL ON public.local_news_likes TO anon, authenticated;
 GRANT ALL ON public.local_news_comments TO anon, authenticated;
