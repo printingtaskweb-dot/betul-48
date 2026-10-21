@@ -29,6 +29,8 @@ import {
   UserCheck,
   Radio,
   Camera,
+  Plus,
+  PenLine,
 } from 'lucide-react';
 
 const CATEGORY_META: Record<
@@ -99,8 +101,23 @@ export const FloatingNewsWidget: React.FC = () => {
   const [viewingProfile, setViewingProfile] = useState<UserProfileModalData | null>(null);
   const [profileFollowerCount, setProfileFollowerCount] = useState<number>(0);
   const [expandedTweetIds, setExpandedTweetIds] = useState<Set<string>>(new Set());
+  const [isComposeOpen, setIsComposeOpen] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const feedRef = useRef<HTMLDivElement>(null);
+  const lastScrollTopRef = useRef<number>(0);
+
+  const handleFeedScroll = () => {
+    if (!feedRef.current) return;
+    const currentScrollTop = feedRef.current.scrollTop;
+    if (currentScrollTop > lastScrollTopRef.current && currentScrollTop > 40) {
+      // User is scrolling down reading thoughts -> auto-hide composer if empty
+      if (isComposeOpen && !content.trim()) {
+        setIsComposeOpen(false);
+      }
+    }
+    lastScrollTopRef.current = currentScrollTop;
+  };
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -267,6 +284,7 @@ export const FloatingNewsWidget: React.FC = () => {
 
       setContent('');
       removePhoto();
+      setIsComposeOpen(false);
     } catch (err: any) {
       console.error('Error posting thought:', err);
       showToast(err.message || 'Could not post. Please try again.');
@@ -682,11 +700,127 @@ export const FloatingNewsWidget: React.FC = () => {
           border-radius: 99px;
         }
 
+        /* Collapsible Compose Trigger bar (Compact when reading) */
+        .x-compose-trigger {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 16px;
+          background: #ffffff;
+          border-bottom: 1px solid #eff3f4;
+          cursor: pointer;
+          transition: background 0.15s ease;
+        }
+        .x-compose-trigger:hover {
+          background: #f8fafc;
+        }
+        .x-avatar-mini {
+          width: 30px;
+          height: 30px;
+          border-radius: 50%;
+          background: linear-gradient(135deg, #146C94, #19A7CE);
+          color: #ffffff;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: 700;
+          font-size: 0.8rem;
+          flex-shrink: 0;
+        }
+        .x-compose-trigger-placeholder {
+          flex: 1;
+          color: #64748b;
+          font-size: 0.88rem;
+          user-select: none;
+        }
+        .x-compose-trigger-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: #146C94;
+          color: #ffffff;
+          border: none;
+          border-radius: 99px;
+          padding: 5px 12px;
+          font-size: 0.76rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: background 0.15s;
+        }
+        .x-compose-trigger-btn:hover {
+          background: #0E526F;
+        }
+
+        .x-compose-header {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 8px;
+          padding-bottom: 6px;
+          border-bottom: 1px dashed #eff3f4;
+        }
+
+        /* Header Compose Toggle Button */
+        .x-header-compose-btn {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          background: #146C94;
+          color: #ffffff;
+          border: none;
+          border-radius: 99px;
+          padding: 4px 10px;
+          font-size: 0.74rem;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.15s;
+        }
+        .x-header-compose-btn:hover {
+          background: #0E526F;
+        }
+        .x-header-compose-btn.is-active {
+          background: #f1f5f9;
+          color: #334155;
+          border: 1px solid #cbd5e1;
+        }
+
+        /* Inside Drawer Floating Action Button (FAB) to compose when scrolling */
+        .x-feed-fab {
+          position: absolute;
+          bottom: 24px;
+          right: 20px;
+          height: 42px;
+          padding: 0 16px;
+          border-radius: 99px;
+          background: linear-gradient(135deg, #146C94, #0E526F);
+          color: #ffffff;
+          border: 2px solid #ffffff;
+          box-shadow: 0 8px 24px rgba(20, 108, 148, 0.4);
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 0.8rem;
+          font-weight: 700;
+          cursor: pointer;
+          z-index: 30;
+          transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.2s;
+        }
+        .x-feed-fab:hover {
+          transform: scale(1.05) translateY(-2px);
+          box-shadow: 0 12px 28px rgba(20, 108, 148, 0.5);
+        }
+
         /* X Compose Box inside Widget */
         .x-compose-box {
           padding: 14px 16px;
           border-bottom: 1px solid #eff3f4;
           background: #ffffff;
+          animation: xSlideDown 0.2s ease-out;
+        }
+
+        @keyframes xSlideDown {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
         }
 
         .x-compose-row {
@@ -1141,6 +1275,14 @@ export const FloatingNewsWidget: React.FC = () => {
                 </h3>
                 <div className="x-header-actions">
                   <button
+                    className={`x-header-compose-btn ${isComposeOpen ? 'is-active' : ''}`}
+                    onClick={() => setIsComposeOpen((prev) => !prev)}
+                    title={isComposeOpen ? 'Close Composer' : 'Write Thought'}
+                  >
+                    {isComposeOpen ? <X size={13} /> : <Plus size={13} />}
+                    <span>{isComposeOpen ? (language === 'hi' ? 'रद्द करें' : 'Cancel') : (language === 'hi' ? 'विचार लिखें' : 'Post')}</span>
+                  </button>
+                  <button
                     className="x-icon-btn"
                     onClick={() => fetchApprovedPosts()}
                     title="Refresh"
@@ -1180,130 +1322,164 @@ export const FloatingNewsWidget: React.FC = () => {
               </div>
             </div>
 
-            {/* X-Style Compose Box (Seamless Thought Posting) */}
-            <div className="x-compose-box">
-              <form onSubmit={handleCreatePost}>
-                <div className="x-compose-row">
-                  <div className="x-avatar">
-                    {profile?.full_name ? profile.full_name[0].toUpperCase() : 'B'}
-                  </div>
-                  <div className="x-compose-body">
-                    <textarea
-                      className="x-compose-textarea"
-                      placeholder={
-                        language === 'hi'
-                          ? 'वार्ड या शहर में क्या हो रहा है? लिखें...'
-                          : "What's happening in your ward? Share a thought..."
-                      }
-                      value={content}
-                      onChange={(e) => setContent(e.target.value)}
-                      maxLength={1000}
-                    />
-
-                    {/* Category Selection Chips */}
-                    <div className="x-category-row">
-                      {(Object.keys(CATEGORY_META) as LocalNewsCategory[]).map((catKey) => {
-                        const meta = CATEGORY_META[catKey];
-                        return (
-                          <button
-                            key={catKey}
-                            type="button"
-                            className={`x-chip ${category === catKey ? 'is-active' : ''}`}
-                            onClick={() => setCategory(catKey)}
-                          >
-                            {meta.icon}
-                            {language === 'hi' ? meta.labelHi : meta.label}
-                          </button>
-                        );
-                      })}
-                    </div>
-
-                    {/* Photo preview if chosen */}
-                    {photoPreview && (
-                      <div style={{ position: 'relative', display: 'inline-block', marginBottom: 8 }}>
-                        <img
-                          src={photoPreview}
-                          alt="preview"
-                          style={{ maxHeight: 120, borderRadius: 8, border: '1px solid #eff3f4' }}
-                        />
-                        <button
-                          type="button"
-                          onClick={removePhoto}
-                          style={{
-                            position: 'absolute',
-                            top: 4,
-                            right: 4,
-                            width: 20,
-                            height: 20,
-                            borderRadius: '50%',
-                            background: 'rgba(0,0,0,0.6)',
-                            color: '#fff',
-                            border: 'none',
-                            cursor: 'pointer',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                          }}
-                        >
-                          <X size={12} />
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Compose Footer: Media Attach & Post Button */}
-                    <div className="x-compose-footer">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                        <input
-                          type="file"
-                          ref={fileInputRef}
-                          accept="image/*"
-                          style={{ display: 'none' }}
-                          onChange={handlePhotoSelect}
-                        />
-                        <button
-                          type="button"
-                          className="x-icon-btn"
-                          onClick={() => fileInputRef.current?.click()}
-                          title="Attach photo"
-                        >
-                          <ImageIcon size={17} color="#146C94" />
-                        </button>
-
-                        <input
-                          type="text"
-                          value={area}
-                          onChange={(e) => setArea(e.target.value)}
-                          placeholder="Area / Ward"
-                          style={{
-                            border: '1px solid #eff3f4',
-                            borderRadius: 6,
-                            padding: '3px 8px',
-                            fontSize: '0.74rem',
-                            outline: 'none',
-                            color: '#536471',
-                            width: 100,
-                          }}
-                        />
-                      </div>
-
-                      <button
-                        type="submit"
-                        className="x-post-btn"
-                        disabled={!content.trim() || isPosting || uploading}
-                      >
-                        {isPosting || uploading
-                          ? language === 'hi'
-                            ? 'पोस्ट हो रहा...'
-                            : 'Posting...'
-                          : language === 'hi'
-                          ? 'साझा करें'
-                          : 'Post'}
-                      </button>
-                    </div>
-                  </div>
+            {/* Collapsible Compose Section: Hidden while reading/scrolling down */}
+            {!isComposeOpen ? (
+              <div
+                className="x-compose-trigger"
+                onClick={() => setIsComposeOpen(true)}
+              >
+                <div className="x-avatar-mini">
+                  {profile?.full_name ? profile.full_name[0].toUpperCase() : 'B'}
                 </div>
-              </form>
-            </div>
+                <span className="x-compose-trigger-placeholder">
+                  {language === 'hi'
+                    ? 'बेतूल में क्या हो रहा है? नया विचार साझा करें...'
+                    : "What's happening in Betul? Share a thought..."}
+                </span>
+                <button type="button" className="x-compose-trigger-btn">
+                  <PenLine size={13} />
+                  <span>{language === 'hi' ? 'विचार लिखें' : 'Post'}</span>
+                </button>
+              </div>
+            ) : (
+              <div className="x-compose-box">
+                <div className="x-compose-header">
+                  <span style={{ fontWeight: 700, fontSize: '0.84rem', color: '#146C94', display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <PenLine size={14} />
+                    {language === 'hi' ? 'नया विचार साझा करें' : 'Post your thought'}
+                  </span>
+                  <button
+                    type="button"
+                    className="x-icon-btn"
+                    onClick={() => setIsComposeOpen(false)}
+                    title={language === 'hi' ? 'बंद करें' : 'Close'}
+                  >
+                    <X size={15} />
+                  </button>
+                </div>
+                <form onSubmit={handleCreatePost}>
+                  <div className="x-compose-row">
+                    <div className="x-avatar">
+                      {profile?.full_name ? profile.full_name[0].toUpperCase() : 'B'}
+                    </div>
+                    <div className="x-compose-body">
+                      <textarea
+                        className="x-compose-textarea"
+                        placeholder={
+                          language === 'hi'
+                            ? 'वार्ड या शहर में क्या हो रहा है? लिखें...'
+                            : "What's happening in your ward? Share a thought..."
+                        }
+                        value={content}
+                        onChange={(e) => setContent(e.target.value)}
+                        maxLength={1000}
+                      />
+
+                      {/* Category Selection Chips */}
+                      <div className="x-category-row">
+                        {(Object.keys(CATEGORY_META) as LocalNewsCategory[]).map((catKey) => {
+                          const meta = CATEGORY_META[catKey];
+                          return (
+                            <button
+                              key={catKey}
+                              type="button"
+                              className={`x-chip ${category === catKey ? 'is-active' : ''}`}
+                              onClick={() => setCategory(catKey)}
+                            >
+                              {meta.icon}
+                              {language === 'hi' ? meta.labelHi : meta.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+
+                      {/* Photo preview if chosen */}
+                      {photoPreview && (
+                        <div style={{ position: 'relative', display: 'inline-block', marginBottom: 8 }}>
+                          <img
+                            src={photoPreview}
+                            alt="preview"
+                            style={{ maxHeight: 120, borderRadius: 8, border: '1px solid #eff3f4' }}
+                          />
+                          <button
+                            type="button"
+                            onClick={removePhoto}
+                            style={{
+                              position: 'absolute',
+                              top: 4,
+                              right: 4,
+                              width: 20,
+                              height: 20,
+                              borderRadius: '50%',
+                              background: 'rgba(0,0,0,0.6)',
+                              color: '#fff',
+                              border: 'none',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                            }}
+                          >
+                            <X size={12} />
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Compose Footer: Media Attach & Post Button */}
+                      <div className="x-compose-footer">
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                          <input
+                            type="file"
+                            ref={fileInputRef}
+                            accept="image/*"
+                            style={{ display: 'none' }}
+                            onChange={handlePhotoSelect}
+                          />
+                          <button
+                            type="button"
+                            className="x-icon-btn"
+                            onClick={() => fileInputRef.current?.click()}
+                            title="Attach photo"
+                          >
+                            <ImageIcon size={17} color="#146C94" />
+                          </button>
+
+                          <input
+                            type="text"
+                            value={area}
+                            onChange={(e) => setArea(e.target.value)}
+                            placeholder="Area / Ward"
+                            style={{
+                              border: '1px solid #eff3f4',
+                              borderRadius: 6,
+                              padding: '3px 8px',
+                              fontSize: '0.74rem',
+                              outline: 'none',
+                              color: '#536471',
+                              width: 100,
+                            }}
+                          />
+                        </div>
+
+                        <button
+                          type="submit"
+                          className="x-post-btn"
+                          disabled={!content.trim() || isPosting || uploading}
+                        >
+                          {isPosting || uploading
+                            ? language === 'hi'
+                              ? 'पोस्ट हो रहा...'
+                              : 'Posting...'
+                            : language === 'hi'
+                            ? 'साझा करें'
+                            : 'Post'}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            )}
 
             {/* Quick Area Filters */}
             <div className="x-filters-bar">
@@ -1332,8 +1508,12 @@ export const FloatingNewsWidget: React.FC = () => {
               })}
             </div>
 
-            {/* Tweet List Feed */}
-            <div style={{ flex: 1, overflowY: 'auto' }}>
+            {/* Tweet List Feed with onScroll auto-hide of composer */}
+            <div
+              ref={feedRef}
+              onScroll={handleFeedScroll}
+              style={{ flex: 1, overflowY: 'auto', position: 'relative' }}
+            >
               {loading ? (
                 <div style={{ padding: 24, textAlign: 'center', color: '#536471' }}>
                   <p>{language === 'hi' ? 'विचार लोड हो रहे हैं...' : 'Loading thoughts...'}</p>
@@ -1602,6 +1782,22 @@ export const FloatingNewsWidget: React.FC = () => {
                     </article>
                   );
                 })
+              )}
+
+              {/* Floating Action Button (FAB) inside drawer to compose anytime while reading */}
+              {!isComposeOpen && (
+                <button
+                  type="button"
+                  className="x-feed-fab"
+                  onClick={() => {
+                    setIsComposeOpen(true);
+                    feedRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+                  }}
+                  title={language === 'hi' ? 'नया विचार लिखें' : 'Post a thought'}
+                >
+                  <Plus size={16} strokeWidth={2.6} />
+                  <span>{language === 'hi' ? 'विचार लिखें' : 'Post'}</span>
+                </button>
               )}
             </div>
           </div>
