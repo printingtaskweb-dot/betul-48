@@ -29,30 +29,33 @@ const RouteLoading: React.FC = () => (
 );
 
 const DeferredNotificationFeatures: React.FC = () => {
-  const [ready, setReady] = useState(false);
+  const [promptReady, setPromptReady] = useState(false);
+  const [registrarReady, setRegistrarReady] = useState(false);
 
   useEffect(() => {
-    let timeoutId: number | undefined;
-    const idleWindow = window as Window & {
-      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
-      cancelIdleCallback?: (handle: number) => void;
+    let promptTimer: number;
+    let registrarTimer: number;
+    const schedule = () => {
+      // The notification UI is non-critical; token refresh can wait until after LCP.
+      promptTimer = window.setTimeout(() => setPromptReady(true), 500);
+      registrarTimer = window.setTimeout(() => setRegistrarReady(true), 8000);
     };
 
-    if (idleWindow.requestIdleCallback) {
-      const handle = idleWindow.requestIdleCallback(() => setReady(true), { timeout: 2500 });
-      return () => idleWindow.cancelIdleCallback?.(handle);
-    }
+    if (document.readyState === 'complete') schedule();
+    else window.addEventListener('load', schedule, { once: true });
 
-    timeoutId = window.setTimeout(() => setReady(true), 1200);
-    return () => window.clearTimeout(timeoutId);
+    return () => {
+      window.removeEventListener('load', schedule);
+      window.clearTimeout(promptTimer);
+      window.clearTimeout(registrarTimer);
+    };
   }, []);
 
-  if (!ready) return null;
   return (
-    <Suspense fallback={null}>
-      <FCMRegistrar />
-      <NotificationPrompt />
-    </Suspense>
+    <>
+      {promptReady && <Suspense fallback={null}><NotificationPrompt /></Suspense>}
+      {registrarReady && <Suspense fallback={null}><FCMRegistrar /></Suspense>}
+    </>
   );
 };
 

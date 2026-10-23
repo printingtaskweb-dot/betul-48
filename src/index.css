@@ -52,10 +52,10 @@
   --theme-component-hover: var(--surface-2);
 
   /* Fonts */
-  --font-serif: "DM Sans", "Noto Sans Devanagari", system-ui, sans-serif;
-  --font-primary: "DM Sans", "Noto Sans Devanagari", system-ui, sans-serif;
-  --font-mono: "DM Sans", "Noto Sans Devanagari", system-ui, sans-serif;
-  --font-hindi: "Noto Sans Devanagari", "DM Sans", sans-serif;
+  --font-serif: "Segoe UI", "Nirmala UI", system-ui, sans-serif;
+  --font-primary: "Segoe UI", "Nirmala UI", system-ui, sans-serif;
+  --font-mono: "Segoe UI", "Nirmala UI", system-ui, sans-serif;
+  --font-hindi: "Nirmala UI", "Noto Sans Devanagari", "Segoe UI", sans-serif;
 
   /* Primary Palette */
   --primary-50:  #F6F1F1;
