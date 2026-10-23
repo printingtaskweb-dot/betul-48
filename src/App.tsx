@@ -3,6 +3,7 @@ import type { ErrorInfo, ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { SplashScreen } from './components/SplashScreen';
+import { SeoHead } from './components/SeoHead';
 
 const Home = lazy(() => import('./pages/Home').then((module) => ({ default: module.Home })));
 const LocalNewsPage = lazy(() => import('./pages/LocalNewsPage').then((module) => ({ default: module.LocalNewsPage })));
@@ -145,6 +146,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 
 const AppRoutes: React.FC = () => (
   <Suspense fallback={<RouteLoading />}>
+  <SeoHead />
   <Routes>
     {/* Citizen routes */}
     <Route path="/" element={<Home />} />
