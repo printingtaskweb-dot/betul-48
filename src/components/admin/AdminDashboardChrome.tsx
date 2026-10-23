@@ -202,7 +202,7 @@ export function AdminDashboardChrome({ activeTab, activeDept, setActiveTab, setA
           >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <Newspaper size={16} color={activeTab === 'local_news' ? '#fff' : 'var(--gray-500)'} />
-              <span>Local News & Thoughts</span>
+              <span>Local News</span>
             </div>
             {pendingNewsCount > 0 && (
               <span

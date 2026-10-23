@@ -602,7 +602,7 @@ export const ProfilePage: React.FC = () => {
                 }}
               >
                 <Plus size={14} />
-                {language === 'hi' ? 'नया विचार लिखें' : 'Post Thought'}
+                {language === 'hi' ? 'समाचार पोस्ट करें' : 'Post News'}
               </button>
             </div>
 
@@ -634,7 +634,7 @@ export const ProfilePage: React.FC = () => {
                     cursor: 'pointer',
                   }}
                 >
-                  {language === 'hi' ? 'पहला विचार साझा करें' : 'Post your first thought'}
+                  {language === 'hi' ? 'पहली खबर साझा करें' : 'Post your first news item'}
                 </button>
               </div>
             ) : (

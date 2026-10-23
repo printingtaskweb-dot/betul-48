@@ -17,6 +17,7 @@ import {
   X,
   Eye,
   Camera,
+  Share2,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useStorage } from '../hooks/useStorage';
@@ -221,6 +222,22 @@ export const LocalNewsPage: React.FC = () => {
         fetched = fallback.data || [];
       } else {
         fetched = data || [];
+      }
+
+      if (fetched.length) {
+        const { data: commentRows, error: commentsError } = await supabase
+          .from('local_news_comments')
+          .select('news_id')
+          .in('news_id', fetched.map((post) => post.id));
+        if (commentsError) {
+          console.error('Could not load comment counts:', commentsError.message);
+        } else {
+          const commentCounts = (commentRows || []).reduce<Record<string, number>>((counts, row) => {
+            counts[row.news_id] = (counts[row.news_id] || 0) + 1;
+            return counts;
+          }, {});
+          fetched = fetched.map((post) => ({ ...post, comments_count: commentCounts[post.id] || 0 }));
+        }
       }
 
       setPosts(fetched);
@@ -605,21 +622,26 @@ export const LocalNewsPage: React.FC = () => {
     }
 
     setExpandedCommentsPostId(postId);
-    if (!postComments[postId]) {
-      setLoadingComments((prev) => ({ ...prev, [postId]: true }));
-      try {
-        const { data } = await supabase
-          .from('local_news_comments')
-          .select('*')
-          .eq('news_id', postId)
-          .order('created_at', { ascending: true });
+    setLoadingComments((prev) => ({ ...prev, [postId]: true }));
+    try {
+      const { data, error } = await supabase
+        .from('local_news_comments')
+        .select('*')
+        .eq('news_id', postId)
+        .order('created_at', { ascending: true });
 
-        setPostComments((prev) => ({ ...prev, [postId]: data || [] }));
-      } catch (err) {
-        console.error('Could not load comments:', err);
-      } finally {
-        setLoadingComments((prev) => ({ ...prev, [postId]: false }));
-      }
+      if (error) throw error;
+      setPostComments((prev) => ({ ...prev, [postId]: data || [] }));
+    } catch (error) {
+      console.error('Could not load comments:', error);
+      const details = error && typeof error === 'object' && 'message' in error
+        ? String(error.message)
+        : String(error || 'Unknown database error');
+      showToast(language === 'hi'
+        ? `टिप्पणियां लोड नहीं हुईं: ${details}`
+        : `Could not load comments: ${details}`);
+    } finally {
+      setLoadingComments((prev) => ({ ...prev, [postId]: false }));
     }
   };
 
@@ -628,57 +650,75 @@ export const LocalNewsPage: React.FC = () => {
     const text = (newCommentText[postId] || '').trim();
     if (!text) return;
 
+    if (!user?.id) {
+      showToast(language === 'hi' ? 'टिप्पणी करने के लिए लॉगिन करें।' : 'Please log in to comment.');
+      return;
+    }
+
     setSubmittingComment((prev) => ({ ...prev, [postId]: true }));
 
-    const tempId = 'temp_' + Date.now();
-    const optimisticComment: LocalNewsComment = {
-      id: tempId,
-      news_id: postId,
-      author_name: profile?.full_name || authorName || 'Citizen',
-      content: text,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-      user_id: user?.id || 'guest',
-    };
-
-    setPostComments((prev) => ({
-      ...prev,
-      [postId]: [...(prev[postId] || []), optimisticComment],
-    }));
-
-    setPosts((prev) =>
-      prev.map((p) =>
-        p.id === postId ? { ...p, comments_count: (p.comments_count || 0) + 1 } : p
-      )
-    );
-
-    setNewCommentText((prev) => ({ ...prev, [postId]: '' }));
-
     try {
-      const payload: any = {
+      const payload = {
         news_id: postId,
-        user_id: user?.id || null,
+        user_id: user.id,
         author_name: profile?.full_name || authorName || 'Citizen',
         author_phone: profile?.phone || null,
         content: text,
       };
 
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from('local_news_comments')
-        .insert(payload)
-        .select()
-        .single();
+        .insert(payload);
 
-      if (!error && data) {
-        setPostComments((prev) => ({
-          ...prev,
-          [postId]: (prev[postId] || []).map((c) => (c.id === tempId ? data : c)),
-        }));
-      }
-    } catch {
-      // safe fallback
+      if (error) throw error;
+
+      const savedComment: LocalNewsComment = {
+        id: `saved-${Date.now()}`,
+        news_id: postId,
+        user_id: user.id,
+        author_name: payload.author_name,
+        author_phone: payload.author_phone,
+        content: text,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+      setPostComments((prev) => ({
+        ...prev,
+        [postId]: [...(prev[postId] || []), savedComment],
+      }));
+      setPosts((prev) => prev.map((post) =>
+        post.id === postId ? { ...post, comments_count: (post.comments_count || 0) + 1 } : post
+      ));
+      setNewCommentText((prev) => ({ ...prev, [postId]: '' }));
+    } catch (error) {
+      console.error('Could not save comment:', error);
+      const details = error && typeof error === 'object' && 'message' in error
+        ? String(error.message)
+        : String(error || 'Unknown database error');
+      showToast(language === 'hi'
+        ? `टिप्पणी सेव नहीं हुई: ${details}`
+        : `Comment was not saved: ${details}`);
     } finally {
       setSubmittingComment((prev) => ({ ...prev, [postId]: false }));
+    }
+  };
+
+  const handleShare = async (post: LocalNews) => {
+    const text = `${post.title ? `${post.title}: ` : ''}${post.content}`;
+    const url = `${window.location.origin}/news`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: post.title || 'Betul News', text, url });
+        return;
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      showToast(language === 'hi' ? 'समाचार लिंक कॉपी हो गया!' : 'News link copied!');
+    } catch {
+      showToast(language === 'hi' ? 'समाचार साझा नहीं हो सका।' : 'Could not share this news.');
     }
   };
 
@@ -1333,7 +1373,7 @@ export const LocalNewsPage: React.FC = () => {
               <div>
                 <h1 className="x-page-title">
                   <Radio size={17} color="#146C94" />
-                  {language === 'hi' ? 'नागरिक चौपाल (बेतूल)' : 'Betul Thoughts'}
+                  {language === 'hi' ? 'बैतूल समाचार' : 'Betul News'}
                 </h1>
               </div>
             </div>
@@ -1344,7 +1384,7 @@ export const LocalNewsPage: React.FC = () => {
               onClick={() => setIsComposeOpen((prev) => !prev)}
             >
               <Sparkles size={14} />
-              <span>{language === 'hi' ? 'विचार लिखें' : 'Post Thought'}</span>
+              <span>{language === 'hi' ? 'समाचार पोस्ट करें' : 'Post News'}</span>
             </button>
           </div>
 
@@ -1540,7 +1580,7 @@ export const LocalNewsPage: React.FC = () => {
                 onClick={() => setIsComposeOpen(true)}
               >
                 <Sparkles size={14} />
-                <span>{language === 'hi' ? 'विचार साझा करें' : 'Post a Thought'}</span>
+                <span>{language === 'hi' ? 'समाचार साझा करें' : 'Post News'}</span>
               </button>
             </div>
           ) : (
@@ -1683,7 +1723,7 @@ export const LocalNewsPage: React.FC = () => {
                         aria-label="Comment"
                       >
                         <MessageCircle size={15} />
-                        <span>{post.comments_count || (postComments[post.id]?.length || 0)}</span>
+                        <span>{post.comments_count ?? 0}</span>
                       </button>
 
                       {/* Views */}
@@ -1691,6 +1731,18 @@ export const LocalNewsPage: React.FC = () => {
                         <Eye size={15} />
                         <span>{Math.max(post.views_count || 1, 1)}</span>
                       </div>
+
+                      {/* Share */}
+                      <button
+                        type="button"
+                        className="x-action-btn"
+                        onClick={() => void handleShare(post)}
+                        aria-label={language === 'hi' ? 'समाचार साझा करें' : 'Share news'}
+                        title={language === 'hi' ? 'समाचार साझा करें' : 'Share news'}
+                      >
+                        <Share2 size={15} />
+                        <span>{language === 'hi' ? 'साझा करें' : 'Share'}</span>
+                      </button>
                     </div>
 
                     {/* Comments Thread */}

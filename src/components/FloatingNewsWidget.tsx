@@ -739,7 +739,7 @@ export const FloatingNewsWidget: React.FC = () => {
     const text = `${post.author_name}: "${post.content}" - Betul Civic Portal`;
     if (navigator.share) {
       try {
-        await navigator.share({ title: 'Betul Thoughts', text, url: window.location.href });
+        await navigator.share({ title: 'Betul News', text, url: window.location.href });
         return;
       } catch {
         // fallback
@@ -1522,16 +1522,16 @@ export const FloatingNewsWidget: React.FC = () => {
               <div className="x-header-top">
                 <h3 className="x-header-title">
                   <Radio size={16} color="#146C94" />
-                  {language === 'hi' ? 'नागरिक चौपाल (बेतूल)' : 'Betul Thoughts'}
+                  {language === 'hi' ? 'बैतूल समाचार' : 'Betul News'}
                 </h3>
                 <div className="x-header-actions">
                   <button
                     className={`x-header-compose-btn ${isComposeOpen ? 'is-active' : ''}`}
                     onClick={() => setIsComposeOpen((prev) => !prev)}
-                    title={isComposeOpen ? 'Close Composer' : 'Write Thought'}
+                    title={isComposeOpen ? 'Close Composer' : 'Write News'}
                   >
                     {isComposeOpen ? <X size={13} /> : <Plus size={13} />}
-                    <span>{isComposeOpen ? (language === 'hi' ? 'रद्द करें' : 'Cancel') : (language === 'hi' ? 'विचार लिखें' : 'Post')}</span>
+                    <span>{isComposeOpen ? (language === 'hi' ? 'रद्द करें' : 'Cancel') : (language === 'hi' ? 'समाचार पोस्ट करें' : 'Post News')}</span>
                   </button>
                   <button
                     className="x-icon-btn"
@@ -1589,7 +1589,7 @@ export const FloatingNewsWidget: React.FC = () => {
                 </span>
                 <button type="button" className="x-compose-trigger-btn">
                   <PenLine size={13} />
-                  <span>{language === 'hi' ? 'विचार लिखें' : 'Post'}</span>
+                  <span>{language === 'hi' ? 'समाचार पोस्ट करें' : 'Post News'}</span>
                 </button>
               </div>
             ) : (
@@ -1597,7 +1597,7 @@ export const FloatingNewsWidget: React.FC = () => {
                 <div className="x-compose-header">
                   <span style={{ fontWeight: 700, fontSize: '0.84rem', color: '#146C94', display: 'flex', alignItems: 'center', gap: 5 }}>
                     <PenLine size={14} />
-                    {language === 'hi' ? 'नया विचार साझा करें' : 'Post your thought'}
+                    {language === 'hi' ? 'नई खबर साझा करें' : 'Post your news'}
                   </span>
                   <button
                     type="button"
@@ -2069,7 +2069,7 @@ export const FloatingNewsWidget: React.FC = () => {
                     setIsComposeOpen(true);
                     feedRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
-                  title={language === 'hi' ? 'नया विचार लिखें' : 'Post a thought'}
+                  title={language === 'hi' ? 'नई खबर लिखें' : 'Post News'}
                 >
                   <Plus size={16} strokeWidth={2.6} />
                   <span>{language === 'hi' ? 'विचार लिखें' : 'Post'}</span>

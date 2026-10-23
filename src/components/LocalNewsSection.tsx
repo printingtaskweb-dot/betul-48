@@ -16,6 +16,7 @@ import {
   ChevronDown,
   UserPlus,
   UserCheck,
+  Share2,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -36,6 +37,7 @@ export const LocalNewsSection: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [expandedPostIds, setExpandedPostIds] = useState<Set<string>>(new Set());
+  const [shareMessage, setShareMessage] = useState('');
 
   // Stored follow helpers
   const getStoredFollowedAuthors = (): Set<string> => {
@@ -195,6 +197,7 @@ export const LocalNewsSection: React.FC = () => {
           .limit(3);
 
         if (!isCurrent) return;
+        let fetchedPosts: LocalNews[] = [];
         if (error) {
           // Fallback without join in case FK is still syncing
           const fallback = await supabase
@@ -208,11 +211,28 @@ export const LocalNewsSection: React.FC = () => {
             console.error('Could not load local news:', fallback.error.message);
             setHasError(true);
           } else {
-            setPosts(fallback.data || []);
+            fetchedPosts = fallback.data || [];
           }
         } else {
-          setPosts(data || []);
+          fetchedPosts = data || [];
         }
+
+        if (!hasError && fetchedPosts.length) {
+          const { data: commentRows, error: commentsError } = await supabase
+            .from('local_news_comments')
+            .select('news_id')
+            .in('news_id', fetchedPosts.map((post) => post.id));
+          if (commentsError) {
+            console.error('Could not load home news comment counts:', commentsError.message);
+          } else {
+            const commentCounts = (commentRows || []).reduce<Record<string, number>>((counts, row) => {
+              counts[row.news_id] = (counts[row.news_id] || 0) + 1;
+              return counts;
+            }, {});
+            fetchedPosts = fetchedPosts.map((post) => ({ ...post, comments_count: commentCounts[post.id] || 0 }));
+          }
+        }
+        if (isCurrent) setPosts(fetchedPosts);
       } catch (error) {
         console.error('Could not load local news:', error);
         if (isCurrent) setHasError(true);
@@ -241,6 +261,30 @@ export const LocalNewsSection: React.FC = () => {
 
   const openNews = () => {
     navigate('/news');
+  };
+
+  const handleShare = async (event: React.MouseEvent, post: LocalNews) => {
+    event.stopPropagation();
+    const text = `${post.title ? `${post.title}: ` : ''}${post.content}`;
+    const url = `${window.location.origin}/news`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: post.title || 'Betul News', text, url });
+        return;
+      } catch (error) {
+        if (error instanceof Error && error.name === 'AbortError') return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      setShareMessage(language === 'hi' ? 'समाचार लिंक कॉपी हो गया' : 'News link copied');
+      window.setTimeout(() => setShareMessage(''), 2500);
+    } catch {
+      setShareMessage(language === 'hi' ? 'समाचार लिंक साझा नहीं हो सका' : 'Could not share news link');
+      window.setTimeout(() => setShareMessage(''), 2500);
+    }
   };
 
   const formatDate = (date: string) => {
@@ -433,7 +477,7 @@ export const LocalNewsSection: React.FC = () => {
             {language === 'hi' ? 'बेतूल से ताज़ा' : 'From around Betul'}
           </span>
           <h2 id="local-news-title">
-            {language === 'hi' ? 'स्थानीय समाचार व विचार' : 'Local news & thoughts'}
+            {language === 'hi' ? 'स्थानीय समाचार' : 'Local News'}
           </h2>
           <p>{language === 'hi' ? 'नागरिकों व नगर निगम के ताज़ा अपडेट्स' : 'Updates from your community'}</p>
         </div>
@@ -571,7 +615,7 @@ export const LocalNewsSection: React.FC = () => {
                   <div className="local-news-twitter-stats">
                     <div className="local-news-stat-item" title="Replies">
                       <MessageCircle size={13} />
-                      <span>{post.comments_count || 0}</span>
+                      <span>{post.comments_count ?? 0}</span>
                     </div>
                     <div className="local-news-stat-item" title="Reshares">
                       <Repeat size={13} />
@@ -585,6 +629,17 @@ export const LocalNewsSection: React.FC = () => {
                       <Eye size={13} />
                       <span>{post.views_count || 0}</span>
                     </div>
+                    <button
+                      type="button"
+                      className="local-news-stat-item"
+                      title={language === 'hi' ? 'समाचार साझा करें' : 'Share news'}
+                      aria-label={language === 'hi' ? 'समाचार साझा करें' : 'Share news'}
+                      onClick={(event) => void handleShare(event, post)}
+                      style={{ border: 0, background: 'transparent', cursor: 'pointer', font: 'inherit' }}
+                    >
+                      <Share2 size={13} />
+                      <span>{language === 'hi' ? 'साझा करें' : 'Share'}</span>
+                    </button>
                   </div>
                 </div>
               </article>
@@ -604,6 +659,7 @@ export const LocalNewsSection: React.FC = () => {
           </button>
         </div>
       )}
+      {shareMessage && <div role="status" aria-live="polite" className="local-news-share-status">{shareMessage}</div>}
     </section>
   );
 };

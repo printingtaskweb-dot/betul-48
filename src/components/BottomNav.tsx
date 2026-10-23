@@ -18,7 +18,7 @@ export const BottomNav: React.FC = () => {
     {
       path: '/news',
       icon: <Newspaper size={20} />,
-      label: language === 'hi' ? 'विचार' : 'Thoughts',
+      label: language === 'hi' ? 'समाचार' : 'News',
     },
     { path: '/complaint/new', icon: <Plus size={24} />, label: language === 'hi' ? 'शिकायत' : 'Report' },
     { path: '/track', icon: <Search size={20} />, label: language === 'hi' ? 'स्थिति' : 'Track' },
