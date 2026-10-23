@@ -1,0 +1,14 @@
+# Jila Betul
+
+> Jila Betul is a civic services website for residents of Betul, Madhya Pradesh, India.
+
+## Public pages
+
+- [Home](https://www.betulnagar.co.in/): Civic services and ways to report local issues.
+- [Betul News](https://www.betulnagar.co.in/news): Local news, alerts, events, and community updates.
+- [Green Waste Services](https://www.betulnagar.co.in/department/green): Information about green waste services.
+
+## Site information
+
+- The site helps residents access municipal services and community information.
+- Complaint, account, and staff portal pages may contain user-specific information and are not public reference content.

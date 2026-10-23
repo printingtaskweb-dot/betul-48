@@ -1,14 +1,4 @@
 User-agent: *
 Allow: /
-Disallow: /auth
-Disallow: /forgot-password
-Disallow: /reset-password
-Disallow: /profile
-Disallow: /complaint/
-Disallow: /track
-Disallow: /callback
-Disallow: /dept/
-Disallow: /admin
-Disallow: /municipal/
 
 Sitemap: https://www.betulnagar.co.in/sitemap.xml
