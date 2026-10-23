@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { t } from '../../lib/i18n';
@@ -103,6 +103,11 @@ export const LoginForm: React.FC<Props> = ({ language }) => {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: -5, marginBottom: 12 }}>
+        <Link to="/forgot-password" style={{ color: 'var(--theme-primary, #146C94)', fontSize: 13, fontWeight: 700, textDecoration: 'none' }}>
+          {language === 'hi' ? 'पासवर्ड भूल गए?' : 'Forgot password?'}
+        </Link>
+      </div>
       <SubmitButton loading={loading} label={t(language, 'login')} />
     </form>
   );

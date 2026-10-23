@@ -7,6 +7,8 @@ import { Home } from './pages/Home';
 import { ComplaintForm } from './pages/ComplaintForm';
 import { TrackComplaint } from './pages/TrackComplaint';
 import { AuthPage } from './pages/AuthPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 import { GreenDepartmentPage } from './pages/GreenDepartmentPage';
 import { AdminLogin } from './pages/admin/AdminLogin';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
@@ -109,6 +111,8 @@ const AppRoutes: React.FC = () => (
     <Route path="/" element={<Home />} />
     <Route path="/news" element={<LocalNewsPage />} />
     <Route path="/auth" element={<AuthPage />} />
+    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+    <Route path="/reset-password" element={<ResetPasswordPage />} />
     <Route path="/profile" element={<ProfilePage />} />
     <Route path="/complaint/new" element={<ComplaintForm />} />
     <Route path="/track" element={<TrackComplaint />} />
