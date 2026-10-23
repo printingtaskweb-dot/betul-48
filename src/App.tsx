@@ -1,25 +1,60 @@
-import React, { useState, useEffect, useCallback, Component } from 'react';
+import React, { useState, useEffect, useCallback, Component, lazy, Suspense } from 'react';
 import type { ErrorInfo, ReactNode } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { SplashScreen } from './components/SplashScreen';
-import { Home } from './pages/Home';
-import { ComplaintForm } from './pages/ComplaintForm';
-import { TrackComplaint } from './pages/TrackComplaint';
-import { AuthPage } from './pages/AuthPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
-import { GreenDepartmentPage } from './pages/GreenDepartmentPage';
-import { AdminLogin } from './pages/admin/AdminLogin';
-import { AdminDashboard } from './pages/admin/AdminDashboard';
-import DeptLogin from './pages/DeptLogin';
-import DeptDashboard from './pages/DeptDashboard';
-import MunicipalAdministratorDashboard from './pages/admin/MunicipalAdministratorDashboard';
-import ProfilePage from './pages/ProfilePage';
-import LocalNewsPage from './pages/LocalNewsPage';
-import { FCMRegistrar } from './components/FCMRegistrar';
-import { NotificationPrompt } from './components/NotificationPrompt';
-import CitizenCallbackPage from './pages/CitizenCallbackPage';
+
+const Home = lazy(() => import('./pages/Home').then((module) => ({ default: module.Home })));
+const LocalNewsPage = lazy(() => import('./pages/LocalNewsPage').then((module) => ({ default: module.LocalNewsPage })));
+const AuthPage = lazy(() => import('./pages/AuthPage').then((module) => ({ default: module.AuthPage })));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const ComplaintForm = lazy(() => import('./pages/ComplaintForm').then((module) => ({ default: module.ComplaintForm })));
+const TrackComplaint = lazy(() => import('./pages/TrackComplaint').then((module) => ({ default: module.TrackComplaint })));
+const CitizenCallbackPage = lazy(() => import('./pages/CitizenCallbackPage'));
+const GreenDepartmentPage = lazy(() => import('./pages/GreenDepartmentPage').then((module) => ({ default: module.GreenDepartmentPage })));
+const DeptLogin = lazy(() => import('./pages/DeptLogin'));
+const DeptDashboard = lazy(() => import('./pages/DeptDashboard'));
+const AdminLogin = lazy(() => import('./pages/admin/AdminLogin').then((module) => ({ default: module.AdminLogin })));
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then((module) => ({ default: module.AdminDashboard })));
+const MunicipalAdministratorDashboard = lazy(() => import('./pages/admin/MunicipalAdministratorDashboard'));
+const FCMRegistrar = lazy(() => import('./components/FCMRegistrar').then((module) => ({ default: module.FCMRegistrar })));
+const NotificationPrompt = lazy(() => import('./components/NotificationPrompt').then((module) => ({ default: module.NotificationPrompt })));
+
+const RouteLoading: React.FC = () => (
+  <div role="status" aria-live="polite" style={{ minHeight: '45vh', display: 'grid', placeItems: 'center', color: 'var(--theme-primary, #146C94)', fontWeight: 700 }}>
+    Loading…
+  </div>
+);
+
+const DeferredNotificationFeatures: React.FC = () => {
+  const [ready, setReady] = useState(false);
+
+  useEffect(() => {
+    let timeoutId: number | undefined;
+    const idleWindow = window as Window & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+
+    if (idleWindow.requestIdleCallback) {
+      const handle = idleWindow.requestIdleCallback(() => setReady(true), { timeout: 2500 });
+      return () => idleWindow.cancelIdleCallback?.(handle);
+    }
+
+    timeoutId = window.setTimeout(() => setReady(true), 1200);
+    return () => window.clearTimeout(timeoutId);
+  }, []);
+
+  if (!ready) return null;
+  return (
+    <Suspense fallback={null}>
+      <FCMRegistrar />
+      <NotificationPrompt />
+    </Suspense>
+  );
+};
 
 interface ErrorBoundaryProps {
   children: ReactNode;
@@ -106,6 +141,7 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
 }
 
 const AppRoutes: React.FC = () => (
+  <Suspense fallback={<RouteLoading />}>
   <Routes>
     {/* Citizen routes */}
     <Route path="/" element={<Home />} />
@@ -133,6 +169,7 @@ const AppRoutes: React.FC = () => (
     {/* Fallback */}
     <Route path="*" element={<Navigate to="/" replace />} />
   </Routes>
+  </Suspense>
 );
 
 const App: React.FC = () => {
@@ -151,12 +188,11 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <FCMRegistrar />
+        <DeferredNotificationFeatures />
         <div className="grain" />
         {!splashDone && <SplashScreen onDone={handleSplashDone} />}
         <BrowserRouter>
           <AppRoutes />
-          <NotificationPrompt />
         </BrowserRouter>
       </AuthProvider>
     </ErrorBoundary>
