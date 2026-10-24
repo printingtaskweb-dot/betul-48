@@ -65,8 +65,10 @@ jobs:
       - name: Install Bubblewrap CLI
         run: npm install --global @bubblewrap/cli@1.27.0
 
-      - name: Configure Android build tools
-        run: bubblewrap updateConfig --jdkPath="$JAVA_HOME" --androidSdkPath="$ANDROID_HOME"
+      - name: Configure Bubblewrap Android paths
+        run: |
+          mkdir -p "$HOME/.bubblewrap"
+          printf '{"jdkPath":"%s","androidSdkPath":"%s"}\n' "$JAVA_HOME" "$ANDROID_HOME" > "$HOME/.bubblewrap/config.json"
 
       - name: Restore release signing key
         env:
