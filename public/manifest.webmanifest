@@ -1,0 +1,27 @@
+{
+  "id": "/",
+  "name": "Betul Nagar",
+  "short_name": "Betul Nagar",
+  "description": "Access Betul Nagar civic services, report local issues, track complaints, and read local news.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "display_override": ["standalone"],
+  "orientation": "any",
+  "theme_color": "#146c94",
+  "background_color": "#f6f1f1",
+  "icons": [
+    {
+      "src": "/icons/betul-nagar-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/betul-nagar-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

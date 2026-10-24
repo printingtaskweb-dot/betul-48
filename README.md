@@ -19,6 +19,7 @@ A modern, component-based civic portal inspired by the Indore 311 platform for m
   - Review photos and GPS maps
   - Update complaint progress, upload resolution photos, and close tickets
 - **📱 Mobile-First PWA Design**: Fixed bottom navigation, glassmorphism, responsive cards, and animated splash screen.
+- **🤖 Betul Nagar Android app**: Full-screen Trusted Web Activity built manually from GitHub Actions and published as a signed APK release. See [`android/README.md`](./android/README.md) for signing setup and release instructions.
 
 ---
 

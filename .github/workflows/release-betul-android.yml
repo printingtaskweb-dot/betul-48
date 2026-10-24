@@ -1,0 +1,143 @@
+name: Release Betul Nagar Android app
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: App version shown to users (for example 1.0.0)
+        required: true
+        type: string
+        default: 1.0.0
+      version_code:
+        description: Positive Android version code; increase it for every update
+        required: true
+        type: string
+        default: "1"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    name: Build and publish signed Android app
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Validate selected version
+        env:
+          APP_VERSION: ${{ inputs.version_name }}
+          APP_VERSION_CODE: ${{ inputs.version_code }}
+        run: |
+          if [[ ! "$APP_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9.-]+)?$ ]]; then
+            echo "version_name must look like 1.2.3 or 1.2.3-beta."
+            exit 1
+          fi
+          if [[ ! "$APP_VERSION_CODE" =~ ^[1-9][0-9]*$ ]] || (( APP_VERSION_CODE > 2100000000 )); then
+            echo "version_code must be a positive integer no greater than 2100000000."
+            exit 1
+          fi
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android SDK packages
+        run: |
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
+
+      - name: Install Bubblewrap CLI
+        run: npm install --global @bubblewrap/cli@1.27.0
+
+      - name: Configure Android build tools
+        run: bubblewrap updateConfig --jdkPath="$JAVA_HOME" --androidSdkPath="$ANDROID_HOME"
+
+      - name: Restore release signing key
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+        run: |
+          if [[ -z "$ANDROID_KEYSTORE_BASE64" ]]; then
+            echo "Configure the ANDROID_KEYSTORE_BASE64 repository secret first. See android/README.md."
+            exit 1
+          fi
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/betulnagar-release.keystore
+
+      - name: Set selected app version
+        env:
+          APP_VERSION: ${{ inputs.version_name }}
+          APP_VERSION_CODE: ${{ inputs.version_code }}
+        run: |
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const file = "android/twa-manifest.json";
+            const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
+            manifest.appVersion = process.env.APP_VERSION;
+            manifest.appVersionCode = Number(process.env.APP_VERSION_CODE);
+            fs.writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
+          '
+
+      - name: Generate Android project from TWA configuration
+        working-directory: android
+        run: yes | bubblewrap update --skipVersionUpgrade --manifest=twa-manifest.json
+
+      - name: Build signed APK and app bundle
+        working-directory: android
+        env:
+          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [[ -z "$BUBBLEWRAP_KEYSTORE_PASSWORD" || -z "$BUBBLEWRAP_KEY_PASSWORD" ]]; then
+            echo "Configure ANDROID_KEYSTORE_PASSWORD and ANDROID_KEY_PASSWORD repository secrets first."
+            exit 1
+          fi
+          bubblewrap build --manifest=twa-manifest.json --signingKeyPath=betulnagar-release.keystore --signingKeyAlias=betulnagar
+
+      - name: Generate Digital Asset Links file
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          fingerprint=$(keytool -list -v -keystore betulnagar-release.keystore -alias betulnagar -storepass "$ANDROID_KEYSTORE_PASSWORD" | sed -n 's/.*SHA256: //p' | head -n 1 | tr -d '\r')
+          if [[ -z "$fingerprint" ]]; then
+            echo "Could not read the release certificate SHA-256 fingerprint."
+            exit 1
+          fi
+          CERT_FINGERPRINT="$fingerprint" node --input-type=module -e '
+            import fs from "node:fs";
+            const fingerprint = process.env.CERT_FINGERPRINT;
+            const links = [{
+              relation: ["delegate_permission/common.handle_all_urls"],
+              target: {
+                namespace: "android_app",
+                package_name: "in.betulnagar.app",
+                sha256_cert_fingerprints: [fingerprint]
+              }
+            }];
+            fs.writeFileSync("assetlinks.json", `${JSON.stringify(links, null, 2)}\n`);
+          '
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: betul-v${{ inputs.version_name }}
+          target_commitish: ${{ github.sha }}
+          name: Betul Nagar Android ${{ inputs.version_name }}
+          generate_release_notes: true
+          overwrite_files: true
+          files: |
+            android/app-release-signed.apk
+            android/app-release-bundle.aab
+            android/assetlinks.json

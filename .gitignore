@@ -11,6 +11,11 @@ node_modules
 dist
 dist-ssr
 *.local
+chrome/
+android/*.keystore
+android/app-release-*.apk
+android/app-release-*.aab
+android/app/build/
 
 # Editor directories and files
 .vscode/*
