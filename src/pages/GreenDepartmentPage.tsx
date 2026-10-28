@@ -13,6 +13,7 @@ import { watermarkPhoto } from '../lib/watermarkPhoto';
 import { isValidMobile, lettersAndSpaces, mobileDigits } from '../lib/inputValidation';
 import { ArrowLeft, Recycle, Info } from 'lucide-react';
 import { GoogleIcon } from '../components/common/GoogleIcon';
+import { ArcLoader } from '../components/common/ArcLoader';
 
 const WASTE_TYPES = [
   { id: 'leaves', label: 'Fallen Leaves', hi: 'गिरे पत्ते', icon: 'eco' },
@@ -29,7 +30,9 @@ export const GreenDepartmentPage: React.FC = () => {
   const { departments } = useDepartments();
   const { complaints, submitComplaint } = useComplaints('green');
   const gps = useGPS();
-  const { uploadPhoto, uploading } = useStorage();
+  const { uploadPhoto, uploading, progress: uploadProgress, statusText: uploadStatusText } = useStorage();
+  const [submitPhaseText, setSubmitPhaseText] = useState('');
+  const [submitPhasePercent, setSubmitPhasePercent] = useState<number | undefined>(undefined);
 
   const [selectedType, setSelectedType] = useState<string>('');
   const [description, setDescription] = useState('');
@@ -88,12 +91,20 @@ export const GreenDepartmentPage: React.FC = () => {
     if (!locationReady) return; // will be stamped by effect below
 
     setWatermarking(true);
+    setSubmitPhasePercent(25);
+    setSubmitPhaseText(
+      language === 'hi'
+        ? 'जीपीएस लोकेशन व टाइमस्टैम्प वाटरमार्क तैयार किया जा रहा है...'
+        : 'Applying official GPS & timestamp watermark...'
+    );
     const stamped = await stampPhoto(file);
     if (stamped) {
       setPhotoFile(stamped);
       setPreview(URL.createObjectURL(stamped));
     }
     setWatermarking(false);
+    setSubmitPhasePercent(undefined);
+    setSubmitPhaseText('');
   };
 
   const handleClearPhoto = () => {
@@ -189,7 +200,21 @@ export const GreenDepartmentPage: React.FC = () => {
         );
       }
 
-      const photoUrl = await uploadPhoto(stampedForUpload);
+      setSubmitPhasePercent(30);
+      setSubmitPhaseText(
+        language === 'hi'
+          ? 'फोटो सुरक्षित सर्वर पर अपलोड की जा रही है...'
+          : 'Uploading green waste photo 1 of 1 to cloud...'
+      );
+
+      const photoUrl = await uploadPhoto(stampedForUpload, {
+        currentPhoto: 1,
+        totalPhotos: 1,
+        onProgress: (pct, msg) => {
+          setSubmitPhasePercent(pct);
+          setSubmitPhaseText(msg);
+        },
+      });
 
       if (!photoUrl) {
         throw new Error(
@@ -203,6 +228,12 @@ export const GreenDepartmentPage: React.FC = () => {
         WASTE_TYPES.find((w) => w.id === selectedType)?.label || selectedType;
       const fullDesc = `[${wasteLabel}] ${description}`.trim();
 
+      setSubmitPhasePercent(95);
+      setSubmitPhaseText(
+        language === 'hi'
+          ? 'हरित कचरा अनुरोध दर्ज हो रहा है...'
+          : 'Registering green waste collection request...'
+      );
       const result = await submitComplaint({
         department_id: greenDept.id,
         citizen_name: lettersAndSpaces(citizenName).trim() || null,
@@ -214,6 +245,12 @@ export const GreenDepartmentPage: React.FC = () => {
         photo_url: photoUrl,
       });
 
+      setSubmitPhasePercent(100);
+      setSubmitPhaseText(
+        language === 'hi'
+          ? 'अनुरोध सफलतापूर्वक दर्ज हो गया!'
+          : 'Request submitted successfully!'
+      );
       setTicket(result.ticket_number);
     } catch (err: any) {
       setError(err.message || 'Error submitting complaint');
@@ -806,6 +843,31 @@ export const GreenDepartmentPage: React.FC = () => {
             ))}
           </div>
         </div>
+      )}
+
+      {(submitting || uploading || watermarking) && (
+        <ArcLoader
+          mode="floating" position="bottom"
+          theme="portal"
+          status={
+            watermarking
+              ? language === 'hi'
+                ? 'फोटो पर जीपीएस वाटरमार्क लगाया जा रहा है'
+                : 'Applying Official GPS Watermark'
+              : language === 'hi'
+              ? 'हरित कचरा फोटो व अनुरोध अपलोड हो रहा है'
+              : 'Submitting Green Waste Pickup Request'
+          }
+          subtitle={
+            submitPhaseText ||
+            uploadStatusText ||
+            (language === 'hi'
+              ? 'कृपया प्रतीक्षा करें, फोटो और विवरण अपलोड हो रहे हैं...'
+              : 'Please wait, syncing photo & GPS telemetry to municipal cloud...')
+          }
+          percent={submitPhasePercent ?? (uploading ? uploadProgress : undefined)}
+          photoCount={{ current: 1, total: 1 }}
+        />
       )}
 
       <BottomNav />

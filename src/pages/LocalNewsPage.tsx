@@ -1,3 +1,4 @@
+import { ArcLoader } from '../components/common/ArcLoader';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
@@ -56,7 +57,7 @@ interface UserProfileModalData {
 export const LocalNewsPage: React.FC = () => {
   const navigate = useNavigate();
   const { language, profile, user } = useAuth();
-  const { uploadPhoto, uploading } = useStorage();
+  const { uploadPhoto, uploading, progress, statusText } = useStorage();
 
   // Feed & Tab State
   const [activeTab, setActiveTab] = useState<'for_you' | 'following' | 'alerts'>('for_you');
@@ -1914,6 +1915,17 @@ export const LocalNewsPage: React.FC = () => {
       {toastMessage && <div className="x-toast">{toastMessage}</div>}
 
       {/* Persistent Bottom Navigation - always visible on all devices */}
+      {(isPosting && photoFile) && (
+        <ArcLoader
+          mode="floating" position="bottom"
+          theme="portal"
+          status={language === 'hi' ? 'फोटो व विचार अपलोड हो रहा है' : 'Uploading Photo & Thought'}
+          subtitle={statusText || (language === 'hi' ? 'क्लाउड सर्वर पर फोटो सुरक्षित जा रही है...' : 'Syncing community photo to municipal feed...')}
+          percent={progress}
+          photoCount={{ current: 1, total: 1 }}
+        />
+      )}
+
       <BottomNav />
     </div>
   );

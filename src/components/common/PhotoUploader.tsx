@@ -1,11 +1,15 @@
 import React, { useRef, useState } from 'react';
 import { Camera, Upload, X } from 'lucide-react';
+import { ArcLoader } from './ArcLoader';
 
 interface PhotoUploaderProps {
   onFileSelected: (file: File) => void;
   preview?: string | null;
   onClear?: () => void;
   uploading?: boolean;
+  uploadProgress?: number;
+  uploadStatus?: string;
+  photoCount?: { current: number; total: number } | string;
   disabled?: boolean;
 }
 
@@ -14,6 +18,9 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
   preview,
   onClear,
   uploading,
+  uploadProgress,
+  uploadStatus,
+  photoCount,
   disabled,
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -48,8 +55,6 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
           alt="Selected"
           style={{
             width: '100%',
-            // Full natural aspect ratio — no cropping, so the GPS Map
-            // Camera watermark panel at the bottom is always visible.
             height: 'auto',
             maxHeight: '80vh',
             objectFit: 'contain',
@@ -59,7 +64,7 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
             background: '#000',
           }}
         />
-        {onClear && (
+        {onClear && !uploading && (
           <button
             onClick={onClear}
             aria-label="Remove photo"
@@ -88,17 +93,24 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'rgba(0,0,0,0.45)',
+              background: 'rgba(255, 255, 255, 0.88)',
+              backdropFilter: 'blur(6px)',
+              WebkitBackdropFilter: 'blur(6px)',
               borderRadius: 12,
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              zIndex: 1,
+              zIndex: 3,
+              padding: 16,
             }}
           >
-            <span style={{ color: '#fff', fontWeight: 700 }}>
-              Uploading…
-            </span>
+            <ArcLoader
+              mode="inline"
+              status={uploadStatus || 'Uploading Photo…'}
+              subtitle="Optimizing bytes & syncing to municipal cloud"
+              percent={uploadProgress}
+              photoCount={photoCount}
+            />
           </div>
         )}
       </div>
@@ -130,69 +142,78 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
       <div
         onDragOver={(e) => {
           e.preventDefault();
-          setDragging(true);
+          if (!disabled && !uploading) setDragging(true);
         }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
         style={{
-          border: `2px dashed ${dragging ? '#6366f1' : '#d1d5db'}`,
+          border: dragging
+            ? '2px dashed var(--burgundy, #146C94)'
+            : '2px dashed #d1d5db',
           borderRadius: 12,
-          padding: 24,
+          padding: '24px 16px',
           textAlign: 'center',
-          background: dragging ? '#eef2ff' : '#f9fafb',
-          transition: 'all 0.2s',
+          background: dragging ? 'rgba(20, 108, 148, 0.05)' : '#f9fafb',
+          transition: 'border-color 0.15s, background-color 0.15s',
+          opacity: disabled ? 0.6 : 1,
         }}
       >
-        <p style={{ color: '#6b7280', marginBottom: 16, fontSize: 14 }}>
-          Drag & drop a photo, or use:
-        </p>
         <div
-          style={{ display: 'flex', gap: 12, justifyContent: 'center' }}
+          style={{
+            display: 'flex',
+            justifyContent: 'center',
+            gap: 12,
+            marginBottom: 12,
+          }}
         >
+          {/* Camera button — primary on mobile */}
           <button
             type="button"
             disabled={disabled || uploading}
             onClick={() => cameraInputRef.current?.click()}
+            className="btn-solid"
             style={{
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
-              gap: 6,
+              gap: 8,
               padding: '10px 18px',
-              borderRadius: 8,
-              border: 'none',
-              background: 'var(--primary-gradient, #146C94)',
-              color: '#fff',
-              fontWeight: 600,
+              fontSize: '0.85rem',
               cursor: disabled || uploading ? 'not-allowed' : 'pointer',
-              opacity: disabled || uploading ? 0.6 : 1,
-              fontSize: 14,
             }}
           >
-            <Camera size={16} /> Camera
+            <Camera size={18} />
+            <span>Take Photo</span>
           </button>
+
+          {/* File picker button */}
           <button
             type="button"
             disabled={disabled || uploading}
             onClick={() => fileInputRef.current?.click()}
+            className="btn-outline"
             style={{
-              display: 'flex',
+              display: 'inline-flex',
               alignItems: 'center',
-              gap: 6,
+              gap: 8,
               padding: '10px 18px',
-              borderRadius: 8,
-              border:
-                '1.5px solid var(--theme-component-border, #bfbfbf)',
-              background: 'var(--theme-component, #d9d9d9)',
-              color: 'var(--gray-800, #374151)',
-              fontWeight: 600,
+              fontSize: '0.85rem',
               cursor: disabled || uploading ? 'not-allowed' : 'pointer',
-              opacity: disabled || uploading ? 0.6 : 1,
-              fontSize: 14,
             }}
           >
-            <Upload size={16} /> Gallery
+            <Upload size={18} />
+            <span>Choose File</span>
           </button>
         </div>
+
+        <p
+          style={{
+            fontSize: '0.8rem',
+            color: '#6b7280',
+            margin: 0,
+          }}
+        >
+          Photo proof will be stamped with real-time GPS coordinates and timestamp
+        </p>
       </div>
     </div>
   );

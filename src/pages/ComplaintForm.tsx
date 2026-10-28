@@ -13,6 +13,7 @@ import type { Department } from '../lib/supabase';
 import { isValidMobile, lettersAndSpaces, mobileDigits } from '../lib/inputValidation';
 import { ArrowLeft, CheckCircle2, ChevronDown, Search, X } from 'lucide-react';
 import { GoogleIcon } from '../components/common/GoogleIcon';
+import { ArcLoader } from '../components/common/ArcLoader';
 
 export const ComplaintForm: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -21,7 +22,9 @@ export const ComplaintForm: React.FC = () => {
   const { departments, loading: deptsLoading } = useDepartments();
   const { submitComplaint } = useComplaints();
   const loc = useLocation();
-  const { uploadPhoto, uploading } = useStorage();
+  const { uploadPhoto, uploading, progress: uploadProgress, statusText: uploadStatusText } = useStorage();
+  const [submitPhaseText, setSubmitPhaseText] = useState('');
+  const [submitPhasePercent, setSubmitPhasePercent] = useState<number | undefined>(undefined);
 
   const [selectedDept, setSelectedDept] = useState<Department | null>(null);
   const [description, setDescription] = useState('');
@@ -117,12 +120,20 @@ export const ComplaintForm: React.FC = () => {
     if (!locationReady) return; // will be stamped by effect below
 
     setWatermarking(true);
+    setSubmitPhasePercent(25);
+    setSubmitPhaseText(
+      language === 'hi'
+        ? 'जीपीएस लोकेशन व टाइमस्टैम्प वाटरमार्क तैयार किया जा रहा है...'
+        : 'Applying official GPS & timestamp watermark...'
+    );
     const stamped = await stampPhoto(file);
     if (stamped) {
       setPhotoFile(stamped);
       setPreview(URL.createObjectURL(stamped));
     }
     setWatermarking(false);
+    setSubmitPhasePercent(undefined);
+    setSubmitPhaseText('');
   };
 
   const handleClearPhoto = () => {
@@ -827,6 +838,31 @@ export const ComplaintForm: React.FC = () => {
           </button>
         </form>
       </div>
+
+      {(submitting || uploading || watermarking) && (
+        <ArcLoader
+          mode="floating" position="bottom"
+          theme="portal"
+          status={
+            watermarking
+              ? language === 'hi'
+                ? 'फोटो पर जीपीएस वाटरमार्क लगाया जा रहा है'
+                : 'Applying Official GPS Watermark'
+              : language === 'hi'
+              ? 'शिकायत व फोटो अपलोड हो रही है'
+              : 'Submitting Grievance & Photo'
+          }
+          subtitle={
+            submitPhaseText ||
+            uploadStatusText ||
+            (language === 'hi'
+              ? 'कृपया प्रतीक्षा करें, फोटो और विवरण अपलोड हो रहे हैं...'
+              : 'Please wait, syncing photo & complaint telemetry to municipal cloud...')
+          }
+          percent={submitPhasePercent ?? (uploading ? uploadProgress : undefined)}
+          photoCount={{ current: 1, total: 1 }}
+        />
+      )}
 
       <BottomNav />
     </div>

@@ -13,6 +13,7 @@ import PushNotificationSender from '../../components/admin/PushNotificationSende
 import { supabase } from '../../lib/supabase';
 import { gsap } from 'gsap';
 import { DepartmentServiceIcon } from '../../components/common/DepartmentServiceIcon';
+import { ArcLoader } from '../../components/common/ArcLoader';
 
 import type { Department } from '../../lib/supabase';
 import {
@@ -465,7 +466,33 @@ export const AdminDashboard: React.FC = () => {
     navigate('/');
   };
 
-  if (authLoading || !user || !isAdmin) return null;
+    if (authLoading) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F6F1F1' }}>
+        <ArcLoader
+          mode="inline"
+          status="Admin Command Center"
+          subtitle="Verifying municipal credentials & authenticating session…"
+          theme="portal"
+        />
+      </div>
+    );
+  }
+
+  if (!user || !isAdmin) return null;
+
+  if (loading && departments.length === 0) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F6F1F1' }}>
+        <ArcLoader
+          mode="inline"
+          status="Admin Command Center"
+          subtitle="Fetching municipal grievance records & department telemetry…"
+          theme="portal"
+        />
+      </div>
+    );
+  }
 
   const navBtnStyle = (active: boolean, marginBottom: number): React.CSSProperties => ({
     width: '100%',

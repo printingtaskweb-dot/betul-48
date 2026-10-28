@@ -1,4 +1,5 @@
 import { GoogleIcon } from '../common/GoogleIcon';
+import { ArcLoader } from '../common/ArcLoader';
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { Complaint } from '../../lib/supabase';
@@ -18,7 +19,7 @@ export const ResolutionForm: React.FC<ResolutionFormProps> = ({ complaint, onUpd
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const { uploadPhoto, uploading } = useStorage();
+  const { uploadPhoto, uploading, progress, statusText } = useStorage();
 
   const handleFileSelected = (file: File) => {
     setPhotoFile(file);
@@ -170,6 +171,16 @@ export const ResolutionForm: React.FC<ResolutionFormProps> = ({ complaint, onUpd
             <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 18, color: '#16a34a' }}>check_circle</span>This complaint is fully resolved and verified.</span>
           </p>
         </div>
+      )}
+      {(submitting || uploading) && photoFile && (
+        <ArcLoader
+          mode="floating" position="bottom"
+          theme="portal"
+          status="Uploading Resolution Proof"
+          subtitle={statusText || 'Syncing proof photo to municipal servers…'}
+          percent={progress}
+          photoCount={{ current: 1, total: 1 }}
+        />
       )}
     </div>
   );

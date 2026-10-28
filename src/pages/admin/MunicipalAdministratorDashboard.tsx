@@ -1,3 +1,4 @@
+import { ArcLoader } from '../../components/common/ArcLoader';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
@@ -37,6 +38,19 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
   }, [user, authLoading, navigate]);
 
   const { departments, complaints, staff, wards, loading, error: dataError, fetchData } = useMunicipalData();
+
+  if (authLoading || (loading && complaints.length === 0 && departments.length === 0)) {
+    return (
+      <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <ArcLoader
+          mode="inline"
+          status="Municipal Executive Dashboard"
+          subtitle="Loading real-time SLA governance, telemetry & ward mapping…"
+          theme="portal"
+        />
+      </div>
+    );
+  }
 
   const { viewer, myTier, isDeputyOrHigher, scopedComplaints, visibleDepartments } =
     useViewerScope(complaints, departments, wards);
