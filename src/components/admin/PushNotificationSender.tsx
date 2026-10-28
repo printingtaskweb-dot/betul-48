@@ -137,7 +137,7 @@ export const PushNotificationSender: React.FC = () => {
       if (saveErr) {
         setDeviceRegisterMsg({ text: `Database error: ${saveErr.message || JSON.stringify(saveErr)}`, isError: true });
       } else {
-        setDeviceRegisterMsg({ text: '✅ This device was successfully registered in Supabase!', isError: false });
+        setDeviceRegisterMsg({ text: 'This device was successfully registered in Supabase!', isError: false });
         await fetchTokens();
       }
     } catch (err: any) {
@@ -304,7 +304,7 @@ export const PushNotificationSender: React.FC = () => {
                 boxShadow: '0 2px 6px rgba(20, 108, 148, 0.2)',
               }}
             >
-              <Smartphone size={13} /> {registeringDevice ? 'Registering…' : '📱 Register This Browser Device'}
+              <Smartphone size={13} /> {registeringDevice ? 'Registering…' : 'Register This Browser Device'}
             </button>
             <button onClick={fetchTokens}
               style={{ background: 'none', border: BORDER, borderRadius: 6, padding: '5px 10px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4, fontSize: '0.76rem', fontWeight: 700 }}>
@@ -329,7 +329,7 @@ export const PushNotificationSender: React.FC = () => {
         )}
         {fetchError ? (
           <div style={{ background: '#fee2e2', border: '1px solid #fca5a5', borderRadius: 8, padding: '10px 14px', fontSize: '0.82rem', color: '#991b1b', marginTop: 4 }}>
-            ⚠️ <strong>Could not read fcm_tokens:</strong> {fetchError}
+            <span className="material-symbols-rounded" style={{ fontSize: 16, color: '#dc2626', verticalAlign: 'middle', marginRight: 4 }}>warning</span><strong>Could not read fcm_tokens:</strong> {fetchError}
             <div style={{ marginTop: 4, fontSize: '0.76rem', color: '#7f1d1d' }}>
               Please ensure you have executed <code>supabase/migrations/20241014_fcm_setup.sql</code> in the Supabase SQL Editor.
             </div>
@@ -354,7 +354,7 @@ export const PushNotificationSender: React.FC = () => {
             </div>
             {tokens.length === 0 && (
               <p style={{ margin: '10px 0 0', fontSize: '0.78rem', color: 'var(--gray-600)' }}>
-                ℹ️ No devices registered yet. Users can register by logging in and clicking <strong>🔔 Enable Notifications</strong> on their Profile page.
+                <span className="material-symbols-rounded" style={{ fontSize: 16, color: '#0284c7', verticalAlign: 'middle', marginRight: 4 }}>info</span> No devices registered yet. Users can register by logging in and clicking <strong>Enable Notifications</strong> on their Profile page.
               </p>
             )}
           </div>
@@ -364,7 +364,7 @@ export const PushNotificationSender: React.FC = () => {
       {/* ── Compose Form ── */}
       <div style={card}>
         <h3 style={{ margin: '0 0 16px', fontSize: '0.95rem', fontWeight: 900, color: 'var(--gray-900)' }}>
-          📝 Compose Notification
+          Compose Notification
         </h3>
 
         {/* Title */}
@@ -449,7 +449,7 @@ export const PushNotificationSender: React.FC = () => {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', background: 'var(--theme-bg,#F6F1F1)', border: BORDER, borderRadius: 8 }}>
                 <span style={{ fontWeight: 700, fontSize: '0.88rem', color: PRIMARY }}>{selectedUserName}</span>
                 <button onClick={() => { setSelectedUserId(''); setSelectedUserName(''); setUserSearch(''); }}
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-500)', fontWeight: 800 }}>✕</button>
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--gray-500)', fontWeight: 800 }}><span className="material-symbols-rounded" style={{ fontSize: 18 }}>close</span></button>
               </div>
             ) : (
               <>
@@ -522,7 +522,7 @@ export const PushNotificationSender: React.FC = () => {
 
       {/* ── Recent Token List ── */}
       <div style={card}>
-        <h3 style={{ margin: '0 0 12px', fontSize: '0.88rem', fontWeight: 900 }}>📱 Registered Devices ({tokens.length})</h3>
+        <h3 style={{ margin: '0 0 12px', fontSize: '0.88rem', fontWeight: 900 }}>Registered Devices ({tokens.length})</h3>
         {tokens.length === 0 ? (
           <p style={{ fontSize: '0.82rem', color: 'var(--gray-500)', textAlign: 'center', padding: 20 }}>
             No devices registered yet. Users must open the app and grant notification permission.

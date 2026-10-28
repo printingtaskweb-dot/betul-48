@@ -55,7 +55,7 @@ export function ResolveModal({ complaint, resolvedBy, language, onClose, onResol
       }}>
         <div style={{ background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))', padding: '20px 24px' }}>
           <h2 style={{ margin: 0, color: '#fff', fontSize: '1.1rem', fontWeight: 800 }}>
-            ✅ {hi ? 'शिकायत हल करें' : 'Mark as Resolved'}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 18 }}>check_circle</span><span>{hi ? 'शिकायत हल करें' : 'Mark as Resolved'}</span></span>
           </h2>
           <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '0.82rem' }}>
             #{complaint.ticket_number}
@@ -168,13 +168,13 @@ interface CreateDeptModalProps {
   onCreated: () => void;
 }
 
-const EMOJI_OPTIONS = ['🏢', '🧹', '🚰', '💡', '🛣️', '🌳', '🚒', '🏥', '🏗️', '📋', '⚡', '🚌', '🐕', '🛡️', '🌿', '🚿'];
+const EMOJI_OPTIONS = ['apartment', 'cleaning_services', 'water_drop', 'lightbulb', 'edit_road', 'park', 'fire_truck', 'local_hospital', 'construction', 'assignment', 'bolt', 'directions_bus', 'pets', 'shield', 'eco', 'shower'];
 const COLOR_OPTIONS = ['#660033', '#800040', '#4d0026', '#831843', '#9d174d', '#701a75', '#581c87', '#312e81', '#1e3a8a'];
 
 export function CreateDeptModal({ language, onClose, onCreated }: CreateDeptModalProps) {
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
-  const [icon, setIcon] = useState('🏢');
+  const [icon, setIcon] = useState('');
   const [color, setColor] = useState('#660033');
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -253,7 +253,7 @@ export function CreateDeptModal({ language, onClose, onCreated }: CreateDeptModa
       }}>
         <div style={{ background: 'var(--primary-gradient, linear-gradient(135deg, #660033, #800040))', padding: '20px 24px' }}>
           <h2 style={{ margin: 0, color: '#fff', fontSize: '1.15rem', fontWeight: 800 }}>
-            🏢 {hi ? 'नया विभाग / श्रेणी जोड़ें' : 'Create New Department / Category'}
+             {hi ? 'नया विभाग / श्रेणी जोड़ें' : 'Create New Department / Category'}
           </h2>
           <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.85)', fontSize: '0.82rem' }}>
             {hi ? 'संस्थान प्रमुख द्वारा नागरिक सेवाओं के लिए नया अनुभाग' : 'Organization Head can add municipal service verticals'}

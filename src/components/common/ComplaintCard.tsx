@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Complaint } from '../../lib/supabase';
 import { StatusBadge } from './StatusBadge';
+import { GoogleIcon } from './GoogleIcon';
 import { MapPin, Clock, Navigation } from 'lucide-react';
 
 interface ComplaintCardProps {
@@ -111,7 +112,7 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
                   lineHeight: 1,
                 }}
               >
-                📍 GPS
+                <span className="material-symbols-rounded" style={{ fontSize: 14 }}>location_on</span> GPS
               </span>
             )}
           </div>
@@ -153,7 +154,7 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
                 marginBottom: 4,
               }}
             >
-              <span style={{ fontSize: 14 }}>{dept.icon}</span>
+              <GoogleIcon name={dept.icon} size={14} />
               <span
                 style={{
                   fontSize: 13,

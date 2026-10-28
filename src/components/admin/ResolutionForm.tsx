@@ -1,3 +1,4 @@
+import { GoogleIcon } from '../common/GoogleIcon';
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { Complaint } from '../../lib/supabase';
@@ -84,7 +85,7 @@ export const ResolutionForm: React.FC<ResolutionFormProps> = ({ complaint, onUpd
         <div style={{ marginBottom: 20 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
             <h4 style={{ margin: 0, color: '#374151', fontSize: '0.95rem', fontWeight: 800 }}>
-              📸 Resolve Complaint & Upload Work Photo
+              Resolve Complaint & Upload Work Photo
             </h4>
             {complaint.status === 'pending' && (
               <button
@@ -121,7 +122,7 @@ export const ResolutionForm: React.FC<ResolutionFormProps> = ({ complaint, onUpd
 
           <div style={{ marginTop: 12 }}>
             <label style={{ fontSize: 13, color: '#166534', fontWeight: 700, display: 'block', marginBottom: 6 }}>
-              📷 Upload Work-Done Photo (Proof of work)
+              Upload Work-Done Photo (Proof of work)
             </label>
             <PhotoUploader
               onFileSelected={handleFileSelected}
@@ -155,7 +156,7 @@ export const ResolutionForm: React.FC<ResolutionFormProps> = ({ complaint, onUpd
       {complaint.status === 'resolved' && (
         <div style={{ marginBottom: 20 }}>
           <p style={{ color: '#7c3aed', fontSize: 14, fontWeight: 500 }}>
-            ⏳ Awaiting citizen verification. You can also verify as admin:
+            <GoogleIcon name="hourglass_top" size={15} style={{ verticalAlign: 'middle', marginRight: 4 }} />Awaiting citizen verification. You can also verify as admin:
           </p>
           <button onClick={handleAdminVerify} style={{ ...btnStyle('#16a34a'), marginTop: 10 }}>
             <CheckCircle2 size={15} /> Admin Verify & Close
@@ -166,7 +167,7 @@ export const ResolutionForm: React.FC<ResolutionFormProps> = ({ complaint, onUpd
       {complaint.status === 'verified' && (
         <div style={{ padding: '12px 16px', background: '#dcfce7', borderRadius: 8, border: '1px solid #bbf7d0' }}>
           <p style={{ margin: 0, color: '#166534', fontWeight: 600, fontSize: 14 }}>
-            ✅ This complaint is fully resolved and verified.
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 18, color: '#16a34a' }}>check_circle</span>This complaint is fully resolved and verified.</span>
           </p>
         </div>
       )}

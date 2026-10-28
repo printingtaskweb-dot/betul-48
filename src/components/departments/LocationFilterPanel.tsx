@@ -194,9 +194,9 @@ export const LocationFilterPanel: React.FC<Props> = ({
           {/* Mode tabs */}
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {[
-              { k: 'ward' as Mode, label: hi ? '🏘️ वार्ड से' : '🏘️ By Ward' },
-              { k: 'radius' as Mode, label: hi ? '🎯 त्रिज्या से' : '🎯 By Radius' },
-              { k: 'text' as Mode, label: hi ? '🔍 पाठ खोज' : '🔍 Text Search' },
+              { k: 'ward' as Mode, label: hi ? ' वार्ड से' : ' By Ward' },
+              { k: 'radius' as Mode, label: hi ? ' त्रिज्या से' : ' By Radius' },
+              { k: 'text' as Mode, label: hi ? ' पाठ खोज' : ' Text Search' },
             ].map((m) => {
               const active = mode === m.k;
               return (
@@ -254,12 +254,12 @@ export const LocationFilterPanel: React.FC<Props> = ({
                 </button>
                 {userLat != null && userLon != null && (
                   <span style={{ fontSize: '0.72rem', color: 'var(--gray-600)', fontFamily: 'monospace' }}>
-                    📍 {userLat.toFixed(5)}, {userLon.toFixed(5)}
+                     {userLat.toFixed(5)}, {userLon.toFixed(5)}
                   </span>
                 )}
                 {gpsErr && (
                   <span style={{ fontSize: '0.72rem', color: '#991b1b', fontWeight: 700 }}>
-                    ⚠️ {gpsErr}
+                     {gpsErr}
                   </span>
                 )}
               </>
@@ -304,14 +304,14 @@ export const LocationFilterPanel: React.FC<Props> = ({
               }}
             >
               <span style={{ color: PRIMARY }}>
-                🏘️ Ward {activeWard.ward_number} · {activeWard.name}
+                 Ward {activeWard.ward_number} · {activeWard.name}
               </span>
               <span style={{ color: 'var(--gray-600)' }}>
-                🎯 {activeWard.radius_meters} m
+                 {activeWard.radius_meters} m
               </span>
               {activeWard.center_latitude != null && activeWard.center_longitude != null && (
                 <span style={{ fontFamily: 'monospace', color: 'var(--gray-600)' }}>
-                  📍 {activeWard.center_latitude.toFixed(4)}, {activeWard.center_longitude.toFixed(4)}
+                   {activeWard.center_latitude.toFixed(4)}, {activeWard.center_longitude.toFixed(4)}
                 </span>
               )}
             </div>
@@ -361,11 +361,11 @@ export const LocationFilterPanel: React.FC<Props> = ({
                       </span>
                       <StatusBadge status={c.status} />
                       {wardTag && (
-                        <span style={{ fontSize: '0.7rem', color: 'var(--gray-600)' }}>🏘️ {wardTag}</span>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--gray-600)' }}> {wardTag}</span>
                       )}
                       {dist != null && (
                         <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#15803d' }}>
-                          🎯 {Math.round(dist)} m
+                           {Math.round(dist)} m
                         </span>
                       )}
                     </div>
@@ -374,7 +374,7 @@ export const LocationFilterPanel: React.FC<Props> = ({
                     </p>
                     {c.address && (
                       <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: 'var(--gray-500)' }}>
-                        📮 {c.address}
+                         {c.address}
                       </p>
                     )}
                   </div>

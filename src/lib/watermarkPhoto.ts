@@ -237,7 +237,7 @@ function drawGpsPanel(
   // Row 1: pin icon + flag + "City, Country" ......... time
   let y = infoTop + fsCity;
 
-  // Pin icon (📍)
+  // Pin icon
   const iconSize = fsCity * 1.05;
   drawPinIcon(ctx, infoLeft + iconSize / 2, infoTop + fsCity * 0.42, iconSize * 0.42, '#ff4d4d');
   let cursorX = infoLeft + iconSize * 1.05;
@@ -317,7 +317,7 @@ function drawGpsPanel(
   ctx.fillStyle = '#ffffff';
   ctx.fillText(dateText, infoLeft + calSize + fsDate * 0.35, y);
 
-  // ── Footer strip: "GPS MAP CAMERA 📷" ────────────────
+  // ── Footer strip: "GPS MAP CAMERA" ────────────────
   const footerHeight = Math.max(16, Math.round(fsFooter * 2.1));
   const footerTop = panelTop + panelHeight - footerHeight;
   ctx.save();

@@ -207,9 +207,9 @@ export const ProfilePage: React.FC = () => {
         })
         .eq('id', user.id);
       await refreshProfile();
-      setSaveMsg(language === 'hi' ? '✅ प्रोफ़ाइल अपडेट हो गई!' : '✅ Profile updated!');
+      setSaveMsg(language === 'hi' ? 'प्रोफ़ाइल अपडेट हो गई!' : 'Profile updated!');
     } catch {
-      setSaveMsg(language === 'hi' ? '❌ अपडेट विफल' : '❌ Update failed');
+      setSaveMsg(language === 'hi' ? 'अपडेट विफल' : 'Update failed');
     } finally {
       setSaving(false);
       setTimeout(() => setSaveMsg(''), 3000);
@@ -286,23 +286,10 @@ export const ProfilePage: React.FC = () => {
               <h2 style={{ margin: 0, fontWeight: 800, fontSize: '1.22rem', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {profile?.full_name || (language === 'hi' ? 'नागरिक' : 'Citizen')}
               </h2>
-              {profile?.role === 'admin' ? (
-                <ShieldCheck size={18} color="#4ade80" />
-              ) : (
-                <CheckCircle size={16} color="#67e8f9" />
-              )}
-            </div>
-            <p style={{ margin: '2px 0 0', fontSize: '0.8rem', opacity: 0.88, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {user?.email || profile?.phone}
-            </p>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 6, flexWrap: 'wrap' }}>
-              <span style={{ padding: '2px 8px', borderRadius: 999, background: 'rgba(255,255,255,0.22)', fontSize: '0.72rem', fontWeight: 700 }}>
-                {profile?.role === 'admin'
-                  ? (language === 'hi' ? '🛡️ एडमिन' : '🛡️ Admin')
-                  : profile?.ward_number
-                  ? `Ward ${profile.ward_number}`
-                  : (language === 'hi' ? '🏙️ बेतूल नागरिक' : '🏙️ Betul Citizen')}
-              </span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  <span className="material-symbols-rounded" style={{ fontSize: 13 }}>{profile?.role === 'admin' ? 'shield' : 'apartment'}</span>
+                  <span>{profile?.role === 'admin' ? (language === 'hi' ? 'एडमिन' : 'Admin') : profile?.ward_number ? `Ward ${profile.ward_number}` : (language === 'hi' ? 'बेतूल नागरिक' : 'Betul Citizen')}</span>
+                </span>
             </div>
           </div>
         </div>
@@ -822,7 +809,7 @@ export const ProfilePage: React.FC = () => {
                           transition: 'all 0.2s',
                         }}
                       >
-                        {lang === 'en' ? '🇬🇧 English' : '🇮🇳 हिंदी'}
+                        {lang === 'en' ? 'English' : 'हिंदी'}
                       </button>
                     ))}
                   </div>
@@ -841,7 +828,7 @@ export const ProfilePage: React.FC = () => {
                 </button>
 
                 {saveMsg && (
-                  <p style={{ margin: 0, textAlign: 'center', fontSize: '0.88rem', fontWeight: 700, color: saveMsg.startsWith('✅') ? '#065f46' : '#991b1b' }}>
+                  <p style={{ margin: 0, textAlign: 'center', fontSize: '0.88rem', fontWeight: 700, color: !saveMsg.includes('विफल') && !saveMsg.includes('failed') ? '#065f46' : '#991b1b' }}>
                     {saveMsg}
                   </p>
                 )}
@@ -858,7 +845,7 @@ export const ProfilePage: React.FC = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 14px', borderRadius: 10, background: '#d1fae5', border: '1.5px solid #6ee7b7' }}>
                   <Bell size={18} color="#065f46" />
                   <p style={{ margin: 0, fontSize: '0.88rem', fontWeight: 700, color: '#065f46' }}>
-                    {language === 'hi' ? '✅ पुश सूचनाएं सक्षम हैं' : '✅ Push notifications are enabled'}
+                    {language === 'hi' ? 'पुश सूचनाएं सक्षम हैं' : 'Push notifications are enabled'}
                   </p>
                 </div>
               ) : permission === 'denied' ? (
@@ -885,7 +872,7 @@ export const ProfilePage: React.FC = () => {
                     <Bell size={16} />
                     {fcmLoading
                       ? (language === 'hi' ? 'कृपया प्रतीक्षा करें...' : 'Please wait...')
-                      : (language === 'hi' ? '🔔 सूचनाएं सक्षम करें' : '🔔 Enable Notifications')}
+                      : (language === 'hi' ? 'सूचनाएं सक्षम करें' : 'Enable Notifications')}
                   </button>
                 </div>
               )}

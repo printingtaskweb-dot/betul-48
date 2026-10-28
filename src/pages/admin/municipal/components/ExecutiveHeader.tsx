@@ -1,3 +1,4 @@
+import { GoogleIcon } from '../../../../components/common/GoogleIcon';
 import React from 'react';
 import { RefreshCw } from 'lucide-react';
 import { TIER_LABEL } from '../../../../lib/hierarchy';
@@ -31,7 +32,7 @@ export const ExecutiveHeader: React.FC<Props> = ({ myTier, loading, onRefresh })
     >
       <div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: '1.6rem' }}>{roleBadge.icon}</span>
+          <GoogleIcon name={roleBadge.icon} size={28} />
           <div>
             <h1 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 900, letterSpacing: '-0.02em' }}>
               {myTier === 0
@@ -61,7 +62,7 @@ export const ExecutiveHeader: React.FC<Props> = ({ myTier, loading, onRefresh })
             gap: 6,
           }}
         >
-          <span>{roleBadge.icon}</span>
+          <GoogleIcon name={roleBadge.icon} size={15} />
           <span>{roleBadge.en}</span>
         </span>
 

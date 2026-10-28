@@ -428,7 +428,7 @@ export const AdminNewsModeration: React.FC = () => {
             border: '1.5px dashed var(--theme-component-border, #bfbfbf)',
           }}
         >
-          <div style={{ fontSize: '2rem', marginBottom: 8 }}>✅</div>
+          <div style={{ fontSize: '2rem', marginBottom: 8 }}></div>
           <h4 style={{ margin: '0 0 4px', fontWeight: 800, color: 'var(--gray-900)' }}>
             No submissions in this view
           </h4>
@@ -721,7 +721,7 @@ export const AdminNewsModeration: React.FC = () => {
                         gap: 6,
                       }}
                     >
-                      <span>🔒</span>
+                      <span></span>
                       <span>View Only: Municipal Head can monitor news, but approval is reserved for Platform Admin</span>
                     </div>
                   )}

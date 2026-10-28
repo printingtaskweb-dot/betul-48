@@ -110,7 +110,7 @@ export function useDeptComplaints(departmentId: string | null) {
             dept_name: row.department?.name || '',
             dept_slug: row.department?.slug || '',
             dept_color: row.department?.color || '#146C94',
-            dept_icon: row.department?.icon || '🏢',
+            dept_icon: row.department?.icon || 'apartment',
             assigned_name: staff?.full_name || null,
             assigned_phone: staff?.phone || null,
             assigned_role: staff?.role || null,

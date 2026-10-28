@@ -1,3 +1,4 @@
+import { GoogleIcon } from '../../../../components/common/GoogleIcon';
 import React from 'react';
 import { card } from '../styles';
 import { BORDER, PRIMARY } from '../constants';
@@ -20,7 +21,7 @@ export const DepartmentsTab: React.FC<Props> = ({
     <div style={{ ...card, padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div>
         <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: 'var(--gray-900)' }}>
-          🏢 Department Performance Chart & Head Directory
+          Department Performance Chart & Head Directory
         </h3>
         <p style={{ margin: '3px 0 0', fontSize: '0.76rem', color: 'var(--gray-600)' }}>
           Bar length = total workload. Colors = resolution breakdown. Click any row to filter complaints.
@@ -52,21 +53,21 @@ export const DepartmentsTab: React.FC<Props> = ({
             >
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <span style={{ fontSize: '1.5rem' }}>{d.icon}</span>
+                  <GoogleIcon name={d.icon} size={28} />
                   <div>
                     <b style={{ fontSize: '0.95rem', color: 'var(--gray-900)' }}>{d.name}</b>
                     <div style={{ fontSize: '0.72rem', color: 'var(--gray-600)' }}>
                       Head: <b>{m.head?.full_name || 'Not assigned'}</b>
-                      {m.head?.phone && <span> · 📞 {m.head.phone}</span>}
+                      {m.head?.phone && <span> · <span className="material-symbols-rounded" style={{ fontSize: 13, verticalAlign: 'middle', marginRight: 4 }}>call</span>{m.head.phone}</span>}
                     </div>
                   </div>
                 </div>
                 <div style={{ display: 'flex', gap: 10, fontSize: '0.74rem', fontWeight: 700, flexWrap: 'wrap' }}>
                   <span style={{ color: PRIMARY }}>Total: {m.total}</span>
-                  <span style={{ color: '#15803d' }}>✓ {m.resolved}</span>
-                  <span style={{ color: 'var(--burgundy)' }}>▶ {m.inProgress}</span>
-                  <span style={{ color: 'var(--status-pending)' }}>⌛ {m.pending}</span>
-                  {m.overdue > 0 && <span style={{ color: '#991b1b', fontWeight: 900 }}>⚠ {m.overdue}</span>}
+                  <span style={{ color: '#15803d' }}><span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 2 }}>check</span>{m.resolved}</span>
+                  <span style={{ color: 'var(--burgundy)', display: 'inline-flex', alignItems: 'center', gap: 3 }}><GoogleIcon name="play_arrow" size={13} />{m.inProgress}</span>
+                  <span style={{ color: 'var(--status-pending)', display: 'inline-flex', alignItems: 'center', gap: 3 }}><GoogleIcon name="hourglass_bottom" size={13} />{m.pending}</span>
+                  {m.overdue > 0 && <span style={{ color: '#991b1b', fontWeight: 900 }}><span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 2 }}>warning</span>{m.overdue}</span>}
                   <span style={{ color: 'var(--gray-600)' }}>({m.rate}%)</span>
                 </div>
               </div>

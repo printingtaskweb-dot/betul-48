@@ -219,7 +219,7 @@ export const NotificationPrompt: React.FC = () => {
             </p>
             <div style={{ display: 'flex', gap: 8, background: '#f3f4f6', padding: '10px 12px', borderRadius: 8, fontSize: '0.78rem', color: '#374151', marginBottom: 14 }}>
               <Share size={16} color="#146C94" />
-              <span>Tap <strong>Share</strong> ➔ <strong>Add to Home Screen</strong> <PlusSquare size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /></span>
+              <span>Tap <strong>Share</strong> → <strong>Add to Home Screen</strong> <PlusSquare size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /></span>
             </div>
             <button
               onClick={handleDismiss}

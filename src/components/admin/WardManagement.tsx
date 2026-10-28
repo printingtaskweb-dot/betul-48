@@ -329,10 +329,10 @@ export const WardManagement: React.FC<Props> = ({ onWardSelect, selectedWardId }
                     </div>
                     <div style={{ fontSize: '0.74rem', color: 'var(--gray-600)', marginTop: 4, display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                       {ward.center_latitude != null && ward.center_longitude != null && (
-                        <span>📍 {ward.center_latitude.toFixed(4)}, {ward.center_longitude.toFixed(4)}</span>
+                        <span> {ward.center_latitude.toFixed(4)}, {ward.center_longitude.toFixed(4)}</span>
                       )}
-                      <span>🎯 {ward.radius_meters}m radius</span>
-                      <span>🏘️ {wardAreas.length} areas</span>
+                      <span><span className="material-symbols-rounded" style={{ fontSize: 13, verticalAlign: 'middle', marginRight: 2 }}>my_location</span>{ward.radius_meters}m radius</span>
+                      <span><span className="material-symbols-rounded" style={{ fontSize: 13, verticalAlign: 'middle', marginRight: 2 }}>location_city</span>{wardAreas.length} areas</span>
                     </div>
                   </div>
                   <div style={{ display: 'flex', gap: 4 }}>
@@ -392,9 +392,9 @@ export const WardManagement: React.FC<Props> = ({ onWardSelect, selectedWardId }
                         <span style={{ fontSize: '0.74rem', color: 'var(--gray-600)', marginLeft: 6 }}>({area.name_hindi})</span>
                       )}
                       <div style={{ fontSize: '0.7rem', color: 'var(--gray-500)', marginTop: 2 }}>
-                        {area.pincode && <span>📮 {area.pincode} · </span>}
+                        {area.pincode && <span><span className="material-symbols-rounded" style={{ fontSize: 13, verticalAlign: 'middle', marginRight: 2 }}>mail</span>{area.pincode} · </span>}
                         {area.center_latitude != null && area.center_longitude != null
-                          ? `📍 ${area.center_latitude.toFixed(4)}, ${area.center_longitude.toFixed(4)}`
+                          ? ` ${area.center_latitude.toFixed(4)}, ${area.center_longitude.toFixed(4)}`
                           : 'No GPS set'}
                       </div>
                     </div>

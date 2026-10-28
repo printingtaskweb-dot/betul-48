@@ -1,3 +1,4 @@
+import { GoogleIcon } from '../../../../components/common/GoogleIcon';
 import React from 'react';
 import { card } from '../styles';
 import { BORDER, PRIMARY } from '../constants';
@@ -26,7 +27,7 @@ export const OverviewTab: React.FC<Props> = ({
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 8 }}>
           <div>
             <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 900, color: 'var(--gray-900)' }}>
-              📊 Department Workload Bar Chart
+              Department Workload Bar Chart
             </h3>
             <p style={{ margin: '3px 0 0', fontSize: '0.76rem', color: 'var(--gray-600)' }}>
               Horizontal bars show completed vs remaining complaints per department, ranked by total volume.
@@ -83,9 +84,9 @@ export const OverviewTab: React.FC<Props> = ({
 
                 <div style={{ display: 'flex', gap: 8, fontSize: '0.74rem', whiteSpace: 'nowrap' }}>
                   <b style={{ color: PRIMARY }}>{m.total}</b>
-                  <span style={{ color: '#15803d' }}>✓ {m.resolved}</span>
-                  <span style={{ color: 'var(--status-pending)' }}>⌛ {m.pending}</span>
-                  {m.overdue > 0 && <span style={{ color: '#991b1b', fontWeight: 800 }}>⚠ {m.overdue}</span>}
+                  <span style={{ color: '#15803d' }}><span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 2 }}>check</span>{m.resolved}</span>
+                  <span style={{ color: 'var(--status-pending)', display: 'inline-flex', alignItems: 'center', gap: 3 }}><GoogleIcon name="hourglass_bottom" size={13} />{m.pending}</span>
+                  {m.overdue > 0 && <span style={{ color: '#991b1b', fontWeight: 800 }}><span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 2 }}>warning</span>{m.overdue}</span>}
                   <span style={{ color: 'var(--gray-600)' }}>({m.rate}%)</span>
                 </div>
               </div>
@@ -103,7 +104,7 @@ export const OverviewTab: React.FC<Props> = ({
       {/* ── Area Hotspot Ranking ── */}
       <div style={{ ...card, padding: '20px 22px' }}>
         <h3 style={{ margin: '0 0 4px', fontSize: '1.05rem', fontWeight: 900, color: 'var(--gray-900)' }}>
-          🗺️ Area Hotspot Ranking
+          Area Hotspot Ranking
         </h3>
         <p style={{ margin: '0 0 14px', fontSize: '0.76rem', color: 'var(--gray-600)' }}>
           Wards / areas with highest complaint density. Click any row to filter complaints in that area.
@@ -137,12 +138,12 @@ export const OverviewTab: React.FC<Props> = ({
                   <span style={{ fontSize: '0.9rem', fontWeight: 900, color: fg }}>{a.total}</span>
                 </div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.72rem', color: fg, fontWeight: 700 }}>
-                  <span>✓ Resolved: {a.resolved}</span>
-                  <span>⌛ Pending: {a.pending}</span>
+                  <span>Resolved: {a.resolved}</span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}><GoogleIcon name="hourglass_bottom" size={13} />Pending: {a.pending}</span>
                 </div>
                 {a.topDepartment && (
                   <div style={{ fontSize: '0.7rem', color: 'var(--gray-700)' }}>
-                    🔥 Top dept: <b>{a.topDepartment}</b>
+                    Top dept: <b>{a.topDepartment}</b>
                   </div>
                 )}
               </div>
@@ -160,12 +161,12 @@ export const OverviewTab: React.FC<Props> = ({
       {/* ── SLA ── */}
       <div style={{ ...card, padding: '20px 22px' }}>
         <h3 style={{ margin: '0 0 12px', fontSize: '1.05rem', fontWeight: 900, color: 'var(--gray-900)' }}>
-          ⏱️ Turnaround Timing & SLA Resolution Compliance
+          Turnaround Timing & SLA Resolution Compliance
         </h3>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
-          <SlaCard title="⚡ Fast Resolution (< 24h)" value={slaMetrics.fastCount} subtitle="Complaints resolved within 24 hours" bg="#dcfce7" border="#86efac" fg="#166534" />
-          <SlaCard title="⏳ Standard Resolution (24 - 72h)" value={slaMetrics.standardCount} subtitle="Resolved within regular SLA threshold" bg="#fef3c7" border="#fde047" fg="#854d0e" />
-          <SlaCard title="🚨 Overdue / SLA Breached (> 72h)" value={slaMetrics.overdueCount} subtitle="Requires urgent head intervention" bg="#fee2e2" border="#fca5a5" fg="#991b1b" />
+          <SlaCard title="Fast Resolution (< 24h)" value={slaMetrics.fastCount} subtitle="Complaints resolved within 24 hours" bg="#dcfce7" border="#86efac" fg="#166534" />
+          <SlaCard title="Standard Resolution (24 - 72h)" value={slaMetrics.standardCount} subtitle="Resolved within regular SLA threshold" bg="#fef3c7" border="#fde047" fg="#854d0e" />
+          <SlaCard title="Overdue / SLA Breached (> 72h)" value={slaMetrics.overdueCount} subtitle="Requires urgent head intervention" bg="#fee2e2" border="#fca5a5" fg="#991b1b" />
         </div>
       </div>
     </div>

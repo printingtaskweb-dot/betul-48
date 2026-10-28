@@ -1,3 +1,4 @@
+import { GoogleIcon } from '../common/GoogleIcon';
 // src/components/dept/AllotModal.tsx
 import React, { useMemo, useState } from 'react';
 import { Send, ArrowRight, ShieldAlert, Search } from 'lucide-react';
@@ -24,12 +25,12 @@ export function HierarchyFlow({
 }) {
   const hi = language === 'hi';
   const steps = [
-    { tier: 0, label: hi ? 'नगर प्रमुख' : 'Municipal Head', icon: '👑' },
-    { tier: 1, label: hi ? 'उपायुक्त' : 'Deputy Comm.', icon: '🏛️' },
-    { tier: 2, label: hi ? 'विभाग प्रमुख' : 'Dept Head', icon: '🏢' },
-    { tier: 3, label: hi ? 'क्षेत्र अधिकारी' : 'Area Officer', icon: '📍' },
-    { tier: 4, label: hi ? 'पर्यवेक्षक' : 'Supervisor', icon: '👷' },
-    { tier: 5, label: hi ? 'मैदानी कर्मचारी' : 'Operational Staff', icon: '🛠️' },
+    { tier: 0, label: hi ? 'नगर प्रमुख' : 'Municipal Head', icon: 'admin_panel_settings' },
+    { tier: 1, label: hi ? 'उपायुक्त' : 'Deputy Comm.', icon: 'account_balance' },
+    { tier: 2, label: hi ? 'विभाग प्रमुख' : 'Dept Head', icon: 'apartment' },
+    { tier: 3, label: hi ? 'क्षेत्र अधिकारी' : 'Area Officer', icon: 'pin_drop' },
+    { tier: 4, label: hi ? 'पर्यवेक्षक' : 'Supervisor', icon: 'engineering' },
+    { tier: 5, label: hi ? 'मैदानी कर्मचारी' : 'Operational Staff', icon: 'construction' },
   ];
 
   return (
@@ -67,7 +68,7 @@ export function HierarchyFlow({
                   : '1px solid var(--theme-component-border, #bfbfbf)',
               }}
             >
-              <span>{st.icon}</span>
+              <GoogleIcon name={st.icon} size={14} />
               <span>{st.label}</span>
               {isCurrentAssigner && (
                 <span style={{ fontSize: '0.64rem', opacity: 0.9 }}>({hi ? 'आप' : 'You'})</span>
@@ -246,7 +247,7 @@ export function AllotModal({
         >
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontSize: '1.2rem' }}>📋</span>
+              <span className="material-symbols-rounded" style={{ fontSize: 20 }}>assignment</span>
               <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 900, color: 'var(--gray-900)' }}>
                 {hi ? 'कार्य आवंटन व पदानुक्रम प्रवाह' : 'Hierarchical Task Allocation'}
               </h3>
@@ -284,7 +285,7 @@ export function AllotModal({
               color: 'var(--gray-700)',
             }}
           >
-            ✕
+            <span className="material-symbols-rounded" style={{ fontSize: 18 }}>close</span>
           </button>
         </div>
 
@@ -374,7 +375,7 @@ export function AllotModal({
                     gap: 6,
                   }}
                 >
-                  <span>🏢</span>
+                  <span className="material-symbols-rounded" style={{ fontSize: 16 }}>apartment</span>
                   <span>{hi ? '1. विभाग प्रमुख' : '1. Dept Head'}</span>
                 </button>
               )}
@@ -398,7 +399,7 @@ export function AllotModal({
                     gap: 6,
                   }}
                 >
-                  <span>📍</span>
+                  <span className="material-symbols-rounded" style={{ fontSize: 16 }}>pin_drop</span>
                   <span>{hi ? '2. क्षेत्र अधिकारी' : '2. Area Officer'}</span>
                 </button>
               )}
@@ -422,7 +423,7 @@ export function AllotModal({
                     gap: 6,
                   }}
                 >
-                  <span>👷</span>
+                  <span className="material-symbols-rounded" style={{ fontSize: 16 }}>engineering</span>
                   <span>{hi ? '3. पर्यवेक्षक' : '3. Supervisor'}</span>
                 </button>
               )}
@@ -445,7 +446,7 @@ export function AllotModal({
                   gap: 6,
                 }}
               >
-                <span>🛠️</span>
+                <span className="material-symbols-rounded" style={{ fontSize: 16 }}>construction</span>
                 <span>{hi ? '4. मैदानी कर्मचारी' : '4. Field Worker'}</span>
               </button>
             </div>
@@ -527,18 +528,16 @@ export function AllotModal({
                           }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--theme-component, #d9d9d9)', border, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              🏢
-                            </div>
+                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--theme-component, #d9d9d9)', border, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>apartment</span></div>
                             <div>
                               <b style={{ fontSize: '0.88rem', color: 'var(--gray-900)' }}>{dh.full_name || 'Department Head'}</b>
                               <div style={{ fontSize: '0.74rem', color: 'var(--gray-600)' }}>
-                                {dh.staff_code ? `${dh.staff_code} • ` : ''}{dh.phone ? `📞 ${dh.phone}` : ''}
+                                {dh.staff_code ? `${dh.staff_code} • ` : ''}{dh.phone ? `${dh.phone}` : ''}
                               </div>
                             </div>
                           </div>
                           <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 8px', borderRadius: 12, background: isSelected ? primaryColor : 'var(--theme-component, #d9d9d9)', color: isSelected ? '#fff' : 'var(--gray-700)' }}>
-                            {isSelected ? '✓ ' + (hi ? 'चयनित' : 'Selected') : (hi ? 'चुनें' : 'Select')}
+                            {isSelected ? '' + (hi ? 'चयनित' : 'Selected') : (hi ? 'चुनें' : 'Select')}
                           </span>
                         </div>
                       );
@@ -575,18 +574,16 @@ export function AllotModal({
                           }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--theme-component, #d9d9d9)', border, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              📍
-                            </div>
+                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--theme-component, #d9d9d9)', border, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>pin_drop</span></div>
                             <div>
                               <b style={{ fontSize: '0.88rem', color: 'var(--gray-900)' }}>{ao.full_name || 'Area Officer'}</b>
                               <div style={{ fontSize: '0.74rem', color: 'var(--gray-600)' }}>
-                                {ao.ward_number ? `Ward ${ao.ward_number} • ` : ''}{ao.staff_code ? `${ao.staff_code} • ` : ''}{ao.phone ? `📞 ${ao.phone}` : ''}
+                                {ao.ward_number ? `Ward ${ao.ward_number} • ` : ''}{ao.staff_code ? `${ao.staff_code} • ` : ''}{ao.phone ? `${ao.phone}` : ''}
                               </div>
                             </div>
                           </div>
                           <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 8px', borderRadius: 12, background: isSelected ? primaryColor : 'var(--theme-component, #d9d9d9)', color: isSelected ? '#fff' : 'var(--gray-700)' }}>
-                            {isSelected ? '✓ ' + (hi ? 'चयनित' : 'Selected') : (hi ? 'चुनें' : 'Select')}
+                            {isSelected ? '' + (hi ? 'चयनित' : 'Selected') : (hi ? 'चुनें' : 'Select')}
                           </span>
                         </div>
                       );
@@ -623,18 +620,16 @@ export function AllotModal({
                           }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--theme-component, #d9d9d9)', border, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              👷
-                            </div>
+                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--theme-component, #d9d9d9)', border, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>engineering</span></div>
                             <div>
                               <b style={{ fontSize: '0.88rem', color: 'var(--gray-900)' }}>{sup.full_name || 'Supervisor'}</b>
                               <div style={{ fontSize: '0.74rem', color: 'var(--gray-600)' }}>
-                                {sup.ward_number ? `Ward ${sup.ward_number} • ` : ''}{sup.staff_code ? `${sup.staff_code} • ` : ''}{sup.phone ? `📞 ${sup.phone}` : ''}
+                                {sup.ward_number ? `Ward ${sup.ward_number} • ` : ''}{sup.staff_code ? `${sup.staff_code} • ` : ''}{sup.phone ? `${sup.phone}` : ''}
                               </div>
                             </div>
                           </div>
                           <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 8px', borderRadius: 12, background: isSelected ? primaryColor : 'var(--theme-component, #d9d9d9)', color: isSelected ? '#fff' : 'var(--gray-700)' }}>
-                            {isSelected ? '✓ ' + (hi ? 'चयनित' : 'Selected') : (hi ? 'चुनें' : 'Select')}
+                            {isSelected ? '' + (hi ? 'चयनित' : 'Selected') : (hi ? 'चुनें' : 'Select')}
                           </span>
                         </div>
                       );
@@ -671,18 +666,16 @@ export function AllotModal({
                           }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--theme-component, #d9d9d9)', border, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              🛠️
-                            </div>
+                            <div style={{ width: 36, height: 36, borderRadius: '50%', background: 'var(--theme-component, #d9d9d9)', border, display: 'flex', alignItems: 'center', justifyContent: 'center' }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>construction</span></div>
                             <div>
                               <b style={{ fontSize: '0.88rem', color: 'var(--gray-900)' }}>{op.full_name || 'Field Worker'}</b>
                               <div style={{ fontSize: '0.74rem', color: 'var(--gray-600)' }}>
-                                {op.ward_number ? `Ward ${op.ward_number} • ` : ''}{op.staff_code ? `${op.staff_code} • ` : ''}{op.phone ? `📞 ${op.phone}` : ''}
+                                {op.ward_number ? `Ward ${op.ward_number} • ` : ''}{op.staff_code ? `${op.staff_code} • ` : ''}{op.phone ? `${op.phone}` : ''}
                               </div>
                             </div>
                           </div>
                           <span style={{ fontSize: '0.72rem', fontWeight: 800, padding: '3px 8px', borderRadius: 12, background: isSelected ? primaryColor : 'var(--theme-component, #d9d9d9)', color: isSelected ? '#fff' : 'var(--gray-700)' }}>
-                            {isSelected ? '✓ ' + (hi ? 'चयनित' : 'Selected') : (hi ? 'चुनें' : 'Select')}
+                            {isSelected ? '' + (hi ? 'चयनित' : 'Selected') : (hi ? 'चुनें' : 'Select')}
                           </span>
                         </div>
                       );

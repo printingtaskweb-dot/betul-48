@@ -1,3 +1,4 @@
+import { GoogleIcon } from '../common/GoogleIcon';
 import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../../lib/supabase';
@@ -213,7 +214,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
         supabase.from('areas').select('*').order('name'),
       ]);
 
-      setDepartments((depts || []).map((d: any) => ({ ...d, icon: d.icon || '🏢' })));
+      setDepartments((depts || []).map((d: any) => ({ ...d, icon: d.icon || 'apartment' })));
       setComplaints(
         (comps || []).map((c: any) => ({
           ...c,
@@ -487,7 +488,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
       >
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: '1.6rem' }}>{roleBadge.icon}</span>
+            <GoogleIcon name={roleBadge.icon} size={28} />
             <div>
               <h1
                 style={{
@@ -525,7 +526,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
               gap: 6,
             }}
           >
-            <span>{roleBadge.icon}</span>
+            <GoogleIcon name={roleBadge.icon} size={15} />
             <span>{roleBadge.en}</span>
           </span>
 
@@ -803,7 +804,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
               <option value="all">All Departments</option>
               {departments.map((d) => (
                 <option key={d.id} value={d.id}>
-                  {d.icon} {d.name}
+                  {d.name}
                 </option>
               ))}
             </select>
@@ -984,7 +985,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                     color: 'var(--gray-900)',
                   }}
                 >
-                  📊 Department Workload & Performance Comparison (Power BI Analytics)
+                  Department Workload & Performance Comparison (Power BI Analytics)
                 </h3>
                 <p
                   style={{
@@ -1143,7 +1144,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                 color: 'var(--gray-900)',
               }}
             >
-              ⏱️ Turnaround Timing & SLA Resolution Compliance
+              Turnaround Timing & SLA Resolution Compliance
             </h3>
             <div
               style={{
@@ -1161,7 +1162,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                 }}
               >
                 <b style={{ fontSize: '0.86rem', color: '#166534' }}>
-                  ⚡ Fast Resolution (&lt; 24h)
+                  Fast Resolution (&lt; 24h)
                 </b>
                 <div
                   style={{
@@ -1187,7 +1188,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                 }}
               >
                 <b style={{ fontSize: '0.86rem', color: '#854d0e' }}>
-                  ⏳ Standard Resolution (24 - 72h)
+                  Standard Resolution (24 - 72h)
                 </b>
                 <div
                   style={{
@@ -1213,7 +1214,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                 }}
               >
                 <b style={{ fontSize: '0.86rem', color: '#991b1b' }}>
-                  🚨 Overdue / SLA Breached (&gt; 72h)
+                  Overdue / SLA Breached (&gt; 72h)
                 </b>
                 <div
                   style={{
@@ -1265,8 +1266,8 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                   color: 'var(--gray-600)',
                 }}
               >
-                Click 'Allot Task' to dispatch via the stepped delegation chain: Dept Head ➔ Area
-                Officer ➔ Supervisor ➔ Field Worker.
+                Click 'Allot Task' to dispatch via the stepped delegation chain: Dept Head → Area
+                Officer → Supervisor → Field Worker.
               </p>
             </div>
             {deptFilter !== 'all' && (
@@ -1343,7 +1344,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                           flexShrink: 0,
                         }}
                       >
-                        {c.department?.icon || '🏢'}
+                        <GoogleIcon name={c.department?.icon || 'apartment'} size={24} />
                       </div>
                       <div>
                         <div
@@ -1390,7 +1391,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                                 color: PRIMARY,
                               }}
                             >
-                              🏘️ Ward {wardObj.ward_number}
+                              Ward {wardObj.ward_number}
                             </span>
                           )}
                           {areaObj && (
@@ -1400,7 +1401,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                                 color: 'var(--gray-600)',
                               }}
                             >
-                              📍 {areaObj.name}
+                              <span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>location_on</span>{areaObj.name}
                             </span>
                           )}
                         </div>
@@ -1423,9 +1424,9 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                             flexWrap: 'wrap',
                           }}
                         >
-                          {c.address && <span>📍 {c.address}</span>}
-                          {c.citizen_name && <span>👤 {c.citizen_name}</span>}
-                          <span>📅 {new Date(c.created_at).toLocaleDateString()}</span>
+                          {c.address && <span><span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>location_on</span>{c.address}</span>}
+                          {c.citizen_name && <span><span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>person</span>{c.citizen_name}</span>}
+                          <span><span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>calendar_today</span>{new Date(c.created_at).toLocaleDateString()}</span>
                         </div>
                       </div>
                     </div>
@@ -1479,7 +1480,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                           </div>
                         ) : (
                           <span style={{ color: 'var(--status-pending)', fontWeight: 700 }}>
-                            ⚠️ Unassigned
+                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14, color: '#dc2626' }}>warning</span>Unassigned</span>
                           </span>
                         )}
                       </div>
@@ -1522,7 +1523,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                 color: 'var(--gray-900)',
               }}
             >
-              🏆 Municipal Employee Performance & Task Execution Leaderboard
+              Municipal Employee Performance & Task Execution Leaderboard
             </h3>
             <p
               style={{
@@ -1586,7 +1587,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                          <span>{tierBadge.icon}</span>
+                          <GoogleIcon name={tierBadge.icon} size={16} />
                           <span>{emp.full_name || 'Staff Member'}</span>
                         </div>
                         {emp.staff_code && (
@@ -1689,7 +1690,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                               fontSize: '0.76rem',
                             }}
                           >
-                            📞 {emp.phone}
+                            <span className="material-symbols-rounded" style={{ fontSize: 13, verticalAlign: 'middle', marginRight: 4 }}>call</span>{emp.phone}
                           </a>
                         ) : (
                           <span style={{ color: 'var(--gray-400)' }}>N/A</span>
@@ -1724,7 +1725,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                 color: 'var(--gray-900)',
               }}
             >
-              🗺️ Registered Municipal Wards & Geographic Coverage
+              Registered Municipal Wards & Geographic Coverage
             </h3>
             <p
               style={{
@@ -1862,7 +1863,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                 color: 'var(--gray-900)',
               }}
             >
-              🏢 Municipal Departments & Operational Head Directory
+              Municipal Departments & Operational Head Directory
             </h3>
             <p
               style={{
@@ -1911,7 +1912,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                   }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: '1.4rem' }}>{d.icon}</span>
+                    <GoogleIcon name={d.icon} size={24} />
                     <b style={{ fontSize: '0.95rem', color: 'var(--gray-900)' }}>{d.name}</b>
                   </div>
                   <div
@@ -1922,7 +1923,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                     }}
                   >
                     Head: <b>{head?.full_name || 'Not assigned'}</b>
-                    {head?.phone && <span style={{ display: 'block' }}>📞 {head.phone}</span>}
+                    {head?.phone && <span style={{ display: 'block' }}><span className="material-symbols-rounded" style={{ fontSize: 13, verticalAlign: 'middle', marginRight: 4 }}>call</span>{head.phone}</span>}
                   </div>
                   <div
                     style={{

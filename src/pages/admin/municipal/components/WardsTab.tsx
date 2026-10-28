@@ -49,7 +49,7 @@ export const WardsTab: React.FC<Props> = ({
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
         <div>
           <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: 'var(--gray-900)' }}>
-            🗺️ Registered Wards & Complaint Coverage
+            Registered Wards & Complaint Coverage
           </h3>
           <p style={{ margin: '3px 0 0', fontSize: '0.76rem', color: 'var(--gray-600)' }}>
             Ward totals include explicitly registered complaints and GPS locations within each ward boundary.
@@ -103,7 +103,7 @@ export const WardsTab: React.FC<Props> = ({
               background: '#fef3c7', border: '1.5px solid #fde047',
               fontSize: '0.8rem', color: '#854d0e', fontWeight: 700,
             }}>
-              ⚠️ {unassignedWardComplaints} complaint{unassignedWardComplaints !== 1 ? 's are' : ' is'} not linked to any registered ward yet.
+              <span className="material-symbols-rounded" style={{ fontSize: 15, color: '#dc2626', verticalAlign: 'middle', marginRight: 4 }}>warning</span>{unassignedWardComplaints} complaint{unassignedWardComplaints !== 1 ? 's are' : ' is'} not linked to any registered ward yet.
             </div>
           )}
 
@@ -146,11 +146,11 @@ export const WardsTab: React.FC<Props> = ({
                   <div style={{ fontSize: '0.72rem', color: 'var(--gray-700)', marginTop: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
                     {w.center_latitude != null && w.center_longitude != null && (
                       <span style={{ fontFamily: 'monospace', color: 'var(--gray-600)' }}>
-                        📍 {w.center_latitude.toFixed(4)}, {w.center_longitude.toFixed(4)} · 🎯 {w.radius_meters} m
+                        <span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>location_on</span>{w.center_latitude.toFixed(4)}, {w.center_longitude.toFixed(4)} · <span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>my_location</span>{w.radius_meters} m
                       </span>
                     )}
-                    {w.pincode && <span>📮 {w.pincode}</span>}
-                    <span>👤 Officers Assigned: <b>{entry.officers.length}</b></span>
+                    {w.pincode && <span><span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>mail</span>{w.pincode}</span>}
+                    <span><span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 2 }}>person</span>Officers Assigned: <b>{entry.officers.length}</b></span>
                     <span style={{ color: PRIMARY, fontWeight: 800 }}>
                       <Crosshair size={11} style={{ display: 'inline', verticalAlign: 'middle' }} /> In ward: <b>{radiusHits.length}</b>
                     </span>

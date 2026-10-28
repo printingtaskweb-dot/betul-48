@@ -1,3 +1,4 @@
+import { GoogleIcon } from '../common/GoogleIcon';
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { getTier, roleLabel } from '../../lib/hierarchy';
@@ -256,7 +257,7 @@ export const AdminUserDirectory: React.FC = () => {
           background: 'var(--theme-component, #d9d9d9)', borderRadius: 'var(--radius-lg)', padding: '36px 20px',
           textAlign: 'center', border: '1.5px dashed var(--theme-component-border, #bfbfbf)',
         }}>
-          <div style={{ fontSize: '2.2rem', marginBottom: 8 }}>🔍</div>
+          <div style={{ fontSize: '2.2rem', marginBottom: 8 }}></div>
           <h4 style={{ margin: '0 0 4px', fontWeight: 800, color: 'var(--gray-900)' }}>No users found</h4>
           <p style={{ margin: 0, color: 'var(--gray-600)', fontSize: '0.84rem' }}>
             No user matching "{searchQuery}" under the selected role filter.
@@ -323,7 +324,7 @@ export const AdminUserDirectory: React.FC = () => {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
                   {u.department && (
                     <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.78rem', fontWeight: 700, color: 'var(--gray-800)' }}>
-                      <span>{u.department.icon}</span>
+                      <GoogleIcon name={u.department.icon} size={16} />
                       <span>{u.department.name}</span>
                     </div>
                   )}

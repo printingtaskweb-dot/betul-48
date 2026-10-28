@@ -1,3 +1,28 @@
+/* =========================================================================
+   Google Material Symbols (Icons) CDN Helper
+   ========================================================================= */
+.material-symbols-rounded,
+.material-symbols-outlined,
+.g-icon {
+  font-family: 'Material Symbols Rounded', 'Material Symbols Outlined' !important;
+  font-weight: normal;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  vertical-align: middle;
+  letter-spacing: normal;
+  text-transform: none;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 /* =========================================================
    Jila Betul — Premium Editorial Design System
    ========================================================= */
@@ -52,10 +77,11 @@
   --theme-component-hover: var(--surface-2);
 
   /* Fonts */
-  --font-serif: "Segoe UI", "Nirmala UI", system-ui, sans-serif;
-  --font-primary: "Segoe UI", "Nirmala UI", system-ui, sans-serif;
-  --font-mono: "Segoe UI", "Nirmala UI", system-ui, sans-serif;
-  --font-hindi: "Nirmala UI", "Noto Sans Devanagari", "Segoe UI", sans-serif;
+    /* Fonts - Loaded via Google Fonts CDN */
+  --font-serif: "Plus Jakarta Sans", "Inter", "Noto Sans Devanagari", system-ui, sans-serif;
+  --font-primary: "Plus Jakarta Sans", "Inter", "Noto Sans Devanagari", system-ui, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  --font-hindi: "Noto Sans Devanagari", "Plus Jakarta Sans", "Inter", sans-serif;
 
   /* Primary Palette */
   --primary-50:  #F6F1F1;

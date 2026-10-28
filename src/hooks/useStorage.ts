@@ -9,7 +9,7 @@ export function useStorage() {
     setUploading(true);
     setError(null);
 
-    // 🔑 Force .jpg extension — watermarkPhoto always outputs image/jpeg
+    // Force .jpg extension — watermarkPhoto always outputs image/jpeg
     //    so the extension must match the MIME type or Supabase serves
     //    the wrong Content-Type and browsers can cache mismatched bytes.
     const fileName = `${Date.now()}-${Math.random()

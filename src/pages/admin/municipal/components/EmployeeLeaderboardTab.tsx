@@ -1,3 +1,4 @@
+import { GoogleIcon } from '../../../../components/common/GoogleIcon';
 import React, { useMemo, useState } from 'react';
 import { card, field } from '../styles';
 import { BORDER, PRIMARY } from '../constants';
@@ -44,7 +45,7 @@ export const EmployeeLeaderboardTab: React.FC<Props> = ({ employees, departments
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
         <div>
           <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: 'var(--gray-900)' }}>
-            🏆 Employee Performance Leaderboard
+            Employee Performance Leaderboard
           </h3>
           <p style={{ margin: '3px 0 0', fontSize: '0.76rem', color: 'var(--gray-600)' }}>
             Every officer on the platform, ranked by resolved ticket count.
@@ -57,7 +58,7 @@ export const EmployeeLeaderboardTab: React.FC<Props> = ({ employees, departments
           </select>
           <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} style={{ ...field, cursor: 'pointer' }}>
             <option value="all">All Departments</option>
-            {departments.map((d) => <option key={d.id} value={d.id}>{d.icon} {d.name}</option>)}
+            {departments.map((d) => <option key={d.id} value={d.id}>{d.name}</option>)}
           </select>
         </div>
       </div>
@@ -88,7 +89,7 @@ export const EmployeeLeaderboardTab: React.FC<Props> = ({ employees, departments
                   <td style={{ padding: '10px 12px', fontWeight: 900, color: PRIMARY }}>{idx + 1}</td>
                   <td style={{ padding: '10px 12px', fontWeight: 800, color: 'var(--gray-900)' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <span>{tierBadge.icon}</span>
+                      <GoogleIcon name={tierBadge.icon} size={16} />
                       <span>{emp.full_name || 'Staff Member'}</span>
                     </div>
                     {emp.staff_code && (
@@ -122,7 +123,7 @@ export const EmployeeLeaderboardTab: React.FC<Props> = ({ employees, departments
                   <td style={{ padding: '10px 12px' }}>
                     {emp.phone ? (
                       <a href={`tel:${emp.phone}`} style={{ color: PRIMARY, fontWeight: 700, textDecoration: 'none', fontSize: '0.76rem' }}>
-                        📞 {emp.phone}
+                        <span className="material-symbols-rounded" style={{ fontSize: 13, verticalAlign: 'middle', marginRight: 4 }}>call</span>{emp.phone}
                       </a>
                     ) : (
                       <span style={{ color: 'var(--gray-400)' }}>N/A</span>

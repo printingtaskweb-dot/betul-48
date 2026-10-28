@@ -161,7 +161,7 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({ departmentSlug }
                 border: '1.5px dashed var(--gray-200)',
               }}
             >
-              <p style={{ fontSize: 32, margin: '0 0 8px' }}>📂</p>
+              <p style={{ margin: '0 0 8px' }}><span className="material-symbols-rounded" style={{ fontSize: 36, color: '#94a3b8' }}>folder_open</span></p>
               <p style={{ color: 'var(--gray-600)', fontWeight: 600, margin: 0 }}>No matching complaints found</p>
               <p style={{ color: 'var(--gray-400)', fontSize: '0.8rem', marginTop: 4 }}>
                 Try adjusting your search query or status filter
@@ -227,12 +227,12 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({ departmentSlug }
             </p>
             {selected.address && (
               <p style={{ fontSize: '0.82rem', color: 'var(--gray-500)', margin: '0 0 8px' }}>
-                📍 {selected.address}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>location_on</span>{selected.address}</span>
               </p>
             )}
             {selected.citizen_name && (
               <p style={{ fontSize: '0.82rem', color: 'var(--gray-700)', margin: '0 0 12px' }}>
-                👤 {selected.citizen_name} {selected.citizen_phone && `· ${selected.citizen_phone}`}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>person</span>{selected.citizen_name}</span> {selected.citizen_phone && `· ${selected.citizen_phone}`}
               </p>
             )}
 
@@ -250,7 +250,7 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({ departmentSlug }
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                   <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--green-900)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    🎯 Exact Location GPS
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>my_location</span>Exact Location GPS</span>
                   </span>
                   <span style={{ fontSize: '0.75rem', fontFamily: 'monospace', fontWeight: 700, color: 'var(--green-800)' }}>
                     {selected.latitude.toFixed(6)}, {selected.longitude.toFixed(6)}

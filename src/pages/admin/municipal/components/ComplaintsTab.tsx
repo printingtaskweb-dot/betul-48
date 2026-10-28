@@ -1,3 +1,4 @@
+import { GoogleIcon } from '../../../../components/common/GoogleIcon';
 import React, { useMemo, useState } from 'react';
 import { Eye, Briefcase, CheckSquare, Square, Users, ChevronRight } from 'lucide-react';
 import { card, outlineBtn, primaryBtn } from '../styles';
@@ -98,12 +99,12 @@ export const ComplaintsTab: React.FC<Props> = ({
                   display: 'flex', alignItems: 'center', gap: 6,
                   fontSize: '0.76rem', flexWrap: 'wrap',
                 }}>
-                  <b style={{ color: PRIMARY }}>{dept?.icon} {dept?.name || 'Unknown'}</b>
+                  <b style={{ color: PRIMARY, display: 'inline-flex', alignItems: 'center', gap: 5 }}><GoogleIcon name={dept?.icon} size={15} /> {dept?.name || 'Unknown'}</b>
                   <span style={{ color: 'var(--gray-500)' }}>·</span>
                   <span>{comps.length} complaint(s)</span>
                   <ChevronRight size={12} />
                   <span style={{ color: head ? '#15803d' : 'var(--status-pending)', fontWeight: 700 }}>
-                    {head ? `→ ${head.full_name} (Dept Head)` : '→ ⚠️ No dept head assigned'}
+                    {head ? `→ ${head.full_name} (Dept Head)` : '→ No dept head assigned'}
                   </span>
                 </div>
               );
@@ -161,7 +162,7 @@ export const ComplaintsTab: React.FC<Props> = ({
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       fontSize: '1.3rem', flexShrink: 0,
                     }}>
-                      {c.department?.icon || '🏢'}
+                      <GoogleIcon name={c.department?.icon || 'apartment'} size={24} color={PRIMARY} />
                     </div>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -175,16 +176,16 @@ export const ComplaintsTab: React.FC<Props> = ({
                           <span style={{
                             fontSize: '0.7rem', fontWeight: 800, padding: '2px 8px', borderRadius: 10,
                             background: 'rgba(102,0,51,0.08)', color: PRIMARY,
-                          }}>🏘️ Ward {wardObj.ward_number}</span>
+                          }}>Ward {wardObj.ward_number}</span>
                         )}
                       </div>
                       <p style={{ margin: '4px 0', fontSize: '0.82rem', color: 'var(--gray-800)', lineHeight: 1.4 }}>
                         {c.description}
                       </p>
                       <div style={{ fontSize: '0.72rem', color: 'var(--gray-600)', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                        {c.address && <span>📍 {c.address}</span>}
-                        {c.citizen_name && <span>👤 {c.citizen_name}</span>}
-                        <span>📅 {new Date(c.created_at).toLocaleDateString()}</span>
+                        {c.address && <span><span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>location_on</span>{c.address}</span>}
+                        {c.citizen_name && <span><span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>person</span>{c.citizen_name}</span>}
+                        <span><span className="material-symbols-rounded" style={{ fontSize: 13, verticalAlign: 'middle', marginRight: 2 }}>calendar_today</span>{new Date(c.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>
@@ -200,7 +201,7 @@ export const ComplaintsTab: React.FC<Props> = ({
                           </span>
                         </div>
                       ) : (
-                        <span style={{ color: '#b45309', fontWeight: 700 }}>⚠️ Unassigned</span>
+                        <span style={{ color: '#b45309', fontWeight: 700 }}><span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14, color: '#dc2626' }}>warning</span>Unassigned</span></span>
                       )}
                     </div>
 

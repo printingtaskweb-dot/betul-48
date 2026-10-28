@@ -183,7 +183,7 @@ export const Home: React.FC = () => {
               color: '#146C94', transition: 'all 0.3s ease',
             }}
           >
-            🌿 {language === 'hi' ? 'हरित कचरा' : 'Green Waste'}
+            <span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>eco</span>{language === 'hi' ? 'हरित कचरा' : 'Green Waste'}
           </Link>
                     <Link
             to="/track"
@@ -446,7 +446,7 @@ export const Home: React.FC = () => {
                   {language === 'hi' ? 'कॉल बैक का अनुरोध करें' : 'Request a callback'}
                 </Link>
                 <Link to="/department/green" style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#1f3540', textDecoration: 'none' }}>
-                  🌿 {language === 'hi' ? 'हरित अपशिष्ट संग्रहण' : 'Green Waste Pickup'}
+                  <span className="material-symbols-rounded" style={{ fontSize: 15, verticalAlign: 'middle', marginRight: 4 }}>eco</span>{language === 'hi' ? 'हरित अपशिष्ट संग्रहण' : 'Green Waste Pickup'}
                 </Link>
               </div>
             </div>

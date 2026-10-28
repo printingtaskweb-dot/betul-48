@@ -598,7 +598,7 @@ const GENERIC_DEFAULT_DESIGNATIONS: Designation[] = [
                   <option value="verification_officer">Verifier / Appeals Officer</option>
                 </optgroup>
                 <optgroup label="Departments">
-                  {departments.map(d => <option key={d.id} value={`dept:${d.id}`}>{d.icon} {d.name}</option>)}
+                  {departments.map(d => <option key={d.id} value={`dept:${d.id}`}>{d.name}</option>)}
                 </optgroup>
               </select>
               <ChevronDown size={14} style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-400)', pointerEvents: 'none' }} />
@@ -774,7 +774,7 @@ const GENERIC_DEFAULT_DESIGNATIONS: Designation[] = [
             </div>
 
             <p style={{ margin: '12px 0 0', fontSize: '0.78rem', color: 'var(--theme-primary, #146C94)', fontWeight: 700 }}>
-              ✅ The account has been created and automatically approved. The staff member can now log in immediately.
+               The account has been created and automatically approved. The staff member can now log in immediately.
             </p>
 
             <div style={{ display: 'flex', gap: 8, marginTop: 16 }}>

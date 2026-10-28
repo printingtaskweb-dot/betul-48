@@ -32,7 +32,7 @@ export const GuestButton: React.FC<Props> = ({ language }) => {
           cursor: 'pointer',
         }}
       >
-        👤 {t(language, 'guestMode')}
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 18 }}>person</span>{t(language, 'guestMode')}</span>
       </button>
     </>
   );

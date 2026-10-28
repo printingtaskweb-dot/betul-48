@@ -1,3 +1,4 @@
+import { GoogleIcon } from '../common/GoogleIcon';
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   Search, MapPin, Compass, Filter, X, Layers,
@@ -191,10 +192,10 @@ export const LocationComplaintFilter: React.FC<Props> = ({
         <>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
             {[
-              { key: 'search', label: '🔍 Text', icon: Search },
-              { key: 'ward',   label: '🏘️ Ward', icon: Layers },
-              { key: 'area',   label: '📍 Area', icon: MapPin },
-              { key: 'radius', label: '🎯 GPS Radius', icon: Compass },
+              { key: 'search', label: 'Search', icon: Search },
+              { key: 'ward',   label: 'Ward', icon: Layers },
+              { key: 'area',   label: 'Area', icon: MapPin },
+              { key: 'radius', label: 'GPS Radius', icon: Compass },
             ].map((m) => {
               const Icon = m.icon;
               const active = mode === m.key;
@@ -270,7 +271,7 @@ export const LocationComplaintFilter: React.FC<Props> = ({
                 </button>
                 {userLat != null && userLon != null && (
                   <span style={{ fontSize: '0.74rem', color: 'var(--gray-600)', fontFamily: 'monospace' }}>
-                    📍 {userLat.toFixed(5)}, {userLon.toFixed(5)}
+                    <span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>location_on</span>{userLat.toFixed(5)}, {userLon.toFixed(5)}
                   </span>
                 )}
               </>
@@ -290,16 +291,16 @@ export const LocationComplaintFilter: React.FC<Props> = ({
           </div>
 
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {activeWard && <Chip label={`🏘️ Ward ${activeWard.ward_number} · ${activeWard.name}`} onClear={() => setSelectedWardId('')} />}
-            {activeArea && <Chip label={`📍 ${activeArea.name}`} onClear={() => setSelectedAreaId('')} />}
-            {statusFilter !== 'all' && <Chip label={`🏷️ ${statusFilter}`} onClear={() => setStatusFilter('all')} />}
+            {activeWard && <Chip label={`Ward ${activeWard.ward_number} · ${activeWard.name}`} onClear={() => setSelectedWardId('')} />}
+            {activeArea && <Chip label={`<span className="material-symbols-rounded" style={{ fontSize: 13, verticalAlign: 'middle', marginRight: 2 }}>location_on</span>${activeArea.name}`} onClear={() => setSelectedAreaId('')} />}
+            {statusFilter !== 'all' && <Chip label={`${statusFilter}`} onClear={() => setStatusFilter('all')} />}
           </div>
         </>
       )}
 
       {error && (
         <div style={{ padding: '10px 12px', borderRadius: 8, background: '#fee2e2', color: '#991b1b', fontSize: '0.8rem', fontWeight: 700 }}>
-          ⚠️ {error}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14, color: '#dc2626' }}>warning</span><span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><GoogleIcon name="warning" size={15} />{error}</span></span>
         </div>
       )}
 
@@ -337,13 +338,13 @@ export const LocationComplaintFilter: React.FC<Props> = ({
                     <StatusBadge status={c.status} />
                     {c.distance_meters != null && (
                       <span style={{ fontSize: '0.7rem', fontWeight: 800, color: '#15803d' }}>
-                        🎯 {Math.round(c.distance_meters)} m
+                        <span className="material-symbols-rounded" style={{ fontSize: 13, verticalAlign: 'middle', marginRight: 4 }}>my_location</span><GoogleIcon name="my_location" size={12} style={{ verticalAlign: 'middle', marginRight: 3 }} />{Math.round(c.distance_meters)} m
                       </span>
                     )}
                   </div>
                   <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: 'var(--gray-800)' }}>{c.description}</p>
                   {c.address && (
-                    <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: 'var(--gray-500)' }}>📮 {c.address}</p>
+                    <p style={{ margin: '2px 0 0', fontSize: '0.72rem', color: 'var(--gray-500)' }}><span className="material-symbols-rounded" style={{ fontSize: 13, verticalAlign: 'middle', marginRight: 2 }}>mail</span>{c.address}</p>
                   )}
                 </div>
                 <div style={{ display: 'flex', gap: 6 }}>

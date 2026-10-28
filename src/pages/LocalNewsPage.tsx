@@ -342,8 +342,8 @@ export const LocalNewsPage: React.FC = () => {
 
       showToast(
         language === 'hi'
-          ? 'आपका विचार तुरंत पोस्ट हो गया! 🚀'
-          : 'Your thought is posted to Betul feed! 🚀'
+          ? 'आपका विचार तुरंत पोस्ट हो गया!'
+          : 'Your thought is posted to Betul feed!'
       );
 
       setContent('');
@@ -419,7 +419,7 @@ export const LocalNewsPage: React.FC = () => {
         showToast(language === 'hi' ? 'री-शेयर हटाया गया' : 'Reshare removed');
       } else {
         await supabase.from('local_news_reshares').insert({ news_id: postId, user_id: user.id });
-        showToast(language === 'hi' ? 'फ़ॉलोअर्स के साथ साझा किया! 🔄' : 'Reshared to your feed! 🔄');
+        showToast(language === 'hi' ? 'फ़ॉलोअर्स के साथ साझा किया!' : 'Reshared to your feed!');
       }
     } catch {
       // safe fallback
@@ -468,7 +468,7 @@ export const LocalNewsPage: React.FC = () => {
     showToast(
       currentlyFollowing
         ? (language === 'hi' ? 'अनफ़ॉलो किया गया' : 'Unfollowed')
-        : (language === 'hi' ? 'फ़ॉलो कर रहे हैं! 👤' : 'Following author! 👤')
+        : (language === 'hi' ? 'फ़ॉलो कर रहे हैं!' : 'Following author!')
     );
 
     if (user?.id) {
@@ -1877,7 +1877,7 @@ export const LocalNewsPage: React.FC = () => {
               </div>
 
               <div style={{ color: '#536471', fontSize: '0.82rem', marginBottom: 10 }}>
-                {viewingProfile.ward ? `📍 ${viewingProfile.ward}` : '📍 Betul'} ·{' '}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>location_on</span>{viewingProfile.ward || 'Betul'}</span> ·{' '}
                 {viewingProfile.authority_role || (viewingProfile.isOfficial ? 'नगर पालिका अधिकारी' : 'नागरिक')}
               </div>
 

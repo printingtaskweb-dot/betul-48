@@ -34,7 +34,7 @@ export const AuthLayout: React.FC<Props> = ({
           background: 'rgba(255,255,255,0.07)',
         }}
       />
-      <div style={{ fontSize: 44, marginBottom: 10 }}>🏛️</div>
+      <div style={{ marginBottom: 10 }}><span className="material-symbols-rounded" style={{ fontSize: 48, color: '#146C94' }}>account_balance</span></div>
       <h1
         style={{
           color: '#fff',

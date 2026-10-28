@@ -1,3 +1,4 @@
+import { GoogleIcon } from '../components/common/GoogleIcon';
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -32,7 +33,7 @@ const STATUS_CONFIG: Record<string, { label: string; labelHi: string; color: str
   pending:     { label: 'Pending',     labelHi: 'लंबित',      color: 'var(--status-pending)', bg: 'var(--status-pending-bg)', Icon: Clock },
   in_progress: { label: 'In Progress', labelHi: 'प्रगति में',   color: 'var(--burgundy)', bg: 'var(--primary-100)', Icon: AlertCircle },
   resolved:    { label: 'Resolved',    labelHi: 'हल किया',     color: '#065f46', bg: '#d1fae5', Icon: CheckCircle },
-  verified:    { label: 'Verified ✓',  labelHi: 'सत्यापित ✓', color: '#5b21b6', bg: '#ede9fe', Icon: CheckSquare },
+  verified:    { label: 'Verified',  labelHi: 'सत्यापित', color: '#5b21b6', bg: '#ede9fe', Icon: CheckSquare },
   rejected:    { label: 'Rejected',    labelHi: 'अस्वीकृत',   color: '#991b1b', bg: '#fee2e2', Icon: XCircle },
 };
 
@@ -116,7 +117,7 @@ function ResolveModal({ complaint, resolvedBy, language, onClose, onResolved, re
       }}>
         <div style={{ background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))', padding: '20px 24px' }}>
           <h2 style={{ margin: 0, color: '#fff', fontSize: '1.1rem', fontWeight: 800 }}>
-            ✅ {hi ? 'शिकायत हल करें' : 'Mark as Resolved'}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 18 }}>check_circle</span><span>{hi ? 'शिकायत हल करें' : 'Mark as Resolved'}</span></span>
           </h2>
           <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.8)', fontSize: '0.82rem' }}>
             #{complaint.ticket_number}
@@ -229,13 +230,13 @@ interface CreateDeptModalProps {
   onCreated: () => void;
 }
 
-const EMOJI_OPTIONS = ['🏢', '🧹', '🚰', '💡', '🛣️', '🌳', '🚒', '🏥', '🏗️', '📋', '⚡', '🚌', '🐕', '🛡️', '🌿', '🚿'];
+const EMOJI_OPTIONS = ['apartment', 'cleaning_services', 'water_drop', 'lightbulb', 'edit_road', 'park', 'fire_truck', 'local_hospital', 'construction', 'assignment', 'bolt', 'directions_bus', 'pets', 'shield', 'eco', 'shower'];
 const COLOR_OPTIONS = ['#146C94', '#0E526F', '#0E526F', '#831843', '#9d174d', '#701a75', '#581c87', '#312e81', '#1e3a8a'];
 
 function CreateDeptModal({ language, onClose, onCreated }: CreateDeptModalProps) {
   const [name, setName] = useState('');
   const [slug, setSlug] = useState('');
-  const [icon, setIcon] = useState('🏢');
+  const [icon, setIcon] = useState('apartment');
   const [color, setColor] = useState('#146C94');
   const [description, setDescription] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -314,7 +315,7 @@ function CreateDeptModal({ language, onClose, onCreated }: CreateDeptModalProps)
       }}>
         <div style={{ background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))', padding: '20px 24px' }}>
           <h2 style={{ margin: 0, color: '#fff', fontSize: '1.15rem', fontWeight: 800 }}>
-            🏢 {hi ? 'नया विभाग / श्रेणी जोड़ें' : 'Create New Department / Category'}
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 18 }}>apartment</span><span>{hi ? 'नया विभाग / श्रेणी जोड़ें' : 'Create New Department / Category'}</span></span>
           </h2>
           <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.85)', fontSize: '0.82rem' }}>
             {hi ? 'संस्थान प्रमुख द्वारा नागरिक सेवाओं के लिए नया अनुभाग' : 'Organization Head can add municipal service verticals'}
@@ -522,7 +523,7 @@ function ComplaintDetailCard({
               <span>{fmtDate(c.created_at)}</span>
               {c.assigned_name && (
                 <span style={{ fontWeight: 700, color: 'var(--theme-primary, #146C94)' }}>
-                  👤 {c.assigned_name} ({roleLabel(c.assigned_role, language)})
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>person</span>{c.assigned_name}</span> ({roleLabel(c.assigned_role, language)})
                 </span>
               )}
             </div>
@@ -576,7 +577,7 @@ function ComplaintDetailCard({
               borderRadius: 'var(--radius-md)', border: '1px solid var(--theme-component-border, #bfbfbf)', marginBottom: 14,
             }}>
               <p style={{ margin: '0 0 4px', fontSize: '0.78rem', fontWeight: 800, color: 'var(--theme-primary, #146C94)' }}>
-                📌 {hi ? 'कार्य आवंटन विवरण' : 'Task Allotment Details'}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 16 }}>push_pin</span><span>{hi ? 'कार्य आवंटन विवरण' : 'Task Allotment Details'}</span></span>
               </p>
               <div style={{ display: 'flex', gap: 12, fontSize: '0.8rem', color: 'var(--gray-800)', flexWrap: 'wrap' }}>
                 <span><strong>Officer:</strong> {c.assigned_name || 'Staff Member'}</span>
@@ -617,7 +618,7 @@ function ComplaintDetailCard({
           {(c.address || (c.latitude && c.longitude)) && (
             <div style={{ marginBottom: 14, padding: '10px 14px', background: 'var(--theme-bg, #F6F1F1)',
               borderRadius: 'var(--radius-md)', border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
-              {c.address && <p style={{ margin: '0 0 6px', fontSize: '0.82rem', color: 'var(--gray-700)' }}>📍 {c.address}</p>}
+              {c.address && <p style={{ margin: '0 0 6px', fontSize: '0.82rem', color: 'var(--gray-700)' }}><span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>location_on</span>{c.address}</span></p>}
               {c.latitude && c.longitude && (
                 <span style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'var(--gray-500)' }}>
                   Coordinates: {c.latitude.toFixed(6)}, {c.longitude.toFixed(6)}
@@ -630,7 +631,7 @@ function ComplaintDetailCard({
             <div style={{ marginBottom: 14, padding: '12px 14px', background: 'var(--theme-bg, #F6F1F1)',
               borderRadius: 'var(--radius-md)', border: '1.5px solid var(--theme-component-border, #bfbfbf)' }}>
               <p style={{ margin: '0 0 4px', fontSize: '0.75rem', fontWeight: 700, color: 'var(--theme-primary, #146C94)', textTransform: 'uppercase' }}>
-                ✅ {hi ? 'हल का विवरण' : 'Resolution Note'}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 16, color: '#16a34a' }}>check_circle</span><span>{hi ? 'हल का विवरण' : 'Resolution Note'}</span></span>
               </p>
               <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--gray-800)' }}>{c.resolution_note}</p>
               {c.resolved_at && (
@@ -750,7 +751,7 @@ export default function DeptDashboard() {
           .select('name, icon')
           .eq('id', data.linked_department_id)
           .single();
-        if (dept) { dName = dept.name; dIcon = dept.icon || '🏢'; }
+        if (dept) { dName = dept.name; dIcon = dept.icon || 'apartment'; }
       }
 
       if (!isOrg && !data.linked_department_id) setNoDept(true);
@@ -1000,7 +1001,7 @@ export default function DeptDashboard() {
           done: statsObj.done,
           rate: statsObj.rate,
           deptName: dept?.name || '—',
-          deptIcon: dept?.icon || '🏢',
+          deptIcon: dept?.icon || 'apartment',
         };
       });
   }, [staffList, viewer.id, myTier, assignedWard, staffReportDeptFilter, staffReportTierFilter, staffReportSearch, getStaffStats, allDepartments]);
@@ -1145,9 +1146,9 @@ export default function DeptDashboard() {
                   border: '1px solid rgba(255,255,255,0.3)', color: '#fff', fontSize: '0.82rem',
                   fontWeight: 700, outline: 'none', cursor: 'pointer' }}
               >
-                <option value="all" style={{ color: '#000' }}>🏛️ {hi ? 'समस्त विभाग (All)' : 'All Departments'}</option>
+                <option value="all" style={{ color: '#000' }}>समस्त विभाग (All Departments)</option>
                 {allDepartments.map(d => (
-                  <option key={d.id} value={d.id} style={{ color: '#000' }}>{d.icon} {d.name}</option>
+                  <option key={d.id} value={d.id} style={{ color: '#000' }}>{d.name}</option>
                 ))}
               </select>
             )}
@@ -1375,7 +1376,7 @@ export default function DeptDashboard() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14, flexWrap: 'wrap', gap: 10 }}>
                 <div>
                   <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 900, color: 'var(--theme-primary, #146C94)' }}>
-                    🏢 {orgLevel
+                    <span className="material-symbols-rounded" style={{ fontSize: 15, verticalAlign: 'middle', marginRight: 4 }}>apartment</span>{orgLevel
                       ? (hi ? 'विभाग चयन एवं प्रशासनिक संरचना' : 'Department Selection & Staff Hierarchy')
                       : (hi ? `विभाग संरचना: ${profile?.dept_name}` : `Department Hierarchy: ${profile?.dept_name}`)}
                   </h2>
@@ -1537,7 +1538,7 @@ export default function DeptDashboard() {
                             color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontSize: '1.6rem', flexShrink: 0,
                           }}>
-                            👑
+                            <span className="material-symbols-rounded" style={{ fontSize: 16, color: '#f59e0b' }}>admin_panel_settings</span>
                           </div>
                           <div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
@@ -1548,7 +1549,7 @@ export default function DeptDashboard() {
                                 fontSize: '0.72rem', fontWeight: 800, padding: '2px 8px', borderRadius: 12,
                                 background: 'var(--theme-primary, #146C94)', color: '#fff',
                               }}>
-                                🏢 {roleLabel('department_head', language)}
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>apartment</span>{roleLabel('department_head', language)}</span>
                               </span>
                             </div>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 4, fontSize: '0.78rem', color: 'var(--gray-600)', flexWrap: 'wrap' }}>
@@ -1641,7 +1642,7 @@ export default function DeptDashboard() {
                       border: '1.5px dashed var(--theme-component-border, #bfbfbf)', padding: 20, textAlign: 'center',
                     }}>
                       <p style={{ margin: '0 0 6px', fontWeight: 800, color: 'var(--gray-800)', fontSize: '0.95rem' }}>
-                        ⚠️ {hi ? 'इस विभाग के लिए कोई विभाग प्रमुख अभी पंजीकृत नहीं है' : 'No Department Head currently assigned to this department.'}
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 16, color: '#d97706' }}>warning</span><span>{hi ? 'इस विभाग के लिए कोई विभाग प्रमुख अभी पंजीकृत नहीं है' : 'No Department Head currently assigned to this department.'}</span></span>
                       </p>
                       <p style={{ margin: 0, fontSize: '0.82rem', color: 'var(--gray-600)' }}>
                         {hi ? 'नगर पालिका प्रमुख या उपायुक्त द्वारा कार्य सीधे क्षेत्र अधिकारी या पर्यवेक्षक को आवंटित किया जा सकता है।' : 'Tasks can be allotted directly to Area Officers or Supervisors by the Municipal Head / Deputy Commissioner.'}
@@ -1684,7 +1685,7 @@ export default function DeptDashboard() {
                         <span style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--gray-700)', textTransform: 'uppercase' }}>
                           {hi ? 'कुल अधीनस्थ कर्मचारी' : 'Total Workers'}
                         </span>
-                        <span style={{ fontSize: '1.2rem' }}>👥</span>
+                        <span className="material-symbols-rounded" style={{ fontSize: 22 }}>group</span>
                       </div>
                       <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: 'var(--theme-primary, #146C94)' }}>
                         {totalWorkersUnderHead}
@@ -1707,7 +1708,7 @@ export default function DeptDashboard() {
                         <span style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--gray-700)', textTransform: 'uppercase' }}>
                           {hi ? 'क्षेत्र अधिकारी (Tier 3)' : 'Area Officers (Tier 3)'}
                         </span>
-                        <span style={{ fontSize: '1.2rem' }}>📍</span>
+                        <span className="material-symbols-rounded" style={{ fontSize: 22 }}>location_on</span>
                       </div>
                       <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: '#065f46' }}>
                         {activeAreaOfficers.length}
@@ -1730,7 +1731,7 @@ export default function DeptDashboard() {
                         <span style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--gray-700)', textTransform: 'uppercase' }}>
                           {hi ? 'पर्यवेक्षक (Tier 4)' : 'Supervisors (Tier 4)'}
                         </span>
-                        <span style={{ fontSize: '1.2rem' }}>👷</span>
+                        <span className="material-symbols-rounded" style={{ fontSize: 22 }}>engineering</span>
                       </div>
                       <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: '#854d0e' }}>
                         {activeSupervisors.length}
@@ -1753,7 +1754,7 @@ export default function DeptDashboard() {
                         <span style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--gray-700)', textTransform: 'uppercase' }}>
                           {hi ? 'मैदानी कर्मचारी (Tier 5)' : 'Operational Staff (Tier 5)'}
                         </span>
-                        <span style={{ fontSize: '1.2rem' }}>🛠️</span>
+                        <span className="material-symbols-rounded" style={{ fontSize: 22 }}>construction</span>
                       </div>
                       <p style={{ margin: 0, fontSize: '1.8rem', fontWeight: 900, color: '#374151' }}>
                         {activeOperationalStaff.length}
@@ -1776,7 +1777,7 @@ export default function DeptDashboard() {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
                     <div>
                       <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: 'var(--gray-900)' }}>
-                        📋 {hi ? 'विभाग कर्मचारी सूची एवं कार्य प्रदर्शन' : 'Subordinate Staff Roster & Task Performance'}
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 18 }}>assignment</span><span>{hi ? 'विभाग कर्मचारी सूची एवं कार्य प्रदर्शन' : 'Subordinate Staff Roster & Task Performance'}</span></span>
                       </h3>
                       <p style={{ margin: '3px 0 0', fontSize: '0.8rem', color: 'var(--gray-600)' }}>
                         {hi ? `${activeDetailDept.name} के अधीन कार्यरत प्रत्येक कार्यकर्ता का संपर्क, वार्ड व आवंटित कार्य` : `Complete roster for ${activeDetailDept.name} with contact, assigned tasks, and resolution rates`}
@@ -1863,7 +1864,7 @@ export default function DeptDashboard() {
                               <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 10, marginBottom: 8 }}>
                                 <div>
                                   <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                                    <span style={{ fontSize: '1.1rem' }}>{tierInfo.icon}</span>
+                                    <GoogleIcon name={tierInfo.icon} size={18} />
                                     <h4 style={{ margin: 0, fontSize: '0.96rem', fontWeight: 900, color: 'var(--gray-900)' }}>
                                       {st.full_name || 'Staff Officer'}
                                     </h4>
@@ -1995,7 +1996,7 @@ export default function DeptDashboard() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
               <div>
                 <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: 'var(--theme-primary, #146C94)' }}>
-                  👥 {hi ? 'कर्मचारी कार्य रिपोर्ट एवं प्रदर्शन' : 'Subordinate Staff Work Reports & Performance'}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 18 }}>group</span><span>{hi ? 'कर्मचारी कार्य रिपोर्ट एवं प्रदर्शन' : 'Subordinate Staff Work Reports & Performance'}</span></span>
                 </h2>
                 <p style={{ margin: '3px 0 0', fontSize: '0.82rem', color: 'var(--gray-600)' }}>
                   {hi ? 'विभाग वार कर्मचारियों का कार्यभार, हल की गई शिकायतें एवं सफलता दर' : 'Workload, open tasks, resolved complaints, and performance rates per department'}
@@ -2015,9 +2016,9 @@ export default function DeptDashboard() {
                       fontWeight: 700, outline: 'none', cursor: 'pointer',
                     }}
                   >
-                    <option value="all">🏛️ {hi ? 'समस्त विभाग (All Depts)' : 'All Departments'}</option>
+                    <option value="all">समस्त विभाग (All Departments)</option>
                     {allDepartments.map(d => (
-                      <option key={d.id} value={d.id}>{d.icon} {d.name}</option>
+                      <option key={d.id} value={d.id}>{d.name}</option>
                     ))}
                   </select>
                 )}
@@ -2033,10 +2034,10 @@ export default function DeptDashboard() {
                   }}
                 >
                   <option value="all">{hi ? 'समस्त पद (All Tiers)' : 'All Hierarchy Roles'}</option>
-                  <option value="2">🏢 {hi ? 'विभाग प्रमुख (Tier 2)' : 'Department Heads'}</option>
-                  <option value="3">📍 {hi ? 'क्षेत्र अधिकारी (Tier 3)' : 'Area Officers'}</option>
-                  <option value="4">👷 {hi ? 'पर्यवेक्षक (Tier 4)' : 'Supervisors'}</option>
-                  <option value="5">🛠️ {hi ? 'मैदानी कर्मचारी (Tier 5)' : 'Operational Staff'}</option>
+                  <option value="2">विभाग प्रमुख (Department Heads)</option>
+                  <option value="3"> {hi ? 'क्षेत्र अधिकारी (Tier 3)' : 'Area Officers'}</option>
+                  <option value="4">पर्यवेक्षक (Supervisors)</option>
+                  <option value="5">मैदानी कर्मचारी (Operational Staff)</option>
                 </select>
               </div>
             </div>
@@ -2103,7 +2104,7 @@ export default function DeptDashboard() {
                         </td>
                         <td style={{ padding: '12px 16px', fontSize: '0.8rem' }}>
                           {st.phone
-                            ? <a href={`tel:${st.phone}`} style={{ color: 'var(--theme-primary, #146C94)', textDecoration: 'none', fontWeight: 700 }}>📞 {st.phone}</a>
+                            ? <a href={`tel:${st.phone}`} style={{ color: 'var(--theme-primary, #146C94)', textDecoration: 'none', fontWeight: 700 }}><span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 13 }}>call</span>{st.phone}</span></a>
                             : (st.email || '—')}
                         </td>
                         <td style={{ padding: '12px 16px', fontWeight: 800 }}>{st.totalAssigned}</td>

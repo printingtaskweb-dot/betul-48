@@ -351,13 +351,13 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
               <div style={{ fontSize: '0.74rem', color: 'var(--gray-700)', display: 'flex', flexDirection: 'column', gap: 3 }}>
                 {ward.center_latitude != null && ward.center_longitude != null && (
                   <span style={{ fontFamily: 'monospace' }}>
-                    📍 {ward.center_latitude.toFixed(5)}, {ward.center_longitude.toFixed(5)}
+                     {ward.center_latitude.toFixed(5)}, {ward.center_longitude.toFixed(5)}
                   </span>
                 )}
                 <span>
-                  🎯 {hi ? 'त्रिज्या' : 'Radius'}: {ward.radius_meters} m
+                  <span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>my_location</span>{hi ? 'त्रिज्या' : 'Radius'}: {ward.radius_meters} m
                 </span>
-                {ward.pincode && <span>📮 {ward.pincode}</span>}
+                {ward.pincode && <span><span className="material-symbols-rounded" style={{ fontSize: 13, verticalAlign: 'middle', marginRight: 2 }}>mail</span>{ward.pincode}</span>}
                 {ward.description && (
                   <span style={{ fontSize: '0.72rem', color: 'var(--gray-600)', marginTop: 2 }}>
                     {ward.description.length > 90 ? ward.description.slice(0, 90) + '…' : ward.description}
@@ -475,7 +475,7 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
                     }}
                   >
                     <span style={{ fontFamily: 'monospace' }}>
-                      📍 {lat.toFixed(6)}, {lon.toFixed(6)}
+                       {lat.toFixed(6)}, {lon.toFixed(6)}
                       {accuracy != null && <span> (±{Math.round(accuracy)} m)</span>}
                     </span>
                     {detecting && (
@@ -485,7 +485,7 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
                     )}
                     {detectedAddress && !detecting && (
                       <span style={{ fontSize: '0.74rem', fontWeight: 600, color: '#166534' }}>
-                        🏠 {detectedAddress}
+                        <span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>home</span>{detectedAddress}
                       </span>
                     )}
                   </div>
@@ -504,7 +504,7 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
                       fontWeight: 700,
                     }}
                   >
-                    ⚠️ {gpsError}
+                    <span className="material-symbols-rounded" style={{ fontSize: 14, color: '#dc2626', verticalAlign: 'middle', marginRight: 4 }}>warning</span>{gpsError}
                   </div>
                 )}
               </div>

@@ -88,7 +88,7 @@ export const useMunicipalData = () => {
       }
 
       setDepartments(
-        (depts.data || []).map((d: any) => ({ ...d, icon: d.icon || '🏢' }))
+        (depts.data || []).map((d: any) => ({ ...d, icon: d.icon || 'apartment' }))
       );
       setComplaints(
         (comps.data || []).map((c: any) => ({

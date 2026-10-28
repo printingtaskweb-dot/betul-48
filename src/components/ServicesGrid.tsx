@@ -44,7 +44,7 @@ const SERVICES: Service[] = [
   {
     slug: 'rainwater',
     image: '/rainwater-harvesting-vector-icon-sustainable-260nw-2506520391.webp',
-    icon: '🌧️',
+    icon: 'rainy',
     gradient: 'linear-gradient(135deg, #4338ca, #6366f1)',
     shadow: 'rgba(99,102,241,0.3)',
     route: '/complaint/new?dept=rainwater',
@@ -126,7 +126,7 @@ const SERVICES: Service[] = [
   // ── 4 new categories ──────────────────────────────────────────────────────
   {
     slug: 'parks',
-    icon: '🌳',
+    icon: 'park',
     gradient: 'linear-gradient(135deg, #15803d, #0d9488)',
     shadow: 'rgba(13,148,136,0.3)',
     route: '/complaint/new?dept=parks',
@@ -138,7 +138,7 @@ const SERVICES: Service[] = [
   },
   {
     slug: 'electricity',
-    icon: '⚡',
+    icon: 'bolt',
     gradient: 'linear-gradient(135deg, #ca8a04, #d97706)',
     shadow: 'rgba(217,119,6,0.35)',
     route: '/complaint/new?dept=electricity',
@@ -150,7 +150,7 @@ const SERVICES: Service[] = [
   },
   {
     slug: 'solid-waste',
-    icon: '🗑️',
+    icon: 'delete',
     gradient: 'linear-gradient(135deg, #475569, #64748b)',
     shadow: 'rgba(100,116,139,0.3)',
     route: '/complaint/new?dept=solid-waste',
@@ -162,7 +162,7 @@ const SERVICES: Service[] = [
   },
   {
     slug: 'noise',
-    icon: '🔊',
+    icon: 'volume_up',
     gradient: 'linear-gradient(135deg, #ea580c, #dc2626)',
     shadow: 'rgba(234,88,12,0.3)',
     route: '/complaint/new?dept=noise',

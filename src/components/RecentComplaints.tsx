@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import type { Complaint } from '../lib/supabase';
 import { StatusBadge } from './common/StatusBadge';
+import { GoogleIcon } from './common/GoogleIcon';
 import { useAuth } from '../contexts/AuthContext';
 import { t } from '../lib/i18n';
 import { MapPin } from 'lucide-react';
@@ -67,7 +68,7 @@ export const RecentComplaints: React.FC = () => {
             >
               {/* Dept icon */}
               <div className="complaint-icon">
-                {c.department?.icon || '📋'}
+                <GoogleIcon name={c.department?.icon || 'assignment'} size={18} />
               </div>
 
               <div className="complaint-body">

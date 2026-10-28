@@ -1,8 +1,8 @@
 import React from 'react';
 
 const LANG_OPTIONS = [
-  { code: 'en', label: 'English', flag: '🇬🇧' },
-  { code: 'hi', label: 'हिंदी', flag: '🇮🇳' },
+  { code: 'en', label: 'English', flag: <span className="material-symbols-rounded" style={{ fontSize: 16 }}>language</span> },
+  { code: 'hi', label: 'हिंदी', flag: <span className="material-symbols-rounded" style={{ fontSize: 16 }}>translate</span> },
 ] as const;
 
 interface Props {

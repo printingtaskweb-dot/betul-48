@@ -5,6 +5,7 @@ import { t } from '../lib/i18n';
 import { useComplaints } from '../hooks/useComplaints';
 import type { Complaint } from '../lib/supabase';
 import { StatusBadge } from '../components/common/StatusBadge';
+import { GoogleIcon } from '../components/common/GoogleIcon';
 import { supabase } from '../lib/supabase';
 import { BottomNav } from '../components/BottomNav';
 import {
@@ -291,7 +292,7 @@ export const TrackComplaint: React.FC = () => {
               color: 'var(--gray-600)',
             }}
           >
-            <p style={{ fontSize: 36, margin: '0 0 10px' }}>🔍</p>
+            <p style={{ margin: '0 0 10px' }}><span className="material-symbols-rounded" style={{ fontSize: 44, color: '#94a3b8' }}>search</span></p>
             <p style={{ fontWeight: 700, color: 'var(--gray-800)', margin: '0 0 4px' }}>
               {language === 'hi' ? 'कोई शिकायत नहीं मिली' : 'No complaint found'}
             </p>
@@ -347,7 +348,7 @@ export const TrackComplaint: React.FC = () => {
 
               {complaint.department && (
                 <p style={{ margin: '0 0 8px', fontSize: '0.88rem', color: 'var(--gray-600)', fontWeight: 600 }}>
-                  {complaint.department.icon} {complaint.department.name} Department
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><GoogleIcon name={complaint.department.icon} size={16} /> {complaint.department.name} Department</span>
                 </p>
               )}
               <p style={{ margin: '0 0 10px', fontSize: '0.92rem', color: 'var(--gray-800)', lineHeight: 1.5 }}>
@@ -355,7 +356,7 @@ export const TrackComplaint: React.FC = () => {
               </p>
               {complaint.address && (
                 <p style={{ margin: '0 0 8px', fontSize: '0.82rem', color: 'var(--gray-500)' }}>
-                  📍 {complaint.address}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>location_on</span>{complaint.address}</span>
                 </p>
               )}
 
@@ -373,7 +374,7 @@ export const TrackComplaint: React.FC = () => {
                   {/* Exact Coordinates Row */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
                     <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--theme-primary, #146C94)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                      🎯 {language === 'hi' ? 'सटीक GPS स्थान' : 'Exact GPS Coordinates'}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>my_location</span>{language === 'hi' ? 'सटीक GPS स्थान' : 'Exact GPS Coordinates'}</span>
                     </span>
                     <code style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--theme-primary, #146C94)', background: 'var(--theme-bg, #F6F1F1)', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
                       {complaint.latitude.toFixed(6)}, {complaint.longitude.toFixed(6)}
@@ -450,7 +451,7 @@ export const TrackComplaint: React.FC = () => {
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
                     <div>
                       <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#15803d', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                        🏢 {language === 'hi' ? 'विभाग अधिकारी / कर्मचारी कार्यवाही' : 'Department Officer Action'}
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>corporate_fare</span>{language === 'hi' ? 'विभाग अधिकारी / कर्मचारी कार्यवाही' : 'Department Officer Action'}</span>
                       </span>
                       <h4 style={{ margin: '4px 0 2px', fontSize: '0.95rem', fontWeight: 800, color: '#166534' }}>
                         {language === 'hi' ? 'क्या आपने कार्य पूरा कर लिया है?' : 'Have you completed this work on-site?'}
@@ -499,7 +500,7 @@ export const TrackComplaint: React.FC = () => {
                 >
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 6 }}>
                     <span style={{ fontSize: '0.8rem', fontWeight: 800, color: '#15803d', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                      📸 {language === 'hi' ? 'विभाग द्वारा कार्य सत्यापन एवं प्रमाण' : 'Department Work Verification Proof'}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 15 }}>photo_camera</span>{language === 'hi' ? 'विभाग द्वारा कार्य सत्यापन एवं प्रमाण' : 'Department Work Verification Proof'}</span>
                     </span>
                     <span style={{ fontSize: '0.75rem', color: 'var(--gray-400)' }}>
                       {new Date(resolution.resolved_at).toLocaleString('en-IN')}
@@ -511,7 +512,7 @@ export const TrackComplaint: React.FC = () => {
                     {complaint.photo_url && (
                       <div>
                         <p style={{ margin: '0 0 6px', fontSize: '0.75rem', fontWeight: 700, color: 'var(--gray-600)', textTransform: 'uppercase' }}>
-                          🔴 {language === 'hi' ? 'शिकायत के समय की फोटो (Before)' : 'Complaint Photo (Before)'}
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#dc2626', display: 'inline-block' }}></span>{language === 'hi' ? 'शिकायत के समय की फोटो (Before)' : 'Complaint Photo (Before)'}</span>
                         </p>
                         <a href={complaint.photo_url} target="_blank" rel="noreferrer">
                           <img
@@ -526,7 +527,7 @@ export const TrackComplaint: React.FC = () => {
                     {resolution.resolution_photo_url ? (
                       <div>
                         <p style={{ margin: '0 0 6px', fontSize: '0.75rem', fontWeight: 700, color: '#15803d', textTransform: 'uppercase' }}>
-                          🟢 {language === 'hi' ? 'कार्य समाप्ति का फोटो (After / Done)' : 'Work Done Photo (After)'}
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#16a34a', display: 'inline-block' }}></span>{language === 'hi' ? 'कार्य समाप्ति का फोटो (After / Done)' : 'Work Done Photo (After)'}</span>
                         </p>
                         <a href={resolution.resolution_photo_url} target="_blank" rel="noreferrer">
                           <img
@@ -548,7 +549,7 @@ export const TrackComplaint: React.FC = () => {
                   {/* Resolution note */}
                   <div style={{ padding: '12px 14px', background: '#f0fdf4', borderRadius: 'var(--radius-sm)', border: '1px solid #bbf7d0' }}>
                     <p style={{ margin: '0 0 4px', fontSize: '0.75rem', fontWeight: 800, color: '#15803d' }}>
-                      📝 {language === 'hi' ? 'निराकरण टिप्पणी:' : 'Resolution Note:'}
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>edit_note</span>{language === 'hi' ? 'निराकरण टिप्पणी:' : 'Resolution Note:'}</span>
                     </p>
                     <p style={{ margin: 0, fontSize: '0.88rem', color: 'var(--gray-800)', lineHeight: 1.5 }}>
                       {resolution.admin_note}
@@ -609,7 +610,7 @@ export const TrackComplaint: React.FC = () => {
                             fontWeight: 700,
                           }}
                         >
-                          {isDone ? '✓' : i + 1}
+                          {isDone ? <span className="material-symbols-rounded" style={{ fontSize: 14, fontWeight: 'bold' }}>check</span> : i + 1}
                         </div>
                         <StatusBadge status={s} />
                       </div>
@@ -633,7 +634,7 @@ export const TrackComplaint: React.FC = () => {
                       }}
                     >
                       <p style={{ margin: 0, fontWeight: 800, fontSize: '0.88rem', color: '#92400e' }}>
-                        ⏳ {language === 'hi' ? 'सत्यापन केवल नागरिक या एडमिन द्वारा मान्य' : 'Verification Only by Citizen or Admin'}
+                        <GoogleIcon name="hourglass_top" size={15} style={{ verticalAlign: 'middle', marginRight: 4 }} />{language === 'hi' ? 'सत्यापन केवल नागरिक या एडमिन द्वारा मान्य' : 'Verification Only by Citizen or Admin'}
                       </p>
                       <p style={{ margin: '6px 0 0', fontSize: '0.8rem', color: '#78350f', lineHeight: 1.5 }}>
                         {language === 'hi'
@@ -653,7 +654,7 @@ export const TrackComplaint: React.FC = () => {
                       }}
                     >
                       <p style={{ margin: '0 0 4px', fontSize: '0.72rem', fontWeight: 800, color: 'var(--theme-primary, #146C94)', textTransform: 'uppercase' }}>
-                        👑 {language === 'hi' ? 'नगर निगम एडमिन सत्यापन' : 'Municipal Admin Verification'}
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>admin_panel_settings</span>{language === 'hi' ? 'नगर निगम एडमिन सत्यापन' : 'Municipal Admin Verification'}</span>
                       </p>
                       <p style={{ margin: '0 0 12px', fontSize: '0.9rem', fontWeight: 700, color: 'var(--gray-900)' }}>
                         {language === 'hi'
@@ -725,9 +726,9 @@ export const TrackComplaint: React.FC = () => {
                           lineHeight: 1.4,
                         }}
                       >
-                        🔔 {language === 'hi'
+                        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 16 }}>notifications</span><span>{language === 'hi'
                           ? 'नागरिक सत्यापन: नगर निगम टीम द्वारा समस्या का समाधान किया गया है। क्या आप संतुष्ट हैं?'
-                          : 'Citizen Verification: The municipal team marked this issue as resolved. Is the problem fixed at your location?'}
+                          : 'Citizen Verification: The municipal team marked this issue as resolved. Is the problem fixed at your location?'}</span></span>
                       </p>
                       <div style={{ display: 'flex', gap: 10 }}>
                         <button
@@ -789,9 +790,9 @@ export const TrackComplaint: React.FC = () => {
                   }}
                 >
                   <p style={{ margin: 0, color: 'var(--green-800)', fontWeight: 700, fontSize: '0.88rem' }}>
-                    ✅ {language === 'hi'
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 18, color: '#16a34a' }}>check_circle</span><span>{language === 'hi'
                       ? 'धन्यवाद! आपकी प्रतिक्रिया दर्ज कर ली गई है।'
-                      : 'Thank you! Your verification feedback has been updated.'}
+                      : 'Thank you! Your verification feedback has been updated.'}</span></span>
                   </p>
                 </div>
               )}
@@ -840,7 +841,7 @@ export const TrackComplaint: React.FC = () => {
             >
               <div>
                 <h3 style={{ margin: 0, color: '#fff', fontSize: '1.1rem', fontWeight: 800 }}>
-                  📸 {language === 'hi' ? 'शिकायत का समाधान दर्ज करें' : 'Resolve Complaint & Upload Work Photo'}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 18 }}>photo_camera</span><span>{language === 'hi' ? 'शिकायत का समाधान दर्ज करें' : 'Resolve Complaint & Upload Work Photo'}</span></span>
                 </h3>
                 <p style={{ margin: '4px 0 0', color: 'rgba(255,255,255,0.85)', fontSize: '0.82rem' }}>
                   #{complaint.ticket_number}
@@ -869,7 +870,7 @@ export const TrackComplaint: React.FC = () => {
               {/* Officer / Resolver Name */}
               <div style={{ marginBottom: 14 }}>
                 <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--gray-700)', marginBottom: 6 }}>
-                  👤 {language === 'hi' ? 'अधिकारी / कर्मचारी का नाम' : 'Resolved by (Officer / Team)'}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>person</span><span>{language === 'hi' ? 'अधिकारी / कर्मचारी का नाम' : 'Resolved by (Officer / Team)'}</span></span>
                 </label>
                 <input
                   type="text"
@@ -891,7 +892,7 @@ export const TrackComplaint: React.FC = () => {
               {/* Work Done Note */}
               <div style={{ marginBottom: 14 }}>
                 <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--gray-700)', marginBottom: 6 }}>
-                  📝 {language === 'hi' ? 'कार्य का विवरण (नागरिक इसे देखेगा) *' : 'Resolution Details (Visible to citizen) *'}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>edit_note</span><span>{language === 'hi' ? 'कार्य का विवरण (नागरिक इसे देखेगा) *' : 'Resolution Details (Visible to citizen) *'}</span></span>
                 </label>
                 <textarea
                   required
@@ -915,7 +916,7 @@ export const TrackComplaint: React.FC = () => {
               {/* Work-Done Photo Upload */}
               <div style={{ marginBottom: 20 }}>
                 <label style={{ display: 'block', fontSize: '0.82rem', fontWeight: 700, color: 'var(--gray-700)', marginBottom: 6 }}>
-                  📷 {language === 'hi' ? 'कार्य समाप्ति का फोटो (प्रमाण हेतु)' : 'Work-Done Completion Photo (Proof)'}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>photo_camera</span><span>{language === 'hi' ? 'कार्य समाप्ति का फोटो (प्रमाण हेतु)' : 'Work-Done Completion Photo (Proof)'}</span></span>
                 </label>
                 <input
                   type="file"
@@ -962,9 +963,7 @@ export const TrackComplaint: React.FC = () => {
                         width: 28, height: 28, color: '#fff', cursor: 'pointer',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                       }}
-                    >
-                      ✕
-                    </button>
+                    ><span className="material-symbols-rounded" style={{ fontSize: 18 }}>close</span></button>
                   </div>
                 )}
               </div>

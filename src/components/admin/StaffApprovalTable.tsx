@@ -1,3 +1,4 @@
+import { GoogleIcon } from '../common/GoogleIcon';
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { Department } from '../../lib/supabase';
@@ -134,9 +135,7 @@ export const StaffApprovalTable: React.FC = () => {
           <button
             onClick={() => setMessage(null)}
             style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontWeight: 700 }}
-          >
-            ✕
-          </button>
+          ><span className="material-symbols-rounded" style={{ fontSize: 16 }}>close</span></button>
         </div>
       )}
 
@@ -319,7 +318,7 @@ export const StaffApprovalTable: React.FC = () => {
                               fontSize: '0.82rem',
                             }}
                           >
-                            <span>{dept.icon}</span>
+                            <GoogleIcon name={dept.icon} size={16} />
                             <span>{dept.name}</span>
                           </div>
                         ) : (

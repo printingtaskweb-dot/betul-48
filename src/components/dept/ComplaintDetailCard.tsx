@@ -8,7 +8,7 @@ const STATUS_CONFIG: Record<string, { label: string; labelHi: string; color: str
   pending:     { label: 'Pending',     labelHi: 'लंबित',      color: '#92400e', bg: '#fef3c7', Icon: Clock },
   in_progress: { label: 'In Progress', labelHi: 'प्रगति में',   color: '#1d4ed8', bg: '#dbeafe', Icon: AlertCircle },
   resolved:    { label: 'Resolved',    labelHi: 'हल किया',     color: '#065f46', bg: '#d1fae5', Icon: CheckCircle },
-  verified:    { label: 'Verified ✓',  labelHi: 'सत्यापित ✓', color: '#5b21b6', bg: '#ede9fe', Icon: CheckSquare },
+  verified:    { label: 'Verified',  labelHi: 'सत्यापित', color: '#5b21b6', bg: '#ede9fe', Icon: CheckSquare },
   rejected:    { label: 'Rejected',    labelHi: 'अस्वीकृत',   color: '#991b1b', bg: '#fee2e2', Icon: XCircle },
 };
 
@@ -110,7 +110,7 @@ export function ComplaintDetailCard({
               <span>{fmtDate(c.created_at)}</span>
               {c.assigned_name && (
                 <span style={{ fontWeight: 700, color: 'var(--theme-primary, #660033)' }}>
-                  👤 {c.assigned_name} ({roleLabel(c.assigned_role, language)})
+                   {c.assigned_name} ({roleLabel(c.assigned_role, language)})
                 </span>
               )}
             </div>
@@ -164,7 +164,7 @@ export function ComplaintDetailCard({
               borderRadius: 'var(--radius-md)', border: '1px solid var(--theme-component-border, #bfbfbf)', marginBottom: 14,
             }}>
               <p style={{ margin: '0 0 4px', fontSize: '0.78rem', fontWeight: 800, color: 'var(--theme-primary, #660033)' }}>
-                📌 {hi ? 'कार्य आवंटन विवरण' : 'Task Allotment Details'}
+                <span className="material-symbols-rounded" style={{ fontSize: 15, verticalAlign: 'middle', marginRight: 4 }}>push_pin</span>{hi ? 'कार्य आवंटन विवरण' : 'Task Allotment Details'}
               </p>
               <div style={{ display: 'flex', gap: 12, fontSize: '0.8rem', color: 'var(--gray-800)', flexWrap: 'wrap' }}>
                 <span><strong>Officer:</strong> {c.assigned_name || 'Staff Member'}</span>
@@ -205,7 +205,7 @@ export function ComplaintDetailCard({
           {(c.address || (c.latitude && c.longitude)) && (
             <div style={{ marginBottom: 14, padding: '10px 14px', background: 'var(--theme-bg, #fff4e7)',
               borderRadius: 'var(--radius-md)', border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
-              {c.address && <p style={{ margin: '0 0 6px', fontSize: '0.82rem', color: 'var(--gray-700)' }}>📍 {c.address}</p>}
+              {c.address && <p style={{ margin: '0 0 6px', fontSize: '0.82rem', color: 'var(--gray-700)' }}> {c.address}</p>}
               {c.latitude && c.longitude && (
                 <span style={{ fontFamily: 'monospace', fontSize: '0.75rem', color: 'var(--gray-500)' }}>
                   Coordinates: {c.latitude.toFixed(6)}, {c.longitude.toFixed(6)}
@@ -218,7 +218,7 @@ export function ComplaintDetailCard({
             <div style={{ marginBottom: 14, padding: '12px 14px', background: 'var(--theme-bg, #fff4e7)',
               borderRadius: 'var(--radius-md)', border: '1.5px solid var(--theme-component-border, #bfbfbf)' }}>
               <p style={{ margin: '0 0 4px', fontSize: '0.75rem', fontWeight: 700, color: 'var(--theme-primary, #660033)', textTransform: 'uppercase' }}>
-                ✅ {hi ? 'हल का विवरण' : 'Resolution Note'}
+                <span className="material-symbols-rounded" style={{ fontSize: 16, color: '#16a34a', verticalAlign: 'middle', marginRight: 4 }}>check_circle</span>{hi ? 'हल का विवरण' : 'Resolution Note'}
               </p>
               <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--gray-800)' }}>{c.resolution_note}</p>
               {c.resolved_at && (

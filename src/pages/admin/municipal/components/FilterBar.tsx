@@ -46,7 +46,7 @@ export const FilterBar: React.FC<Props> = ({
         <select value={deptFilter} onChange={(e) => setDeptFilter(e.target.value)} style={{ ...field, cursor: 'pointer' }}>
           <option value="all">All Departments</option>
           {departments.map((d) => (
-            <option key={d.id} value={d.id}>{d.icon} {d.name}</option>
+            <option key={d.id} value={d.id}>{d.name}</option>
           ))}
         </select>
       )}

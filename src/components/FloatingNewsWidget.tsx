@@ -372,7 +372,7 @@ export const FloatingNewsWidget: React.FC = () => {
         showToast(language === 'hi' ? 'आपका विचार साझा हो गया!' : 'Thought posted successfully!');
       } else if (data) {
         setPosts((prev) => [data, ...prev]);
-        showToast(language === 'hi' ? 'विचार प्रकाशित हो गया! 🎉' : 'Thought posted! 🎉');
+        showToast(language === 'hi' ? 'विचार प्रकाशित हो गया! ' : 'Thought posted! ');
       }
 
       setContent('');
@@ -448,7 +448,7 @@ export const FloatingNewsWidget: React.FC = () => {
         showToast(language === 'hi' ? 'री-शेयर हटाया गया' : 'Reshare removed');
       } else {
         await supabase.from('local_news_reshares').insert({ news_id: postId, user_id: user.id });
-        showToast(language === 'hi' ? 'फ़ॉलोअर्स के साथ साझा किया! 🔄' : 'Reshared to your feed! 🔄');
+        showToast(language === 'hi' ? 'फ़ॉलोअर्स के साथ साझा किया! ' : 'Reshared to your feed! ');
       }
     } catch {
       // safe fallback
@@ -499,7 +499,7 @@ export const FloatingNewsWidget: React.FC = () => {
     showToast(
       currentlyFollowing
         ? (language === 'hi' ? 'अनफ़ॉलो किया गया' : 'Unfollowed')
-        : (language === 'hi' ? 'फ़ॉलो कर रहे हैं! 👤' : 'Following author! 👤')
+        : (language === 'hi' ? 'फ़ॉलो कर रहे हैं! ' : 'Following author! ')
     );
 
     // If citizen is logged in, sync to Supabase user_follows

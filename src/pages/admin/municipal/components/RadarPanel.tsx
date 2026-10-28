@@ -53,7 +53,7 @@ export const RadarPanel: React.FC<Props> = ({
 
     {selectedWard && (
       <div style={{ fontSize: '0.76rem', color: 'var(--gray-700)' }}>
-        📍 Center: {selectedWard.center_latitude?.toFixed(4)}, {selectedWard.center_longitude?.toFixed(4)} · 🎯 Radius:{' '}
+        Center: {selectedWard.center_latitude?.toFixed(4)}, {selectedWard.center_longitude?.toFixed(4)} · Radius:{' '}
         {selectedWard.radius_meters} m
       </div>
     )}

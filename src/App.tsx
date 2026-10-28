@@ -110,7 +110,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
               boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
             }}
           >
-            <div style={{ fontSize: 40, marginBottom: 12 }}>⚠️</div>
+            <div style={{ marginBottom: 12 }}>
+              <span className="material-symbols-rounded" style={{ fontSize: 48, color: '#f59e0b' }}>warning</span>
+            </div>
             <h2 style={{ color: '#146C94', margin: '0 0 10px', fontWeight: 800 }}>
               Application Encountered an Error
             </h2>
@@ -123,6 +125,9 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                 window.location.reload();
               }}
               style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
                 padding: '12px 24px',
                 borderRadius: 8,
                 border: 'none',
@@ -133,7 +138,8 @@ class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
                 cursor: 'pointer',
               }}
             >
-              🔄 Refresh Application
+              <span className="material-symbols-rounded" style={{ fontSize: 18 }}>sync</span>
+              <span>Refresh Application</span>
             </button>
           </div>
         </div>

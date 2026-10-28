@@ -12,6 +12,7 @@ import { watermarkPhoto } from '../lib/watermarkPhoto';
 import type { Department } from '../lib/supabase';
 import { isValidMobile, lettersAndSpaces, mobileDigits } from '../lib/inputValidation';
 import { ArrowLeft, CheckCircle2, ChevronDown, Search, X } from 'lucide-react';
+import { GoogleIcon } from '../components/common/GoogleIcon';
 
 export const ComplaintForm: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -197,7 +198,7 @@ export const ComplaintForm: React.FC = () => {
     setError(null);
 
     try {
-      // 🔑 Re-stamp right before upload so the file we ship is ALWAYS
+      // Re-stamp right before upload so the file we ship is ALWAYS
       //    the watermarked version with the current GPS + dept values.
       let stampedForUpload: File = photoFile || originalFile;
       try {
@@ -439,7 +440,7 @@ export const ComplaintForm: React.FC = () => {
           {/* Department selector */}
           <div style={{ marginBottom: 22 }}>
             <label style={labelStyle}>
-              🏢 {t(language, 'selectDept')} *
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 15 }}>apartment</span>{t(language, 'selectDept')} *</span>
             </label>
 
             {deptsLoading ? (
@@ -473,9 +474,7 @@ export const ComplaintForm: React.FC = () => {
                 >
                   {selectedDept ? (
                     <>
-                      <span style={{ fontSize: 20, lineHeight: 1 }}>
-                        {selectedDept.icon}
-                      </span>
+                      <GoogleIcon name={selectedDept.icon} size={20} />
                       <span
                         style={{
                           flex: 1,
@@ -641,9 +640,7 @@ export const ComplaintForm: React.FC = () => {
                                 }
                               }}
                             >
-                              <span style={{ fontSize: 20, lineHeight: 1 }}>
-                                {dept.icon}
-                              </span>
+                              <GoogleIcon name={dept.icon} size={20} />
                               <span style={{ flex: 1 }}>{dept.name}</span>
                               {isSelected && (
                                 <CheckCircle2 size={16} color={dept.color} />
@@ -662,7 +659,7 @@ export const ComplaintForm: React.FC = () => {
           {/* Citizen name */}
           <div style={{ marginBottom: 28 }}>
             <label style={labelStyle}>
-              👤 {language === 'hi' ? 'आपका नाम' : 'Your Name'}
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 15 }}>person</span>{language === 'hi' ? 'आपका नाम' : 'Your Name'}</span>
             </label>
             <input
               type="text"
@@ -676,7 +673,7 @@ export const ComplaintForm: React.FC = () => {
           {/* Citizen phone */}
           <div style={{ marginBottom: 28 }}>
             <label style={labelStyle}>
-              📞 {language === 'hi' ? 'मोबाइल नंबर' : 'Mobile Number'}
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 15 }}>call</span>{language === 'hi' ? 'मोबाइल नंबर' : 'Mobile Number'}</span>
             </label>
             <input
               type="tel"
@@ -692,7 +689,7 @@ export const ComplaintForm: React.FC = () => {
           {/* Description */}
           <div style={{ marginBottom: 28 }}>
             <label style={labelStyle}>
-              📝 {language === 'hi' ? 'समस्या का विवरण' : 'Description'} *
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 15 }}>edit_note</span>{language === 'hi' ? 'समस्या का विवरण' : 'Description'} *</span>
             </label>
             <textarea
               value={description}
@@ -710,7 +707,7 @@ export const ComplaintForm: React.FC = () => {
           {/* Photo — GPS camera style */}
           <div style={{ marginBottom: 28 }}>
             <label style={labelStyle}>
-              📷 {language === 'hi' ? 'फोटो अपलोड करें' : 'Upload Photo'} *
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 15 }}>photo_camera</span>{language === 'hi' ? 'फोटो अपलोड करें' : 'Upload Photo'} *</span>
             </label>
 
             <PhotoUploader
@@ -749,7 +746,7 @@ export const ComplaintForm: React.FC = () => {
                   color: 'var(--gray-600, #4b5563)',
                 }}
               >
-                <span style={{ fontSize: 13 }}>📍</span>
+                <span className="material-symbols-rounded" style={{ fontSize: 15, color: '#146C94' }}>location_on</span>
                 <span
                   style={{
                     flex: 1,
@@ -793,7 +790,7 @@ export const ComplaintForm: React.FC = () => {
                 fontWeight: 600,
               }}
             >
-              ⚠️ {error}
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 16, color: '#dc2626' }}>warning</span>{error}</span>
             </div>
           )}
 
@@ -826,7 +823,7 @@ export const ComplaintForm: React.FC = () => {
               ? language === 'hi'
                 ? 'फोटो तैयार हो रहा है…'
                 : 'Preparing photo…'
-              : `📤 ${t(language, 'submit')}`}
+              : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 18 }}>send</span>{t(language, 'submit')}</span>}
           </button>
         </form>
       </div>

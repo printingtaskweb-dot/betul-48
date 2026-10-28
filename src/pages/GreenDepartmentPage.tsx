@@ -12,14 +12,15 @@ import { BottomNav } from '../components/BottomNav';
 import { watermarkPhoto } from '../lib/watermarkPhoto';
 import { isValidMobile, lettersAndSpaces, mobileDigits } from '../lib/inputValidation';
 import { ArrowLeft, Recycle, Info } from 'lucide-react';
+import { GoogleIcon } from '../components/common/GoogleIcon';
 
 const WASTE_TYPES = [
-  { id: 'leaves', label: 'Fallen Leaves', hi: 'गिरे पत्ते', icon: '🍂' },
-  { id: 'branches', label: 'Tree Branches', hi: 'टहनियाँ', icon: '🌿' },
-  { id: 'garden', label: 'Garden Waste', hi: 'बगीचा कचरा', icon: '🌱' },
-  { id: 'biodegradable', label: 'Biodegradable Waste', hi: 'जैविक कचरा', icon: '♻️' },
-  { id: 'tree_fall', label: 'Fallen Tree', hi: 'गिरा पेड़', icon: '🌳', urgent: true },
-  { id: 'other', label: 'Other Green Waste', hi: 'अन्य हरित कचरा', icon: '🗂️' },
+  { id: 'leaves', label: 'Fallen Leaves', hi: 'गिरे पत्ते', icon: 'eco' },
+  { id: 'branches', label: 'Tree Branches', hi: 'टहनियाँ', icon: 'eco' },
+  { id: 'garden', label: 'Garden Waste', hi: 'बगीचा कचरा', icon: 'potted_plant' },
+  { id: 'biodegradable', label: 'Biodegradable Waste', hi: 'जैविक कचरा', icon: 'recycling' },
+  { id: 'tree_fall', label: 'Fallen Tree', hi: 'गिरा पेड़', icon: 'park', urgent: true },
+  { id: 'other', label: 'Other Green Waste', hi: 'अन्य हरित कचरा', icon: 'category' },
 ];
 
 export const GreenDepartmentPage: React.FC = () => {
@@ -49,7 +50,7 @@ export const GreenDepartmentPage: React.FC = () => {
   const greenDept = departments.find((d) => d.slug === 'green');
   const locationReady = !!gps.latitude && !!gps.longitude;
 
-  // 🔹 Auto-detect location on mount (silent)
+  // Auto-detect location on mount (silent)
   useEffect(() => {
     gps.detectLocation();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -165,7 +166,7 @@ export const GreenDepartmentPage: React.FC = () => {
     setError(null);
 
     try {
-      // 🔑 Re-stamp right before upload so the file we ship is ALWAYS
+      // Re-stamp right before upload so the file we ship is ALWAYS
       //    watermarked with the current GPS + dept values.
       let stampedForUpload = photoFile;
       try {
@@ -244,7 +245,7 @@ export const GreenDepartmentPage: React.FC = () => {
               marginBottom: 12,
             }}
           >
-            ✅
+            <span className="material-symbols-rounded" style={{ fontSize: 16, color: '#16a34a' }}>check_circle</span>
           </div>
           <h2
             style={{
@@ -402,7 +403,7 @@ export const GreenDepartmentPage: React.FC = () => {
                   color: '#fff',
                 }}
               >
-                🌿 {t(language, 'greenDeptTitle')}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 20, color: '#16a34a' }}>eco</span>{t(language, 'greenDeptTitle')}</span>
               </h1>
               <p
                 style={{
@@ -423,15 +424,15 @@ export const GreenDepartmentPage: React.FC = () => {
                 id: 'report',
                 label:
                   language === 'hi'
-                    ? '📸 शिकायत दर्ज करें'
-                    : '📸 Request Pickup',
+                    ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 16 }}>photo_camera</span>शिकायत दर्ज करें</span>
+                    : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 16 }}>photo_camera</span>Request Pickup</span>,
               },
               {
                 id: 'status',
                 label:
                   language === 'hi'
-                    ? '📋 हाल की स्थिति'
-                    : '📋 Recent Green Status',
+                    ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 16 }}>assignment</span>हाल की स्थिति</span>
+                    : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 16 }}>assignment</span>Recent Green Status</span>,
               },
             ].map((tb) => (
               <button
@@ -502,7 +503,7 @@ export const GreenDepartmentPage: React.FC = () => {
             {/* Waste type selection */}
             <div style={{ marginBottom: 22 }}>
               <label style={labelStyle}>
-                🗂️{' '}
+                <span className="material-symbols-rounded" style={{ fontSize: 16, verticalAlign: 'middle', marginRight: 4 }}>category</span>
                 {language === 'hi'
                   ? 'कचरे का प्रकार चुनें *'
                   : 'Select Waste Category *'}
@@ -539,7 +540,7 @@ export const GreenDepartmentPage: React.FC = () => {
                         position: 'relative',
                       }}
                     >
-                      <span style={{ fontSize: 20 }}>{wt.icon}</span>
+                      <GoogleIcon name={wt.icon} size={20} color="var(--green-600)" />
                       <span
                         style={{
                           fontSize: '0.78rem',
@@ -578,7 +579,7 @@ export const GreenDepartmentPage: React.FC = () => {
             {/* Photo — GPS camera style (moved above location, no gating) */}
             <div style={{ marginBottom: 22 }}>
               <label style={labelStyle}>
-                📸 {t(language, 'uploadPhoto')} *
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 15 }}>photo_camera</span>{t(language, 'uploadPhoto')} *</span>
               </label>
 
               <div style={{ marginTop: 8 }}>
@@ -623,7 +624,7 @@ export const GreenDepartmentPage: React.FC = () => {
                       color: 'var(--gray-600, #4b5563)',
                     }}
                   >
-                    <span style={{ fontSize: 13 }}>📍</span>
+                    <span className="material-symbols-rounded" style={{ fontSize: 15, color: '#16a34a' }}>location_on</span>
                     <span
                       style={{
                         flex: 1,
@@ -657,7 +658,7 @@ export const GreenDepartmentPage: React.FC = () => {
             {/* Description */}
             <div style={{ marginBottom: 22 }}>
               <label style={labelStyle}>
-                📝{' '}
+                <span className="material-symbols-rounded" style={{ fontSize: 16, verticalAlign: 'middle', marginRight: 4 }}>edit_note</span>
                 {language === 'hi'
                   ? 'अतिरिक्त विवरण'
                   : 'Additional Details'}{' '}
@@ -679,7 +680,7 @@ export const GreenDepartmentPage: React.FC = () => {
             {/* Contact details */}
             <div style={{ marginBottom: 24 }}>
               <label style={labelStyle}>
-                👤 {t(language, 'yourDetails')} ({t(language, 'optional')})
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 15 }}>person</span>{t(language, 'yourDetails')}</span> ({t(language, 'optional')})
               </label>
               <div className="two-col-responsive" style={{ marginTop: 8 }}>
                 <input
@@ -713,7 +714,7 @@ export const GreenDepartmentPage: React.FC = () => {
                   fontWeight: 600,
                 }}
               >
-                ⚠️ {error}
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 16, color: '#dc2626' }}>warning</span>{error}</span>
               </div>
             )}
 
@@ -751,8 +752,8 @@ export const GreenDepartmentPage: React.FC = () => {
                   ? 'फोटो तैयार हो रहा है…'
                   : 'Preparing photo…'
                 : language === 'hi'
-                ? '📤 हरित कचरा उठाने हेतु अनुरोध भेजें'
-                : '📤 Request Green Waste Pickup'}
+                ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 18 }}>local_shipping</span>हरित कचरा उठाने हेतु अनुरोध भेजें</span>
+                : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 18 }}>local_shipping</span>Request Green Waste Pickup</span>}
             </button>
           </form>
         </div>
@@ -785,7 +786,7 @@ export const GreenDepartmentPage: React.FC = () => {
                 color: 'var(--gray-600)',
               }}
             >
-              <p style={{ fontSize: 36, marginBottom: 8 }}>🌿</p>
+              <p style={{ margin: '0 0 8px' }}><span className="material-symbols-rounded" style={{ fontSize: 44, color: '#16a34a' }}>eco</span></p>
               <p style={{ fontWeight: 600 }}>
                 {language === 'hi'
                   ? 'अभी कोई शिकायत नहीं है'
