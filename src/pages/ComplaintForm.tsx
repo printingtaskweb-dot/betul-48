@@ -18,7 +18,7 @@ import { ArcLoader } from '../components/common/ArcLoader';
 export const ComplaintForm: React.FC = () => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { language } = useAuth();
+  const { user, profile, language } = useAuth();
   const { departments, loading: deptsLoading } = useDepartments();
   const { submitComplaint } = useComplaints();
   const loc = useLocation();
@@ -43,6 +43,12 @@ export const ComplaintForm: React.FC = () => {
   const [deptOpen, setDeptOpen] = useState(false);
   const [deptQuery, setDeptQuery] = useState('');
   const deptBoxRef = useRef<HTMLDivElement>(null);
+
+    // Auto pre-fill citizen name and phone if logged in
+  useEffect(() => {
+    if (profile?.full_name && !citizenName) setCitizenName(profile.full_name);
+    if (profile?.phone && !citizenPhone) setCitizenPhone(profile.phone);
+  }, [profile]);
 
   const locationReady = !!loc.latitude && !!loc.longitude;
 
@@ -251,7 +257,22 @@ export const ComplaintForm: React.FC = () => {
         longitude: loc.longitude ?? null,
         address: loc.address ?? null,
         photo_url: photoUrl,
+        created_by: user?.id || null,
       });
+
+      // Save locally to device cache so profile page tracks it immediately
+      try {
+        const stored = JSON.parse(localStorage.getItem('betul_my_complaints') || '[]');
+        stored.unshift({
+          id: complaint.id,
+          ticket_number: complaint.ticket_number,
+          created_at: complaint.created_at || new Date().toISOString(),
+          dept_name: selectedDept.name,
+          status: 'pending',
+          citizen_phone: citizenPhone || null,
+        });
+        localStorage.setItem('betul_my_complaints', JSON.stringify(stored.slice(0, 50)));
+      } catch {}
 
       setTicket(complaint.ticket_number);
     } catch (err: any) {

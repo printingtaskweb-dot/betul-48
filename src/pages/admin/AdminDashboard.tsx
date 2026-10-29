@@ -307,113 +307,272 @@ const AdminOverview: React.FC<OverviewProps> = ({ departments, loadingDepts, onT
 
   return (
     <div>
-      {/* Header */}
-      <div ref={headerRef} style={{ marginBottom: 28, opacity: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
-          <div style={{
-            width: 44, height: 44, borderRadius: 12,
-            background: 'linear-gradient(135deg, #146C94, #19A7CE)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <LayoutDashboard size={22} color="#fff" />
-          </div>
-          <div>
-            <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 900, color: '#111827' }}>
-              Admin Command Center
-            </h2>
-            <p style={{ margin: 0, fontSize: '0.8rem', color: '#6b7280' }}>
-              Municipal grievance management & oversight
-            </p>
+      {/* ─── DESKTOP OVERVIEW (Hidden on mobile) ─── */}
+      <div className="admin-desktop-view">
+        {/* Header */}
+        <div ref={headerRef} style={{ marginBottom: 28, opacity: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+            <div style={{
+              width: 44, height: 44, borderRadius: 12,
+              background: 'linear-gradient(135deg, #146C94, #19A7CE)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <LayoutDashboard size={22} color="#fff" />
+            </div>
+            <div>
+              <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: 900, color: '#111827' }}>
+                Admin Command Center
+              </h2>
+              <p style={{ margin: 0, fontSize: '0.8rem', color: '#6b7280' }}>
+                Municipal grievance management & oversight
+              </p>
+            </div>
           </div>
         </div>
+
+        {/* Stat Cards */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
+          gap: 14,
+          marginBottom: 28,
+        }}>
+          <StatCard
+            icon={<Activity size={20} />}
+            label="Total Complaints"
+            value={1248}
+            color="#146C94"
+            bgColor="#e0f2fe"
+            delay={0}
+          />
+          <StatCard
+            icon={<CheckCircle2 size={20} />}
+            label="Resolved Today"
+            value={47}
+            color="#059669"
+            bgColor="#dcfce7"
+            delay={0.08}
+          />
+          <StatCard
+            icon={<Clock size={20} />}
+            label="Avg. Response (hrs)"
+            value={4}
+            suffix="h"
+            color="#d97706"
+            bgColor="#fef3c7"
+            delay={0.16}
+          />
+          <StatCard
+            icon={<AlertTriangle size={20} />}
+            label="Pending Review"
+            value={23}
+            color="#dc2626"
+            bgColor="#fee2e2"
+            delay={0.24}
+          />
+          <StatCard
+            icon={<TrendingUp size={20} />}
+            label="Resolution Rate"
+            value={94}
+            suffix="%"
+            color="#7c3aed"
+            bgColor="#ede9fe"
+            delay={0.32}
+          />
+        </div>
+
+        {/* Quick Action Cards Grid */}
+        <div style={{ marginBottom: 10, fontSize: '0.8rem', fontWeight: 800, color: '#6b7280', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+          Quick Actions
+        </div>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+          gap: 14,
+          marginBottom: 32,
+        }}>
+          {quickActions.map((action) => (
+            <ActionCard key={action.title} {...action} />
+          ))}
+        </div>
+
+        {/* Department Quick-filter */}
+        {!loadingDepts && departments.length > 0 && (
+          <>
+            <div style={{ marginBottom: 10, fontSize: '0.8rem', fontWeight: 800, color: '#6b7280', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              Browse by Department
+            </div>
+            <div style={{
+              background: '#fff',
+              borderRadius: 16,
+              border: '1px solid #e5e7eb',
+              overflow: 'hidden',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+            }}>
+              {departments.map((dept) => (
+                <DeptRow key={dept.id} dept={dept} onClick={() => onTab('complaints', dept)} />
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
-      {/* Stat Cards */}
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-        gap: 14,
-        marginBottom: 28,
-      }}>
-        <StatCard
-          icon={<Activity size={20} />}
-          label="Total Complaints"
-          value={1248}
-          color="#146C94"
-          bgColor="#e0f2fe"
-          delay={0}
-        />
-        <StatCard
-          icon={<CheckCircle2 size={20} />}
-          label="Resolved Today"
-          value={47}
-          color="#059669"
-          bgColor="#dcfce7"
-          delay={0.08}
-        />
-        <StatCard
-          icon={<Clock size={20} />}
-          label="Avg. Response (hrs)"
-          value={4}
-          suffix="h"
-          color="#d97706"
-          bgColor="#fef3c7"
-          delay={0.16}
-        />
-        <StatCard
-          icon={<AlertTriangle size={20} />}
-          label="Pending Review"
-          value={23}
-          color="#dc2626"
-          bgColor="#fee2e2"
-          delay={0.24}
-        />
-        <StatCard
-          icon={<TrendingUp size={20} />}
-          label="Resolution Rate"
-          value={94}
-          suffix="%"
-          color="#7c3aed"
-          bgColor="#ede9fe"
-          delay={0.32}
-        />
-      </div>
-
-      {/* Quick Action Cards Grid */}
-      <div style={{ marginBottom: 10, fontSize: '0.8rem', fontWeight: 800, color: '#6b7280', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-        Quick Actions
-      </div>
-      <div style={{
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-        gap: 14,
-        marginBottom: 32,
-      }}>
-        {quickActions.map((action) => (
-          <ActionCard key={action.title} {...action} />
-        ))}
-      </div>
-
-      {/* Department Quick-filter */}
-      {!loadingDepts && departments.length > 0 && (
-        <>
-          <div style={{ marginBottom: 10, fontSize: '0.8rem', fontWeight: 800, color: '#6b7280', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            Browse by Department
+      {/* ─── DEDICATED MOBILE SCREEN FEATURE HUB (Shown ONLY on mobile) ─── */}
+      <div className="admin-mobile-view">
+        {/* Mobile Header Banner */}
+        <div
+          style={{
+            background: 'linear-gradient(135deg, #0E526F 0%, #146C94 100%)',
+            borderRadius: 18,
+            padding: '16px 18px',
+            color: '#fff',
+            marginBottom: 16,
+            boxShadow: '0 6px 20px rgba(20, 108, 148, 0.25)',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <LayoutDashboard size={20} color="#fff" />
+            </div>
+            <div>
+              <div style={{ fontSize: '1.05rem', fontWeight: 900, lineHeight: 1.2 }}>Betul Admin Command Hub</div>
+              <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.8)' }}>Tap any feature below to open and manage</div>
+            </div>
           </div>
-          <div style={{
-            background: '#fff',
-            borderRadius: 16,
-            border: '1px solid #e5e7eb',
-            overflow: 'hidden',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
-          }}>
-            {departments.map((dept) => (
-              <DeptRow key={dept.id} dept={dept} onClick={() => onTab('complaints', dept)} />
-            ))}
+
+          {/* Quick Metrics Strip */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.18)' }}>
+            <div style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 10px', textAlign: 'center' }}>
+              <div style={{ fontSize: '1.15rem', fontWeight: 900 }}>1,248</div>
+              <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', opacity: 0.85, fontWeight: 700 }}>Total</div>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 10px', textAlign: 'center' }}>
+              <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#86efac' }}>47</div>
+              <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', opacity: 0.85, fontWeight: 700 }}>Resolved</div>
+            </div>
+            <div style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 10px', textAlign: 'center' }}>
+              <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#fde047' }}>23</div>
+              <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', opacity: 0.85, fontWeight: 700 }}>Pending</div>
+            </div>
           </div>
-        </>
-      )}
+        </div>
+
+        {/* Feature Title */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, padding: '0 4px' }}>
+          <span style={{ fontSize: '0.8rem', fontWeight: 900, color: '#475569', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+            Admin Management Options
+          </span>
+          <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#146C94' }}>
+            8 Features Available
+          </span>
+        </div>
+
+        {/* Feature-by-Feature Option Cards List */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 11, marginBottom: 24 }}>
+          {quickActions.map((action) => (
+            <div
+              key={action.title}
+              onClick={action.onClick}
+              style={{
+                background: '#ffffff',
+                borderRadius: 16,
+                padding: '14px 14px',
+                border: '1.5px solid #e2e8f0',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 12,
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+                <div
+                  style={{
+                    width: 44,
+                    height: 44,
+                    borderRadius: 12,
+                    background: action.gradient,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#fff',
+                    flexShrink: 0,
+                    boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+                  }}
+                >
+                  {action.icon}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ fontWeight: 800, fontSize: '0.94rem', color: '#0f172a' }}>
+                      {action.title}
+                    </span>
+                    {action.badge && (
+                      <span
+                        style={{
+                          background: '#fef2f2',
+                          color: '#dc2626',
+                          border: '1px solid #fecaca',
+                          borderRadius: 999,
+                          padding: '1px 6px',
+                          fontSize: '0.65rem',
+                          fontWeight: 800,
+                        }}
+                      >
+                        {action.badge}
+                      </span>
+                    )}
+                  </div>
+                  <p style={{ margin: '3px 0 0', fontSize: '0.75rem', color: '#64748b', lineHeight: 1.3 }}>
+                    {action.description}
+                  </p>
+                </div>
+              </div>
+
+              {/* Explicit Open Button for touch */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  action.onClick();
+                }}
+                style={{
+                  background: 'linear-gradient(135deg, #146C94, #19A7CE)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: 999,
+                  padding: '7px 13px',
+                  fontSize: '0.78rem',
+                  fontWeight: 800,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 3,
+                  cursor: 'pointer',
+                  flexShrink: 0,
+                  boxShadow: '0 2px 8px rgba(20, 108, 148, 0.25)',
+                }}
+              >
+                Open <ChevronRight size={13} />
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile Department Selector Accordion */}
+        {!loadingDepts && departments.length > 0 && (
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: '0.8rem', fontWeight: 900, color: '#475569', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10, padding: '0 4px' }}>
+              Filter Complaints by Department
+            </div>
+            <div style={{ background: '#fff', borderRadius: 16, border: '1.5px solid #e2e8f0', overflow: 'hidden' }}>
+              {departments.map((dept) => (
+                <DeptRow key={dept.id} dept={dept} onClick={() => onTab('complaints', dept)} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
@@ -718,7 +877,96 @@ export const AdminDashboard: React.FC = () => {
         )}
 
         {/* Main Content */}
-        <main style={{ flex: 1, padding: 'clamp(14px, 2.5vw, 28px)', overflowX: 'hidden', minWidth: 0 }}>
+        <main style={{ flex: 1, padding: 'clamp(12px, 2.5vw, 28px)', overflowX: 'hidden', minWidth: 0 }}>
+          {/* ── MOBILE FEATURE TOP BAR (Visible on mobile when a feature is open) ── */}
+          {activeTab !== 'overview' && (
+            <div className="admin-mobile-active-header">
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
+                <button
+                  onClick={() => handleTabChange('overview')}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 6,
+                    background: '#ffffff',
+                    border: '1.5px solid #146C94',
+                    color: '#146C94',
+                    borderRadius: 999,
+                    padding: '6px 14px',
+                    fontSize: '0.8rem',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    boxShadow: '0 2px 6px rgba(20, 108, 148, 0.15)',
+                  }}
+                >
+                  <ArrowLeft size={15} /> Back to Admin Hub
+                </button>
+                <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e' }} />
+                  {activeTab === 'complaints'
+                    ? (activeDept ? activeDept.name : 'All Complaints')
+                    : activeTab === 'municipal'
+                    ? 'Municipal Head'
+                    : activeTab === 'users'
+                    ? 'User Directory'
+                    : activeTab === 'register'
+                    ? 'Register Staff'
+                    : activeTab === 'local_news'
+                    ? 'Local News'
+                    : activeTab === 'staff_approvals'
+                    ? 'Staff Approvals'
+                    : activeTab === 'staff_directory'
+                    ? 'Staff Management'
+                    : 'Push Notifications'}
+                </div>
+              </div>
+
+              {/* Horizontal Scrollable Quick-Switch Feature Tabs */}
+              <div
+                style={{
+                  display: 'flex',
+                  gap: 6,
+                  overflowX: 'auto',
+                  paddingBottom: 8,
+                  marginBottom: 14,
+                  scrollbarWidth: 'none',
+                  WebkitOverflowScrolling: 'touch',
+                }}
+              >
+                {[
+                  { id: 'overview' as Tab, label: '🏠 Hub' },
+                  { id: 'complaints' as Tab, label: '📋 Complaints' },
+                  { id: 'municipal' as Tab, label: '🏛️ Municipal' },
+                  { id: 'users' as Tab, label: '👥 Users' },
+                  { id: 'register' as Tab, label: '👷 Register' },
+                  { id: 'local_news' as Tab, label: '📰 News' },
+                  { id: 'staff_approvals' as Tab, label: '📝 Approvals' },
+                  { id: 'staff_directory' as Tab, label: '🛡️ Staff' },
+                  { id: 'push_notifications' as Tab, label: '🔔 Alerts' },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    onClick={() => handleTabChange(item.id)}
+                    style={{
+                      whiteSpace: 'nowrap',
+                      padding: '5px 11px',
+                      borderRadius: 999,
+                      border: '1.5px solid',
+                      borderColor: activeTab === item.id ? '#146C94' : '#e2e8f0',
+                      background: activeTab === item.id ? '#146C94' : '#ffffff',
+                      color: activeTab === item.id ? '#ffffff' : '#475569',
+                      fontSize: '0.74rem',
+                      fontWeight: 700,
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
           {activeTab === 'overview' ? (
             <AdminOverview
               departments={departments}
@@ -774,6 +1022,113 @@ export const AdminDashboard: React.FC = () => {
         </main>
       </div>
 
+      {/* ── MOBILE ADMIN BOTTOM DOCK BAR (Visible on mobile screens) ── */}
+      <nav className="admin-mobile-bottom-dock">
+        <button
+          onClick={() => handleTabChange('overview')}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 2,
+            color: activeTab === 'overview' ? '#146C94' : '#94a3b8',
+            fontSize: '0.7rem',
+            fontWeight: activeTab === 'overview' ? 800 : 600,
+            cursor: 'pointer',
+            padding: '4px 8px',
+          }}
+        >
+          <LayoutDashboard size={19} color={activeTab === 'overview' ? '#146C94' : '#94a3b8'} />
+          <span>Hub</span>
+        </button>
+
+        <button
+          onClick={() => { handleTabChange('complaints'); setActiveDept(null); }}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 2,
+            color: activeTab === 'complaints' ? '#146C94' : '#94a3b8',
+            fontSize: '0.7rem',
+            fontWeight: activeTab === 'complaints' ? 800 : 600,
+            cursor: 'pointer',
+            padding: '4px 8px',
+          }}
+        >
+          <FileText size={19} color={activeTab === 'complaints' ? '#146C94' : '#94a3b8'} />
+          <span>Complaints</span>
+        </button>
+
+        <button
+          onClick={() => handleTabChange('municipal')}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 2,
+            color: activeTab === 'municipal' ? '#146C94' : '#94a3b8',
+            fontSize: '0.7rem',
+            fontWeight: activeTab === 'municipal' ? 800 : 600,
+            cursor: 'pointer',
+            padding: '4px 8px',
+          }}
+        >
+          <Building2 size={19} color={activeTab === 'municipal' ? '#146C94' : '#94a3b8'} />
+          <span>Municipal</span>
+        </button>
+
+        <button
+          onClick={() => handleTabChange('local_news')}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 2,
+            position: 'relative',
+            color: activeTab === 'local_news' ? '#146C94' : '#94a3b8',
+            fontSize: '0.7rem',
+            fontWeight: activeTab === 'local_news' ? 800 : 600,
+            cursor: 'pointer',
+            padding: '4px 8px',
+          }}
+        >
+          <Newspaper size={19} color={activeTab === 'local_news' ? '#146C94' : '#94a3b8'} />
+          <span>News</span>
+          {pendingNewsCount > 0 && (
+            <span style={{ position: 'absolute', top: 2, right: 12, width: 7, height: 7, borderRadius: '50%', background: '#dc2626' }} />
+          )}
+        </button>
+
+        <button
+          onClick={() => handleTabChange('staff_approvals')}
+          style={{
+            background: 'transparent',
+            border: 'none',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: 2,
+            color: activeTab === 'staff_approvals' || activeTab === 'staff_directory' ? '#146C94' : '#94a3b8',
+            fontSize: '0.7rem',
+            fontWeight: activeTab === 'staff_approvals' || activeTab === 'staff_directory' ? 800 : 600,
+            cursor: 'pointer',
+            padding: '4px 8px',
+          }}
+        >
+          <ShieldCheck size={19} color={activeTab === 'staff_approvals' || activeTab === 'staff_directory' ? '#146C94' : '#94a3b8'} />
+          <span>Staff</span>
+        </button>
+      </nav>
+
       <style>{`
         @media (max-width: 768px) {
           .admin-sidebar {
@@ -784,9 +1139,37 @@ export const AdminDashboard: React.FC = () => {
           }
           .admin-sidebar.open { left: 0 !important; }
           .mobile-dept-toggle { display: flex !important; }
+          
+          .admin-desktop-view { display: none !important; }
+          .admin-mobile-view { display: block !important; }
+          .admin-mobile-active-header { display: block !important; }
+          
+          .admin-mobile-bottom-dock {
+            display: flex !important;
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            height: 60px !important;
+            background: rgba(255, 255, 255, 0.98) !important;
+            backdrop-filter: blur(12px) !important;
+            border-top: 1px solid #e2e8f0 !important;
+            z-index: 95 !important;
+            justify-content: space-around !important;
+            align-items: center !important;
+            box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.07) !important;
+          }
+          main {
+            padding-bottom: 76px !important;
+          }
         }
+
         @media (min-width: 769px) {
           .mobile-dept-toggle { display: none !important; }
+          .admin-desktop-view { display: block !important; }
+          .admin-mobile-view { display: none !important; }
+          .admin-mobile-active-header { display: none !important; }
+          .admin-mobile-bottom-dock { display: none !important; }
         }
       `}</style>
     </div>

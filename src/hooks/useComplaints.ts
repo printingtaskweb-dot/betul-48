@@ -42,6 +42,7 @@ export function useComplaints(departmentSlug?: string) {
     longitude: number | null;
     address: string | null;
     photo_url: string | null;
+    created_by?: string | null;
   }) => {
     const { data, error } = await supabase
       .from('complaints')

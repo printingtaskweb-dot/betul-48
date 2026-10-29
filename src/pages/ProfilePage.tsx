@@ -101,27 +101,76 @@ export const ProfilePage: React.FC = () => {
     if (!user) return;
     setComplaintsLoading(true);
     try {
-      const { data } = await supabase
-        .from('complaints')
-        .select('id, ticket_number, status, created_at, departments:departments(name)')
-        .eq('created_by', user.id)
-        .order('created_at', { ascending: false })
-        .limit(30);
+      const userPhone = (profile?.phone || user.phone || '').trim();
+      const cleanPhone = userPhone.replace(/\D/g, '').slice(-10);
 
-      const mapped: Complaint[] = (data || []).map((c: any) => ({
-        id: c.id,
-        ticket_number: c.ticket_number,
-        status: c.status,
-        created_at: c.created_at,
-        dept_name: Array.isArray(c.departments) ? c.departments[0]?.name : c.departments?.name,
-      }));
-      setComplaints(mapped);
-    } catch {
-      /* ignore */
+      // Build flexible matching clauses: by created_by user ID, by citizen phone number, or by device tickets
+      const clauses: string[] = [`created_by.eq.${user.id}`];
+      if (userPhone) clauses.push(`citizen_phone.eq.${userPhone}`);
+      if (cleanPhone && cleanPhone !== userPhone) clauses.push(`citizen_phone.eq.${cleanPhone}`);
+
+      // Retrieve locally saved complaint tickets from this device
+      let localItems: Complaint[] = [];
+      try {
+        const rawLocal = localStorage.getItem('betul_my_complaints');
+        if (rawLocal) {
+          const parsed = JSON.parse(rawLocal);
+          if (Array.isArray(parsed)) {
+            localItems = parsed;
+            parsed.forEach((item: any) => {
+              if (item.ticket_number) {
+                clauses.push(`ticket_number.eq.${item.ticket_number}`);
+              }
+            });
+          }
+        }
+      } catch {}
+
+      const orFilter = clauses.join(',');
+
+      const { data, error } = await supabase
+        .from('complaints')
+        .select('id, ticket_number, status, created_at, citizen_phone, department:departments(name), departments:departments(name)')
+        .or(orFilter)
+        .order('created_at', { ascending: false })
+        .limit(60);
+
+      let fetchedComplaints: Complaint[] = [];
+      if (!error && data) {
+        fetchedComplaints = data.map((c: any) => ({
+          id: c.id,
+          ticket_number: c.ticket_number,
+          status: c.status,
+          created_at: c.created_at,
+          dept_name: c.department?.name || (Array.isArray(c.departments) ? c.departments[0]?.name : c.departments?.name) || 'Civic Services',
+        }));
+      }
+
+      // Merge and deduplicate by ticket_number
+      const seen = new Set<string>();
+      const combined: Complaint[] = [];
+
+      for (const item of fetchedComplaints) {
+        if (!seen.has(item.ticket_number)) {
+          seen.add(item.ticket_number);
+          combined.push(item);
+        }
+      }
+
+      for (const item of localItems) {
+        if (item.ticket_number && !seen.has(item.ticket_number)) {
+          seen.add(item.ticket_number);
+          combined.push(item);
+        }
+      }
+
+      setComplaints(combined);
+    } catch (e) {
+      console.warn('Error fetching citizen complaints:', e);
     } finally {
       setComplaintsLoading(false);
     }
-  }, [user]);
+  }, [user, profile?.phone]);
 
   /* fetch social metrics: followers, following, views */
   const fetchSocialStats = useCallback(async () => {
