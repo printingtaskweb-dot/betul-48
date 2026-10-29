@@ -1,9 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import type { Complaint, ComplaintStatus } from '../../lib/supabase';
 import { useComplaints } from '../../hooks/useComplaints';
 import { ComplaintCard } from '../common/ComplaintCard';
 import { ResolutionForm } from './ResolutionForm';
-import { Search, X, Navigation } from 'lucide-react';
+import { Search, X, Navigation, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const STATUS_FILTERS: { label: string; value: ComplaintStatus | 'all' }[] = [
   { label: 'All', value: 'all' },
@@ -23,24 +23,57 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({ departmentSlug }
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<ComplaintStatus | 'all'>('all');
   const [selected, setSelected] = useState<Complaint | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 15;
 
-  const filtered = complaints.filter((c) => {
-    const matchesSearch =
-      c.ticket_number?.toLowerCase().includes(search.toLowerCase()) ||
-      c.description?.toLowerCase().includes(search.toLowerCase()) ||
-      c.citizen_name?.toLowerCase().includes(search.toLowerCase()) ||
-      false;
-    const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
-    return matchesSearch && matchesStatus;
-  });
+  // Reset to page 1 on search or filter change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [search, statusFilter]);
 
-  const stats = {
-    total: complaints.length,
-    pending: complaints.filter((c) => c.status === 'pending').length,
-    in_progress: complaints.filter((c) => c.status === 'in_progress').length,
-    resolved: complaints.filter((c) => c.status === 'resolved').length,
-    verified: complaints.filter((c) => c.status === 'verified').length,
-  };
+  // O(C) Single-pass stats calculation memoized to avoid redundant iterations on keystrokes
+  const stats = useMemo(() => {
+    let pending = 0;
+    let in_progress = 0;
+    let resolved = 0;
+    let verified = 0;
+    for (let i = 0; i < complaints.length; i++) {
+      const s = complaints[i].status;
+      if (s === 'pending') pending++;
+      else if (s === 'in_progress') in_progress++;
+      else if (s === 'resolved') resolved++;
+      else if (s === 'verified') verified++;
+    }
+    return {
+      total: complaints.length,
+      pending,
+      in_progress,
+      resolved,
+      verified,
+    };
+  }, [complaints]);
+
+  // Memoized search and filter with early-exit shortcuts
+  const filtered = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return complaints.filter((c) => {
+      const matchesStatus = statusFilter === 'all' || c.status === statusFilter;
+      if (!matchesStatus) return false;
+      if (!q) return true;
+      return (
+        (c.ticket_number && c.ticket_number.toLowerCase().includes(q)) ||
+        (c.description && c.description.toLowerCase().includes(q)) ||
+        (c.citizen_name && c.citizen_name.toLowerCase().includes(q))
+      );
+    });
+  }, [complaints, search, statusFilter]);
+
+  // O(1) Bounded DOM Windowing via client pagination (max 15 items mounted at a time)
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const paginatedComplaints = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, currentPage]);
 
   return (
     <div>
@@ -168,9 +201,72 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({ departmentSlug }
               </p>
             </div>
           )}
-          {filtered.map((c) => (
+          {paginatedComplaints.map((c) => (
             <ComplaintCard key={c.id} complaint={c} compact onClick={() => setSelected(c)} />
           ))}
+
+          {/* O(1) DOM Pagination Controls */}
+          {filtered.length > PAGE_SIZE && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '12px 16px',
+                background: 'var(--theme-component, #d9d9d9)',
+                borderRadius: 'var(--radius-md)',
+                border: '1.5px solid var(--theme-component-border, #bfbfbf)',
+                marginTop: 8,
+              }}
+            >
+              <span style={{ fontSize: '0.82rem', fontWeight: 600, color: 'var(--gray-600)' }}>
+                Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} of {filtered.length} complaints
+              </span>
+              <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                <button
+                  disabled={currentPage === 1}
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    padding: '6px 12px',
+                    borderRadius: 'var(--radius-sm, 6px)',
+                    border: '1.5px solid var(--theme-component-border, #bfbfbf)',
+                    background: currentPage === 1 ? 'rgba(0,0,0,0.05)' : '#fff',
+                    color: currentPage === 1 ? 'var(--gray-400)' : 'var(--gray-800)',
+                    cursor: currentPage === 1 ? 'not-allowed' : 'pointer',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                  }}
+                >
+                  <ChevronLeft size={15} /> Prev
+                </button>
+                <span style={{ fontSize: '0.82rem', fontWeight: 700, padding: '0 6px' }}>
+                  {currentPage} / {totalPages}
+                </span>
+                <button
+                  disabled={currentPage >= totalPages}
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    padding: '6px 12px',
+                    borderRadius: 'var(--radius-sm, 6px)',
+                    border: '1.5px solid var(--theme-component-border, #bfbfbf)',
+                    background: currentPage >= totalPages ? 'rgba(0,0,0,0.05)' : '#fff',
+                    color: currentPage >= totalPages ? 'var(--gray-400)' : 'var(--gray-800)',
+                    cursor: currentPage >= totalPages ? 'not-allowed' : 'pointer',
+                    fontSize: '0.8rem',
+                    fontWeight: 700,
+                  }}
+                >
+                  Next <ChevronRight size={15} />
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Side Panel / Mobile Modal for Resolution Form */}

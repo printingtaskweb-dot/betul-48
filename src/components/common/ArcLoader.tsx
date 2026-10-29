@@ -30,7 +30,8 @@ export interface ArcLoaderProps {
  * Features the official "B" logo emblem surrounded by 5 smooth harmonic
  * rotating arcs, real-time upload percentage, and status telemetry.
  */
-export const ArcLoader: React.FC<ArcLoaderProps> = ({
+export const ArcLoader: React.FC<ArcLoaderProps> = React.memo(({
+
   status = 'Processing…',
   subtitle,
   percent,
@@ -411,6 +412,8 @@ export const ArcLoader: React.FC<ArcLoaderProps> = ({
       </div>
     </div>
   );
-};
+});
+
+ArcLoader.displayName = "ArcLoader";
 
 export default ArcLoader;

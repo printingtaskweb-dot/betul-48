@@ -80,21 +80,33 @@ export const EMOJI_TO_ICON_MAP: Record<string, string> = {
   '📣': 'campaign',
 };
 
+// Fast memoization cache to reduce icon resolution complexity to O(1)
+const RESOLVE_CACHE = new Map<string, string>();
+
 export function resolveGoogleIcon(input?: string | null, fallback = 'apartment'): string {
   if (!input) return fallback;
+  const cached = RESOLVE_CACHE.get(input);
+  if (cached) return cached;
+
   const trimmed = input.trim();
+  let result = trimmed || fallback;
+
   if (EMOJI_TO_ICON_MAP[trimmed]) {
-    return EMOJI_TO_ICON_MAP[trimmed];
-  }
-  for (const [emoji, iconName] of Object.entries(EMOJI_TO_ICON_MAP)) {
-    if (trimmed.includes(emoji)) {
-      return iconName;
+    result = EMOJI_TO_ICON_MAP[trimmed];
+  } else {
+    for (const [emoji, iconName] of Object.entries(EMOJI_TO_ICON_MAP)) {
+      if (trimmed.includes(emoji)) {
+        result = iconName;
+        break;
+      }
+    }
+    if (result === trimmed && /^[\p{Extended_Pictographic}\u2600-\u27BF]/u.test(trimmed)) {
+      result = fallback;
     }
   }
-  if (/^[\p{Extended_Pictographic}\u2600-\u27BF]/u.test(trimmed)) {
-    return fallback;
-  }
-  return trimmed || fallback;
+
+  RESOLVE_CACHE.set(input, result);
+  return result;
 }
 
 export interface GoogleIconProps extends React.HTMLAttributes<HTMLSpanElement> {
@@ -112,7 +124,8 @@ export interface GoogleIconProps extends React.HTMLAttributes<HTMLSpanElement> {
  * Loaded via Google Fonts CDN in index.html
  * Automatically maps raw emoji strings (e.g. from database) to Material Symbols!
  */
-export const GoogleIcon: React.FC<GoogleIconProps> = ({
+export const GoogleIcon: React.FC<GoogleIconProps> = React.memo(({
+
   name,
   size = 20,
   color,
@@ -153,6 +166,8 @@ export const GoogleIcon: React.FC<GoogleIconProps> = ({
       {iconName}
     </span>
   );
-};
+});
+
+GoogleIcon.displayName = "GoogleIcon";
 
 export default GoogleIcon;

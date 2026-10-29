@@ -39,18 +39,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
 
   const { departments, complaints, staff, wards, loading, error: dataError, fetchData } = useMunicipalData();
 
-  if (authLoading || (loading && complaints.length === 0 && departments.length === 0)) {
-    return (
-      <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <ArcLoader
-          mode="inline"
-          status="Municipal Executive Dashboard"
-          subtitle="Loading real-time SLA governance, telemetry & ward mapping…"
-          theme="portal"
-        />
-      </div>
-    );
-  }
+
 
   const { viewer, myTier, isDeputyOrHigher, scopedComplaints, visibleDepartments } =
     useViewerScope(complaints, departments, wards);
@@ -158,6 +147,19 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
     setWardFilter(wardId);
     setActiveTab('complaints');
   };
+
+  if (authLoading || (loading && complaints.length === 0 && departments.length === 0)) {
+    return (
+      <div style={{ minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
+        <ArcLoader
+          mode="inline"
+          status="Municipal Executive Dashboard"
+          subtitle="Loading real-time SLA governance, telemetry & ward mapping…"
+          theme="portal"
+        />
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: 18, maxWidth: 1440, margin: '0 auto' }}>
