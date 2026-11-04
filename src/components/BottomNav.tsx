@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { motion } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
 import { Home, Newspaper, Plus, Search, ShieldCheck, User } from 'lucide-react';
 
@@ -112,20 +113,46 @@ export const BottomNav: React.FC = () => {
           const active = loc.pathname === item.path;
           const isFab = item.path === '/complaint/new';
           const content = (
-            <>
+            <motion.div
+              whileTap={{ scale: 0.92 }}
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                position: 'relative',
+              }}
+            >
               {isFab ? (
-                <div className="bottom-nav-fab" aria-hidden="true">
+                <motion.div
+                  className="bottom-nav-fab"
+                  aria-hidden="true"
+                  whileHover={{ scale: 1.1, rotate: 90 }}
+                  whileTap={{ scale: 0.9 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+                >
                   <Plus size={24} color="#FFFFFF" strokeWidth={2.4} />
-                </div>
+                </motion.div>
               ) : (
                 <div
                   className={`bottom-nav-icon-box ${active ? 'is-active' : ''}`}
                   style={{
-                    backgroundColor: active ? 'rgba(20, 108, 148, 0.1)' : 'transparent',
+                    position: 'relative',
                     color: active ? '#146C94' : 'var(--mute, #8E8A86)',
-                    transform: active ? 'scale(1.05)' : 'none',
                   }}
                 >
+                  {active && (
+                    <motion.div
+                      layoutId="bottom-nav-active-indicator"
+                      style={{
+                        position: 'absolute',
+                        inset: 0,
+                        borderRadius: 12,
+                        backgroundColor: 'rgba(20, 108, 148, 0.12)',
+                        zIndex: -1,
+                      }}
+                      transition={{ type: 'spring', stiffness: 450, damping: 30 }}
+                    />
+                  )}
                   {item.icon}
                 </div>
               )}
@@ -136,11 +163,12 @@ export const BottomNav: React.FC = () => {
                   fontWeight: active || isFab ? 700 : 500,
                   color: active || isFab ? '#146C94' : 'var(--mute, #8E8A86)',
                   lineHeight: 1.2,
+                  marginTop: 2,
                 }}
               >
                 {item.label}
               </span>
-            </>
+            </motion.div>
           );
 
           return (

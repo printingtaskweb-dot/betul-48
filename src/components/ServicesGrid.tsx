@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { motion, useReducedMotion, type Variants } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
 import { t } from '../lib/i18n';
 
@@ -214,8 +215,34 @@ function ensureGridStyles() {
   document.head.appendChild(style);
 }
 
+const containerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.04,
+      delayChildren: 0.05,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: { opacity: 0, y: 16, scale: 0.95 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 350,
+      damping: 24,
+    },
+  },
+};
+
 export const ServicesGrid: React.FC = () => {
   const { language } = useAuth();
+  const shouldReduceMotion = useReducedMotion();
 
   // Inject grid + hover styles once on first render
   React.useEffect(() => {
@@ -241,29 +268,44 @@ export const ServicesGrid: React.FC = () => {
         </Link>
       </div>
 
-      <div className="services-grid services-grid-responsive">
+      <motion.div
+        className="services-grid services-grid-responsive"
+        variants={shouldReduceMotion ? undefined : containerVariants}
+        initial={shouldReduceMotion ? undefined : 'hidden'}
+        whileInView={shouldReduceMotion ? undefined : 'visible'}
+        viewport={{ once: true, amount: 0.1 }}
+      >
         {SERVICES.map((svc) => {
           const label = t(language, svc.slug as any) || svc.slug;
 
           return (
-            <Link
+            <motion.div
               key={svc.slug}
-              to={svc.route}
-              className="service-item service-item-hoverable"
+              variants={shouldReduceMotion ? undefined : itemVariants}
+              whileHover={shouldReduceMotion ? undefined : { scale: 1.07, y: -4 }}
+              whileTap={shouldReduceMotion ? undefined : { scale: 0.94 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+              style={{ display: 'flex', flexDirection: 'column' }}
             >
-              {/* SVG icon in white card */}
-              <div className="service-icon">
-                {svc.svgIcon}
-              </div>
+              <Link
+                to={svc.route}
+                className="service-item service-item-hoverable"
+                style={{ height: '100%' }}
+              >
+                {/* SVG icon in white card */}
+                <div className="service-icon">
+                  {svc.svgIcon}
+                </div>
 
-              {/* Label always below */}
-              <span>
-                {label}
-              </span>
-            </Link>
+                {/* Label always below */}
+                <span>
+                  {label}
+                </span>
+              </Link>
+            </motion.div>
           );
         })}
-      </div>
+      </motion.div>
     </div>
   );
 };

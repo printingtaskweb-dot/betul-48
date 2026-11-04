@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion, useReducedMotion } from 'motion/react';
 import type { Complaint } from '../../lib/supabase';
 import { StatusBadge } from './StatusBadge';
 import { GoogleIcon } from './GoogleIcon';
@@ -12,6 +13,7 @@ interface ComplaintCardProps {
 
 export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
   ({ complaint, onClick, compact }) => {
+    const shouldReduceMotion = useReducedMotion();
     const dept = complaint.department;
     const hasGeo =
       complaint.latitude != null && complaint.longitude != null;
@@ -25,10 +27,13 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
     const interactive = !!onClick;
 
     return (
-      <div
+      <motion.div
         onClick={onClick}
         role={interactive ? 'button' : undefined}
         tabIndex={interactive ? 0 : undefined}
+        whileHover={interactive && !shouldReduceMotion ? { y: -2, scale: 1.008, boxShadow: '0 8px 24px rgba(0,0,0,0.1)' } : undefined}
+        whileTap={interactive && !shouldReduceMotion ? { scale: 0.985 } : undefined}
+        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
         onKeyDown={(e) => {
           if (!interactive) return;
           if (e.key === 'Enter' || e.key === ' ') {
@@ -264,7 +269,7 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 );

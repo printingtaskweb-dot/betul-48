@@ -1,0 +1,59 @@
+SR,Module,Description,Type,Priority,Panel,Screenshot,Status,Start date,Done date,Reason,Working Video,Completion Status
+1,Splash Screen & PWA UI,"Animated splash screen, mobile-first layout, fixed bottom navigation and glassmorphism cards across the portal",TASK,Low,Client,,Ready for Test,2026-11-01,2026-10-02,,,🧪 READY FOR TEST
+2,Home Page,"Home page with auto-rotating civic banners (Swachh Survekshan, water conservation, drainage, green waste, C&D waste), services grid and recent complaints",TASK,Medium,Client,,Ready for Test,2026-10-01,2026-10-03,,,🧪 READY FOR TEST
+3,Live Stats,"Live counters on home: total, pending, in-progress, resolved and citizen-verified complaints",TASK,Medium,Client,,Ready for Test,2026-10-02,2026-10-03,,,🧪 READY FOR TEST
+4,Language Toggle,Full English / Hindi language toggle with persistent preference on every page,TASK,Medium,Client,,Ready for Test,2026-10-02,2026-10-03,,,🧪 READY FOR TEST
+5,Auth - Login/Register,"Citizen login and registration with password show/hide, alert banners, tabs and Guest mode",TASK,High,Client,,Ready for Test,2026-10-03,2026-10-04,,,🧪 READY FOR TEST
+6,Complaint Form,"Report-issue form with department selection, description, name/phone (optional) and ticket number generation on submit",TASK,High,Client,,Ready for Test,2026-10-03,2026-10-06,,,🧪 READY FOR TEST
+7,Photo Upload,"Photo uploader for complaints with GPS-camera style watermark (lat/long, address, time, department) burned in; 4 MB cap, original file returned on failure",TASK,High,Client,,Ready for Test,2026-10-04,2026-10-06,,,🧪 READY FOR TEST
+8,Location Detect,Auto-detect GPS location with reverse geocoding (OpenStreetMap Nominatim) and manual location picker fallback,TASK,High,Client,,Completed (Prod),2026-10-04,2026-10-06,,,✅ COMPLETED
+9,Track Complaint,Track complaint by ticket number with status timeline and resolution photos,TASK,High,Client,,Ready for Test,2026-10-05,2026-10-07,,,🧪 READY FOR TEST
+10,Citizen Verification,Closed loop: Pending > In Progress > Resolved > Citizen Verification > Verified & Closed. Department staff must not be able to verify; only the citizen or admin,TASK,High,Client,,Completed (Prod),2026-10-05,2026-10-07,,,✅ COMPLETED
+11,Green Department Page,"Dedicated Green / Biodegradable waste page (fallen leaves, branches, garden waste, tree fall) with urgency tags",TASK,Medium,Client,,Ready for Test,2026-10-06,2026-10-07,,,🧪 READY FOR TEST
+12,Departments Setup,"Multi-department architecture for 8+ departments (Green, Water, Rain Water/Drainage, C&D, Clean, Roads, Streetlight, Sewage) with icons",TASK,High,Admin,,Ready for Test,2026-10-06,2026-10-08,,,🧪 READY FOR TEST
+13,Admin Login,Separate admin login page and protected admin dashboard route,TASK,High,Admin,,Ready for Test,2026-10-07,2026-10-08,,,🧪 READY FOR TEST
+14,Admin Dashboard,"Filter complaints by department and status, view photos and GPS map, update progress, upload resolution photo and close tickets",TASK,High,Admin,,Ready for Test,2026-10-07,2026-10-09,,,🧪 READY FOR TEST
+15,Resolution Form,Admin resolution form with remarks and resolution photo upload,TASK,Medium,Admin,,Ready for Test,2026-10-08,2026-10-09,,,🧪 READY FOR TEST
+16,Department Login,"Separate department staff login and dashboard (/dept/login, /dept/dashboard)",TASK,High,Department,,Ready for Test,2026-10-08,2026-10-09,,,🧪 READY FOR TEST
+17,Hierarchy,"Municipal hierarchy: Commissioner > Deputy Commissioner > Dept Head > Area Officer > Supervisor > Operational Staff, with tier-based permissions (field staff cannot allot/reassign)",TASK,High,Admin,,Ready for Test,2026-10-08,2026-10-10,,,🧪 READY FOR TEST
+18,Complaint Allotment,Allot / reassign complaints down the hierarchy using Allot modal; department head isolated to own department,TASK,High,Department,,Ready for Test,2026-10-09,2026-10-10,,,🧪 READY FOR TEST
+19,Dept Dashboard,Department selection and staff hierarchy breakdown in dashboard (latest commit),TASK,Medium,Department,,Ready for Test,2026-10-10,2026-10-12,,,🧪 READY FOR TEST
+20,Staff Registration,"Admin registers staff with staff code, ward, department and hierarchy role",TASK,High,Admin,,Ready for Test,2026-10-09,2026-10-10,,,🧪 READY FOR TEST
+21,Staff Approvals,Approve / reject pending staff registrations (table and page),TASK,Medium,Admin,,Ready for Test,2026-10-09,2026-10-10,,,🧪 READY FOR TEST
+22,User Directory,Admin directory of all users with roles and department linking,TASK,Medium,Admin,,Ready for Test,2026-10-10,2026-10-11,,,🧪 READY FOR TEST
+23,Municipal Admin Dashboard,"Executive overview with Power BI style charts: department workload and performance comparison, timings",TASK,Medium,Admin,,Ready for Test,2026-10-10,2026-10-12,,,🧪 READY FOR TEST
+24,Local News,"Community feed (news, alert, event, thought) submitted by citizens, shown only after admin approval; floating news widget",TASK,Medium,Client,,Ready for Test,2026-10-10,2026-10-12,,,🧪 READY FOR TEST
+25,News Moderation,"Admin moderation of local news: approve, reject with reason, delete",TASK,Medium,Admin,,Ready for Test,2026-10-10,2026-10-12,,,🧪 READY FOR TEST
+26,Database / RLS,"Supabase schema, storage, RLS fixes for user_profiles and department portal SQL scripts",TASK,High,Admin,,Ready for Test,2026-10-01,2026-10-10,,,🧪 READY FOR TEST
+27,Deployment,Vercel SPA rewrite (vercel.json) so all routes resolve to index.html,TASK,Low,Admin,,Ready for Test,2026-10-11,2026-10-11,,,🧪 READY FOR TEST
+28,Security - Supabase Keys,Supabase URL and publishable key are hardcoded as fallback in src/lib/supabase.ts (also used in AdminStaffRegistration). Move to .env only and verify RLS covers every table,BUG/ISSUE,High,Admin,,To Do,,,Found in code review,,⏳ TO DO
+29,README,README still points to betul-311 repo and lists only supabase_setup / supabase_v2 SQL. Update clone URL and list all SQL scripts in run order,BUG/ISSUE,Low,Admin,,Completed (Prod),,,Found in code review,,✅ COMPLETED
+30,Code Cleanup,File 'Municipaladministratordashboard .tsx' has a space in its name and the municipal dashboard exists twice (components and pages). Rename and de-duplicate,BUG/ISSUE,Low,Admin,,Not an issue,,,Found in code review,,➖ N/A
+31,Large Components,"DeptDashboard (2083 lines), MunicipalAdministratorDashboard (1420) and FloatingNewsWidget (1113) need splitting into smaller components",TASK,Low,Admin,,Not an issue,,,Maintainability solved ,,➖ N/A
+32,Hindi Translations,"Hindi/English keys cover only core screens; verify admin, dept and news screens are fully translated",TASK,Medium,Client,,To Do,,,this will be implemented once the sapp was completelyly build ,,⏳ TO DO
+33,Notifications,SMS / push / email notification to citizen when complaint status changes or is resolved,TASK,Medium,Client,,To Do,,,Not found in repo,,⏳ TO DO
+34,Complaint Reject Reason,Show rejection reason to citizen on Track page when a complaint is rejected,TASK,Medium,Client,,To Do,,,,,⏳ TO DO
+35,PWA Install,Add manifest and service worker so the app is installable and works offline,TASK,Low,Client,,To Do,,,No manifest found in public/,,⏳ TO DO
+36,Testing,"Add automated tests (login, complaint submit, allotment, verification) and run lint/build in CI",TASK,Medium,Admin,,To Do,,,,,⏳ TO DO
+37,GPs phtoto tag ,location cordinates or location information on images whilecapturing the photo of complaint ,TASK,High,Client,,Completed (Prod),2026-10-11,2026-10-13,,,✅ COMPLETED
+38,UI/UX,UI CHANGED,TASK,High,Client,,Not an issue,2026-10-01,2026-10-13,Needs approval,,➖ N/A
+39,Complaint Queues & Dashboards,"Department heads and authorized staff use specialized screens (such as the Department Dashboard D01, Complaint Queue D02, and Complaint Workspace D03) to monitor pending work, unassigned tickets, and overdue tasks.",TASK,High,Department,,Ready for Test,2026-10-08,2026-10-13,slightly complete ,,🧪 READY FOR TEST
+40,Andriod app,Needs to Change the website into apk or converts full code into kie react flutter or others programing language ,BUG/ISSUE,High,all  3,,To Do,2026-10-08,2026-10-13,,,⏳ TO DO
+41,Push notification on Andriod app,Firebase acount created code written need bug fixing on website ,TASK,Medium,department & and Admin,,In Progress,2026-10-13,2026-10-15,,,🔄 IN PROGRESS
+42,IOS APPLICATION ,testing mode ,TASK,Medium,All 3,,In Progress,2026-10-11,2026-10-14,,,🔄 IN PROGRESS
+43,Search filter by location,In testing mode ,TASK,High,department & and Admin,,Ready for Test,2026-10-11,2026-10-14,,,🧪 READY FOR TEST
+44,task alolocation ,comleted ,TASK,Medium,department & and Admin,,Ready for Test,2026-10-12,2026-10-13,,,🧪 READY FOR TEST
+45,reasiging the task ,completed ,TASK,Medium,Department,,In Progress,2026-10-12,2026-10-13,,,🔄 IN PROGRESS
+46,Ward registration ,working,TASK,Medium,department & and Admin,,Ready for Test,2026-10-14,2026-10-13,,,🧪 READY FOR TEST
+47,Control room page ,creating pending ,TASK,Medium,Department,,In Progress,2026-10-14,2026-10-15,,,🔄 IN PROGRESS
+48,Bulk task allocation & bulk ward allocation,select task or filter by ward department and choose department  worker or allt the taskl same for ward allcation to allocarte  the department staff ,TASK,Medium,department & and Admin,,Ready for Test,2026-10-14,2026-10-16,,,🧪 READY FOR TEST
+49,Search near by complaint ,searching near by complaint to allot task ward wise ,TASK,Medium,department & and Admin,,Ready for Test,2026-10-12,2026-10-16,,,🧪 READY FOR TEST
+50,ward registration ,registering ward of the district ,TASK,Medium,department & and Admin,,Completed (Prod),2026-10-14,2026-10-15,,,✅ COMPLETED
+51,local news & thought,post news or thoughts upload photo ,TASK,Medium,Client,,Completed (Prod),2026-10-14,2026-10-15,,,✅ COMPLETED
+52, module for approving , post news or thoughts upload photo  recives on admin dahboard or this will be only visible once it was approve by the admin ,TASK,Critical,Admin,,Completed (Prod),2026-10-14,2026-10-15,,,✅ COMPLETED
+53, location detecter ,location cordinates or location information on images whilecapturing the photo of complaint ,TASK,Low,All 3,,Completed (Prod),2026-10-14,2026-10-16,,,✅ COMPLETED
+54,location tag on photos ,when the user is upload or raising complaint with gpstaged photo ,TASK,Medium,All 3,,Completed (Prod),2026-10-14,2026-10-17,,,✅ COMPLETED
+55,photo uplod by department ,when the department staff resolve the issue hee need s to upload the photo ,TASK,Medium,Department,,Completed (Prod),2026-10-14,2026-10-16,,,✅ COMPLETED
+56,control room page ,"can verifer relocate or if wrong than then cahnge the route to correct one  and h0 , h1 , h2 ,or h3 ",TASK,Medium,Department,,Completed (Prod),2026-10-14,2026-10-16,,,✅ COMPLETED
+57,verifier page created ,if the complaints was reolved but verifed by the complaint user then he can reassign the complaint to higher authority ,TASK,Low,Department,,Completed (Prod),2026-10-14,2026-10-17,,,✅ COMPLETED
+58,employe leaderboard ,view complaint adn  all the employeee regiseterd complaint and user so then we can see overall performance of ech employee on the bnasis of complaint resolve or others things ,TASK,Medium,Admin,,Completed (Prod),2026-10-14,2026-10-17,,,✅ COMPLETED

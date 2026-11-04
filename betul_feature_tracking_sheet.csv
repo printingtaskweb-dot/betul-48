@@ -1,0 +1,35 @@
+Section,Category,Feature / Requirement,Status,Implementation Route / File,Notes / Verification
+Part 1,Public / Guest,1.1 Language Toggle Button (EN/HI),DONE,src/components/Navbar.tsx & src/lib/i18n.ts,Persists in localStorage. Instantly translates entire portal.
+Part 1,Public / Guest,1.2 Citizen Login / Auth Modal,DONE,src/pages/AuthPage.tsx,Phone and password authentication via Supabase Auth + user_profiles.
+Part 1,Public / Guest,1.3 Guest Browsing Mode,DONE,src/pages/Home.tsx,Unauthenticated users can view banners services grid notices news and track complaints.
+Part 1,Public / Guest,1.4 Hero Report Issue Button,DONE,src/pages/Home.tsx & src/pages/ComplaintForm.tsx,Prominent CTA redirecting to /complaint (or /auth if logged out).
+Part 2,Citizen Flows,2.1 Track Complaint & Live Timeline,DONE,src/pages/TrackComplaint.tsx,4-stage visual timeline (Pending -> In Progress -> Resolved -> Verified & Closed) with remarks.
+Part 2,Citizen Flows,2.2 Closed-Loop Citizen Verification,DONE,src/pages/TrackComplaint.tsx,Citizen can click Verify & Close or dispute with Not Resolved / Reassign.
+Part 2,Citizen Flows,2.3 Local News & Community Feed,DONE,src/pages/LocalNewsPage.tsx,Citizens submit News/Alert/Event/Thought; publishes after admin moderation.
+Part 2,Citizen Flows,Citizen Profile & Past Complaints,DONE,src/pages/ProfilePage.tsx,Multi-clause matching (user ID + phone + local device ticket cache).
+Part 3,Department Staff,3.1 Department Staff Login,DONE,src/pages/DeptLogin.tsx (/dept/login),Separate login route verifying approved staff status in user_profiles.
+Part 3,Department Staff,3.2 Department Dashboard (D01 D02 D03),DONE,src/pages/DeptDashboard.tsx,D01 Overview cards; D02 Complaint Queue; D03 Complaint Workspace.
+Part 3,Department Staff,3.3 Complaint Allotment to Staff,DONE,src/components/dept/AllotModal.tsx,Head/Supervisor assigns tasks to subordinate staff with instructions and deadline.
+Part 3,Department Staff,3.4 Task Reassignment,DONE,src/components/dept/AllotModal.tsx,Supervisors can move assigned complaint to another officer with mandatory reason.
+Part 3,Department Staff,3.5 Bulk Task & Bulk Ward Allocation,DONE,src/components/departments/LocationFilterPanel.tsx,Multi-select checkbox batch-allotment across wards and departments.
+Part 3,Department Staff,3.6 Search Nearby Complaints by Location,DONE,src/pages/admin/municipal/components/RadarPanel.tsx,GPS Radar scanner with haversine calculation for fieldwork planning.
+Part 3,Department Staff,3.7 Resolution Form with Photo Proof,DONE,src/components/admin/ResolutionForm.tsx,Staff uploads resolution remarks and GPS watermarked proof photo.
+Part 3,Department Staff,3.8 Control Room Map & Rerouting,DONE,src/pages/ControlRoomDashboard.tsx,Live map visualizer; supervisors reroute misclassified tickets and set priority (H0-H3).
+Part 3,Department Staff,3.9 Verifier Independent Review Page,DONE,src/pages/VerifierDashboard.tsx,Review disputed tickets; verifier cannot verify own resolutions.
+Part 4,Admin / Municipal,4.1 Admin Login,DONE,src/pages/admin/AdminLogin.tsx (/admin/login),Protected administrator route with role and permission validation.
+Part 4,Admin / Municipal,4.2 Municipal Administrator Dashboard,DONE,src/pages/admin/MunicipalAdministratorDashboard.tsx,Executive overview SLA metrics department comparison charts and task allocation.
+Part 4,Admin / Municipal,4.3 Ward Registration & Management,DONE,src/components/departments/WardManager.tsx,Register municipal wards with numbers names center GPS coordinates and radius.
+Part 4,Admin / Municipal,4.4 Department Configuration,DONE,src/lib/supabase.ts & src/pages/GreenDepartmentPage.tsx,All civic departments configured with slugs icons and linked staff.
+Part 4,Admin / Municipal,4.5 Staff Registration,DONE,src/components/admin/AdminStaffRegistration.tsx,Admin creates staff credentials with Pending Approval status.
+Part 4,Admin / Municipal,4.6 Municipal Hierarchy Engine,DONE,src/lib/hierarchy.ts,Strict 6-tier hierarchy (Commissioner -> Deputy -> Head -> Area -> Supervisor -> Worker).
+Part 4,Admin / Municipal,4.7 Staff Approvals & Role Assignment,DONE,src/pages/admin/StaffApprovals.tsx,Approve/reject pending staff applications; manage designations.
+Part 4,Admin / Municipal,4.8 User Directory,DONE,src/components/admin/AdminUserDirectory.tsx,Search and filter all citizens staff and administrators; manage roles.
+Part 4,Admin / Municipal,4.9 Admin Complaint Management,DONE,src/components/admin/ComplaintTable.tsx,Full complaint list with single-pass stats 15-item pagination and resolution panel.
+Part 4,Admin / Municipal,4.10 Employee Leaderboard,DONE,src/pages/admin/municipal/components/EmployeeLeaderboardTab.tsx,Rankings by complaints assigned resolved and resolution speed.
+Part 4,Admin / Municipal,4.11 News Moderation Panel,DONE,src/components/admin/AdminNewsModeration.tsx,Moderate community posts before public display on homepage.
+Part 4,Admin / Municipal,4.12 Mobile Feature-by-Feature Admin Hub,DONE,src/pages/admin/AdminDashboard.tsx,Dedicated mobile UI with 8 discrete feature cards back bar and bottom dock.
+Part 5,Shared Core,5.1 Live Stats Counters,DONE,src/pages/Home.tsx & src/pages/admin/municipal/components/KpiGrid.tsx,Real-time animated GSAP count-up numbers for all complaint states.
+Part 5,Shared Core,5.2 Photo Upload with GPS Watermark,DONE,src/lib/watermarkPhoto.ts,Embedded GPS coordinates address and timestamp (optimized to 1200px / 0.80 quality).
+Part 5,Shared Core,5.3 Harmonic Logo Arc Loader,DONE,src/components/common/ArcLoader.tsx,5-arc harmonic spinner with live byte upload percentage and zero blackout.
+Part 5,Shared Core,5.4 Google Icons & Typography Engine,DONE,src/components/common/GoogleIcon.tsx & index.html,Google Material Symbols Rounded and Plus Jakarta Sans / Inter CDN.
+Part 5,Shared Core,5.5 Push Notifications (Firebase/FCM),PARTIAL,src/lib/firebase.ts & src/components/admin/PushNotificationSender.tsx,Token generation and admin sender ready; waiting for production VAPID key.

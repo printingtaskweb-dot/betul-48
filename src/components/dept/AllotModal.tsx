@@ -1,6 +1,7 @@
 import { GoogleIcon } from '../common/GoogleIcon';
 // src/components/dept/AllotModal.tsx
 import React, { useMemo, useState } from 'react';
+import { motion, useReducedMotion } from 'motion/react';
 import { Send, ArrowRight, ShieldAlert, Search } from 'lucide-react';
 import {
   getTier,
@@ -203,11 +204,15 @@ export function AllotModal({
     }
   };
 
+  const shouldReduceMotion = useReducedMotion();
   const border = '1.5px solid var(--theme-component-border, #bfbfbf)';
   const primaryColor = 'var(--theme-primary, #146C94)';
 
   return (
-    <div
+    <motion.div
+      initial={shouldReduceMotion ? undefined : { opacity: 0 }}
+      animate={shouldReduceMotion ? undefined : { opacity: 1 }}
+      transition={{ duration: 0.2 }}
       style={{
         position: 'fixed',
         inset: 0,
@@ -220,7 +225,10 @@ export function AllotModal({
         padding: 16,
       }}
     >
-      <div
+      <motion.div
+        initial={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.94, y: 15 }}
+        animate={shouldReduceMotion ? undefined : { opacity: 1, scale: 1, y: 0 }}
+        transition={{ type: 'spring', stiffness: 350, damping: 25 }}
         style={{
           background: 'var(--theme-component, #d9d9d9)',
           border: '2px solid var(--theme-component-border, #bfbfbf)',
@@ -789,7 +797,7 @@ export function AllotModal({
             </div>
           </div>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

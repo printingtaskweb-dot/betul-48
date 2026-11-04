@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { motion, useReducedMotion, type Variants } from 'motion/react';
 import { supabase } from '../lib/supabase';
 import type { Complaint } from '../lib/supabase';
 import { StatusBadge } from './common/StatusBadge';
@@ -8,8 +9,34 @@ import { useAuth } from '../contexts/AuthContext';
 import { t } from '../lib/i18n';
 import { MapPin } from 'lucide-react';
 
+const feedContainerVariants: Variants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.08,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const feedItemVariants: Variants = {
+  hidden: { opacity: 0, y: 15, scale: 0.98 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    scale: 1,
+    transition: {
+      type: 'spring',
+      stiffness: 300,
+      damping: 24,
+    },
+  },
+};
+
 export const RecentComplaints: React.FC = () => {
   const { language } = useAuth();
+  const shouldReduceMotion = useReducedMotion();
   const [complaints, setComplaints] = useState<Complaint[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -35,17 +62,6 @@ export const RecentComplaints: React.FC = () => {
 
   if (complaints.length === 0) return null;
 
-  const onCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    const px = (e.clientX - r.left) / r.width - 0.5;
-    const py = (e.clientY - r.top) / r.height - 0.5;
-    e.currentTarget.style.transform = `perspective(1000px) rotateX(${-py * 5}deg) rotateY(${px * 5}deg) translateX(4px)`;
-  };
-
-  const onCardMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.currentTarget.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateX(0px)';
-  };
-
   return (
     <div style={{ paddingBottom: 24 }}>
       <div className="section-header" style={{ padding: '0 20px', marginTop: 24, marginBottom: 16 }}>
@@ -58,13 +74,21 @@ export const RecentComplaints: React.FC = () => {
         </Link>
       </div>
 
-      <div className="complaints-list">
+      <motion.div
+        className="complaints-list"
+        variants={shouldReduceMotion ? undefined : feedContainerVariants}
+        initial={shouldReduceMotion ? undefined : 'hidden'}
+        whileInView={shouldReduceMotion ? undefined : 'visible'}
+        viewport={{ once: true, amount: 0.1 }}
+      >
         {complaints.map((c) => (
           <Link key={c.id} to={`/track?ticket=${c.ticket_number}`} style={{ textDecoration: 'none' }}>
-            <div
+            <motion.div
               className="complaint-card"
-              onMouseMove={onCardMouseMove}
-              onMouseLeave={onCardMouseLeave}
+              variants={shouldReduceMotion ? undefined : feedItemVariants}
+              whileHover={shouldReduceMotion ? undefined : { x: 4, scale: 1.01 }}
+              whileTap={shouldReduceMotion ? undefined : { scale: 0.99 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 25 }}
             >
               {/* Dept icon */}
               <div className="complaint-icon">
@@ -89,10 +113,10 @@ export const RecentComplaints: React.FC = () => {
               </div>
 
               <StatusBadge status={c.status} />
-            </div>
+            </motion.div>
           </Link>
         ))}
-      </div>
+      </motion.div>
     </div>
   );
 };
