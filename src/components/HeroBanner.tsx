@@ -21,7 +21,7 @@ const HERO_CARDS: HeroCardData[] = [
     className: 'card card-1',
     rot: -9,
     depth: 14,
-    img: '/cleaning.png',
+    img: '/hero/greenwaste.jpg',
     alt: 'Sanitation & Cleaning',
   },
   {
