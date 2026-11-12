@@ -45,7 +45,7 @@ const HERO_CARDS: HeroCardData[] = [
     className: 'card card-4',
     rot: 3,
     depth: 12,
-    img: '/street_light.png',
+    img: '/hero/streetlights.jpg',
     alt: 'Street Lighting',
   },
   {
@@ -69,7 +69,7 @@ const HERO_CARDS: HeroCardData[] = [
     className: 'card card-7',
     rot: 7,
     depth: 9,
-    img: '/C&D.png',
+    img: '/hero/constructionsite.jpg',
     alt: 'C&D Waste Clearance',
   },
   {
