@@ -196,8 +196,8 @@ export const ComplaintForm: React.FC = () => {
     if (!originalFile) {
       return setError(
         language === 'hi'
-          ? 'कृपया समस्या का फोटो अपलोड करें।'
-          : 'Please attach a photo.'
+          ? 'कृपया समस्या का लाइव फोटो खींचें।'
+          : 'Please capture a live photo of the issue.'
       );
     }
     if (!description.trim()) {
@@ -736,10 +736,13 @@ export const ComplaintForm: React.FC = () => {
             />
           </div>
 
-          {/* Photo — GPS camera style */}
+          {/* Photo — Live GPS camera */}
           <div style={{ marginBottom: 28 }}>
             <label style={labelStyle}>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 15 }}>photo_camera</span>{language === 'hi' ? 'फोटो अपलोड करें' : 'Upload Photo'} *</span>
+              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                <span className="material-symbols-rounded" style={{ fontSize: 15 }}>photo_camera</span>
+                {language === 'hi' ? 'लाइव कैमरा फोटो' : 'Live Camera Photo'} *
+              </span>
             </label>
 
             <PhotoUploader

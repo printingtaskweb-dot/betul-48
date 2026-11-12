@@ -616,7 +616,10 @@ export const GreenDepartmentPage: React.FC = () => {
             {/* Photo — GPS camera style (moved above location, no gating) */}
             <div style={{ marginBottom: 22 }}>
               <label style={labelStyle}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 15 }}>photo_camera</span>{t(language, 'uploadPhoto')} *</span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                  <span className="material-symbols-rounded" style={{ fontSize: 15 }}>photo_camera</span>
+                  {language === 'hi' ? 'लाइव कैमरा फोटो' : 'Live Camera Photo'} *
+                </span>
               </label>
 
               <div style={{ marginTop: 8 }}>

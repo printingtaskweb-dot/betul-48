@@ -185,19 +185,41 @@ function ensureGridStyles() {
   const style = document.createElement('style');
   style.id = GRID_STYLE_ID;
   style.textContent = `
+    .services-grid-container {
+      max-width: 1080px;
+      margin: 12px auto 0;
+      padding: 0 20px;
+      box-sizing: border-box;
+    }
     .services-grid-responsive {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 12px;
+      gap: 10px 6px;
     }
-    @media (min-width: 640px) {
+    @media (min-width: 768px) {
+      .services-grid-container {
+        background: #ffffff;
+        border-radius: 24px;
+        border: 1px solid rgba(20, 108, 148, 0.1);
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        padding: 24px 28px !important;
+        margin-top: 24px;
+      }
       .services-grid-responsive {
         grid-template-columns: repeat(6, 1fr);
+        gap: 16px 14px;
       }
-    }
-    @media (min-width: 900px) {
-      .services-grid-responsive {
-        grid-template-columns: repeat(5, 1fr);
+      .services-grid-container .service-item {
+        background: #f8fafc;
+        border: 1px solid rgba(20, 108, 148, 0.08);
+        border-radius: 16px;
+        padding: 14px 8px;
+        gap: 8px;
+        transition: background 0.25s ease, border-color 0.25s ease;
+      }
+      .services-grid-container .service-item:hover {
+        background: #f0f7fa;
+        border-color: rgba(20, 108, 148, 0.28);
       }
     }
   `;
@@ -239,7 +261,7 @@ export const ServicesGrid: React.FC = () => {
   }, []);
 
   return (
-    <div style={{ padding: '0 20px', marginTop: 8 }}>
+    <div className="services-grid-container">
       <div className="section-header" style={{ padding: 0 }}>
         <div className="left">
           <h3>

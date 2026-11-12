@@ -1,6 +1,7 @@
-import React, { useRef, useState } from 'react';
-import { Camera, Upload, X } from 'lucide-react';
+import React, { useRef } from 'react';
+import { Camera, X, ShieldAlert } from 'lucide-react';
 import { ArcLoader } from './ArcLoader';
+import { useAuth } from '../../contexts/AuthContext';
 
 interface PhotoUploaderProps {
   onFileSelected: (file: File) => void;
@@ -23,22 +24,21 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
   photoCount,
   disabled,
 }) => {
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
-  const [dragging, setDragging] = useState(false);
+
+  let language = 'en';
+  try {
+    const auth = useAuth();
+    if (auth?.language) language = auth.language;
+  } catch {
+    language = 'en';
+  }
 
   const handleFile = (file: File) => {
     if (disabled || uploading) return;
     if (file && file.type.startsWith('image/')) {
       onFileSelected(file);
     }
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) handleFile(file);
   };
 
   if (preview) {
@@ -67,7 +67,8 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
         {onClear && !uploading && (
           <button
             onClick={onClear}
-            aria-label="Remove photo"
+            aria-label="Retake photo"
+            title={language === 'hi' ? 'फोटो दोबारा खींचें' : 'Retake Photo'}
             style={{
               position: 'absolute',
               top: 8,
@@ -119,15 +120,7 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
 
   return (
     <div>
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        style={{ display: 'none' }}
-        onChange={(e) =>
-          e.target.files?.[0] && handleFile(e.target.files[0])
-        }
-      />
+      {/* Live camera capture input only (environment = rear camera on mobile) */}
       <input
         ref={cameraInputRef}
         type="file"
@@ -140,21 +133,12 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
       />
 
       <div
-        onDragOver={(e) => {
-          e.preventDefault();
-          if (!disabled && !uploading) setDragging(true);
-        }}
-        onDragLeave={() => setDragging(false)}
-        onDrop={handleDrop}
         style={{
-          border: dragging
-            ? '2px dashed var(--burgundy, #146C94)'
-            : '2px dashed #d1d5db',
-          borderRadius: 12,
+          border: '2px dashed #cbd5e1',
+          borderRadius: 14,
           padding: '24px 16px',
           textAlign: 'center',
-          background: dragging ? 'rgba(20, 108, 148, 0.05)' : '#f9fafb',
-          transition: 'border-color 0.15s, background-color 0.15s',
+          background: '#f8fafc',
           opacity: disabled ? 0.6 : 1,
         }}
       >
@@ -162,11 +146,10 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
           style={{
             display: 'flex',
             justifyContent: 'center',
-            gap: 12,
-            marginBottom: 12,
+            marginBottom: 10,
           }}
         >
-          {/* Camera button — primary on mobile */}
+          {/* Live Camera Button */}
           <button
             type="button"
             disabled={disabled || uploading}
@@ -175,44 +158,40 @@ export const PhotoUploader: React.FC<PhotoUploaderProps> = ({
             style={{
               display: 'inline-flex',
               alignItems: 'center',
-              gap: 8,
-              padding: '10px 18px',
-              fontSize: '0.85rem',
+              gap: 10,
+              padding: '12px 24px',
+              fontSize: '0.92rem',
+              fontWeight: 600,
+              borderRadius: 12,
               cursor: disabled || uploading ? 'not-allowed' : 'pointer',
+              boxShadow: '0 4px 14px -3px rgba(20, 108, 148, 0.35)',
             }}
           >
-            <Camera size={18} />
-            <span>Take Photo</span>
-          </button>
-
-          {/* File picker button */}
-          <button
-            type="button"
-            disabled={disabled || uploading}
-            onClick={() => fileInputRef.current?.click()}
-            className="btn-outline"
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              padding: '10px 18px',
-              fontSize: '0.85rem',
-              cursor: disabled || uploading ? 'not-allowed' : 'pointer',
-            }}
-          >
-            <Upload size={18} />
-            <span>Choose File</span>
+            <Camera size={20} />
+            <span>
+              {language === 'hi' ? 'लाइव फोटो लें (कैमरा)' : 'Take Live Photo (Camera)'}
+            </span>
           </button>
         </div>
 
         <p
           style={{
             fontSize: '0.8rem',
-            color: '#6b7280',
-            margin: 0,
+            color: '#64748b',
+            margin: '8px 0 0',
+            lineHeight: 1.4,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
           }}
         >
-          Photo proof will be stamped with real-time GPS coordinates and timestamp
+          <ShieldAlert size={14} color="#146C94" style={{ flexShrink: 0 }} />
+          <span>
+            {language === 'hi'
+              ? 'केवल कैमरे से खींची गई लाइव फोटो मान्य है। गैलरी से फ़ाइल अपलोड प्रतिबंधित है।'
+              : 'Only live camera capture is accepted. Gallery & file uploads are disabled.'}
+          </span>
         </p>
       </div>
     </div>

@@ -309,95 +309,107 @@ export const LocalNewsSection: React.FC = () => {
   };
 
   return (
-    <section className="local-news-section" aria-labelledby="local-news-title">
+    <section className="local-news-section" aria-labelledby="local-news-title" style={{ maxWidth: 1080, margin: '28px auto 0', padding: '0 20px', boxSizing: 'border-box' }}>
       <style>{`
         .local-news-card {
           cursor: pointer;
           display: flex;
           flex-direction: column;
-          border-radius: 18px;
+          border-radius: 14px;
           overflow: hidden;
           background: #ffffff;
-          border: 1px solid rgba(20, 108, 148, 0.14);
-          box-shadow: 0 4px 18px rgba(0, 0, 0, 0.04);
-          transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+          border: 1px solid rgba(20, 108, 148, 0.12);
+          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+          transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+          height: 100%;
         }
         .local-news-card:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 10px 28px rgba(20, 108, 148, 0.12);
-          border-color: rgba(20, 108, 148, 0.35);
+          transform: translateY(-2px);
+          box-shadow: 0 6px 18px rgba(20, 108, 148, 0.1);
+          border-color: rgba(20, 108, 148, 0.3);
         }
-        /* Highlighted photo container */
+        .local-news-card h3 {
+          margin: 0 0 4px;
+          font-size: 13.5px;
+          line-height: 1.3;
+          font-weight: 600;
+          display: -webkit-box;
+          -webkit-line-clamp: 1;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+        }
+        /* Highlighted photo container - compact height */
         .local-news-photo-wrapper {
           position: relative;
           width: 100%;
-          height: 210px;
+          height: 115px;
           overflow: hidden;
           background: linear-gradient(135deg, #e2f0f7, #d0e7f3);
-          border-bottom: 1.5px solid rgba(20, 108, 148, 0.12);
+          border-bottom: 1px solid rgba(20, 108, 148, 0.1);
         }
         .local-news-photo {
           width: 100%;
           height: 100%;
           object-fit: cover;
           display: block;
-          transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+          transition: transform 0.3s ease;
         }
         .local-news-card:hover .local-news-photo {
-          transform: scale(1.04);
+          transform: scale(1.03);
         }
         .local-news-photo-badge {
           position: absolute;
-          bottom: 10px;
-          right: 10px;
+          bottom: 6px;
+          right: 6px;
           display: inline-flex;
           align-items: center;
-          gap: 5px;
-          background: rgba(15, 23, 42, 0.78);
-          backdrop-filter: blur(8px);
-          -webkit-backdrop-filter: blur(8px);
+          gap: 4px;
+          background: rgba(15, 23, 42, 0.75);
+          backdrop-filter: blur(6px);
+          -webkit-backdrop-filter: blur(6px);
           color: #ffffff;
-          font-size: 11px;
+          font-size: 9.5px;
           font-weight: 600;
-          padding: 4px 10px;
+          padding: 2px 7px;
           border-radius: 999px;
-          box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+          box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
           border: 1px solid rgba(255, 255, 255, 0.2);
         }
         .local-news-card-content {
-          padding: 16px;
+          padding: 10px 12px;
           display: flex;
           flex-direction: column;
           flex: 1;
+          justify-content: space-between;
         }
         .local-news-author-row {
           display: flex;
           align-items: center;
-          gap: 6px;
-          margin-bottom: 8px;
-          font-size: 0.82rem;
+          gap: 5px;
+          margin-bottom: 5px;
+          font-size: 0.74rem;
           color: #334155;
         }
         .local-news-author-avatar {
-          width: 26px;
-          height: 26px;
+          width: 20px;
+          height: 20px;
           border-radius: 50%;
           background: linear-gradient(135deg, #146C94, #19A7CE);
           color: #fff;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 0.72rem;
+          font-size: 0.65rem;
           font-weight: 700;
         }
         .local-news-follow-btn {
           margin-left: auto;
           display: inline-flex;
           align-items: center;
-          gap: 4px;
-          padding: 3px 9px;
+          gap: 3px;
+          padding: 2px 7px;
           border-radius: 99px;
-          font-size: 0.72rem;
+          font-size: 0.66rem;
           font-weight: 700;
           border: 1px solid #146C94;
           background: #146C94;
@@ -420,28 +432,32 @@ export const LocalNewsSection: React.FC = () => {
           color: #dc2626;
         }
         .local-news-copy-wrap {
-          margin: 0 0 10px;
+          margin: 0 0 6px;
         }
         .local-news-copy {
           margin: 0;
           color: #334155;
-          font-size: 13.5px;
-          line-height: 1.5;
+          font-size: 11.5px;
+          line-height: 1.35;
           word-break: break-word;
-          white-space: pre-wrap;
+          display: -webkit-box;
+          -webkit-line-clamp: 2;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
+          min-height: 2.7em;
         }
         .local-news-read-more-btn {
           background: transparent;
           border: none;
           padding: 2px 0 0;
           color: #146C94;
-          font-size: 12px;
+          font-size: 11px;
           font-weight: 700;
           display: inline-flex;
           align-items: center;
-          gap: 4px;
+          gap: 3px;
           cursor: pointer;
-          margin-top: 5px;
+          margin-top: 3px;
           transition: color 0.15s;
         }
         .local-news-read-more-btn:hover {
@@ -452,20 +468,26 @@ export const LocalNewsSection: React.FC = () => {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-top: 10px;
-          padding-top: 10px;
-          border-top: 1px solid rgba(0, 0, 0, 0.06);
-          font-size: 0.75rem;
+          margin-top: 6px;
+          padding-top: 6px;
+          border-top: 1px solid rgba(0, 0, 0, 0.05);
+          font-size: 0.7rem;
           color: #64748b;
         }
         .local-news-stat-item {
           display: flex;
           align-items: center;
-          gap: 4px;
+          gap: 3px;
         }
         @media (max-width: 767px) {
           .local-news-photo-wrapper {
-            height: 190px;
+            height: 90px;
+          }
+          .local-news-card-content {
+            padding: 8px 10px;
+          }
+          .local-news-heading h2 {
+            font-size: 18px !important;
           }
         }
       `}</style>
@@ -499,153 +521,225 @@ export const LocalNewsSection: React.FC = () => {
           <p>{language === 'hi' ? 'स्थानीय अपडेट अभी लोड नहीं हो सके।' : 'Local updates are unavailable right now.'}</p>
         </div>
       ) : posts.length ? (
-        <div className="local-news-grid">
-          {posts.map((post) => {
-            const author = post.author;
-            const isOfficial =
-              author?.role === 'admin' ||
-              author?.role === 'municipal_administrator' ||
-              author?.role === 'dept_staff' ||
-              author?.authority_role != null;
+        <>
+          {/* ── Desktop View: 3-column Grid ── */}
+          <div className="local-news-grid desktop-grid">
+            {posts.map((post) => {
+              const author = post.author;
+              const isOfficial =
+                author?.role === 'admin' ||
+                author?.role === 'municipal_administrator' ||
+                author?.role === 'dept_staff' ||
+                author?.authority_role != null;
 
-            const isExpanded = expandedPostIds.has(post.id);
-            const isLong = post.content && post.content.length > 115;
-            const displayText = !isLong || isExpanded
-              ? post.content
-              : `${post.content.slice(0, 115).trim()}...`;
+              const isExpanded = expandedPostIds.has(post.id);
+              const isLong = post.content && post.content.length > 115;
+              const displayText = !isLong || isExpanded
+                ? post.content
+                : `${post.content.slice(0, 115).trim()}...`;
 
-            return (
-              <article
-                className="local-news-card"
-                key={post.id}
-                onClick={openNews}
-              >
-                {/* ── HIGHLIGHTED USER-UPLOADED IMAGE ── */}
-                {post.photo_url && (
-                  <div className="local-news-photo-wrapper">
-                    <img
-                      className="local-news-photo"
-                      src={post.photo_url}
-                      alt={post.title || post.content}
-                      loading="lazy"
-                    />
-                    <div className="local-news-photo-badge">
-                      <Camera size={12} />
-                      <span>{language === 'hi' ? 'नागरिक फोटो' : 'Citizen Photo'}</span>
+              return (
+                <article
+                  className="local-news-card"
+                  key={post.id}
+                  onClick={openNews}
+                >
+                  {/* ── HIGHLIGHTED USER-UPLOADED IMAGE ── */}
+                  {post.photo_url && (
+                    <div className="local-news-photo-wrapper">
+                      <img
+                        className="local-news-photo"
+                        src={post.photo_url}
+                        alt={post.title || post.content}
+                        loading="lazy"
+                      />
+                      <div className="local-news-photo-badge">
+                        <Camera size={11} />
+                        <span>{language === 'hi' ? 'नागरिक फोटो' : 'Citizen Photo'}</span>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                <div className="local-news-card-content">
-                  <div className="local-news-meta">
-                    <span className={`local-news-category local-news-category-${post.category}`}>
-                      {CATEGORY_LABELS[post.category][language === 'hi' ? 'hi' : 'en']}
-                    </span>
-                    <span className="local-news-time">{formatDate(post.created_at)}</span>
-                  </div>
-
-                  {/* Author Name, Role, & Follow Button */}
-                  <div className="local-news-author-row">
-                    <div className="local-news-author-avatar">
-                      {post.author_name ? post.author_name[0].toUpperCase() : 'B'}
+                  <div className="local-news-card-content">
+                    <div className="local-news-meta">
+                      <span className={`local-news-category local-news-category-${post.category}`}>
+                        {CATEGORY_LABELS[post.category][language === 'hi' ? 'hi' : 'en']}
+                      </span>
+                      <span className="local-news-time">{formatDate(post.created_at)}</span>
                     </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                      <span style={{ fontWeight: 600 }}>{post.author_name}</span>
-                      {isOfficial ? (
-                        <ShieldCheck size={14} color="#15803d" />
-                      ) : (
-                        <CheckCircle2 size={13} color="#146C94" />
+
+                    {/* Author Name, Role, & Follow Button */}
+                    <div className="local-news-author-row">
+                      <div className="local-news-author-avatar">
+                        {post.author_name ? post.author_name[0].toUpperCase() : 'B'}
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
+                        <span style={{ fontWeight: 600 }}>{post.author_name}</span>
+                        {isOfficial ? (
+                          <ShieldCheck size={13} color="#15803d" />
+                        ) : (
+                          <CheckCircle2 size={12} color="#146C94" />
+                        )}
+                      </div>
+
+                      {/* Follow button right on the news card */}
+                      {!isSelfAuthor(post.author_id, post.author_name) && (
+                        <button
+                          type="button"
+                          className={`local-news-follow-btn ${isAuthorFollowed(post.author_id, post.author_name) ? 'is-following' : ''}`}
+                          onClick={(e) => handleToggleFollow(e, post.author_id, post.author_name)}
+                          title={isAuthorFollowed(post.author_id, post.author_name) ? 'Following' : 'Follow author'}
+                        >
+                          {isAuthorFollowed(post.author_id, post.author_name) ? (
+                            <>
+                              <UserCheck size={11} />
+                              <span>{language === 'hi' ? 'फ़ॉलो' : 'Following'}</span>
+                            </>
+                          ) : (
+                            <>
+                              <UserPlus size={11} />
+                              <span>{language === 'hi' ? '+ फ़ॉलो' : '+ Follow'}</span>
+                            </>
+                          )}
+                        </button>
                       )}
                     </div>
 
-                    {/* Follow button right on the news card */}
-                    {!isSelfAuthor(post.author_id, post.author_name) && (
+                    {post.title && <h3>{post.title}</h3>}
+
+                    {/* ── TRUNCATED COPY WITH READ MORE BUTTON ── */}
+                    <div className="local-news-copy-wrap">
+                      <p className="local-news-copy">{displayText}</p>
+                      {isLong && (
+                        <button
+                          type="button"
+                          className="local-news-read-more-btn"
+                          onClick={(e) => toggleExpandPost(e, post.id)}
+                        >
+                          {isExpanded
+                            ? (language === 'hi' ? 'कम पढ़ें' : 'Show less')
+                            : (language === 'hi' ? 'और पढ़ें' : 'Read more')}
+                          <ChevronDown
+                            size={12}
+                            style={{
+                              transform: isExpanded ? 'rotate(180deg)' : 'none',
+                              transition: 'transform 0.2s ease',
+                            }}
+                          />
+                        </button>
+                      )}
+                    </div>
+
+                    <div className="local-news-area">
+                      <MapPin size={12} />
+                      <span>{post.area}</span>
+                    </div>
+
+                    {/* Engagement Stats Bar */}
+                    <div className="local-news-twitter-stats">
+                      <div className="local-news-stat-item" title="Replies">
+                        <MessageCircle size={12} />
+                        <span>{post.comments_count ?? 0}</span>
+                      </div>
+                      <div className="local-news-stat-item" title="Reshares">
+                        <Repeat size={12} />
+                        <span>{post.reshares_count || 0}</span>
+                      </div>
+                      <div className="local-news-stat-item" title="Likes">
+                        <Heart size={12} color="#e11d48" />
+                        <span>{post.likes_count || 0}</span>
+                      </div>
+                      <div className="local-news-stat-item" title="Views">
+                        <Eye size={12} />
+                        <span>{post.views_count || 0}</span>
+                      </div>
                       <button
                         type="button"
-                        className={`local-news-follow-btn ${isAuthorFollowed(post.author_id, post.author_name) ? 'is-following' : ''}`}
-                        onClick={(e) => handleToggleFollow(e, post.author_id, post.author_name)}
-                        title={isAuthorFollowed(post.author_id, post.author_name) ? 'Following' : 'Follow author'}
+                        className="local-news-stat-item"
+                        title={language === 'hi' ? 'समाचार साझा करें' : 'Share news'}
+                        aria-label={language === 'hi' ? 'समाचार साझा करें' : 'Share news'}
+                        onClick={(event) => void handleShare(event, post)}
+                        style={{ border: 0, background: 'transparent', cursor: 'pointer', font: 'inherit' }}
                       >
-                        {isAuthorFollowed(post.author_id, post.author_name) ? (
-                          <>
-                            <UserCheck size={11} />
-                            <span>{language === 'hi' ? 'फ़ॉलो' : 'Following'}</span>
-                          </>
-                        ) : (
-                          <>
-                            <UserPlus size={11} />
-                            <span>{language === 'hi' ? '+ फ़ॉलो' : '+ Follow'}</span>
-                          </>
-                        )}
+                        <Share2 size={12} />
+                        <span>{language === 'hi' ? 'साझा करें' : 'Share'}</span>
                       </button>
-                    )}
-                  </div>
-
-                  {post.title && <h3>{post.title}</h3>}
-
-                  {/* ── TRUNCATED COPY WITH READ MORE BUTTON ── */}
-                  <div className="local-news-copy-wrap">
-                    <p className="local-news-copy">{displayText}</p>
-                    {isLong && (
-                      <button
-                        type="button"
-                        className="local-news-read-more-btn"
-                        onClick={(e) => toggleExpandPost(e, post.id)}
-                      >
-                        {isExpanded
-                          ? (language === 'hi' ? 'कम पढ़ें' : 'Show less')
-                          : (language === 'hi' ? 'और पढ़ें' : 'Read more')}
-                        <ChevronDown
-                          size={13}
-                          style={{
-                            transform: isExpanded ? 'rotate(180deg)' : 'none',
-                            transition: 'transform 0.2s ease',
-                          }}
-                        />
-                      </button>
-                    )}
-                  </div>
-
-                  <div className="local-news-area">
-                    <MapPin size={13} />
-                    <span>{post.area}</span>
-                  </div>
-
-                  {/* Twitter Engagement Counter Stats (Real views only) */}
-                  <div className="local-news-twitter-stats">
-                    <div className="local-news-stat-item" title="Replies">
-                      <MessageCircle size={13} />
-                      <span>{post.comments_count ?? 0}</span>
                     </div>
-                    <div className="local-news-stat-item" title="Reshares">
-                      <Repeat size={13} />
-                      <span>{post.reshares_count || 0}</span>
-                    </div>
-                    <div className="local-news-stat-item" title="Likes">
-                      <Heart size={13} color="#e11d48" />
-                      <span>{post.likes_count || 0}</span>
-                    </div>
-                    <div className="local-news-stat-item" title="Views">
-                      <Eye size={13} />
-                      <span>{post.views_count || 0}</span>
-                    </div>
-                    <button
-                      type="button"
-                      className="local-news-stat-item"
-                      title={language === 'hi' ? 'समाचार साझा करें' : 'Share news'}
-                      aria-label={language === 'hi' ? 'समाचार साझा करें' : 'Share news'}
-                      onClick={(event) => void handleShare(event, post)}
-                      style={{ border: 0, background: 'transparent', cursor: 'pointer', font: 'inherit' }}
-                    >
-                      <Share2 size={13} />
-                      <span>{language === 'hi' ? 'साझा करें' : 'Share'}</span>
-                    </button>
                   </div>
-                </div>
-              </article>
-            );
-          })}
-        </div>
+                </article>
+              );
+            })}
+          </div>
+
+          {/* ── Mobile View: Ultra-compact Feed Cards ── */}
+          <div className="local-news-mobile-feed mobile-flex" style={{ flexDirection: 'column', gap: 7, padding: '0 14px' }}>
+            {posts.map((post) => {
+              const author = post.author;
+              const isOfficial =
+                author?.role === 'admin' ||
+                author?.role === 'municipal_administrator' ||
+                author?.role === 'dept_staff' ||
+                author?.authority_role != null;
+
+              return (
+                <article
+                  key={`mobile-${post.id}`}
+                  onClick={openNews}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 10,
+                    padding: '8px 10px',
+                    borderRadius: 12,
+                    background: '#ffffff',
+                    border: '1px solid rgba(20, 108, 148, 0.12)',
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
+                    cursor: 'pointer',
+                  }}
+                >
+                  {post.photo_url ? (
+                    <div style={{ width: 68, height: 68, borderRadius: 10, overflow: 'hidden', flexShrink: 0, position: 'relative' }}>
+                      <img src={post.photo_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} loading="lazy" />
+                    </div>
+                  ) : (
+                    <div style={{ width: 44, height: 44, borderRadius: 10, background: 'linear-gradient(135deg, #e2f0f7, #d0e7f3)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, color: 'var(--burgundy)' }}>
+                      <Newspaper size={18} />
+                    </div>
+                  )}
+
+                  <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 9.5 }}>
+                      <span className={`local-news-category local-news-category-${post.category}`} style={{ padding: '1px 5px', fontSize: 8.5 }}>
+                        {CATEGORY_LABELS[post.category][language === 'hi' ? 'hi' : 'en']}
+                      </span>
+                      <span style={{ color: '#64748b' }}>{formatDate(post.created_at)}</span>
+                      {isOfficial && <ShieldCheck size={11} color="#15803d" style={{ marginLeft: 'auto' }} />}
+                    </div>
+
+                    <div style={{ fontSize: 11.5, fontWeight: 600, color: '#0f1f26', lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                      {post.title || post.content}
+                    </div>
+
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 9.5, color: '#64748b', marginTop: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
+                        <MapPin size={9} />
+                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 120 }}>{post.area}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <Heart size={9} color="#e11d48" /> {post.likes_count || 0}
+                        </span>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                          <MessageCircle size={9} /> {post.comments_count ?? 0}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+        </>
       ) : (
         <div className="local-news-empty">
           <Sparkles size={20} />

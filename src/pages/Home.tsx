@@ -264,40 +264,101 @@ export const Home: React.FC = () => {
       {/* ── Hero Carousel ── */}
       <HeroBanner />
 
-      {/* ── Quick Action Cards ── */}
-      <div className="quick-actions" style={{ opacity: 0 }}>
-        <Link to="/complaint/new" style={{ textDecoration: 'none' }}>
+      {/* ── Desktop Quick Actions (Spacious 1*2 with detailed info & 3D tilt) ── */}
+      <div className="quick-actions quick-actions-desktop desktop-grid" style={{ opacity: 0 }}>
+        <Link to="/complaint/new" style={{ textDecoration: 'none', display: 'flex' }}>
           <div
-            className="action-card"
+            className="action-card action-card-desktop"
             onMouseMove={onCardMouseMove}
             onMouseLeave={onCardMouseLeave}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}
           >
-            <div className="action-icon">
-              <Camera size={24} />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div className="action-icon" style={{ width: 44, height: 44, borderRadius: 12 }}>
+                <Camera size={22} />
+              </div>
+              <div className="action-text">
+                <h4 style={{ fontSize: 15, fontWeight: 700 }}>{t(language, 'reportIssue')}</h4>
+                <p style={{ fontSize: 12.5, color: '#64748b', marginTop: 2 }}>
+                  {language === 'hi' ? 'फोटो लें व स्वतः GPS जोड़कर शिकायत दर्ज करें' : 'Take photo & auto-attach GPS coordinates'}
+                </p>
+              </div>
+            </div>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '6px 14px',
+              borderRadius: 999,
+              background: 'rgba(20, 108, 148, 0.08)',
+              color: 'var(--burgundy)',
+              fontSize: 12,
+              fontWeight: 700,
+              flexShrink: 0
+            }}>
+              {language === 'hi' ? 'दर्ज करें' : 'Report'} →
+            </span>
+          </div>
+        </Link>
+
+        <Link to="/track" style={{ textDecoration: 'none', display: 'flex' }}>
+          <div
+            className="action-card action-card-desktop"
+            onMouseMove={onCardMouseMove}
+            onMouseLeave={onCardMouseLeave}
+            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+              <div className="action-icon" style={{ width: 44, height: 44, borderRadius: 12 }}>
+                <Search size={22} />
+              </div>
+              <div className="action-text">
+                <h4 style={{ fontSize: 15, fontWeight: 700 }}>{t(language, 'trackComplaint')}</h4>
+                <p style={{ fontSize: 12.5, color: '#64748b', marginTop: 2 }}>
+                  {language === 'hi' ? 'टिकट नंबर से लाइव स्थिति व समाधान देखें' : 'Track real-time timeline & verify resolution'}
+                </p>
+              </div>
+            </div>
+            <span style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '6px 14px',
+              borderRadius: 999,
+              background: 'rgba(20, 108, 148, 0.08)',
+              color: 'var(--burgundy)',
+              fontSize: 12,
+              fontWeight: 700,
+              flexShrink: 0
+            }}>
+              {language === 'hi' ? 'देखें' : 'Track'} →
+            </span>
+          </div>
+        </Link>
+      </div>
+
+      {/* ── Mobile Quick Actions (Ultra-compact 1*2 Touch-optimized) ── */}
+      <div className="quick-actions quick-actions-mobile mobile-grid" style={{ opacity: 0 }}>
+        <Link to="/complaint/new" style={{ textDecoration: 'none', display: 'flex' }}>
+          <div className="action-card action-card-mobile" style={{ width: '100%' }}>
+            <div className="action-icon action-icon-mobile">
+              <Camera size={16} />
             </div>
             <div className="action-text">
-              <h4>{t(language, 'reportIssue')}</h4>
-              <p>{language === 'hi' ? 'फोटो लें + GPS स्वतः जुड़ेगा' : 'Take photo & auto-attach GPS'}</p>
+              <h4 style={{ fontSize: 12 }}>{t(language, 'reportIssue')}</h4>
+              <p style={{ fontSize: 9.5 }}>{language === 'hi' ? 'फोटो + GPS' : 'Photo + GPS'}</p>
             </div>
           </div>
         </Link>
 
-        <Link to="/track" style={{ textDecoration: 'none' }}>
-          <div
-            className="action-card"
-            onMouseMove={onCardMouseMove}
-            onMouseLeave={onCardMouseLeave}
-          >
-            <div className="action-icon">
-              <Search size={24} />
+        <Link to="/track" style={{ textDecoration: 'none', display: 'flex' }}>
+          <div className="action-card action-card-mobile" style={{ width: '100%' }}>
+            <div className="action-icon action-icon-mobile">
+              <Search size={16} />
             </div>
             <div className="action-text">
-              <h4>{t(language, 'trackComplaint')}</h4>
-              <p>
-                {language === 'hi'
-                  ? 'टिकट नंबर से स्थिति देखें व सत्यापित करें'
-                  : 'Track real-time timeline & verify resolution'}
-              </p>
+              <h4 style={{ fontSize: 12 }}>{t(language, 'trackComplaint')}</h4>
+              <p style={{ fontSize: 9.5 }}>{language === 'hi' ? 'लाइव स्थिति' : 'Live Status'}</p>
             </div>
           </div>
         </Link>
@@ -306,10 +367,59 @@ export const Home: React.FC = () => {
       {/* ── Live Stats ── */}
       <StatsSection />
 
-      {/* ── Green Waste Pickup Highlight Card ── */}
-      <section style={{ padding: 0 }}>
-        <Link to="/department/green" style={{ textDecoration: 'none' }}>
-          <div className="special-service">
+      {/* ── Desktop Green Waste Pickup (Horizontal Split Banner) ── */}
+      <section className="desktop-only" style={{ padding: 0 }}>
+        <Link to="/department/green" style={{ textDecoration: 'none', display: 'block' }}>
+          <div className="special-service special-service-desktop">
+            <svg
+              className="leaf-bg"
+              viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5"
+            >
+              <path d="M50 10 C 30 30, 20 60, 50 90 C 80 60, 70 30, 50 10 Z" />
+              <path d="M50 10 L 50 90" />
+              <path d="M50 30 L 35 45" />
+              <path d="M50 50 L 65 65" />
+            </svg>
+
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2 }}>
+              <div style={{ maxWidth: '75%' }}>
+                <div className="special-badge">
+                  <span className="dot" />
+                  {language === 'hi' ? 'विशेष नागरिक सेवा' : 'Featured Civic Service'}
+                </div>
+                <h2 className="special-title" style={{ fontSize: 19, margin: '4px 0 4px' }}>
+                  {t(language, 'greenDeptTitle')}
+                </h2>
+                <p className="special-desc" style={{ fontSize: 12.5, margin: 0, opacity: 0.9 }}>
+                  {t(language, 'greenDeptSubtitle')} (Fallen leaves, tree pruning & garden waste)
+                </p>
+                <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: 11, background: 'rgba(255,255,255,0.12)', padding: '3px 9px', borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    🍂 {language === 'hi' ? 'सूखे पत्ते व टहनियाँ' : 'Fallen Leaves & Branches'}
+                  </span>
+                  <span style={{ fontSize: 11, background: 'rgba(255,255,255,0.12)', padding: '3px 9px', borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    🌿 {language === 'hi' ? 'बगीचे का कचरा' : 'Garden Trimmings'}
+                  </span>
+                  <span style={{ fontSize: 11, background: 'rgba(255,255,255,0.12)', padding: '3px 9px', borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                    ♻️ {language === 'hi' ? 'जैविक खाद निर्माण' : 'Civic Composting'}
+                  </span>
+                </div>
+              </div>
+
+              <div style={{ flexShrink: 0, paddingLeft: 18 }}>
+                <span className="special-cta" style={{ padding: '10px 22px', fontSize: 12, fontWeight: 700 }}>
+                  {language === 'hi' ? 'हरित कचरा पिकअप' : 'Request Pickup'} →
+                </span>
+              </div>
+            </div>
+          </div>
+        </Link>
+      </section>
+
+      {/* ── Mobile Green Waste Pickup (Compact Vertical Card) ── */}
+      <section className="mobile-only" style={{ padding: 0 }}>
+        <Link to="/department/green" style={{ textDecoration: 'none', display: 'block' }}>
+          <div className="special-service special-service-mobile">
             <svg
               className="leaf-bg"
               viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5"
@@ -321,20 +431,20 @@ export const Home: React.FC = () => {
             </svg>
 
             <div style={{ position: 'relative', zIndex: 2 }}>
-              <div className="special-badge">
+              <div className="special-badge" style={{ fontSize: 8, padding: '2px 6px', marginBottom: 3 }}>
                 <span className="dot" />
                 {language === 'hi' ? 'विशिष्ट सेवा' : 'Featured Service'}
               </div>
 
-              <h2 className="special-title">
+              <h2 className="special-title" style={{ fontSize: 14, marginBottom: 2 }}>
                 {t(language, 'greenDeptTitle')}
               </h2>
-              <p className="special-desc">
-                {t(language, 'greenDeptSubtitle')} (Fallen leaves, tree pruning, garden waste & fallen trees)
+              <p className="special-desc" style={{ fontSize: 10.5, marginBottom: 6, lineHeight: 1.3 }}>
+                {t(language, 'greenDeptSubtitle')}
               </p>
 
-              <span className="special-cta">
-                {language === 'hi' ? 'हरित कचरा रिपोर्ट करें' : 'Request Green Waste Pickup'} →
+              <span className="special-cta" style={{ fontSize: 9.5, padding: '4px 10px' }}>
+                {language === 'hi' ? 'अनुरोध करें' : 'Request Pickup'} →
               </span>
             </div>
           </div>
