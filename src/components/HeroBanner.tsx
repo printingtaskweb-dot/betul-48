@@ -29,7 +29,7 @@ const HERO_CARDS: HeroCardData[] = [
     className: 'card card-2',
     rot: -5,
     depth: 10,
-    img: '/road.png',
+    img: '/hero/highwayd.jpg',
     alt: 'Roads & Infrastructure',
   },
   {
