@@ -53,7 +53,7 @@ const HERO_CARDS: HeroCardData[] = [
     className: 'card card-5',
     rot: 0,
     depth: 6,
-    img: '/green.png',
+    img: '/hero/wastee.jpg',
     alt: 'Green Waste Initiative',
   },
   {
@@ -61,7 +61,7 @@ const HERO_CARDS: HeroCardData[] = [
     className: 'card card-6',
     rot: 4,
     depth: 11,
-    img: '/sewage.png',
+    img: '/hero/drain2.jpg',
     alt: 'Sewage Drainage',
   },
   {
@@ -77,7 +77,7 @@ const HERO_CARDS: HeroCardData[] = [
     className: 'card card-8',
     rot: -4,
     depth: 13,
-    img: '/rain_water.png',
+    img: '/hero/disas.jpg',
     alt: 'Rainwater Drainage',
   },
 ];
