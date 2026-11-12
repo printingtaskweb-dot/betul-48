@@ -37,7 +37,7 @@ const HERO_CARDS: HeroCardData[] = [
     className: 'card card-3',
     rot: -2,
     depth: 8,
-    img: '/water.png',
+    img: '/hero/pexels-gizem-gokce-1072613075-36110365.jpg',
     alt: 'Water Supply',
   },
   {
