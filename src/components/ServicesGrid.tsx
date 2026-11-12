@@ -200,17 +200,6 @@ function ensureGridStyles() {
         grid-template-columns: repeat(5, 1fr);
       }
     }
-    .service-item-hoverable {
-      transition: transform 0.18s ease, box-shadow 0.18s ease;
-      will-change: transform, box-shadow;
-    }
-    @media (hover: hover) {
-      .service-item-hoverable:hover {
-        transform: scale(1.06) translateY(-2px);
-        box-shadow: 0 8px 24px rgba(0,0,0,0.18);
-        z-index: 1;
-      }
-    }
   `;
   document.head.appendChild(style);
 }
@@ -282,14 +271,13 @@ export const ServicesGrid: React.FC = () => {
             <motion.div
               key={svc.slug}
               variants={shouldReduceMotion ? undefined : itemVariants}
-              whileHover={shouldReduceMotion ? undefined : { scale: 1.07, y: -4 }}
-              whileTap={shouldReduceMotion ? undefined : { scale: 0.94 }}
+              whileTap={shouldReduceMotion ? undefined : { scale: 0.96 }}
               transition={{ type: 'spring', stiffness: 400, damping: 20 }}
               style={{ display: 'flex', flexDirection: 'column' }}
             >
               <Link
                 to={svc.route}
-                className="service-item service-item-hoverable"
+                className="service-item"
                 style={{ height: '100%' }}
               >
                 {/* SVG icon in white card */}

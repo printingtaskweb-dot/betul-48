@@ -77,15 +77,63 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({ departmentSlug }
 
   return (
     <div>
+      <style>{`
+        .complaint-stats-row {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+          gap: 12px;
+          margin-bottom: 20px;
+        }
+        .complaint-stat-card {
+          padding: 12px 14px;
+        }
+        .complaint-stat-val {
+          font-size: 1.5rem;
+        }
+        .complaint-stat-lbl {
+          font-size: 0.75rem;
+          color: var(--gray-600);
+          font-weight: 600;
+          margin-top: 4px;
+        }
+        .complaint-filter-btn {
+          padding: 6px 14px;
+          font-size: 0.78rem;
+        }
+        .complaint-search-box {
+          padding: 10px 12px 10px 38px;
+          font-size: 0.88rem;
+        }
+        @media (max-width: 768px) {
+          .complaint-stats-row {
+            grid-template-columns: repeat(3, 1fr) !important;
+            gap: 6px !important;
+            margin-bottom: 10px !important;
+          }
+          .complaint-stat-card {
+            padding: 6px 8px !important;
+            border-radius: 8px !important;
+          }
+          .complaint-stat-val {
+            font-size: 1.05rem !important;
+          }
+          .complaint-stat-lbl {
+            font-size: 0.62rem !important;
+            margin-top: 2px !important;
+          }
+          .complaint-filter-btn {
+            padding: 4px 9px !important;
+            font-size: 0.7rem !important;
+          }
+          .complaint-search-box {
+            padding: 7px 10px 7px 32px !important;
+            font-size: 0.78rem !important;
+          }
+        }
+      `}</style>
+
       {/* Stats summary row */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(110px, 1fr))',
-          gap: 12,
-          marginBottom: 20,
-        }}
-      >
+      <div className="complaint-stats-row">
         {[
           { label: 'Total', value: stats.total, color: 'var(--indigo-600)' },
           { label: 'Pending', value: stats.pending, color: 'var(--amber-500)' },
@@ -95,19 +143,18 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({ departmentSlug }
         ].map((s) => (
           <div
             key={s.label}
-            className="card-hover"
+            className="card-hover complaint-stat-card"
             style={{
               background: 'var(--theme-component, #d9d9d9)',
               border: '1.5px solid var(--theme-component-border, #bfbfbf)',
               borderRadius: 'var(--radius-md)',
-              padding: '12px 14px',
               textAlign: 'center',
               borderTop: `3px solid ${s.color}`,
               boxShadow: 'var(--shadow-sm)',
             }}
           >
-            <div style={{ fontSize: '1.5rem', fontWeight: 900, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--gray-600)', fontWeight: 600, marginTop: 4 }}>
+            <div className="complaint-stat-val" style={{ fontWeight: 900, color: s.color, lineHeight: 1.1 }}>{s.value}</div>
+            <div className="complaint-stat-lbl">
               {s.label}
             </div>
           </div>
@@ -118,29 +165,28 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({ departmentSlug }
       <div
         style={{
           display: 'flex',
-          gap: 10,
-          marginBottom: 16,
+          gap: 8,
+          marginBottom: 12,
           flexWrap: 'wrap',
           alignItems: 'center',
           justifyContent: 'space-between',
         }}
       >
-        <div style={{ position: 'relative', flex: '1 1 240px', minWidth: 200 }}>
+        <div style={{ position: 'relative', flex: '1 1 200px', minWidth: 160 }}>
           <Search
-            size={16}
+            size={14}
             color="var(--gray-400)"
-            style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)' }}
+            style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)' }}
           />
           <input
             placeholder="Search ticket, name, location…"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            className="complaint-search-box"
             style={{
               width: '100%',
-              padding: '10px 12px 10px 38px',
               borderRadius: 'var(--radius-md)',
               border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-              fontSize: '0.88rem',
               outline: 'none',
               background: 'var(--theme-bg, #F6F1F1)',
               boxSizing: 'border-box',
@@ -149,17 +195,16 @@ export const ComplaintTable: React.FC<ComplaintTableProps> = ({ departmentSlug }
         </div>
 
         {/* Filter Pills */}
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
           {STATUS_FILTERS.map((f) => {
             const isActive = statusFilter === f.value;
             return (
               <button
                 key={f.value}
                 onClick={() => setStatusFilter(f.value)}
+                className="complaint-filter-btn"
                 style={{
-                  padding: '6px 14px',
                   borderRadius: 'var(--radius-full)',
-                  fontSize: '0.78rem',
                   fontWeight: 700,
                   border: '1.5px solid',
                   borderColor: isActive ? 'var(--theme-primary, #146C94)' : 'var(--theme-component-border, #bfbfbf)',

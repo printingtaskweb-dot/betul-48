@@ -19,6 +19,8 @@ import {
   Eye,
   Camera,
   Share2,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { useStorage } from '../hooks/useStorage';
@@ -1667,9 +1669,15 @@ export const LocalNewsPage: React.FC = () => {
                         className="x-read-more-btn"
                         onClick={() => toggleTweetText(post.id)}
                       >
-                        {isExpanded
-                          ? (language === 'hi' ? 'कम पढ़ें ▲' : 'Show less ▲')
-                          : (language === 'hi' ? 'और पढ़ें ▼' : 'Read more ▼')}
+                        {isExpanded ? (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                            {language === 'hi' ? 'कम पढ़ें' : 'Show less'} <ChevronUp size={13} />
+                          </span>
+                        ) : (
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                            {language === 'hi' ? 'और पढ़ें' : 'Read more'} <ChevronDown size={13} />
+                          </span>
+                        )}
                       </button>
                     )}
 

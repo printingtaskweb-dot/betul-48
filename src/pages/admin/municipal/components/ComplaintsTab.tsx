@@ -52,8 +52,45 @@ export const ComplaintsTab: React.FC<Props> = ({
   }, [selection]);
 
   return (
-    <div style={{ ...card, padding: '18px 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-      {/* Header */}
+    <>
+      <style>{`
+        .complaints-tab-card {
+          padding: 18px 22px;
+          gap: 14px;
+        }
+        .complaint-item-card {
+          padding: 14px 16px;
+        }
+        .complaint-item-icon {
+          width: 44px;
+          height: 44px;
+        }
+        @media (max-width: 768px) {
+          .complaints-tab-card {
+            padding: 10px 12px !important;
+            gap: 8px !important;
+            border-radius: 12px !important;
+          }
+          .complaints-tab-card h3 {
+            font-size: 0.92rem !important;
+          }
+          .complaints-tab-card p {
+            font-size: 0.68rem !important;
+          }
+          .complaint-item-card {
+            padding: 8px 10px !important;
+            gap: 8px !important;
+            border-radius: 8px !important;
+          }
+          .complaint-item-icon {
+            width: 30px !important;
+            height: 30px !important;
+            border-radius: 6px !important;
+          }
+        }
+      `}</style>
+      <div className="complaints-tab-card" style={{ ...card, display: 'flex', flexDirection: 'column' }}>
+        {/* Header */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
         <div>
           <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900 }}>
@@ -141,51 +178,54 @@ export const ComplaintsTab: React.FC<Props> = ({
               return (
                 <div
                   key={c.id}
+                  className="complaint-item-card"
                   style={{
-                    padding: '14px 16px', borderRadius: 10,
+                    borderRadius: 10,
                     background: isSelected ? 'var(--theme-bg, #F6F1F1)' : 'rgba(255,255,255,0.4)',
                     border: isSelected ? `2px solid ${PRIMARY}` : BORDER,
                     display: 'flex', flexWrap: 'wrap', alignItems: 'center',
-                    justifyContent: 'space-between', gap: 12,
+                    justifyContent: 'space-between', gap: 10,
                   }}
                 >
-                  <div style={{ display: 'flex', gap: 12, alignItems: 'flex-start', flex: '1 1 340px' }}>
+                  <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', flex: '1 1 300px' }}>
                     <button
                       onClick={() => toggle(c.id)}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0, color: PRIMARY, flexShrink: 0 }}
                     >
-                      {isSelected ? <CheckSquare size={18} /> : <Square size={18} />}
+                      {isSelected ? <CheckSquare size={16} /> : <Square size={16} />}
                     </button>
-                    <div style={{
-                      width: 44, height: 44, borderRadius: 8,
-                      background: 'var(--theme-bg, #F6F1F1)', border: BORDER,
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: '1.3rem', flexShrink: 0,
-                    }}>
-                      <GoogleIcon name={c.department?.icon || 'apartment'} size={24} color={PRIMARY} />
+                    <div
+                      className="complaint-item-icon"
+                      style={{
+                        background: 'var(--theme-bg, #F6F1F1)', border: BORDER,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        flexShrink: 0,
+                      }}
+                    >
+                      <GoogleIcon name={c.department?.icon || 'apartment'} size={18} color={PRIMARY} />
                     </div>
                     <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                        <span style={{ fontWeight: 900, color: PRIMARY, fontSize: '0.88rem' }}>#{c.ticket_number}</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 900, color: PRIMARY, fontSize: '0.82rem' }}>#{c.ticket_number}</span>
                         <span style={{
-                          fontSize: '0.7rem', fontWeight: 800, padding: '2px 8px', borderRadius: 10,
+                          fontSize: '0.65rem', fontWeight: 800, padding: '1px 7px', borderRadius: 10,
                           background: sSt.bg, color: sSt.fg, textTransform: 'uppercase',
                         }}>{c.status}</span>
-                        <span style={{ fontSize: '0.74rem', color: 'var(--gray-600)' }}>{c.department?.name}</span>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--gray-600)' }}>{c.department?.name}</span>
                         {wardObj && (
                           <span style={{
-                            fontSize: '0.7rem', fontWeight: 800, padding: '2px 8px', borderRadius: 10,
+                            fontSize: '0.65rem', fontWeight: 800, padding: '1px 7px', borderRadius: 10,
                             background: 'rgba(102,0,51,0.08)', color: PRIMARY,
                           }}>Ward {wardObj.ward_number}</span>
                         )}
                       </div>
-                      <p style={{ margin: '4px 0', fontSize: '0.82rem', color: 'var(--gray-800)', lineHeight: 1.4 }}>
+                      <p style={{ margin: '3px 0', fontSize: '0.76rem', color: 'var(--gray-800)', lineHeight: 1.35 }}>
                         {c.description}
                       </p>
-                      <div style={{ fontSize: '0.72rem', color: 'var(--gray-600)', display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                        {c.address && <span><span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>location_on</span>{c.address}</span>}
-                        {c.citizen_name && <span><span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>person</span>{c.citizen_name}</span>}
-                        <span><span className="material-symbols-rounded" style={{ fontSize: 13, verticalAlign: 'middle', marginRight: 2 }}>calendar_today</span>{new Date(c.created_at).toLocaleDateString()}</span>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--gray-600)', display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+                        {c.address && <span><span className="material-symbols-rounded" style={{ fontSize: 13, verticalAlign: 'middle', marginRight: 3 }}>location_on</span>{c.address}</span>}
+                        {c.citizen_name && <span><span className="material-symbols-rounded" style={{ fontSize: 13, verticalAlign: 'middle', marginRight: 3 }}>person</span>{c.citizen_name}</span>}
+                        <span><span className="material-symbols-rounded" style={{ fontSize: 12, verticalAlign: 'middle', marginRight: 2 }}>calendar_today</span>{new Date(c.created_at).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>
@@ -222,5 +262,6 @@ export const ComplaintsTab: React.FC<Props> = ({
         </>
       )}
     </div>
+  </>
   );
 };

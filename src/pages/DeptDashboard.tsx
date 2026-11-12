@@ -24,7 +24,7 @@ import {
   Inbox, CheckSquare, Plus, Layers, Briefcase,
   FileText, ShieldAlert,
   ArrowRight, Info, Users, Award, Mail, MapPin,
-  Navigation,
+  Navigation, ArrowLeft, LayoutDashboard, Compass, ChevronRight,
 } from 'lucide-react';
 import { DepartmentServiceIcon } from '../components/common/DepartmentServiceIcon';
 
@@ -669,8 +669,9 @@ export default function DeptDashboard() {
   const [profileLoading, setProfileLoading] = useState(true);
   const [noDept, setNoDept] = useState(false);
   const [activeTab, setActiveTab] = useState<
-    'complaints' | 'departments' | 'staff_reports' | 'wards' | 'location_filter'
-  >('complaints');
+    'overview' | 'complaints' | 'departments' | 'staff_reports' | 'wards' | 'location_filter'
+  >(typeof window !== 'undefined' && window.innerWidth <= 768 ? 'overview' : 'complaints');
+  const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all');
   const [unallottedOnly, setUnallottedOnly] = useState(false);
   const [search, setSearch] = useState('');
@@ -1093,229 +1094,241 @@ export default function DeptDashboard() {
     },
   ];
 
-  return (
-    <div style={{ minHeight: '100vh', background: 'var(--theme-bg, #F6F1F1)', fontFamily: 'var(--font-primary)' }}>
 
-      {/* ── Header ── */}
-      <header style={{
-        background: 'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
-        padding: '0 clamp(16px, 4vw, 32px)', position: 'sticky', top: 0, zIndex: 100,
-        boxShadow: '0 2px 14px rgba(0,0,0,0.25)',
-      }}>
-        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between', height: 64, gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(255,255,255,0.18)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Building2 size={20} color="#fff" />
-            </div>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                {!orgLevel && profile?.dept_name && (
-                  <DepartmentServiceIcon slugOrName={profile.dept_name} size={28} iconSize={15} />
-                )}
-                <h1 style={{ margin: 0, fontSize: 'clamp(0.95rem, 2.5vw, 1.15rem)', fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>
-                  {orgLevel
-                    ? (hi ? 'समस्त विभाग / संगठन' : 'All Municipal Departments')
-                    : (profile?.dept_name || 'Department')}
-                </h1>
-              </div>
-              <p style={{ margin: 0, fontSize: '0.72rem', color: 'rgba(255,255,255,0.8)' }}>
-                {profile?.full_name ? `${profile.full_name} • ` : ''}{roleLabel(profile?.role, language)}
-              </p>
-              {assignedWard && (
-                <p style={{ margin: '3px 0 0', fontSize: '0.68rem', color: 'rgba(255,255,255,0.88)' }}>
-                  Assigned ward: Ward {assignedWard.ward_number} · {assignedWard.name}
-                </p>
-              )}
-            </div>
-          </div>
+  const effectiveDesktopTab = activeTab === 'overview' ? 'complaints' : activeTab;
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            {/* Quick department filter in header for org level */}
-            {orgLevel && (
-              <select
-                value={selectedDeptId}
-                onChange={e => {
-                  setSelectedDeptId(e.target.value);
-                  if (e.target.value !== 'all') {
-                    setSelectedDeptDetailId(e.target.value);
-                  }
-                }}
-                style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.15)',
-                  border: '1px solid rgba(255,255,255,0.3)', color: '#fff', fontSize: '0.82rem',
-                  fontWeight: 700, outline: 'none', cursor: 'pointer' }}
-              >
-                <option value="all" style={{ color: '#000' }}>समस्त विभाग (All Departments)</option>
-                {allDepartments.map(d => (
-                  <option key={d.id} value={d.id} style={{ color: '#000' }}>{d.name}</option>
-                ))}
-              </select>
-            )}
-            <button
-              onClick={handleLogout}
-              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px',
-                borderRadius: 'var(--radius-sm)', background: 'rgba(255,255,255,0.15)',
-                border: '1px solid rgba(255,255,255,0.3)', color: '#fff', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
-            >
-              <LogOut size={14} /> {hi ? 'लॉगआउट' : 'Logout'}
-            </button>
-          </div>
-        </div>
-      </header>
+  const deptMobileTabs = [
+    {
+      id: 'complaints',
+      label: hi ? 'शिकायत व कार्य' : 'Tasks & Grievances',
+      sublabel: `${stats.pending} ${hi ? 'लंबित कार्य' : 'pending action'}`,
+      badge: stats.pending,
+      icon: <Briefcase size={16} />,
+      gradient: 'linear-gradient(135deg, #7c3aed, #a855f7)',
+      activeBorder: '#7c3aed',
+      show: true,
+    },
+    ...(myTier <= 2 ? [{
+      id: 'departments',
+      label: hi ? 'विभाग एवं स्टाफ' : 'Departments & Staff',
+      sublabel: `${orgLevel ? allDepartments.length : 1} ${hi ? 'विभाग' : 'Dept Roster'}`,
+      icon: <Building2 size={16} />,
+      gradient: 'linear-gradient(135deg, #0f766e, #14b8a6)',
+      activeBorder: '#0f766e',
+      show: true,
+    }] : []),
+    ...(myTier <= 3 ? [{
+      id: 'staff_reports',
+      label: hi ? 'फील्ड रिपोर्ट' : 'Staff Field Reports',
+      sublabel: `${staffReports.length} ${hi ? 'रिपोर्ट उपलब्ध' : 'reports logged'}`,
+      icon: <FileText size={16} />,
+      gradient: 'linear-gradient(135deg, #146C94, #19A7CE)',
+      activeBorder: '#146C94',
+      show: true,
+    }] : []),
+    ...(orgLevel ? [{
+      id: 'wards',
+      label: hi ? 'वार्ड पंजीकरण' : 'Ward Registration',
+      sublabel: `${wards.length} ${hi ? 'वार्ड' : 'wards configured'}`,
+      badge: wards.length,
+      icon: <Layers size={16} />,
+      gradient: 'linear-gradient(135deg, #d97706, #f59e0b)',
+      activeBorder: '#d97706',
+      show: true,
+    }] : []),
+    {
+      id: 'location_filter',
+      label: hi ? 'स्थान फ़िल्टर व रडार' : 'Location Radar & GPS',
+      sublabel: `${visibleComplaints.length} ${hi ? 'जियोटैग टिकट' : 'mapped tickets'}`,
+      icon: <Compass size={16} />,
+      gradient: 'linear-gradient(135deg, #475569, #64748b)',
+      activeBorder: '#475569',
+      show: true,
+    },
+  ];
 
-      <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(16px, 3vw, 28px) clamp(12px, 3vw, 24px)' }}>
+  const getTabLabel = (tab: string) => {
+    switch (tab) {
+      case 'complaints': return hi ? 'शिकायत एवं कार्य' : 'Tasks & Grievances';
+      case 'departments': return hi ? 'विभाग एवं स्टाफ' : 'Departments & Staff';
+      case 'staff_reports': return hi ? 'फील्ड रिपोर्ट' : 'Staff Field Reports';
+      case 'wards': return hi ? 'वार्ड पंजीकरण' : 'Ward Registration';
+      case 'location_filter': return hi ? 'स्थान फ़िल्टर' : 'Location Radar';
+      case 'overview':
+      default: return hi ? 'विभाग डैशबोर्ड' : 'Department Hub';
+    }
+  };
 
-        {/* ── Role banner + flow ── */}
-        <div style={{
-          background: 'var(--theme-component, #d9d9d9)', border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-          borderRadius: 'var(--radius-md)', padding: '12px 16px', marginBottom: 20,
-          display: 'flex', flexDirection: 'column', gap: 10,
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.84rem', color: 'var(--gray-800)' }}>
-              <Info size={16} color="var(--theme-primary, #146C94)" style={{ flexShrink: 0 }} />
-              <span>{bannerText}</span>
-            </div>
-            {orgLevel && (
-              <button
-                onClick={() => setShowCreateDept(true)}
-                style={{ padding: '7px 14px', borderRadius: 'var(--radius-sm)',
-                  background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
-                  color: '#fff', border: 'none', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', gap: 6 }}
-              >
-                <Plus size={14} /> {hi ? 'नया विभाग जोड़ें' : 'Create New Department'}
-              </button>
-            )}
-          </div>
-          <HierarchyFlow myTier={myTier} targetTier={nextTier} language={language} />
-        </div>
+  const getTabIcon = (tab: string) => {
+    switch (tab) {
+      case 'complaints': return <Briefcase size={16} />;
+      case 'departments': return <Building2 size={16} />;
+      case 'staff_reports': return <FileText size={16} />;
+      case 'wards': return <Layers size={16} />;
+      case 'location_filter': return <Compass size={16} />;
+      case 'overview':
+      default: return <LayoutDashboard size={16} />;
+    }
+  };
 
-        {/* ── Tabs ── */}
-        <div style={{ display: 'flex', gap: 8, marginBottom: 20, borderBottom: '2px solid var(--theme-component-border, #bfbfbf)',
-          paddingBottom: 4, flexWrap: 'wrap' }}>
-          {tabs.map(tab => {
-            const Icon = tab.icon;
-            const active = activeTab === tab.id;
+
+  const renderComplaintsContent = (isMobile: boolean = false) => (
+    <>
+      {!isMobile && (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 24 }}>
+          {[
+            { key: 'all', label: hi ? 'कुल शिकायतें' : 'Total', val: stats.total, color: 'var(--burgundy)', bg: 'var(--primary-100)', icon: Hash },
+            { key: 'pending', label: hi ? 'लंबित' : 'Pending', val: stats.pending, color: 'var(--status-pending)', bg: 'var(--status-pending-bg)', icon: Clock },
+            { key: 'in_progress', label: hi ? 'प्रगति में' : 'In Progress', val: stats.in_progress, color: 'var(--burgundy)', bg: 'var(--primary-100)', icon: AlertCircle },
+            { key: 'resolved', label: hi ? 'हल किए' : 'Resolved', val: stats.resolved, color: '#065f46', bg: '#d1fae5', icon: CheckCircle },
+            ...(canAllotAnything
+              ? [{ key: 'unallotted', label: hi ? 'अनआवंटित' : 'Unallotted', val: stats.unallotted, color: '#dc2626', bg: '#fee2e2', icon: ShieldAlert }]
+              : []),
+          ].map(s => {
+            const Icon = s.icon;
+            const isSelected = s.key === 'unallotted' ? unallottedOnly : (!unallottedOnly && statusFilter === s.key);
             return (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
+              <div
+                key={s.key}
+                onClick={() => {
+                  if (s.key === 'unallotted') { setUnallottedOnly(true); setStatusFilter('all'); }
+                  else { setUnallottedOnly(false); setStatusFilter(s.key); }
+                }}
                 style={{
-                  display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', borderRadius: '8px 8px 0 0',
-                  border: 'none', background: active ? 'var(--theme-component, #d9d9d9)' : 'transparent',
-                  color: active ? 'var(--theme-primary, #146C94)' : 'var(--gray-700)',
-                  fontWeight: active ? 900 : 700, fontSize: '0.9rem', cursor: 'pointer',
-                  borderBottom: active ? '3px solid var(--theme-primary, #146C94)' : '3px solid transparent',
-                  marginBottom: -6,
+                  background: 'var(--theme-component, #d9d9d9)', borderRadius: 'var(--radius-lg)', padding: 16,
+                  border: isSelected ? '2px solid var(--theme-primary, #146C94)' : '1.5px solid var(--theme-component-border, #bfbfbf)',
+                  boxShadow: 'var(--shadow-sm)', cursor: 'pointer',
                 }}
               >
-                <Icon size={16} />
-                <span>{tab.label}</span>
-                <span style={{ padding: '2px 7px', borderRadius: 12,
-                  background: active ? 'var(--theme-primary, #146C94)' : 'var(--theme-component-border, #bfbfbf)',
-                  color: active ? '#fff' : 'var(--gray-800)', fontSize: '0.74rem', fontWeight: 800 }}>
-                  {tab.count}
-                </span>
-              </button>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
+                  <span style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--gray-700)', textTransform: 'uppercase' }}>{s.label}</span>
+                  <div style={{ width: 28, height: 28, borderRadius: 8, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Icon size={14} color={s.color} />
+                  </div>
+                </div>
+                <p style={{ margin: 0, fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 900, color: s.color }}>{s.val}</p>
+              </div>
             );
           })}
         </div>
+      )}
 
-        {/* ── TAB 1: COMPLAINTS ── */}
-        {activeTab === 'complaints' && (
-          <>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: 12, marginBottom: 24 }}>
-              {[
-                { key: 'all', label: hi ? 'कुल शिकायतें' : 'Total', val: stats.total, color: 'var(--burgundy)', bg: 'var(--primary-100)', icon: Hash },
-                { key: 'pending', label: hi ? 'लंबित' : 'Pending', val: stats.pending, color: 'var(--status-pending)', bg: 'var(--status-pending-bg)', icon: Clock },
-                { key: 'in_progress', label: hi ? 'प्रगति में' : 'In Progress', val: stats.in_progress, color: 'var(--burgundy)', bg: 'var(--primary-100)', icon: AlertCircle },
-                { key: 'resolved', label: hi ? 'हल किए' : 'Resolved', val: stats.resolved, color: '#065f46', bg: '#d1fae5', icon: CheckCircle },
-                ...(canAllotAnything
-                  ? [{ key: 'unallotted', label: hi ? 'अनआवंटित' : 'Unallotted', val: stats.unallotted, color: '#dc2626', bg: '#fee2e2', icon: ShieldAlert }]
-                  : []),
-              ].map(s => {
-                const Icon = s.icon;
-                const isSelected = s.key === 'unallotted' ? unallottedOnly : (!unallottedOnly && statusFilter === s.key);
-                return (
-                  <div
-                    key={s.key}
-                    onClick={() => {
-                      if (s.key === 'unallotted') { setUnallottedOnly(true); setStatusFilter('all'); }
-                      else { setUnallottedOnly(false); setStatusFilter(s.key); }
-                    }}
-                    style={{
-                      background: 'var(--theme-component, #d9d9d9)', borderRadius: 'var(--radius-lg)', padding: 16,
-                      border: isSelected ? '2px solid var(--theme-primary, #146C94)' : '1.5px solid var(--theme-component-border, #bfbfbf)',
-                      boxShadow: 'var(--shadow-sm)', cursor: 'pointer',
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                      <span style={{ fontSize: '0.74rem', fontWeight: 800, color: 'var(--gray-700)', textTransform: 'uppercase' }}>{s.label}</span>
-                      <div style={{ width: 28, height: 28, borderRadius: 8, background: s.bg, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Icon size={14} color={s.color} />
-                      </div>
-                    </div>
-                    <p style={{ margin: 0, fontSize: 'clamp(1.4rem, 3vw, 1.8rem)', fontWeight: 900, color: s.color }}>{s.val}</p>
-                  </div>
-                );
-              })}
+      {/* Search + filter: Desktop inline form vs Mobile compact row + drawer */}
+      {!isMobile ? (
+        <div style={{ background: 'var(--theme-component, #d9d9d9)', borderRadius: 'var(--radius-lg)', padding: 16,
+          border: '1.5px solid var(--theme-component-border, #bfbfbf)', marginBottom: 20, boxShadow: 'var(--shadow-sm)' }}>
+          <form onSubmit={handleSearch} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+            <div style={{ flex: 1, position: 'relative', minWidth: 220 }}>
+              <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-500)' }} />
+              <input
+                type="text"
+                placeholder={hi ? 'टिकट नंबर, नाम या विवरण खोजें...' : 'Search ticket, citizen name, address...'}
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                style={{ width: '100%', padding: '10px 14px 10px 36px',
+                  border: '1.5px solid var(--theme-component-border, #bfbfbf)', borderRadius: 'var(--radius-md)',
+                  fontSize: '0.88rem', outline: 'none', boxSizing: 'border-box',
+                  background: 'var(--theme-bg, #F6F1F1)', fontFamily: 'var(--font-primary)' }}
+              />
             </div>
+            <div style={{ position: 'relative' }}>
+              <Filter size={13} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-500)' }} />
+              <select
+                value={statusFilter}
+                onChange={e => { setStatusFilter(e.target.value); setUnallottedOnly(false); }}
+                style={{ padding: '10px 14px 10px 32px', border: '1.5px solid var(--theme-component-border, #bfbfbf)',
+                  borderRadius: 'var(--radius-md)', fontSize: '0.88rem', background: 'var(--theme-bg, #F6F1F1)',
+                  outline: 'none', cursor: 'pointer', fontFamily: 'var(--font-primary)' }}
+              >
+                <option value="all">{hi ? 'सभी स्थिति' : 'All Status'}</option>
+                <option value="pending">{hi ? 'लंबित' : 'Pending'}</option>
+                <option value="in_progress">{hi ? 'प्रगति में' : 'In Progress'}</option>
+                <option value="resolved">{hi ? 'हल किए' : 'Resolved'}</option>
+                <option value="verified">{hi ? 'सत्यापित' : 'Verified'}</option>
+                <option value="rejected">{hi ? 'अस्वीकृत' : 'Rejected'}</option>
+              </select>
+            </div>
+            <button type="submit"
+              style={{ padding: '10px 18px', border: 'none', borderRadius: 'var(--radius-md)',
+                background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
+                color: '#fff', fontWeight: 800, fontSize: '0.88rem', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 6 }}>
+              <Search size={14} /> {hi ? 'खोजें' : 'Search'}
+            </button>
+            <button type="button"
+              onClick={() => { setSearch(''); setStatusFilter('all'); setUnallottedOnly(false); setTimeout(() => fetchComplaints(), 50); }}
+              style={{ padding: '10px 14px', border: '1.5px solid var(--theme-component-border, #bfbfbf)',
+                borderRadius: 'var(--radius-md)', background: 'var(--theme-bg, #F6F1F1)',
+                color: 'var(--gray-800)', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: 5 }}>
+              <RefreshCw size={13} /> {hi ? 'रिफ्रेश' : 'Refresh'}
+            </button>
+          </form>
+        </div>
+      ) : (
+        /* Mobile Compact Single-Row Search + Filter Drawer */
+        <div style={{ background: '#ffffff', borderRadius: 14, padding: '10px 12px', border: '1.5px solid #e2e8f0', marginBottom: 12, boxShadow: '0 1px 4px rgba(0,0,0,0.03)' }}>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <div style={{ flex: 1, position: 'relative' }}>
+              <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+              <input
+                type="text"
+                placeholder={hi ? 'टिकट, नाम या विवरण खोजें...' : 'Search ticket, citizen...'}
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                onKeyDown={e => { if (e.key === 'Enter') handleSearch(e as any); }}
+                style={{ width: '100%', padding: '8px 10px 8px 30px', border: '1.5px solid #e2e8f0', borderRadius: 10, fontSize: '0.8rem', outline: 'none', boxSizing: 'border-box', background: '#f8fafc' }}
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => setMobileFilterOpen(!mobileFilterOpen)}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 12px',
+                borderRadius: 10, border: '1.5px solid',
+                borderColor: (statusFilter !== 'all' || unallottedOnly) ? '#146C94' : '#e2e8f0',
+                background: (statusFilter !== 'all' || unallottedOnly) ? '#146C94' : '#ffffff',
+                color: (statusFilter !== 'all' || unallottedOnly) ? '#ffffff' : '#475569',
+                fontSize: '0.78rem', fontWeight: 800, cursor: 'pointer', flexShrink: 0,
+              }}
+            >
+              <Filter size={13} />
+              <span>{hi ? 'फ़िल्टर' : 'Filter'}</span>
+              {(statusFilter !== 'all' || unallottedOnly) && (
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#fff' }} />
+              )}
+            </button>
+          </div>
 
-            {/* Search + filter */}
-            <div style={{ background: 'var(--theme-component, #d9d9d9)', borderRadius: 'var(--radius-lg)', padding: 16,
-              border: '1.5px solid var(--theme-component-border, #bfbfbf)', marginBottom: 20, boxShadow: 'var(--shadow-sm)' }}>
-              <form onSubmit={handleSearch} style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
-                <div style={{ flex: 1, position: 'relative', minWidth: 220 }}>
-                  <Search size={15} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-500)' }} />
-                  <input
-                    type="text"
-                    placeholder={hi ? 'टिकट नंबर, नाम या विवरण खोजें...' : 'Search ticket, citizen name, address...'}
-                    value={search}
-                    onChange={e => setSearch(e.target.value)}
-                    style={{ width: '100%', padding: '10px 14px 10px 36px',
-                      border: '1.5px solid var(--theme-component-border, #bfbfbf)', borderRadius: 'var(--radius-md)',
-                      fontSize: '0.88rem', outline: 'none', boxSizing: 'border-box',
-                      background: 'var(--theme-bg, #F6F1F1)', fontFamily: 'var(--font-primary)' }}
-                  />
-                </div>
-                <div style={{ position: 'relative' }}>
-                  <Filter size={13} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', color: 'var(--gray-500)' }} />
-                  <select
-                    value={statusFilter}
-                    onChange={e => { setStatusFilter(e.target.value); setUnallottedOnly(false); }}
-                    style={{ padding: '10px 14px 10px 32px', border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                      borderRadius: 'var(--radius-md)', fontSize: '0.88rem', background: 'var(--theme-bg, #F6F1F1)',
-                      outline: 'none', cursor: 'pointer', fontFamily: 'var(--font-primary)' }}
-                  >
-                    <option value="all">{hi ? 'सभी स्थिति' : 'All Status'}</option>
-                    <option value="pending">{hi ? 'लंबित' : 'Pending'}</option>
-                    <option value="in_progress">{hi ? 'प्रगति में' : 'In Progress'}</option>
-                    <option value="resolved">{hi ? 'हल किए' : 'Resolved'}</option>
-                    <option value="verified">{hi ? 'सत्यापित' : 'Verified'}</option>
-                    <option value="rejected">{hi ? 'अस्वीकृत' : 'Rejected'}</option>
-                  </select>
-                </div>
-                <button type="submit"
-                  style={{ padding: '10px 18px', border: 'none', borderRadius: 'var(--radius-md)',
-                    background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
-                    color: '#fff', fontWeight: 800, fontSize: '0.88rem', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', gap: 6 }}>
-                  <Search size={14} /> {hi ? 'खोजें' : 'Search'}
-                </button>
-                <button type="button"
+          {mobileFilterOpen && (
+            <div style={{ marginTop: 10, paddingTop: 10, borderTop: '1px solid #f1f5f9', display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                <select
+                  value={statusFilter}
+                  onChange={e => { setStatusFilter(e.target.value); setUnallottedOnly(false); }}
+                  style={{ flex: 1, padding: '7px 10px', borderRadius: 8, border: '1.5px solid #cbd5e1', fontSize: '0.78rem', background: '#ffffff', outline: 'none' }}
+                >
+                  <option value="all">{hi ? 'सभी स्थिति (All Status)' : 'All Status'}</option>
+                  <option value="pending">{hi ? 'लंबित (Pending)' : 'Pending'}</option>
+                  <option value="in_progress">{hi ? 'प्रगति में (In Progress)' : 'In Progress'}</option>
+                  <option value="resolved">{hi ? 'हल किए (Resolved)' : 'Resolved'}</option>
+                  <option value="verified">{hi ? 'सत्यापित (Verified)' : 'Verified'}</option>
+                  <option value="rejected">{hi ? 'अस्वीकृत (Rejected)' : 'Rejected'}</option>
+                </select>
+                <button
+                  type="button"
                   onClick={() => { setSearch(''); setStatusFilter('all'); setUnallottedOnly(false); setTimeout(() => fetchComplaints(), 50); }}
-                  style={{ padding: '10px 14px', border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                    borderRadius: 'var(--radius-md)', background: 'var(--theme-bg, #F6F1F1)',
-                    color: 'var(--gray-800)', fontWeight: 700, fontSize: '0.88rem', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', gap: 5 }}>
-                  <RefreshCw size={13} /> {hi ? 'रिफ्रेश' : 'Refresh'}
+                  style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid #cbd5e1', background: '#f8fafc', color: '#475569', fontSize: '0.74rem', fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                >
+                  <RefreshCw size={11} /> {hi ? 'रीसेट' : 'Reset'}
                 </button>
-              </form>
+              </div>
             </div>
+          )}
+        </div>
+      )}
 
-            {loading ? (
+      {loading ? (
               <div style={{ textAlign: 'center', padding: '60px 20px' }}>
                 <div className="spinner" style={{ width: 36, height: 36, margin: '0 auto 14px' }} />
                 <p style={{ color: 'var(--gray-700)', fontSize: '0.9rem', fontWeight: 700 }}>
@@ -1358,12 +1371,12 @@ export default function DeptDashboard() {
                 ))}
               </div>
             )}
-          </>
-        )}
+    </>
+  );
 
-        {/* ── TAB 2: DEPARTMENTS & STAFF HIERARCHY ── */}
-        {activeTab === 'departments' && myTier <= 2 && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+
+  const renderDepartmentsContent = () => (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
 
             {/* Department Selection & Header Bar */}
             <div style={{
@@ -1988,11 +2001,11 @@ export default function DeptDashboard() {
               </div>
             )}
           </div>
-        )}
+  );
 
-        {/* ── TAB 3: STAFF REPORTS ── */}
-        {activeTab === 'staff_reports' && myTier <= 3 && (
-          <div>
+
+  const renderStaffReportsContent = () => (
+    <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18, flexWrap: 'wrap', gap: 10 }}>
               <div>
                 <h2 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 800, color: 'var(--theme-primary, #146C94)' }}>
@@ -2126,23 +2139,539 @@ export default function DeptDashboard() {
               </div>
             </div>
           </div>
-        )}
+  );
 
-        {/* ── NEW TAB 4: WARD REGISTRATION ── */}
-        {activeTab === 'wards' && orgLevel && (
-          <WardManager language={language} />
-        )}
+  return (
+    <div style={{ minHeight: '100vh', background: 'var(--theme-bg, #F6F1F1)', fontFamily: 'var(--font-primary)' }}>
 
-        {/* ── NEW TAB 5: LOCATION FILTER ── */}
-        {activeTab === 'location_filter' && (
-          <LocationFilterPanel
-            complaints={visibleComplaints}
-            wards={wards}
-            language={language}
-            onAllocate={(c) => setAllotting(c)}
-          />
+      {/* ── Header ── */}
+      <header style={{
+        background: 'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
+        padding: '0 clamp(16px, 4vw, 32px)', position: 'sticky', top: 0, zIndex: 100,
+        boxShadow: '0 2px 14px rgba(0,0,0,0.25)',
+      }}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between', height: 64, gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(255,255,255,0.18)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <Building2 size={20} color="#fff" />
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {!orgLevel && profile?.dept_name && (
+                  <DepartmentServiceIcon slugOrName={profile.dept_name} size={28} iconSize={15} />
+                )}
+                <h1 style={{ margin: 0, fontSize: 'clamp(0.95rem, 2.5vw, 1.15rem)', fontWeight: 900, color: '#fff', lineHeight: 1.1 }}>
+                  {orgLevel
+                    ? (hi ? 'समस्त विभाग / संगठन' : 'All Municipal Departments')
+                    : (profile?.dept_name || 'Department')}
+                </h1>
+              </div>
+              <p style={{ margin: 0, fontSize: '0.72rem', color: 'rgba(255,255,255,0.8)' }}>
+                {profile?.full_name ? `${profile.full_name} • ` : ''}{roleLabel(profile?.role, language)}
+              </p>
+              {assignedWard && (
+                <p style={{ margin: '3px 0 0', fontSize: '0.68rem', color: 'rgba(255,255,255,0.88)' }}>
+                  Assigned ward: Ward {assignedWard.ward_number} · {assignedWard.name}
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            {/* Quick department filter in header for org level */}
+            {orgLevel && (
+              <select
+                value={selectedDeptId}
+                onChange={e => {
+                  setSelectedDeptId(e.target.value);
+                  if (e.target.value !== 'all') {
+                    setSelectedDeptDetailId(e.target.value);
+                  }
+                }}
+                style={{ padding: '6px 12px', borderRadius: 8, background: 'rgba(255,255,255,0.15)',
+                  border: '1px solid rgba(255,255,255,0.3)', color: '#fff', fontSize: '0.82rem',
+                  fontWeight: 700, outline: 'none', cursor: 'pointer' }}
+              >
+                <option value="all" style={{ color: '#000' }}>समस्त विभाग (All Departments)</option>
+                {allDepartments.map(d => (
+                  <option key={d.id} value={d.id} style={{ color: '#000' }}>{d.name}</option>
+                ))}
+              </select>
+            )}
+            <button
+              onClick={handleLogout}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px',
+                borderRadius: 'var(--radius-sm)', background: 'rgba(255,255,255,0.15)',
+                border: '1px solid rgba(255,255,255,0.3)', color: '#fff', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
+            >
+              <LogOut size={14} /> {hi ? 'लॉगआउट' : 'Logout'}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <style>{`
+        .dept-desktop-view {
+          display: block;
+        }
+        .dept-mobile-view {
+          display: none;
+        }
+        .dept-mobile-dock {
+          display: none;
+        }
+
+        @media (max-width: 768px) {
+          .dept-desktop-view {
+            display: none !important;
+          }
+          .dept-mobile-view {
+            display: block !important;
+            padding: 8px 10px 58px !important;
+          }
+          .dept-mobile-dock {
+            display: flex !important;
+            position: fixed !important;
+            bottom: 0 !important;
+            left: 0 !important;
+            right: 0 !important;
+            height: 48px !important;
+            background: rgba(255, 255, 255, 0.98) !important;
+            backdrop-filter: blur(12px) !important;
+            -webkit-backdrop-filter: blur(12px) !important;
+            border-top: 1px solid #e2e8f0 !important;
+            z-index: 1000 !important;
+            justify-content: space-around !important;
+            align-items: center !important;
+            box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.07) !important;
+          }
+        }
+      `}</style>
+
+      {/* ══════════════════════════════════════════════════════════
+          1. DESKTOP RICH VIEW
+         ══════════════════════════════════════════════════════════ */}
+      <div className="dept-desktop-view">
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: 'clamp(16px, 3vw, 28px) clamp(12px, 3vw, 24px)' }}>
+
+          {/* ── Role banner + flow ── */}
+          <div style={{
+            background: 'var(--theme-component, #d9d9d9)', border: '1.5px solid var(--theme-component-border, #bfbfbf)',
+            borderRadius: 'var(--radius-md)', padding: '12px 16px', marginBottom: 20,
+            display: 'flex', flexDirection: 'column', gap: 10,
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.84rem', color: 'var(--gray-800)' }}>
+                <Info size={16} color="var(--theme-primary, #146C94)" style={{ flexShrink: 0 }} />
+                <span>{bannerText}</span>
+              </div>
+              {orgLevel && (
+                <button
+                  onClick={() => setShowCreateDept(true)}
+                  style={{ padding: '7px 14px', borderRadius: 'var(--radius-sm)',
+                    background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
+                    color: '#fff', border: 'none', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 6 }}
+                >
+                  <Plus size={14} /> {hi ? 'नया विभाग जोड़ें' : 'Create New Department'}
+                </button>
+              )}
+            </div>
+            <HierarchyFlow myTier={myTier} targetTier={nextTier} language={language} />
+          </div>
+
+          {/* ── Tabs ── */}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 20, borderBottom: '2px solid var(--theme-component-border, #bfbfbf)',
+            paddingBottom: 4, flexWrap: 'wrap' }}>
+            {tabs.map(tab => {
+              const Icon = tab.icon;
+              const active = effectiveDesktopTab === tab.id;
+              return (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8, padding: '10px 18px', borderRadius: '8px 8px 0 0',
+                    border: 'none', background: active ? 'var(--theme-component, #d9d9d9)' : 'transparent',
+                    color: active ? 'var(--theme-primary, #146C94)' : 'var(--gray-700)',
+                    fontWeight: active ? 900 : 700, fontSize: '0.9rem', cursor: 'pointer',
+                    borderBottom: active ? '3px solid var(--theme-primary, #146C94)' : '3px solid transparent',
+                    marginBottom: -6,
+                  }}
+                >
+                  <Icon size={16} />
+                  <span>{tab.label}</span>
+                  <span style={{ padding: '2px 7px', borderRadius: 12,
+                    background: active ? 'var(--theme-primary, #146C94)' : 'var(--theme-component-border, #bfbfbf)',
+                    color: active ? '#fff' : 'var(--gray-800)', fontSize: '0.74rem', fontWeight: 800 }}>
+                    {tab.count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {effectiveDesktopTab === 'complaints' && renderComplaintsContent(false)}
+          {effectiveDesktopTab === 'departments' && myTier <= 2 && renderDepartmentsContent()}
+          {effectiveDesktopTab === 'staff_reports' && myTier <= 3 && renderStaffReportsContent()}
+          {effectiveDesktopTab === 'wards' && orgLevel && <WardManager language={language} />}
+          {effectiveDesktopTab === 'location_filter' && (
+            <LocationFilterPanel
+              complaints={visibleComplaints}
+              wards={wards}
+              language={language}
+              onAllocate={(c) => setAllotting(c)}
+            />
+          )}
+        </div>
+      </div>
+
+      {/* ══════════════════════════════════════════════════════════
+          2. MOBILE MODULAR SCREEN-BY-SCREEN ARCHITECTURE
+         ══════════════════════════════════════════════════════════ */}
+      <div className="dept-mobile-view" style={{ padding: '14px 16px' }}>
+        {activeTab === 'overview' ? (
+          /* ── 2A. MOBILE HUB & SUMMARY VIEW ── */
+          <div>
+            {/* Officer & Department Header Strip */}
+            <div style={{
+              background: '#ffffff',
+              borderRadius: 12,
+              padding: '9px 11px',
+              border: '1px solid #e2e8f0',
+              marginBottom: 8,
+              boxShadow: '0 1px 4px rgba(0,0,0,0.02)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 10,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <div style={{
+                  width: 28, height: 28, borderRadius: 7,
+                  background: 'linear-gradient(135deg, #146C94, #0E526F)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  color: '#fff', flexShrink: 0,
+                }}>
+                  <Building2 size={15} />
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.84rem', fontWeight: 900, color: '#0f172a', lineHeight: 1.2 }}>
+                    {orgLevel ? (hi ? 'समस्त नगर पालिका विभाग' : 'All Departments') : (profile?.dept_name || 'Department')}
+                  </div>
+                  <div style={{ fontSize: '0.64rem', color: '#64748b', marginTop: 1 }}>
+                    {profile?.full_name ? `${profile.full_name} • ` : ''}Tier {myTier} ({roleLabel(profile?.role, language)})
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => fetchComplaints(statusFilter, search)}
+                style={{
+                  width: 26, height: 26, borderRadius: 6, border: '1px solid #cbd5e1',
+                  background: '#f8fafc', color: '#475569', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  cursor: 'pointer', flexShrink: 0,
+                }}
+                title="Refresh"
+              >
+                <RefreshCw size={11} />
+              </button>
+            </div>
+
+            {/* Compact 2x2 Mini-KPI Matrix Strip */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: 6,
+              marginBottom: 10,
+            }}>
+              <div
+                onClick={() => { setStatusFilter('all'); setUnallottedOnly(false); setActiveTab('complaints'); }}
+                style={{ background: '#ffffff', borderRadius: 10, padding: '6px 8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', cursor: 'pointer' }}
+              >
+                <div style={{ fontSize: '0.58rem', fontWeight: 800, color: '#64748b', textTransform: 'uppercase' }}>{hi ? 'कुल शिकायतें' : 'Total Grievances'}</div>
+                <div style={{ fontSize: '0.96rem', fontWeight: 900, color: 'var(--burgundy)', marginTop: 1 }}>{stats.total}</div>
+                <div style={{ fontSize: '0.56rem', color: '#94a3b8' }}>{hi ? 'कार्य विवरण' : 'Assigned portfolio'}</div>
+              </div>
+
+              <div
+                onClick={() => { setStatusFilter('pending'); setUnallottedOnly(false); setActiveTab('complaints'); }}
+                style={{ background: '#ffffff', borderRadius: 10, padding: '6px 8px', border: '1px solid #fecaca', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', cursor: 'pointer' }}
+              >
+                <div style={{ fontSize: '0.58rem', fontWeight: 800, color: '#dc2626', textTransform: 'uppercase' }}>{hi ? 'लंबित कार्य' : 'Pending Action'}</div>
+                <div style={{ fontSize: '0.96rem', fontWeight: 900, color: '#dc2626', marginTop: 1 }}>{stats.pending}</div>
+                <div style={{ fontSize: '0.56rem', color: '#dc2626' }}>{hi ? 'आवंटन अपेक्षित' : 'Needs attention'}</div>
+              </div>
+
+              <div
+                onClick={() => { setStatusFilter('in_progress'); setUnallottedOnly(false); setActiveTab('complaints'); }}
+                style={{ background: '#ffffff', borderRadius: 10, padding: '6px 8px', border: '1px solid #e2e8f0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', cursor: 'pointer' }}
+              >
+                <div style={{ fontSize: '0.58rem', fontWeight: 800, color: '#146C94', textTransform: 'uppercase' }}>{hi ? 'प्रगति में' : 'In Progress'}</div>
+                <div style={{ fontSize: '0.96rem', fontWeight: 900, color: '#146C94', marginTop: 1 }}>{stats.in_progress}</div>
+                <div style={{ fontSize: '0.56rem', color: '#94a3b8' }}>{hi ? 'फील्ड कर्मी सक्रिय' : 'Field active'}</div>
+              </div>
+
+              <div
+                onClick={() => { setStatusFilter('resolved'); setUnallottedOnly(false); setActiveTab('complaints'); }}
+                style={{ background: '#ffffff', borderRadius: 10, padding: '6px 8px', border: '1px solid #a7f3d0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', cursor: 'pointer' }}
+              >
+                <div style={{ fontSize: '0.58rem', fontWeight: 800, color: '#065f46', textTransform: 'uppercase' }}>{hi ? 'हल किए' : 'Resolved'}</div>
+                <div style={{ fontSize: '0.96rem', fontWeight: 900, color: '#065f46', marginTop: 1 }}>{stats.resolved}</div>
+                <div style={{ fontSize: '0.56rem', color: '#065f46' }}>{stats.total > 0 ? `${Math.round((stats.resolved / stats.total) * 100)}% resolved` : '100%'}</div>
+              </div>
+            </div>
+
+            {/* Section Header: Feature Selection */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 2px', marginBottom: 6 }}>
+              <span style={{ fontSize: '0.7rem', fontWeight: 900, color: '#475569', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                {hi ? 'विभाग मॉड्यूल्स एवं सुविधाएं' : 'Department Features & Modules'}
+              </span>
+              <span style={{ fontSize: '0.66rem', fontWeight: 800, color: '#146C94' }}>
+                {deptMobileTabs.length} {hi ? 'मॉड्यूल' : 'Modules'}
+              </span>
+            </div>
+
+            {/* Clean 2-Column Modular App Tiles */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: 7,
+              marginBottom: 12,
+            }}>
+              {deptMobileTabs.map((tab) => (
+                <div
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
+                  style={{
+                    background: '#ffffff',
+                    borderRadius: 12,
+                    padding: '9px 10px',
+                    border: tab.id === 'complaints' ? '1.5px solid #a855f7' : '1px solid #e2e8f0',
+                    boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    cursor: 'pointer',
+                    position: 'relative',
+                    minHeight: 76,
+                  }}
+                >
+                  {tab.badge !== undefined && (
+                    <span
+                      style={{
+                        position: 'absolute',
+                        top: 7,
+                        right: 7,
+                        background: tab.activeBorder,
+                        color: '#fff',
+                        borderRadius: 999,
+                        padding: '1px 5px',
+                        fontSize: '0.6rem',
+                        fontWeight: 900,
+                      }}
+                    >
+                      {tab.badge}
+                    </span>
+                  )}
+
+                  <div
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: 7,
+                      background: tab.gradient,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      color: '#fff',
+                      marginBottom: 5,
+                    }}
+                  >
+                    {tab.icon}
+                  </div>
+
+                  <div>
+                    <div style={{ fontWeight: 800, fontSize: '0.75rem', color: '#0f172a', lineHeight: 1.15 }}>
+                      {tab.label}
+                    </div>
+                    {tab.sublabel && (
+                      <div style={{ fontSize: '0.62rem', color: '#64748b', marginTop: 1, lineHeight: 1.1 }}>
+                        {tab.sublabel}
+                      </div>
+                    )}
+                  </div>
+
+                  <div
+                    style={{
+                      marginTop: 4,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 1,
+                      fontSize: '0.64rem',
+                      fontWeight: 800,
+                      color: tab.activeBorder,
+                    }}
+                  >
+                    Open <ChevronRight size={11} />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Quick Hierarchy Flow Summary */}
+            <div style={{
+              background: '#ffffff',
+              borderRadius: 14,
+              padding: '12px 14px',
+              border: '1.5px solid #e2e8f0',
+              marginTop: 10,
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', fontWeight: 800, color: '#334155', marginBottom: 8 }}>
+                <Info size={14} color="#146C94" />
+                <span>{bannerText}</span>
+              </div>
+              <HierarchyFlow myTier={myTier} targetTier={nextTier} language={language} />
+            </div>
+          </div>
+        ) : (
+          /* ── 2B. DEDICATED FULL-SCREEN FEATURE VIEW ── */
+          <div>
+            {/* Top Navigation Bar with Back Button */}
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
+              <button
+                onClick={() => setActiveTab('overview')}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 6,
+                  background: '#ffffff',
+                  border: '1.5px solid #146C94',
+                  color: '#146C94',
+                  borderRadius: 999,
+                  padding: '4px 11px',
+                  fontSize: '0.72rem',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  boxShadow: '0 1px 4px rgba(20, 108, 148, 0.12)',
+                }}
+              >
+                <ArrowLeft size={13} /> {hi ? 'डैशबोर्ड हब' : 'Back to Hub'}
+              </button>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.78rem', fontWeight: 800, color: '#0f172a' }}>
+                <span style={{ color: '#146C94', display: 'flex', alignItems: 'center' }}>
+                  {getTabIcon(activeTab)}
+                </span>
+                <span>{getTabLabel(activeTab)}</span>
+                {activeTab === 'complaints' && (
+                  <span style={{ background: '#7c3aed', color: '#fff', borderRadius: 999, padding: '1px 5px', fontSize: '0.6rem', fontWeight: 900 }}>
+                    {shownComplaints.length}
+                  </span>
+                )}
+                {activeTab === 'wards' && (
+                  <span style={{ background: '#d97706', color: '#fff', borderRadius: 999, padding: '1px 5px', fontSize: '0.6rem', fontWeight: 900 }}>
+                    {wards.length}
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Dedicated Feature Content */}
+            <div>
+              {activeTab === 'complaints' && renderComplaintsContent(true)}
+              {activeTab === 'departments' && myTier <= 2 && renderDepartmentsContent()}
+              {activeTab === 'staff_reports' && myTier <= 3 && renderStaffReportsContent()}
+              {activeTab === 'wards' && orgLevel && <WardManager language={language} />}
+              {activeTab === 'location_filter' && (
+                <LocationFilterPanel
+                  complaints={visibleComplaints}
+                  wards={wards}
+                  language={language}
+                  onAllocate={(c) => setAllotting(c)}
+                />
+              )}
+            </div>
+          </div>
         )}
       </div>
+
+      {/* ══════════════════════════════════════════════════════════
+          3. FIXED BOTTOM DOCK (MOBILE ONLY)
+         ══════════════════════════════════════════════════════════ */}
+      <nav className="dept-mobile-dock" aria-label="Department Mobile Dock">
+        <button
+          onClick={() => setActiveTab('overview')}
+          style={{
+            background: 'transparent', border: 'none', display: 'flex', flexDirection: 'column',
+            alignItems: 'center', gap: 1, color: activeTab === 'overview' ? '#146C94' : '#94a3b8',
+            fontSize: '0.6rem', fontWeight: activeTab === 'overview' ? 900 : 600, cursor: 'pointer', padding: '2px 6px',
+          }}
+        >
+          <LayoutDashboard size={16} color={activeTab === 'overview' ? '#146C94' : '#94a3b8'} />
+          <span>Hub</span>
+        </button>
+
+        <button
+          onClick={() => setActiveTab('complaints')}
+          style={{
+            background: 'transparent', border: 'none', display: 'flex', flexDirection: 'column',
+            alignItems: 'center', gap: 1, position: 'relative',
+            color: activeTab === 'complaints' ? '#7c3aed' : '#94a3b8',
+            fontSize: '0.6rem', fontWeight: activeTab === 'complaints' ? 900 : 600, cursor: 'pointer', padding: '2px 6px',
+          }}
+        >
+          <Briefcase size={16} color={activeTab === 'complaints' ? '#7c3aed' : '#94a3b8'} />
+          <span>Tasks</span>
+          {stats.pending > 0 && (
+            <span style={{ position: 'absolute', top: 1, right: 10, width: 5, height: 5, borderRadius: '50%', background: '#7c3aed' }} />
+          )}
+        </button>
+
+        {myTier <= 2 && (
+          <button
+            onClick={() => setActiveTab('departments')}
+            style={{
+              background: 'transparent', border: 'none', display: 'flex', flexDirection: 'column',
+              alignItems: 'center', gap: 1, color: activeTab === 'departments' ? '#0f766e' : '#94a3b8',
+              fontSize: '0.6rem', fontWeight: activeTab === 'departments' ? 900 : 600, cursor: 'pointer', padding: '2px 6px',
+            }}
+          >
+            <Building2 size={16} color={activeTab === 'departments' ? '#0f766e' : '#94a3b8'} />
+            <span>Staff</span>
+          </button>
+        )}
+
+        {myTier <= 3 && (
+          <button
+            onClick={() => setActiveTab('staff_reports')}
+            style={{
+              background: 'transparent', border: 'none', display: 'flex', flexDirection: 'column',
+              alignItems: 'center', gap: 1, color: activeTab === 'staff_reports' ? '#146C94' : '#94a3b8',
+              fontSize: '0.6rem', fontWeight: activeTab === 'staff_reports' ? 900 : 600, cursor: 'pointer', padding: '2px 6px',
+            }}
+          >
+            <FileText size={16} color={activeTab === 'staff_reports' ? '#146C94' : '#94a3b8'} />
+            <span>Reports</span>
+          </button>
+        )}
+
+        <button
+          onClick={() => setActiveTab('location_filter')}
+          style={{
+            background: 'transparent', border: 'none', display: 'flex', flexDirection: 'column',
+            alignItems: 'center', gap: 1, color: activeTab === 'location_filter' ? '#475569' : '#94a3b8',
+            fontSize: '0.6rem', fontWeight: activeTab === 'location_filter' ? 900 : 600, cursor: 'pointer', padding: '2px 6px',
+          }}
+        >
+          <Compass size={16} color={activeTab === 'location_filter' ? '#475569' : '#94a3b8'} />
+          <span>Radar</span>
+        </button>
+      </nav>
+
+
 
       {/* ── Modals ── */}
       {allotting && (

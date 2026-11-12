@@ -199,21 +199,21 @@ const DeptRow: React.FC<DeptRowProps> = ({ dept, onClick }) => (
   <button
     onClick={onClick}
     style={{
-      width: '100%', display: 'flex', alignItems: 'center', gap: 12,
-      padding: '10px 14px', border: 'none', background: 'transparent',
-      borderRadius: 10, cursor: 'pointer', textAlign: 'left',
+      width: '100%', display: 'flex', alignItems: 'center', gap: 10,
+      padding: '7px 10px', border: 'none', background: 'transparent',
+      borderRadius: 8, cursor: 'pointer', textAlign: 'left',
       transition: 'background 0.15s',
     }}
     onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.background = '#f9fafb'; }}
     onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.background = 'transparent'; }}
   >
-    <DepartmentServiceIcon slugOrName={dept.slug || dept.name} size={30} iconSize={16} />
+    <DepartmentServiceIcon slugOrName={dept.slug || dept.name} size={24} iconSize={13} />
     <div style={{ flex: 1, minWidth: 0 }}>
-      <div style={{ fontWeight: 700, fontSize: '0.85rem', color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+      <div style={{ fontWeight: 700, fontSize: '0.78rem', color: '#111827', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
         {dept.name}
       </div>
     </div>
-    <ArrowRight size={14} color="#9ca3af" />
+    <ArrowRight size={12} color="#9ca3af" />
   </button>
 );
 
@@ -226,6 +226,7 @@ interface OverviewProps {
 }
 
 const AdminOverview: React.FC<OverviewProps> = ({ departments, loadingDepts, onTab, pendingNewsCount }) => {
+  const navigate = useNavigate();
   const headerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -248,10 +249,10 @@ const AdminOverview: React.FC<OverviewProps> = ({ departments, loadingDepts, onT
     },
     {
       icon: <Building2 size={20} />,
-      title: 'Municipal Head',
-      description: 'View district-level overview & reports',
+      title: 'Municipal Console',
+      description: 'Open dedicated district commissioner portal',
       gradient: 'linear-gradient(135deg, #7c3aed, #a855f7)',
-      onClick: () => onTab('municipal'),
+      onClick: () => navigate('/municipal/dashboard'),
       delay: 0.1,
     },
     {
@@ -424,89 +425,89 @@ const AdminOverview: React.FC<OverviewProps> = ({ departments, loadingDepts, onT
         <div
           style={{
             background: 'linear-gradient(135deg, #0E526F 0%, #146C94 100%)',
-            borderRadius: 18,
-            padding: '16px 18px',
+            borderRadius: 12,
+            padding: '10px 12px',
             color: '#fff',
-            marginBottom: 16,
-            boxShadow: '0 6px 20px rgba(20, 108, 148, 0.25)',
+            marginBottom: 10,
+            boxShadow: '0 4px 14px rgba(20, 108, 148, 0.2)',
           }}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <LayoutDashboard size={20} color="#fff" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
+            <div style={{ width: 28, height: 28, borderRadius: 7, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <LayoutDashboard size={15} color="#fff" />
             </div>
             <div>
-              <div style={{ fontSize: '1.05rem', fontWeight: 900, lineHeight: 1.2 }}>Betul Admin Command Hub</div>
-              <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.8)' }}>Tap any feature below to open and manage</div>
+              <div style={{ fontSize: '0.9rem', fontWeight: 900, lineHeight: 1.2 }}>Betul Admin Command Hub</div>
+              <div style={{ fontSize: '0.64rem', color: 'rgba(255,255,255,0.8)' }}>Tap any feature below to open and manage</div>
             </div>
           </div>
 
           {/* Quick Metrics Strip */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginTop: 12, paddingTop: 12, borderTop: '1px solid rgba(255,255,255,0.18)' }}>
-            <div style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 10px', textAlign: 'center' }}>
-              <div style={{ fontSize: '1.15rem', fontWeight: 900 }}>1,248</div>
-              <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', opacity: 0.85, fontWeight: 700 }}>Total</div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginTop: 8, paddingTop: 8, borderTop: '1px solid rgba(255,255,255,0.18)' }}>
+            <div style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 7, padding: '5px 6px', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.94rem', fontWeight: 900 }}>1,248</div>
+              <div style={{ fontSize: '0.58rem', textTransform: 'uppercase', opacity: 0.85, fontWeight: 700 }}>Total</div>
             </div>
-            <div style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 10px', textAlign: 'center' }}>
-              <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#86efac' }}>47</div>
-              <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', opacity: 0.85, fontWeight: 700 }}>Resolved</div>
+            <div style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 7, padding: '5px 6px', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.94rem', fontWeight: 900, color: '#86efac' }}>47</div>
+              <div style={{ fontSize: '0.58rem', textTransform: 'uppercase', opacity: 0.85, fontWeight: 700 }}>Resolved</div>
             </div>
-            <div style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 10, padding: '8px 10px', textAlign: 'center' }}>
-              <div style={{ fontSize: '1.15rem', fontWeight: 900, color: '#fde047' }}>23</div>
-              <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', opacity: 0.85, fontWeight: 700 }}>Pending</div>
+            <div style={{ background: 'rgba(255,255,255,0.12)', borderRadius: 7, padding: '5px 6px', textAlign: 'center' }}>
+              <div style={{ fontSize: '0.94rem', fontWeight: 900, color: '#fde047' }}>23</div>
+              <div style={{ fontSize: '0.58rem', textTransform: 'uppercase', opacity: 0.85, fontWeight: 700 }}>Pending</div>
             </div>
           </div>
         </div>
 
         {/* Feature Title */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, padding: '0 4px' }}>
-          <span style={{ fontSize: '0.8rem', fontWeight: 900, color: '#475569', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, padding: '0 2px' }}>
+          <span style={{ fontSize: '0.72rem', fontWeight: 900, color: '#475569', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
             Admin Management Options
           </span>
-          <span style={{ fontSize: '0.74rem', fontWeight: 700, color: '#146C94' }}>
+          <span style={{ fontSize: '0.66rem', fontWeight: 700, color: '#146C94' }}>
             8 Features Available
           </span>
         </div>
 
         {/* Feature-by-Feature Option Cards List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 11, marginBottom: 24 }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 16 }}>
           {quickActions.map((action) => (
             <div
               key={action.title}
               onClick={action.onClick}
               style={{
                 background: '#ffffff',
-                borderRadius: 16,
-                padding: '14px 14px',
-                border: '1.5px solid #e2e8f0',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                borderRadius: 12,
+                padding: '8px 10px',
+                border: '1px solid #e2e8f0',
+                boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: 12,
+                gap: 10,
                 cursor: 'pointer',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
                 <div
                   style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 12,
+                    width: 30,
+                    height: 30,
+                    borderRadius: 7,
                     background: action.gradient,
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: '#fff',
                     flexShrink: 0,
-                    boxShadow: '0 4px 12px rgba(0,0,0,0.12)',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
                   }}
                 >
                   {action.icon}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ fontWeight: 800, fontSize: '0.94rem', color: '#0f172a' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                    <span style={{ fontWeight: 800, fontSize: '0.8rem', color: '#0f172a' }}>
                       {action.title}
                     </span>
                     {action.badge && (
@@ -516,8 +517,8 @@ const AdminOverview: React.FC<OverviewProps> = ({ departments, loadingDepts, onT
                           color: '#dc2626',
                           border: '1px solid #fecaca',
                           borderRadius: 999,
-                          padding: '1px 6px',
-                          fontSize: '0.65rem',
+                          padding: '1px 5px',
+                          fontSize: '0.58rem',
                           fontWeight: 800,
                         }}
                       >
@@ -525,7 +526,7 @@ const AdminOverview: React.FC<OverviewProps> = ({ departments, loadingDepts, onT
                       </span>
                     )}
                   </div>
-                  <p style={{ margin: '3px 0 0', fontSize: '0.75rem', color: '#64748b', lineHeight: 1.3 }}>
+                  <p style={{ margin: '1px 0 0', fontSize: '0.66rem', color: '#64748b', lineHeight: 1.25 }}>
                     {action.description}
                   </p>
                 </div>
@@ -542,18 +543,18 @@ const AdminOverview: React.FC<OverviewProps> = ({ departments, loadingDepts, onT
                   color: '#fff',
                   border: 'none',
                   borderRadius: 999,
-                  padding: '7px 13px',
-                  fontSize: '0.78rem',
+                  padding: '4px 9px',
+                  fontSize: '0.68rem',
                   fontWeight: 800,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 3,
+                  gap: 2,
                   cursor: 'pointer',
                   flexShrink: 0,
-                  boxShadow: '0 2px 8px rgba(20, 108, 148, 0.25)',
+                  boxShadow: '0 1px 4px rgba(20, 108, 148, 0.2)',
                 }}
               >
-                Open <ChevronRight size={13} />
+                Open <ChevronRight size={11} />
               </button>
             </div>
           ))}
@@ -561,11 +562,11 @@ const AdminOverview: React.FC<OverviewProps> = ({ departments, loadingDepts, onT
 
         {/* Mobile Department Selector Accordion */}
         {!loadingDepts && departments.length > 0 && (
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: '0.8rem', fontWeight: 900, color: '#475569', letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: 10, padding: '0 4px' }}>
+          <div style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: '0.72rem', fontWeight: 900, color: '#475569', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 6, padding: '0 2px' }}>
               Filter Complaints by Department
             </div>
-            <div style={{ background: '#fff', borderRadius: 16, border: '1.5px solid #e2e8f0', overflow: 'hidden' }}>
+            <div style={{ background: '#fff', borderRadius: 12, border: '1px solid #e2e8f0', overflow: 'hidden' }}>
               {departments.map((dept) => (
                 <DeptRow key={dept.id} dept={dept} onClick={() => onTab('complaints', dept)} />
               ))}
@@ -688,12 +689,15 @@ export const AdminDashboard: React.FC = () => {
   return (
     <div style={{ minHeight: '100vh', background: '#f8fafc', display: 'flex', flexDirection: 'column' }}>
       {/* ── Top Bar ── */}
-      <header style={{
-        background: 'linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%)',
-        padding: '12px clamp(12px, 3vw, 24px)',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        color: '#fff', boxShadow: '0 2px 16px rgba(0,0,0,0.15)',
-      }}>
+      <header
+        className="admin-top-header"
+        style={{
+          background: 'linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%)',
+          padding: '12px clamp(12px, 3vw, 24px)',
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          color: '#fff', boxShadow: '0 2px 16px rgba(0,0,0,0.15)',
+        }}
+      >
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -726,19 +730,6 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          {/* Overview shortcut */}
-          <button
-            onClick={() => handleTabChange('overview')}
-            style={{
-              display: 'flex', alignItems: 'center', gap: 6,
-              padding: '7px 12px', borderRadius: 8,
-              border: activeTab === 'overview' ? '1.5px solid rgba(255,255,255,0.7)' : '1.5px solid rgba(255,255,255,0.25)',
-              background: activeTab === 'overview' ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)',
-              color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.78rem',
-            }}
-          >
-            <Activity size={13} /> Overview
-          </button>
           <button
             onClick={handleLogout}
             style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px', borderRadius: 8, border: '1.5px solid rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.08)', color: '#fff', fontWeight: 600, cursor: 'pointer', fontSize: '0.8rem' }}
@@ -772,12 +763,16 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </button>
 
-          {/* Municipal Head */}
-          <button onClick={() => handleTabChange('municipal')} style={navBtnStyle(activeTab === 'municipal', 4)}>
+          {/* Municipal Console */}
+          <button
+            onClick={() => navigate('/municipal/dashboard')}
+            style={{ ...navBtnStyle(false, 4), justifyContent: 'space-between' }}
+          >
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <Building2 size={16} color={activeTab === 'municipal' ? '#fff' : 'var(--gray-500)'} />
-              <span>Municipal Head</span>
+              <Building2 size={16} color="var(--gray-500)" />
+              <span>Municipal Console</span>
             </div>
+            <ArrowRight size={13} color="#9ca3af" />
           </button>
 
           {/* Users */}
@@ -881,32 +876,32 @@ export const AdminDashboard: React.FC = () => {
           {/* ── MOBILE FEATURE TOP BAR (Visible on mobile when a feature is open) ── */}
           {activeTab !== 'overview' && (
             <div className="admin-mobile-active-header">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, marginBottom: 10 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 8 }}>
                 <button
                   onClick={() => handleTabChange('overview')}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    gap: 6,
+                    gap: 5,
                     background: '#ffffff',
                     border: '1.5px solid #146C94',
                     color: '#146C94',
                     borderRadius: 999,
-                    padding: '6px 14px',
-                    fontSize: '0.8rem',
+                    padding: '4px 11px',
+                    fontSize: '0.72rem',
                     fontWeight: 800,
                     cursor: 'pointer',
-                    boxShadow: '0 2px 6px rgba(20, 108, 148, 0.15)',
+                    boxShadow: '0 1px 4px rgba(20, 108, 148, 0.12)',
                   }}
                 >
-                  <ArrowLeft size={15} /> Back to Admin Hub
+                  <ArrowLeft size={13} /> Back to Admin Hub
                 </button>
-                <div style={{ fontSize: '0.82rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 4 }}>
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e' }} />
+                <div style={{ fontSize: '0.78rem', fontWeight: 800, color: '#0f172a', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e' }} />
                   {activeTab === 'complaints'
                     ? (activeDept ? activeDept.name : 'All Complaints')
                     : activeTab === 'municipal'
-                    ? 'Municipal Head'
+                    ? 'Municipal Console'
                     : activeTab === 'users'
                     ? 'User Directory'
                     : activeTab === 'register'
@@ -919,51 +914,6 @@ export const AdminDashboard: React.FC = () => {
                     ? 'Staff Management'
                     : 'Push Notifications'}
                 </div>
-              </div>
-
-              {/* Horizontal Scrollable Quick-Switch Feature Tabs */}
-              <div
-                style={{
-                  display: 'flex',
-                  gap: 6,
-                  overflowX: 'auto',
-                  paddingBottom: 8,
-                  marginBottom: 14,
-                  scrollbarWidth: 'none',
-                  WebkitOverflowScrolling: 'touch',
-                }}
-              >
-                {[
-                  { id: 'overview' as Tab, label: '🏠 Hub' },
-                  { id: 'complaints' as Tab, label: '📋 Complaints' },
-                  { id: 'municipal' as Tab, label: '🏛️ Municipal' },
-                  { id: 'users' as Tab, label: '👥 Users' },
-                  { id: 'register' as Tab, label: '👷 Register' },
-                  { id: 'local_news' as Tab, label: '📰 News' },
-                  { id: 'staff_approvals' as Tab, label: '📝 Approvals' },
-                  { id: 'staff_directory' as Tab, label: '🛡️ Staff' },
-                  { id: 'push_notifications' as Tab, label: '🔔 Alerts' },
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleTabChange(item.id)}
-                    style={{
-                      whiteSpace: 'nowrap',
-                      padding: '5px 11px',
-                      borderRadius: 999,
-                      border: '1.5px solid',
-                      borderColor: activeTab === item.id ? '#146C94' : '#e2e8f0',
-                      background: activeTab === item.id ? '#146C94' : '#ffffff',
-                      color: activeTab === item.id ? '#ffffff' : '#475569',
-                      fontSize: '0.74rem',
-                      fontWeight: 700,
-                      cursor: 'pointer',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {item.label}
-                  </button>
-                ))}
               </div>
             </div>
           )}
@@ -1023,117 +973,128 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* ── MOBILE ADMIN BOTTOM DOCK BAR (Visible on mobile screens) ── */}
-      <nav className="admin-mobile-bottom-dock">
-        <button
-          onClick={() => handleTabChange('overview')}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 2,
-            color: activeTab === 'overview' ? '#146C94' : '#94a3b8',
-            fontSize: '0.7rem',
-            fontWeight: activeTab === 'overview' ? 800 : 600,
-            cursor: 'pointer',
-            padding: '4px 8px',
-          }}
-        >
-          <LayoutDashboard size={19} color={activeTab === 'overview' ? '#146C94' : '#94a3b8'} />
-          <span>Hub</span>
-        </button>
+      {activeTab !== 'municipal' && (
+        <nav className="admin-mobile-bottom-dock">
+          <button
+            onClick={() => handleTabChange('overview')}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 1,
+              color: activeTab === 'overview' ? '#146C94' : '#94a3b8',
+              fontSize: '0.6rem',
+              fontWeight: activeTab === 'overview' ? 800 : 600,
+              cursor: 'pointer',
+              padding: '2px 6px',
+            }}
+          >
+            <LayoutDashboard size={16} color={activeTab === 'overview' ? '#146C94' : '#94a3b8'} />
+            <span>Hub</span>
+          </button>
 
-        <button
-          onClick={() => { handleTabChange('complaints'); setActiveDept(null); }}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 2,
-            color: activeTab === 'complaints' ? '#146C94' : '#94a3b8',
-            fontSize: '0.7rem',
-            fontWeight: activeTab === 'complaints' ? 800 : 600,
-            cursor: 'pointer',
-            padding: '4px 8px',
-          }}
-        >
-          <FileText size={19} color={activeTab === 'complaints' ? '#146C94' : '#94a3b8'} />
-          <span>Complaints</span>
-        </button>
+          <button
+            onClick={() => { handleTabChange('complaints'); setActiveDept(null); }}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 1,
+              color: activeTab === 'complaints' ? '#146C94' : '#94a3b8',
+              fontSize: '0.6rem',
+              fontWeight: activeTab === 'complaints' ? 800 : 600,
+              cursor: 'pointer',
+              padding: '2px 6px',
+            }}
+          >
+            <FileText size={16} color={activeTab === 'complaints' ? '#146C94' : '#94a3b8'} />
+            <span>Complaints</span>
+          </button>
 
-        <button
-          onClick={() => handleTabChange('municipal')}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 2,
-            color: activeTab === 'municipal' ? '#146C94' : '#94a3b8',
-            fontSize: '0.7rem',
-            fontWeight: activeTab === 'municipal' ? 800 : 600,
-            cursor: 'pointer',
-            padding: '4px 8px',
-          }}
-        >
-          <Building2 size={19} color={activeTab === 'municipal' ? '#146C94' : '#94a3b8'} />
-          <span>Municipal</span>
-        </button>
+          <button
+            onClick={() => handleTabChange('users')}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 1,
+              color: activeTab === 'users' ? '#146C94' : '#94a3b8',
+              fontSize: '0.6rem',
+              fontWeight: activeTab === 'users' ? 800 : 600,
+              cursor: 'pointer',
+              padding: '2px 6px',
+            }}
+          >
+            <Users size={16} color={activeTab === 'users' ? '#146C94' : '#94a3b8'} />
+            <span>Users</span>
+          </button>
 
-        <button
-          onClick={() => handleTabChange('local_news')}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 2,
-            position: 'relative',
-            color: activeTab === 'local_news' ? '#146C94' : '#94a3b8',
-            fontSize: '0.7rem',
-            fontWeight: activeTab === 'local_news' ? 800 : 600,
-            cursor: 'pointer',
-            padding: '4px 8px',
-          }}
-        >
-          <Newspaper size={19} color={activeTab === 'local_news' ? '#146C94' : '#94a3b8'} />
-          <span>News</span>
-          {pendingNewsCount > 0 && (
-            <span style={{ position: 'absolute', top: 2, right: 12, width: 7, height: 7, borderRadius: '50%', background: '#dc2626' }} />
-          )}
-        </button>
+          <button
+            onClick={() => handleTabChange('local_news')}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 1,
+              position: 'relative',
+              color: activeTab === 'local_news' ? '#146C94' : '#94a3b8',
+              fontSize: '0.6rem',
+              fontWeight: activeTab === 'local_news' ? 800 : 600,
+              cursor: 'pointer',
+              padding: '2px 6px',
+            }}
+          >
+            <Newspaper size={16} color={activeTab === 'local_news' ? '#146C94' : '#94a3b8'} />
+            <span>News</span>
+            {pendingNewsCount > 0 && (
+              <span style={{ position: 'absolute', top: 1, right: 10, width: 5, height: 5, borderRadius: '50%', background: '#dc2626' }} />
+            )}
+          </button>
 
-        <button
-          onClick={() => handleTabChange('staff_approvals')}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            gap: 2,
-            color: activeTab === 'staff_approvals' || activeTab === 'staff_directory' ? '#146C94' : '#94a3b8',
-            fontSize: '0.7rem',
-            fontWeight: activeTab === 'staff_approvals' || activeTab === 'staff_directory' ? 800 : 600,
-            cursor: 'pointer',
-            padding: '4px 8px',
-          }}
-        >
-          <ShieldCheck size={19} color={activeTab === 'staff_approvals' || activeTab === 'staff_directory' ? '#146C94' : '#94a3b8'} />
-          <span>Staff</span>
-        </button>
-      </nav>
+          <button
+            onClick={() => handleTabChange('staff_approvals')}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              gap: 1,
+              color: activeTab === 'staff_approvals' || activeTab === 'staff_directory' ? '#146C94' : '#94a3b8',
+              fontSize: '0.6rem',
+              fontWeight: activeTab === 'staff_approvals' || activeTab === 'staff_directory' ? 800 : 600,
+              cursor: 'pointer',
+              padding: '2px 6px',
+            }}
+          >
+            <ShieldCheck size={16} color={activeTab === 'staff_approvals' || activeTab === 'staff_directory' ? '#146C94' : '#94a3b8'} />
+            <span>Staff</span>
+          </button>
+        </nav>
+      )}
 
       <style>{`
         @media (max-width: 768px) {
+          .admin-top-header {
+            padding: 8px 12px !important;
+          }
+          .admin-top-header h1 {
+            font-size: 0.88rem !important;
+          }
+          .admin-top-header p {
+            font-size: 0.62rem !important;
+          }
           .admin-sidebar {
             position: fixed !important;
-            top: 56px; bottom: 0; left: -260px;
+            top: 50px; bottom: 0; left: -260px;
             z-index: 100; transition: left 0.3s ease;
             box-shadow: 4px 0 20px rgba(0,0,0,0.15);
           }
@@ -1150,7 +1111,7 @@ export const AdminDashboard: React.FC = () => {
             bottom: 0 !important;
             left: 0 !important;
             right: 0 !important;
-            height: 60px !important;
+            height: 48px !important;
             background: rgba(255, 255, 255, 0.98) !important;
             backdrop-filter: blur(12px) !important;
             border-top: 1px solid #e2e8f0 !important;
@@ -1160,7 +1121,7 @@ export const AdminDashboard: React.FC = () => {
             box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.07) !important;
           }
           main {
-            padding-bottom: 76px !important;
+            padding-bottom: 58px !important;
           }
         }
 

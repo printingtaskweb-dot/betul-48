@@ -100,6 +100,7 @@ export interface StaffMemberLite {
 
 export type ViewTab =
   | 'overview'
+  | 'workload'
   | 'analytics'
   | 'complaints'
   | 'departments'

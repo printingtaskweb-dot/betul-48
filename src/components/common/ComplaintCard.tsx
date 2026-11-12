@@ -27,63 +27,83 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
     const interactive = !!onClick;
 
     return (
-      <motion.div
-        onClick={onClick}
-        role={interactive ? 'button' : undefined}
-        tabIndex={interactive ? 0 : undefined}
-        whileHover={interactive && !shouldReduceMotion ? { y: -2, scale: 1.008, boxShadow: '0 8px 24px rgba(0,0,0,0.1)' } : undefined}
-        whileTap={interactive && !shouldReduceMotion ? { scale: 0.985 } : undefined}
-        transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-        onKeyDown={(e) => {
-          if (!interactive) return;
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            onClick?.();
+      <>
+        <style>{`
+          .complaint-card-responsive {
+            padding: 14px 16px;
+            gap: 14px;
           }
-        }}
-        style={{
-          background: 'var(--theme-component, #d9d9d9)',
-          border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-          borderLeft: dept?.color
-            ? `4px solid ${dept.color}`
-            : '1.5px solid var(--theme-component-border, #bfbfbf)',
-          borderRadius: 'var(--radius-md, 12px)',
-          padding: compact ? '12px 14px' : '16px 18px',
-          cursor: interactive ? 'pointer' : 'default',
-          transition: 'var(--transition, box-shadow 0.15s ease)',
-          display: 'flex',
-          gap: 14,
-          outline: 'none',
-        }}
-        onMouseEnter={(e) => {
-          if (!interactive) return;
-          (e.currentTarget as HTMLDivElement).style.boxShadow =
-            '0 4px 16px rgba(0,0,0,0.08)';
-        }}
-        onMouseLeave={(e) => {
-          if (!interactive) return;
-          (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
-        }}
-        onFocus={(e) => {
-          if (!interactive) return;
-          (e.currentTarget as HTMLDivElement).style.boxShadow =
-            '0 0 0 2px var(--theme-primary, #146C94)';
-        }}
-        onBlur={(e) => {
-          if (!interactive) return;
-          (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
-        }}
-      >
-        {/* Thumbnail with GPS corner badge */}
-        {complaint.photo_url && !compact && (
-          <div
-            style={{
-              position: 'relative',
-              width: 100,
-              height: 100,
-              flexShrink: 0,
-            }}
-          >
+          .complaint-card-thumb {
+            width: 90px;
+            height: 90px;
+          }
+          @media (max-width: 768px) {
+            .complaint-card-responsive {
+              padding: 9px 11px !important;
+              gap: 10px !important;
+              border-radius: 10px !important;
+            }
+            .complaint-card-thumb {
+              width: 64px !important;
+              height: 64px !important;
+            }
+          }
+        `}</style>
+        <motion.div
+          onClick={onClick}
+          role={interactive ? 'button' : undefined}
+          tabIndex={interactive ? 0 : undefined}
+          className="complaint-card-responsive"
+          whileHover={interactive && !shouldReduceMotion ? { y: -2, scale: 1.008, boxShadow: '0 8px 24px rgba(0,0,0,0.1)' } : undefined}
+          whileTap={interactive && !shouldReduceMotion ? { scale: 0.985 } : undefined}
+          transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          onKeyDown={(e) => {
+            if (!interactive) return;
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onClick?.();
+            }
+          }}
+          style={{
+            background: 'var(--theme-component, #d9d9d9)',
+            border: '1.5px solid var(--theme-component-border, #bfbfbf)',
+            borderLeft: dept?.color
+              ? `4px solid ${dept.color}`
+              : '1.5px solid var(--theme-component-border, #bfbfbf)',
+            borderRadius: 'var(--radius-md, 12px)',
+            cursor: interactive ? 'pointer' : 'default',
+            transition: 'var(--transition, box-shadow 0.15s ease)',
+            display: 'flex',
+            outline: 'none',
+          }}
+          onMouseEnter={(e) => {
+            if (!interactive) return;
+            (e.currentTarget as HTMLDivElement).style.boxShadow =
+              '0 4px 16px rgba(0,0,0,0.08)';
+          }}
+          onMouseLeave={(e) => {
+            if (!interactive) return;
+            (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
+          }}
+          onFocus={(e) => {
+            if (!interactive) return;
+            (e.currentTarget as HTMLDivElement).style.boxShadow =
+              '0 0 0 2px var(--theme-primary, #146C94)';
+          }}
+          onBlur={(e) => {
+            if (!interactive) return;
+            (e.currentTarget as HTMLDivElement).style.boxShadow = 'none';
+          }}
+        >
+          {/* Thumbnail with GPS corner badge */}
+          {complaint.photo_url && !compact && (
+            <div
+              className="complaint-card-thumb"
+              style={{
+                position: 'relative',
+                flexShrink: 0,
+              }}
+            >
             <img
               src={complaint.photo_url}
               alt="Complaint"
@@ -270,6 +290,7 @@ export const ComplaintCard: React.FC<ComplaintCardProps> = React.memo(
           </div>
         </div>
       </motion.div>
+    </>
     );
   }
 );

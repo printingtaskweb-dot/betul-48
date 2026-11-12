@@ -35,7 +35,7 @@
 
 :root {
   /* =========================================================================
-     🎨 BETUL CIVIC PALETTE — UPDATED
+     BETUL CIVIC PALETTE — UPDATED
      ========================================================================= */
   /* Backgrounds */
   --bg-1: #F6F1F1;
@@ -1400,10 +1400,6 @@ input:focus, textarea:focus, select:focus {
   text-align: center;
   cursor: pointer;
   text-decoration: none;
-  transition: transform 0.4s cubic-bezier(0.6, 0, 0.2, 1);
-}
-.service-item:hover {
-  transform: translateY(-6px);
 }
 .service-icon {
   width: 68px;
@@ -1416,16 +1412,19 @@ input:focus, textarea:focus, select:focus {
   justify-content: center;
   border: 1px solid var(--hairline);
   color: var(--burgundy);
-  transition: all 0.4s cubic-bezier(0.6, 0, 0.2, 1);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.3s ease, border-color 0.3s ease, background 0.3s ease;
+  will-change: transform;
 }
 .service-item:hover .service-icon {
-  box-shadow: 0 4px 12px rgba(20, 108, 148, 0.04), 0 20px 40px -10px rgba(20, 108, 148, 0.18);
-  border-color: rgba(20, 108, 148, 0.25);
+  box-shadow: 0 4px 12px rgba(20, 108, 148, 0.06), 0 16px 32px -8px rgba(20, 108, 148, 0.22);
+  border-color: rgba(20, 108, 148, 0.3);
   background: var(--surface-2);
-  transform: rotate(-8deg) scale(1.08);
+  transform: translateY(-4px) scale(1.1) rotate(-3deg);
 }
 .service-item:hover .service-icon svg {
   stroke: var(--burgundy);
+  transform: scale(1.06);
+  transition: transform 0.3s ease, stroke 0.3s ease;
 }
 .service-item span {
   font-family: var(--font-primary);
@@ -1434,10 +1433,12 @@ input:focus, textarea:focus, select:focus {
   letter-spacing: 0.01em;
   color: var(--slate-soft);
   line-height: 1.2;
-  transition: color 0.3s ease;
+  display: inline-block;
+  transition: color 0.25s ease, transform 0.25s ease;
 }
 .service-item:hover span {
   color: var(--burgundy);
+  transform: translateY(-2px);
 }
 
 /* Complaints List & 3D Tilt Cards */
