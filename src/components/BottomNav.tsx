@@ -1,193 +1,75 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, Newspaper, Plus, Search, ShieldCheck, User } from 'lucide-react';
-
-interface BottomNavItem {
-  path: string;
-  icon: React.ReactNode;
-  label: string;
-}
+import { Home, Newspaper, Plus, Search, User } from 'lucide-react';
 
 export const BottomNav: React.FC = () => {
-  const { language, user, isAdmin } = useAuth();
-  const loc = useLocation();
-
-  const items: BottomNavItem[] = [
-    { path: '/', icon: <Home size={20} />, label: language === 'hi' ? 'होम' : 'Home' },
-    {
-      path: '/news',
-      icon: <Newspaper size={20} />,
-      label: language === 'hi' ? 'समाचार' : 'News',
-    },
-    { path: '/complaint/new', icon: <Plus size={24} />, label: language === 'hi' ? 'शिकायत' : 'Report' },
-    { path: '/track', icon: <Search size={20} />, label: language === 'hi' ? 'स्थिति' : 'Track' },
-    // Admin button visible ONLY to admin users
-    ...(isAdmin
-      ? [
-          {
-            path: '/admin/dashboard',
-            icon: <ShieldCheck size={20} />,
-            label: language === 'hi' ? 'एडमिन' : 'Admin',
-          },
-        ]
-      : [
-          {
-            path: user ? '/profile' : '/auth',
-            icon: <User size={20} />,
-            label: user ? (language === 'hi' ? 'खाता' : 'Account') : (language === 'hi' ? 'लॉगिन' : 'Login'),
-          },
-        ]),
-  ];
+  const { language, user } = useAuth();
+  const location = useLocation();
+  const path = location.pathname;
 
   return (
-    <>
-      <style>{`
-        .mobile-bottom-nav {
-          position: fixed;
-          bottom: 0;
-          left: 0;
-          right: 0;
-          z-index: 2200 !important;
-          background: rgba(255, 255, 255, 0.96);
-          backdrop-filter: blur(16px);
-          -webkit-backdrop-filter: blur(16px);
-          border-top: 1px solid rgba(20, 108, 148, 0.12);
-          box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.08);
-          display: flex;
-          align-items: center;
-          justify-content: space-around;
-          padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
-        }
-        .bottom-nav-link {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          text-decoration: none;
-          min-width: 56px;
-          gap: 2px;
-          transition: color 0.2s ease, transform 0.2s ease;
-        }
-        .bottom-nav-action {
-          background: transparent;
-          border: 0;
-          padding: 0;
-          cursor: pointer;
-        }
-        .bottom-nav-icon-box {
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 5px 12px;
-          border-radius: 12px;
-          transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
-        }
-        .bottom-nav-link:hover .bottom-nav-icon-box:not(.is-active) {
-          background-color: rgba(20, 108, 148, 0.04);
-        }
-        .bottom-nav-fab {
-          width: 48px;
-          height: 48px;
-          border-radius: 50%;
-          margin-top: -14px;
-          background: var(--burgundy, #146C94);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          box-shadow: 0 10px 24px -6px rgba(20, 108, 148, 0.4);
-          border: 3px solid #ffffff;
-          transition: transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
-        }
-        .bottom-nav-fab:hover {
-          transform: translateY(-2px) scale(1.08);
-          background-color: #0E526F;
-          box-shadow: 0 14px 28px -4px rgba(20, 108, 148, 0.45);
-        }
-      `}</style>
-      <nav
-        className="mobile-bottom-nav"
-        aria-label={language === 'hi' ? 'मुख्य नेविगेशन' : 'Main navigation'}
-      >
-        {items.map((item) => {
-          const active = loc.pathname === item.path;
-          const isFab = item.path === '/complaint/new';
-          const content = (
-            <motion.div
-              whileTap={{ scale: 0.92 }}
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                position: 'relative',
-              }}
-            >
-              {isFab ? (
-                <motion.div
-                  className="bottom-nav-fab"
-                  aria-hidden="true"
-                  whileHover={{ scale: 1.1, rotate: 90 }}
-                  whileTap={{ scale: 0.9 }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                >
-                  <Plus size={24} color="#FFFFFF" strokeWidth={2.4} />
-                </motion.div>
-              ) : (
-                <div
-                  className={`bottom-nav-icon-box ${active ? 'is-active' : ''}`}
-                  style={{
-                    position: 'relative',
-                    color: active ? '#146C94' : 'var(--mute, #8E8A86)',
-                  }}
-                >
-                  {active && (
-                    <motion.div
-                      layoutId="bottom-nav-active-indicator"
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        borderRadius: 12,
-                        backgroundColor: 'rgba(20, 108, 148, 0.12)',
-                        zIndex: -1,
-                      }}
-                      transition={{ type: 'spring', stiffness: 450, damping: 30 }}
-                    />
-                  )}
-                  {item.icon}
-                </div>
-              )}
-              <span
-                style={{
-                  fontFamily: 'var(--font-primary, sans-serif)',
-                  fontSize: '10px',
-                  fontWeight: active || isFab ? 700 : 500,
-                  color: active || isFab ? '#146C94' : 'var(--mute, #8E8A86)',
-                  lineHeight: 1.2,
-                  marginTop: 2,
-                }}
-              >
-                {item.label}
-              </span>
-            </motion.div>
-          );
+    <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bottom-nav-mask pt-4 pb-3 px-4 pointer-events-none">
+      <nav className="max-w-md mx-auto bg-white/95 backdrop-blur-md border border-sand-200/90 shadow-float rounded-full px-2 py-1.5 flex items-center justify-between pointer-events-auto">
+        <Link
+          to="/"
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
+            path === '/'
+              ? 'text-civic-700 bg-civic-50 font-bold'
+              : 'text-slate-500 hover:text-civic-800 font-medium'
+          }`}
+        >
+          <Home className="w-4 h-4 mb-0.5" />
+          <span>{language === 'hi' ? 'होम' : 'Home'}</span>
+        </Link>
 
-          return (
-            <Link
-              key={item.path}
-              to={item.path}
-              className={`bottom-nav-link${isFab ? ' bottom-nav-report' : ''}`}
-              aria-current={active ? 'page' : undefined}
-              style={{
-                color: active || isFab ? '#146C94' : 'var(--mute, #8E8A86)',
-              }}
-            >
-              {content}
-            </Link>
-          );
-        })}
+        <Link
+          to="/news"
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
+            path === '/news'
+              ? 'text-civic-700 bg-civic-50 font-bold'
+              : 'text-slate-500 hover:text-civic-800 font-medium'
+          }`}
+        >
+          <Newspaper className="w-4 h-4 mb-0.5" />
+          <span>{language === 'hi' ? 'समाचार' : 'News'}</span>
+        </Link>
+
+        {/* Center Elevated + Report Button */}
+        <div className="px-1 -mt-5">
+          <Link
+            to="/complaint/new"
+            className="w-14 h-14 rounded-full bg-gradient-to-br from-civic-600 to-civic-800 text-white shadow-lg shadow-civic-700/30 border-4 border-white flex flex-col items-center justify-center active:scale-95 transition"
+            aria-label={language === 'hi' ? 'समस्या दर्ज करें' : 'Report Civic Issue'}
+          >
+            <Plus className="w-6 h-6" />
+          </Link>
+        </div>
+
+        <Link
+          to="/track"
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
+            path === '/track'
+              ? 'text-civic-700 bg-civic-50 font-bold'
+              : 'text-slate-500 hover:text-civic-800 font-medium'
+          }`}
+        >
+          <Search className="w-4 h-4 mb-0.5" />
+          <span>{language === 'hi' ? 'ट्रैक' : 'Track'}</span>
+        </Link>
+
+        <Link
+          to={user ? '/profile' : '/auth'}
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
+            path === '/profile' || path === '/auth'
+              ? 'text-civic-700 bg-civic-50 font-bold'
+              : 'text-slate-500 hover:text-civic-800 font-medium'
+          }`}
+        >
+          <User className="w-4 h-4 mb-0.5" />
+          <span>{user ? (language === 'hi' ? 'खाता' : 'Account') : (language === 'hi' ? 'लॉगिन' : 'Login')}</span>
+        </Link>
       </nav>
-    </>
+    </div>
   );
 };
-
-export default BottomNav;

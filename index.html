@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="scroll-smooth">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -21,19 +21,60 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
 
+    <!-- Tailwind CSS CDN for Betul 311 Design System -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind = {
+        config: {
+          theme: {
+            extend: {
+              fontFamily: {
+                sans: ['"Plus Jakarta Sans"', '"Noto Sans Devanagari"', 'sans-serif'],
+              },
+              colors: {
+                civic: {
+                  50: '#f0f7f9',
+                  100: '#d9ecf1',
+                  200: '#b7dae4',
+                  300: '#85bfd0',
+                  400: '#4c9bb4',
+                  500: '#2f7f99',
+                  600: '#25667f',
+                  700: '#225368',
+                  800: '#214657',
+                  900: '#1e3b4a',
+                  950: '#0f2531',
+                },
+                sand: {
+                  50: '#faf9f6',
+                  100: '#f3f1ec',
+                  200: '#e6e2d8',
+                }
+              },
+              boxShadow: {
+                'soft': '0 4px 20px -2px rgba(15, 37, 49, 0.06)',
+                'card': '0 2px 10px -1px rgba(15, 37, 49, 0.04), 0 1px 3px -1px rgba(15, 37, 49, 0.03)',
+                'float': '0 10px 30px -5px rgba(15, 37, 49, 0.14)',
+              }
+            }
+          }
+        }
+      }
+    </script>
+
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content="Jila Betul" />
-    <meta property="og:title" content="Jila Betul | Betul Nagar Palika Civic Services" />
-    <meta property="og:description" content="Report civic issues, track complaint status, and get local updates from Betul Nagar Palika." />
+    <meta property="og:title" content="Betul 311 — Nagar Palika Parishad Betul | Smart Citizen Portal" />
+    <meta property="og:description" content="Report civic issues with live GPS and photo proof, track municipal field engineers in real time, and help keep Betul clean and green." />
     <meta property="og:url" content="https://www.betulnagar.co.in/" />
     <meta property="og:image" content="https://www.betulnagar.co.in/logo.png" />
     <meta name="twitter:card" content="summary" />
-    <meta name="twitter:title" content="Jila Betul | Betul Nagar Palika Civic Services" />
-    <meta name="twitter:description" content="Report civic issues, track complaint status, and get local updates from Betul Nagar Palika." />
+    <meta name="twitter:title" content="Betul 311 — Nagar Palika Parishad Betul | Smart Citizen Portal" />
+    <meta name="twitter:description" content="Report civic issues with live GPS and photo proof, track municipal field engineers in real time, and help keep Betul clean and green." />
     <meta name="twitter:image" content="https://www.betulnagar.co.in/logo.png" />
-    <title>Jila Betul | Betul Nagar Palika Civic Services</title>
+    <title>Betul 311 — Nagar Palika Parishad Betul | Smart Citizen Portal</title>
   </head>
-  <body>
+  <body class="antialiased selection:bg-civic-200 selection:text-civic-950 pb-28 lg:pb-12" style="background-color: #faf9f6; color: #0f2531;">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

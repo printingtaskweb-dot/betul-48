@@ -1,570 +1,773 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { t } from '../lib/i18n';
-import { HeroBanner } from '../components/HeroBanner';
 import { StatsSection } from '../components/StatsSection';
 import { ServicesGrid } from '../components/ServicesGrid';
-import { RecentComplaints } from '../components/RecentComplaints';
+import { WardCoverageSection } from '../components/WardCoverageSection';
 import { LocalNewsSection } from '../components/LocalNewsSection';
+import { RecentComplaints } from '../components/RecentComplaints';
 import { BottomNav } from '../components/BottomNav';
-import { Globe, LogOut, Building2, Camera, Search } from 'lucide-react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import {
+  Landmark,
+  Globe,
+  Plus,
+  Search,
+  Camera,
+  Radar,
+  ArrowUpRight,
+  ChevronRight,
+  MapPin,
+  HardHat,
+  ShieldCheck,
+  Leaf,
+  Truck,
+  ArrowRight,
+  X,
+  Check,
+  Building2,
+  LogOut,
+} from 'lucide-react';
 
-gsap.registerPlugin(ScrollTrigger);
+interface TimelineStep {
+  step: string;
+  time: string;
+  done: boolean;
+}
+
+interface TrackedTicket {
+  id: string;
+  department: string;
+  title: string;
+  ward: string;
+  status: string;
+  engineer: string;
+  timeline: TimelineStep[];
+}
+
+const SAMPLE_TICKETS: Record<string, TrackedTicket> = {
+  'BTL-2026-00020': {
+    id: 'BTL-2026-00020',
+    department: 'Water',
+    title: 'Main water supply valve leakage near Kothi Bazar Chowk',
+    ward: 'Kothi Bazar • Ward 1',
+    status: 'Pending',
+    engineer: 'Er. S. K. Tiwari',
+    timeline: [
+      { step: 'Citizen Report & GPS Verified', time: 'Today, 07:10 PM', done: true },
+      { step: 'Assigned to Water Department', time: 'Today, 07:14 PM', done: true },
+      { step: 'Field Plumbing Team Dispatch', time: 'Scheduled', done: false },
+      { step: 'Resolved & Photo Verified', time: 'Target SLA: 12 hrs', done: false },
+    ],
+  },
+  'BTL-2026-00019': {
+    id: 'BTL-2026-00019',
+    department: 'Streetlight',
+    title: 'Three LED streetlamps out on Tikari Main Road stretch',
+    ward: 'Tikari • Ward 12',
+    status: 'In Progress',
+    engineer: 'Er. R. K. Verma',
+    timeline: [
+      { step: 'Citizen Report & GPS Verified', time: 'Today, 06:05 PM', done: true },
+      { step: 'Assigned to Electrical Wing', time: 'Today, 06:15 PM', done: true },
+      { step: 'Maintenance Van On-Site', time: 'In Progress', done: true },
+      { step: 'Resolved & Photo Verified', time: 'Est. 08:30 PM', done: false },
+    ],
+  },
+  'BTL-2026-00018': {
+    id: 'BTL-2026-00018',
+    department: 'C&D Waste',
+    title: 'Construction debris clearance required near Ganj Sabzi Mandi',
+    ward: 'Ganj • Ward 5',
+    status: 'Verified',
+    engineer: 'Er. R. K. Verma',
+    timeline: [
+      { step: 'Citizen Report & GPS Verified', time: 'Today, 04:10 PM', done: true },
+      { step: 'Ward Inspector Verified Site', time: 'Today, 04:45 PM', done: true },
+      { step: 'Loader & Tipper Scheduled', time: 'Tomorrow, 07:30 AM', done: false },
+      { step: 'Resolved & Photo Verified', time: 'Pending', done: false },
+    ],
+  },
+  'BTL-2026-00017': {
+    id: 'BTL-2026-00017',
+    department: 'Solid Waste',
+    title: 'Morning garbage collection point cleared at Badora Square',
+    ward: 'Badora • Ward 18',
+    status: 'Resolved',
+    engineer: 'Er. P. S. Rathore',
+    timeline: [
+      { step: 'Citizen Report & GPS Verified', time: 'Yesterday, 09:20 AM', done: true },
+      { step: 'Assigned to Swachhata Unit', time: 'Yesterday, 09:30 AM', done: true },
+      { step: 'Collection Vehicle Dispatched', time: 'Yesterday, 10:15 AM', done: true },
+      { step: 'Resolved & Photo Verified', time: 'Yesterday, 10:50 AM', done: true },
+    ],
+  },
+};
 
 export const Home: React.FC = () => {
   const { language, setLanguage, user, profile, signOut } = useAuth();
   const navigate = useNavigate();
-  const pageRef = useRef<HTMLDivElement>(null);
+
+  // Search State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+
+  // Modal State
+  const [trackModalOpen, setTrackModalOpen] = useState(false);
+  const [trackTicketInput, setTrackTicketInput] = useState('BTL-2026-00020');
+  const [activeTicket, setActiveTicket] = useState<TrackedTicket | null>(SAMPLE_TICKETS['BTL-2026-00020']);
+
+  // Toast
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => {
+      setToastMessage(null);
+    }, 3500);
+  };
+
+  const toggleLanguage = () => {
+    const nextLang = language === 'en' ? 'hi' : 'en';
+    setLanguage(nextLang);
+    showToast(nextLang === 'hi' ? 'भाषा हिन्दी में बदली गई' : 'Language switched to English');
+  };
 
   const handleLogout = async () => {
     await signOut();
     navigate('/auth');
   };
 
-  useEffect(() => {
-    if (typeof window === 'undefined' || !pageRef.current) return;
-
-    const ctx = gsap.context(() => {
-      // Set initial states
-      gsap.set('.top-nav', { opacity: 0, y: -20 });
-      gsap.set('.quick-actions', { opacity: 0, y: 30 });
-      gsap.set('.special-service', { opacity: 0, y: 40 });
-
-      // Intro timeline
-      const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
-      tl.to('.top-nav', { opacity: 1, y: 0, duration: 0.8 }, 0.1)
-        .to('.quick-actions', { opacity: 1, y: 0, duration: 0.8 }, 0.5);
-
-      // Scroll-triggered reveal for special service
-      gsap.to('.special-service', {
-        opacity: 1,
-        y: 0,
-        duration: 0.9,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: '.special-service',
-          start: 'top 85%',
-        },
-      });
-
-      // Button press feedback
-      const handlePress = (btn: HTMLElement) => {
-        gsap.fromTo(
-          btn,
-          { scale: 1 },
-          {
-            scale: 0.93,
-            duration: 0.12,
-            yoyo: true,
-            repeat: 1,
-            ease: 'power2.inOut',
-          }
-        );
+  // Tracking logic
+  const openTrackModalFor = (ticketId: string) => {
+    const cleanId = ticketId.replace('#', '').trim().toUpperCase();
+    setTrackTicketInput(cleanId);
+    const found =
+      SAMPLE_TICKETS[cleanId] || {
+        id: cleanId,
+        department: 'Civic Grievance',
+        title: 'Municipal Grievance in Progress',
+        ward: 'Betul City Ward',
+        status: 'In Progress',
+        engineer: 'Er. Municipal Ward Officer',
+        timeline: [
+          { step: 'Citizen Report & GPS Verified', time: 'Logged in IMC 311', done: true },
+          { step: 'Field Engineer Allotment', time: 'Dispatched', done: true },
+          { step: 'Site Verification & Repair', time: 'In Progress', done: true },
+          { step: 'Resolution & Citizen Confirmation', time: 'Pending', done: false },
+        ],
       };
-
-      const buttons = pageRef.current?.querySelectorAll('.btn-outline, .btn-solid, .action-card');
-      buttons?.forEach((btn) => {
-        const handler = () => handlePress(btn as HTMLElement);
-        btn.addEventListener('click', handler);
-        (btn as any)._pressHandler = handler;
-      });
-
-      // Cleanup handlers
-      return () => {
-        buttons?.forEach((btn) => {
-          const handler = (btn as any)._pressHandler;
-          if (handler) btn.removeEventListener('click', handler);
-        });
-      };
-    }, pageRef);
-
-    return () => {
-      ctx.revert();
-    };
-  }, []);
-
-  const onCardMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const r = e.currentTarget.getBoundingClientRect();
-    const px = (e.clientX - r.left) / r.width - 0.5;
-    const py = (e.clientY - r.top) / r.height - 0.5;
-    e.currentTarget.style.transform = `perspective(1000px) rotateX(${-py * 6}deg) rotateY(${px * 6}deg) translateY(-4px)`;
+    setActiveTicket(found);
+    setTrackModalOpen(true);
   };
 
-  const onCardMouseLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.currentTarget.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0px)';
+  const executeTrackLookup = () => {
+    const cleanId = trackTicketInput.replace('#', '').trim().toUpperCase();
+    if (!cleanId) return;
+    openTrackModalFor(cleanId);
+  };
+
+  // Hero search logic
+  const SEARCH_ITEMS = [
+    { title: 'Water Supply & Pipeline', hi: 'पेयजल आपूर्ति', dept: 'Water', route: '/complaint/new?dept=water' },
+    { title: 'Streetlight & LED Repair', hi: 'स्ट्रीट लाइट', dept: 'Streetlight', route: '/complaint/new?dept=streetlight' },
+    { title: 'Green Waste & Garden Pruning', hi: 'हरित कचरा', dept: 'Green City', route: '/department/green' },
+    { title: 'Drainage & Sewage Cleaning', hi: 'सीवेज एवं नाली', dept: 'Sewage', route: '/complaint/new?dept=sewage' },
+    { title: 'Garbage & Solid Waste Pickup', hi: 'कचरा संग्रहण', dept: 'Solid Waste', route: '/complaint/new?dept=solid-waste' },
+    { title: 'Roads & Potholes Repair', hi: 'सड़क मरम्मत', dept: 'Roads', route: '/complaint/new?dept=roads' },
+    { title: '#BTL-2026-00020 (Water Leakage)', hi: 'टिकट #BTL-2026-00020', ticketId: 'BTL-2026-00020' },
+    { title: '#BTL-2026-00019 (Tikari Streetlights)', hi: 'टिकट #BTL-2026-00019', ticketId: 'BTL-2026-00019' },
+  ];
+
+  const filteredSearch = searchQuery.trim()
+    ? SEARCH_ITEMS.filter(
+        (item) =>
+          item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          item.hi.includes(searchQuery)
+      )
+    : [];
+
+  const handleSearchSelect = (item: (typeof SEARCH_ITEMS)[0]) => {
+    setShowSearchDropdown(false);
+    setSearchQuery('');
+    if (item.ticketId) {
+      openTrackModalFor(item.ticketId);
+    } else if (item.route) {
+      navigate(item.route);
+    }
   };
 
   return (
-    <div
-      ref={pageRef}
-      className="home-page"
-      style={{
-        minHeight: '100vh',
-        background: '#F6F1F1',
-        paddingBottom: 100,
-      }}
-    >
-      {/* ── Top Bar / Header ── */}
-      <header
-        className="top-nav"
-        style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '14px 20px',
-          background: 'rgba(246, 241, 241, 0.9)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          borderBottom: '1px solid rgba(20, 108, 148, 0.12)',
-          position: 'sticky',
-          top: 0,
-          zIndex: 100,
-          boxShadow: '0 4px 20px -10px rgba(20, 108, 148, 0.06)',
-          opacity: 0,
-        }}
-      >
-        {/* Logo & City Title */}
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
-          <div
-            style={{
-              width: 38, height: 38, borderRadius: 12,
-              background: '#146C94',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              color: '#fff',
-              fontFamily: 'var(--font-primary)',
-              fontWeight: 600, fontSize: 20, fontStyle: 'normal',
-              boxShadow: '0 6px 14px -4px rgba(20, 108, 148, 0.28)',
-            }}
-          >
-            B
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{
-              fontFamily: 'var(--font-primary)',
-              fontWeight: 600, fontSize: 17,
-              letterSpacing: '0.01em', color: '#0f1f26',
-            }}>
-              Jila Betul
-            </span>
-            <span style={{
-              fontFamily: 'var(--font-primary)', fontSize: 9,
-              fontWeight: 500, fontStyle: 'normal',
-              letterSpacing: '0.08em', color: '#6b8a99',
-              textTransform: 'uppercase' as const,
-              marginTop: 1,
-            }}>
-              {language === 'hi' ? 'नागरिक समाधान साथी' : 'Citizen Resolution Partner'}
-            </span>
-          </div>
-        </Link>
-
-        {/* Desktop Navigation Links */}
-        <nav className="desktop-nav-links" style={{ gap: 20, alignItems: 'center' }}>
-          <Link
-            to="/complaint/new"
-            style={{
-              fontFamily: 'var(--font-primary)',
-              fontSize: '0.82rem', fontWeight: 500, fontStyle: 'normal',
-              textTransform: 'uppercase', letterSpacing: '0.06em',
-              color: '#1f3540', transition: 'all 0.3s ease',
-            }}
-          >
-            {t(language, 'reportIssue')}
-          </Link>
-          <Link
-            to="/department/green"
-            style={{
-              fontFamily: 'var(--font-primary)',
-              fontSize: '0.82rem', fontWeight: 500, fontStyle: 'normal',
-              textTransform: 'uppercase', letterSpacing: '0.06em',
-              color: '#146C94', transition: 'all 0.3s ease',
-            }}
-          >
-            <span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>eco</span>{language === 'hi' ? 'हरित कचरा' : 'Green Waste'}
-          </Link>
-                    <Link
-            to="/track"
-            style={{
-              fontFamily: 'var(--font-primary)',
-              fontSize: '0.82rem', fontWeight: 500, fontStyle: 'normal',
-              textTransform: 'uppercase', letterSpacing: '0.06em',
-              color: '#1f3540', transition: 'all 0.3s ease',
-            }}
-          >
-            {t(language, 'trackComplaint')}
-          </Link>
-          <Link
-            to="/dept/login"
-            style={{
-              fontFamily: 'var(--font-primary)',
-              fontSize: '0.82rem', fontWeight: 500, fontStyle: 'normal',
-              textTransform: 'uppercase', letterSpacing: '0.06em',
-              color: '#146C94',
-              display: 'flex', alignItems: 'center', gap: 5,
-              transition: 'all 0.3s ease',
-            }}
-          >
-            <Building2 size={15} />
-            {language === 'hi' ? 'विभाग पोर्टल' : 'Dept Portal'}
-          </Link>
-        </nav>
-
-        {/* Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <button
-            onClick={() => setLanguage(language === 'en' ? 'hi' : 'en')}
-            className="btn-outline"
-            title="Switch Language"
-          >
-            <Globe size={12} />
-            <span>{language === 'en' ? 'हिन्दी' : 'English'}</span>
-          </button>
-
-          {user ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <Link
-                to="/profile"
-                style={{
-                  width: 34, height: 34, borderRadius: '50%',
-                  background: '#146C94',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  color: '#fff', fontSize: '0.85rem', fontWeight: 700,
-                  textDecoration: 'none', cursor: 'pointer',
-                  boxShadow: '0 4px 12px -4px rgba(20, 108, 148, 0.28)',
-                }}
-                title={user.email || 'User Profile'}
-              >
-                {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
-              </Link>
-              <button
-                onClick={handleLogout}
-                style={{
-                  border: 'none',
-                  background: 'rgba(20, 108, 148, 0.08)',
-                  borderRadius: 8,
-                  cursor: 'pointer', padding: 7,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}
-                title={t(language, 'logout')}
-              >
-                <LogOut size={16} color="#1f3540" />
-              </button>
+    <div className="min-h-screen bg-sand-50 text-civic-950 font-sans pb-28 lg:pb-12">
+      {/* ===================================================================== */}
+      {/* 1. MINIMALIST STICKY HEADER                                           */}
+      {/* ===================================================================== */}
+      <header className="sticky top-0 z-40 bg-sand-50/95 backdrop-blur-md border-b border-sand-200/80">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3">
+          {/* Brand Crest & Title */}
+          <Link to="/" className="flex items-center gap-3 min-w-0 text-decoration-none">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-civic-600 to-civic-800 text-white flex items-center justify-center shadow-sm shrink-0">
+              <Landmark className="w-5 h-5" />
             </div>
-          ) : (
-            <Link to="/auth" className="btn-solid" style={{ textDecoration: 'none' }}>
-              {t(language, 'login')}
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span className="font-extrabold text-base sm:text-lg tracking-tight text-civic-950 truncate">
+                  Betul 311
+                </span>
+                <span className="hidden sm:inline-block text-[11px] font-semibold px-2 py-0.5 rounded-md bg-civic-100 text-civic-800">
+                  betulnagar.co.in
+                </span>
+              </div>
+              <p className="text-[11px] sm:text-xs text-slate-500 font-medium truncate">
+                {language === 'hi'
+                  ? 'जिला बैतूल • नगर पालिका परिषद'
+                  : 'Jila Betul • Nagar Palika Parishad'}
+              </p>
+            </div>
+          </Link>
+
+          {/* Clean Desktop Navigation */}
+          <nav className="hidden lg:flex items-center gap-1 bg-white/90 p-1 rounded-full border border-sand-200 shadow-2xs">
+            <a
+              href="#top"
+              className="px-4 py-1.5 rounded-full text-sm font-semibold bg-civic-700 text-white transition text-decoration-none"
+            >
+              {language === 'hi' ? 'होम' : 'Home'}
+            </a>
+            <a
+              href="#services-section"
+              className="px-4 py-1.5 rounded-full text-sm font-medium text-slate-600 hover:text-civic-900 hover:bg-sand-100 transition text-decoration-none"
+            >
+              {language === 'hi' ? 'हमारी सेवाएं' : 'Our Services'}
+            </a>
+            <a
+              href="#wards-section"
+              className="px-4 py-1.5 rounded-full text-sm font-medium text-slate-600 hover:text-civic-900 hover:bg-sand-100 transition text-decoration-none"
+            >
+              {language === 'hi' ? '33 वार्ड' : '33 Wards'}
+            </a>
+            <a
+              href="#feed-section"
+              className="px-4 py-1.5 rounded-full text-sm font-medium text-slate-600 hover:text-civic-900 hover:bg-sand-100 transition text-decoration-none"
+            >
+              {language === 'hi' ? 'हालिया शिकायतें' : 'Recent Complaints'}
+            </a>
+            <Link
+              to="/news"
+              className="px-4 py-1.5 rounded-full text-sm font-medium text-slate-600 hover:text-civic-900 hover:bg-sand-100 transition text-decoration-none"
+            >
+              {language === 'hi' ? 'स्थानीय समाचार' : 'Local News'}
             </Link>
-          )}
+            <Link
+              to="/dept/login"
+              className="px-4 py-1.5 rounded-full text-sm font-medium text-civic-700 hover:text-civic-900 hover:bg-civic-50 transition text-decoration-none flex items-center gap-1"
+            >
+              <Building2 className="w-3.5 h-3.5" />
+              <span>{language === 'hi' ? 'विभाग पोर्टल' : 'Dept Portal'}</span>
+            </Link>
+          </nav>
+
+          {/* Right Controls: Language Toggle & Single Report Issue CTA */}
+          <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={toggleLanguage}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white hover:bg-civic-50 text-civic-900 border border-sand-200 shadow-2xs text-xs sm:text-sm font-semibold transition active:scale-95 cursor-pointer"
+              aria-label="Switch Language"
+            >
+              <Globe className="w-4 h-4 text-civic-600" />
+              <span>{language === 'en' ? 'हिन्दी' : 'English'}</span>
+            </button>
+
+            <Link
+              to="/complaint/new"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-civic-700 hover:bg-civic-800 text-white text-xs sm:text-sm font-bold shadow-sm transition active:scale-95 text-decoration-none"
+            >
+              <Plus className="w-4 h-4" />
+              <span>{language === 'hi' ? 'समस्या दर्ज करें' : 'Report Issue'}</span>
+            </Link>
+
+            {user ? (
+              <div className="flex items-center gap-1.5 ml-1">
+                <Link
+                  to="/profile"
+                  className="w-9 h-9 rounded-full bg-civic-700 text-white flex items-center justify-center font-bold text-xs shadow-xs text-decoration-none"
+                  title={user.email || 'Profile'}
+                >
+                  {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+                </Link>
+                <button
+                  type="button"
+                  onClick={handleLogout}
+                  className="w-8 h-8 rounded-full bg-sand-100 hover:bg-sand-200 text-slate-700 flex items-center justify-center transition cursor-pointer"
+                  title="Logout"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : null}
+          </div>
         </div>
       </header>
 
-      {/* ── Hero Carousel ── */}
-      <HeroBanner />
-
-      {/* ── Desktop Quick Actions (Spacious 1*2 with detailed info & 3D tilt) ── */}
-      <div className="quick-actions quick-actions-desktop desktop-grid" style={{ opacity: 0 }}>
-        <Link to="/complaint/new" style={{ textDecoration: 'none', display: 'flex' }}>
-          <div
-            className="action-card action-card-desktop"
-            onMouseMove={onCardMouseMove}
-            onMouseLeave={onCardMouseLeave}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div className="action-icon" style={{ width: 44, height: 44, borderRadius: 12 }}>
-                <Camera size={22} />
-              </div>
-              <div className="action-text">
-                <h4 style={{ fontSize: 15, fontWeight: 700 }}>{t(language, 'reportIssue')}</h4>
-                <p style={{ fontSize: 12.5, color: '#64748b', marginTop: 2 }}>
-                  {language === 'hi' ? 'फोटो लें व स्वतः GPS जोड़कर शिकायत दर्ज करें' : 'Take photo & auto-attach GPS coordinates'}
-                </p>
-              </div>
-            </div>
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 4,
-              padding: '6px 14px',
-              borderRadius: 999,
-              background: 'rgba(20, 108, 148, 0.08)',
-              color: 'var(--burgundy)',
-              fontSize: 12,
-              fontWeight: 700,
-              flexShrink: 0
-            }}>
-              {language === 'hi' ? 'दर्ज करें' : 'Report'} →
-            </span>
-          </div>
-        </Link>
-
-        <Link to="/track" style={{ textDecoration: 'none', display: 'flex' }}>
-          <div
-            className="action-card action-card-desktop"
-            onMouseMove={onCardMouseMove}
-            onMouseLeave={onCardMouseLeave}
-            style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 20px' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-              <div className="action-icon" style={{ width: 44, height: 44, borderRadius: 12 }}>
-                <Search size={22} />
-              </div>
-              <div className="action-text">
-                <h4 style={{ fontSize: 15, fontWeight: 700 }}>{t(language, 'trackComplaint')}</h4>
-                <p style={{ fontSize: 12.5, color: '#64748b', marginTop: 2 }}>
-                  {language === 'hi' ? 'टिकट नंबर से लाइव स्थिति व समाधान देखें' : 'Track real-time timeline & verify resolution'}
-                </p>
-              </div>
-            </div>
-            <span style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 4,
-              padding: '6px 14px',
-              borderRadius: 999,
-              background: 'rgba(20, 108, 148, 0.08)',
-              color: 'var(--burgundy)',
-              fontSize: 12,
-              fontWeight: 700,
-              flexShrink: 0
-            }}>
-              {language === 'hi' ? 'देखें' : 'Track'} →
-            </span>
-          </div>
-        </Link>
-      </div>
-
-      {/* ── Mobile Quick Actions (Ultra-compact 1*2 Touch-optimized) ── */}
-      <div className="quick-actions quick-actions-mobile mobile-grid" style={{ opacity: 0 }}>
-        <Link to="/complaint/new" style={{ textDecoration: 'none', display: 'flex' }}>
-          <div className="action-card action-card-mobile" style={{ width: '100%' }}>
-            <div className="action-icon action-icon-mobile">
-              <Camera size={16} />
-            </div>
-            <div className="action-text">
-              <h4 style={{ fontSize: 12 }}>{t(language, 'reportIssue')}</h4>
-              <p style={{ fontSize: 9.5 }}>{language === 'hi' ? 'फोटो + GPS' : 'Photo + GPS'}</p>
-            </div>
-          </div>
-        </Link>
-
-        <Link to="/track" style={{ textDecoration: 'none', display: 'flex' }}>
-          <div className="action-card action-card-mobile" style={{ width: '100%' }}>
-            <div className="action-icon action-icon-mobile">
-              <Search size={16} />
-            </div>
-            <div className="action-text">
-              <h4 style={{ fontSize: 12 }}>{t(language, 'trackComplaint')}</h4>
-              <p style={{ fontSize: 9.5 }}>{language === 'hi' ? 'लाइव स्थिति' : 'Live Status'}</p>
-            </div>
-          </div>
-        </Link>
-      </div>
-
-      {/* ── Live Stats ── */}
-      <StatsSection />
-
-      {/* ── Desktop Green Waste Pickup (Horizontal Split Banner) ── */}
-      <section className="desktop-only" style={{ padding: 0 }}>
-        <Link to="/department/green" style={{ textDecoration: 'none', display: 'block' }}>
-          <div className="special-service special-service-desktop">
-            <svg
-              className="leaf-bg"
-              viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5"
-            >
-              <path d="M50 10 C 30 30, 20 60, 50 90 C 80 60, 70 30, 50 10 Z" />
-              <path d="M50 10 L 50 90" />
-              <path d="M50 30 L 35 45" />
-              <path d="M50 50 L 65 65" />
-            </svg>
-
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', position: 'relative', zIndex: 2 }}>
-              <div style={{ maxWidth: '75%' }}>
-                <div className="special-badge">
-                  <span className="dot" />
-                  {language === 'hi' ? 'विशेष नागरिक सेवा' : 'Featured Civic Service'}
-                </div>
-                <h2 className="special-title" style={{ fontSize: 19, margin: '4px 0 4px' }}>
-                  {t(language, 'greenDeptTitle')}
-                </h2>
-                <p className="special-desc" style={{ fontSize: 12.5, margin: 0, opacity: 0.9 }}>
-                  {t(language, 'greenDeptSubtitle')} (Fallen leaves, tree pruning & garden waste)
-                </p>
-                <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 11, background: 'rgba(255,255,255,0.12)', padding: '3px 9px', borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                    🍂 {language === 'hi' ? 'सूखे पत्ते व टहनियाँ' : 'Fallen Leaves & Branches'}
-                  </span>
-                  <span style={{ fontSize: 11, background: 'rgba(255,255,255,0.12)', padding: '3px 9px', borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                    🌿 {language === 'hi' ? 'बगीचे का कचरा' : 'Garden Trimmings'}
-                  </span>
-                  <span style={{ fontSize: 11, background: 'rgba(255,255,255,0.12)', padding: '3px 9px', borderRadius: 6, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                    ♻️ {language === 'hi' ? 'जैविक खाद निर्माण' : 'Civic Composting'}
-                  </span>
-                </div>
-              </div>
-
-              <div style={{ flexShrink: 0, paddingLeft: 18 }}>
-                <span className="special-cta" style={{ padding: '10px 22px', fontSize: 12, fontWeight: 700 }}>
-                  {language === 'hi' ? 'हरित कचरा पिकअप' : 'Request Pickup'} →
+      {/* ===================================================================== */}
+      {/* 2. HERO SECTION (Clean Typography + Framed Civic Photography)         */}
+      {/* ===================================================================== */}
+      <main id="top" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 space-y-8 sm:space-y-10">
+        <section className="relative rounded-3xl bg-white border border-sand-200 p-6 sm:p-8 lg:p-10 shadow-soft overflow-hidden">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+            {/* Left 7 Columns: Headline, Search Bar & Two Primary Action Cards */}
+            <div className="lg:col-span-7 space-y-5">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-civic-50 border border-civic-100 text-civic-800 text-xs font-semibold">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>
+                  {language === 'hi'
+                    ? '33 नगरीय वार्ड • 100% सत्यापित निराकरण • शून्य विलंब'
+                    : '33 Municipal Wards • 100% Verified Resolution • Zero Delay'}
                 </span>
               </div>
-            </div>
-          </div>
-        </Link>
-      </section>
 
-      {/* ── Mobile Green Waste Pickup (Compact Vertical Card) ── */}
-      <section className="mobile-only" style={{ padding: 0 }}>
-        <Link to="/department/green" style={{ textDecoration: 'none', display: 'block' }}>
-          <div className="special-service special-service-mobile">
-            <svg
-              className="leaf-bg"
-              viewBox="0 0 100 100" fill="none" stroke="currentColor" strokeWidth="1.5"
-            >
-              <path d="M50 10 C 30 30, 20 60, 50 90 C 80 60, 70 30, 50 10 Z" />
-              <path d="M50 10 L 50 90" />
-              <path d="M50 30 L 35 45" />
-              <path d="M50 50 L 65 65" />
-            </svg>
-
-            <div style={{ position: 'relative', zIndex: 2 }}>
-              <div className="special-badge" style={{ fontSize: 8, padding: '2px 6px', marginBottom: 3 }}>
-                <span className="dot" />
-                {language === 'hi' ? 'विशिष्ट सेवा' : 'Featured Service'}
+              <div className="space-y-2.5">
+                <h1
+                  className="font-extrabold tracking-tight leading-[1.12] text-civic-950"
+                  style={{ fontSize: 'clamp(1.85rem, 4.2vw, 3rem)' }}
+                >
+                  {language === 'hi' ? 'एक कदम, ' : 'One Step, '}
+                  <span className="text-civic-700">
+                    {language === 'hi' ? 'बड़े परिणाम।' : 'Big Results.'}
+                  </span>
+                </h1>
+                <p className="text-slate-600 text-sm sm:text-base max-w-xl leading-relaxed">
+                  {language === 'hi'
+                    ? 'लाइव जीपीएस और फोटो प्रमाण के साथ नागरिक समस्याएं दर्ज करें, फील्ड इंजीनियरों की स्थिति ट्रैक करें और बैतूल को स्वच्छ रखें।'
+                    : 'Report civic issues with live GPS and photo proof, track municipal field engineers in real time, and help keep Betul clean and green.'}
+                </p>
               </div>
 
-              <h2 className="special-title" style={{ fontSize: 14, marginBottom: 2 }}>
-                {t(language, 'greenDeptTitle')}
+              {/* Instant Ticket ID & Service Search Bar */}
+              <div className="relative max-w-xl">
+                <div className="flex items-center bg-sand-50 rounded-2xl p-1.5 border border-sand-200 focus-within:bg-white focus-within:border-civic-500 focus-within:ring-4 focus-within:ring-civic-500/10 transition">
+                  <div className="pl-3 pr-2 text-slate-400">
+                    <Search className="w-5 h-5" />
+                  </div>
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setShowSearchDropdown(true);
+                    }}
+                    onFocus={() => setShowSearchDropdown(true)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        if (searchQuery.toUpperCase().includes('BTL-')) {
+                          openTrackModalFor(searchQuery);
+                        } else if (filteredSearch[0]) {
+                          handleSearchSelect(filteredSearch[0]);
+                        }
+                      }
+                    }}
+                    placeholder={
+                      language === 'hi'
+                        ? 'विभाग या टिकट नंबर खोजें (#BTL-2026-00020)...'
+                        : 'Search department or Ticket ID (#BTL-2026-00020)...'
+                    }
+                    className="w-full bg-transparent text-slate-900 placeholder-slate-400 text-sm py-2 px-1 focus:outline-none"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      if (searchQuery.toUpperCase().includes('BTL-')) {
+                        openTrackModalFor(searchQuery);
+                      } else if (filteredSearch[0]) {
+                        handleSearchSelect(filteredSearch[0]);
+                      }
+                    }}
+                    className="px-4 py-2 rounded-xl bg-civic-800 hover:bg-civic-900 text-white font-semibold text-xs sm:text-sm transition shrink-0 cursor-pointer"
+                  >
+                    <span>{language === 'hi' ? 'खोजें' : 'Search'}</span>
+                  </button>
+                </div>
+
+                {/* Search Dropdown */}
+                {showSearchDropdown && searchQuery.trim() && (
+                  <div className="absolute left-0 right-0 mt-2 bg-white rounded-2xl shadow-float border border-sand-200 text-slate-800 overflow-hidden z-30">
+                    {filteredSearch.length === 0 ? (
+                      <div className="p-3.5 text-xs text-slate-500 flex items-center justify-between">
+                        <span>No exact match for "{searchQuery}".</span>
+                        <Link to="/complaint/new" className="text-civic-700 font-bold hover:underline">
+                          + Report Issue
+                        </Link>
+                      </div>
+                    ) : (
+                      filteredSearch.map((item, idx) => (
+                        <button
+                          key={idx}
+                          type="button"
+                          onClick={() => handleSearchSelect(item)}
+                          className="w-full px-4 py-2.5 text-left hover:bg-civic-50 flex items-center justify-between border-b border-sand-100 last:border-0 transition cursor-pointer"
+                        >
+                          <div>
+                            <span className="text-xs font-bold text-civic-950">{item.title}</span>
+                            <div className="text-[11px] text-slate-400">{item.hi}</div>
+                          </div>
+                          <span className="text-[11px] font-semibold text-civic-700">Open →</span>
+                        </button>
+                      ))
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Two Primary Action Cards (Report Issue & Track Complaint) */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1 max-w-xl">
+                <Link
+                  to="/complaint/new"
+                  className="group text-left p-4 rounded-2xl bg-civic-800 hover:bg-civic-900 text-white transition shadow-sm flex items-center justify-between gap-3 active:scale-[0.99] text-decoration-none"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-white/15 text-white flex items-center justify-center shrink-0">
+                      <Camera className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-sm sm:text-base">
+                        {language === 'hi' ? 'समस्या दर्ज करें' : 'Report Issue'}
+                      </div>
+                      <div className="text-xs text-civic-200">
+                        {language === 'hi' ? 'फोटो + जीपीएस' : 'Photo + GPS'}
+                      </div>
+                    </div>
+                  </div>
+                  <ArrowUpRight className="w-5 h-5 text-civic-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition" />
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => openTrackModalFor('BTL-2026-00020')}
+                  className="group text-left p-4 rounded-2xl bg-sand-50 hover:bg-civic-50 text-civic-950 border border-sand-200 hover:border-civic-300 transition flex items-center justify-between gap-3 active:scale-[0.99] cursor-pointer"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-xl bg-white text-civic-700 border border-sand-200 flex items-center justify-center shrink-0">
+                      <Radar className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <div className="font-bold text-sm sm:text-base">
+                        {language === 'hi' ? 'शिकायत ट्रैक करें' : 'Track Complaint'}
+                      </div>
+                      <div className="text-xs text-slate-500">
+                        {language === 'hi' ? 'लाइव स्थिति' : 'Live Status'}
+                      </div>
+                    </div>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-slate-400 group-hover:text-civic-700 transition" />
+                </button>
+              </div>
+            </div>
+
+            {/* Right 5 Columns: Curated Real-World Civic Photography Collage */}
+            <div className="lg:col-span-5">
+              <div className="grid grid-cols-12 gap-3">
+                {/* Main Large Civic Road & Greenery Photo */}
+                <div className="col-span-7 relative rounded-2xl overflow-hidden h-64 sm:h-72 bg-gradient-to-br from-civic-700 to-civic-900 shadow-card group">
+                  <img
+                    src="https://images.unsplash.com/photo-1519501025264-65ba15a82390?auto=format&fit=crop&w=800&q=80"
+                    alt="Clean Urban Infrastructure and Streetlights"
+                    className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-civic-950/80 via-civic-950/20 to-transparent"></div>
+                  <div className="absolute bottom-3 left-3 right-3">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/95 text-civic-950 text-[11px] font-bold shadow-xs">
+                      <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                      <span>{language === 'hi' ? 'जीपीएस फोटो साक्ष्य' : 'GPS Photo Evidence'}</span>
+                    </span>
+                  </div>
+                </div>
+
+                {/* Right Stacked Two Civic Maintenance & Green City Photos */}
+                <div className="col-span-5 flex flex-col gap-3 h-64 sm:h-72">
+                  <div className="relative flex-1 rounded-2xl overflow-hidden bg-gradient-to-br from-sky-700 to-civic-900 shadow-card group">
+                    <img
+                      src="https://images.unsplash.com/photo-1581094794329-c8112a89af12?auto=format&fit=crop&w=600&q=80"
+                      alt="Municipal Field Engineer Inspection"
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-civic-950/75 via-transparent to-transparent"></div>
+                    <div className="absolute bottom-2.5 left-2.5 right-2.5">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-civic-900/90 text-white text-[10px] font-semibold backdrop-blur-xs">
+                        <HardHat className="w-3 h-3 text-amber-400" />
+                        <span>{language === 'hi' ? 'फील्ड टीम ऑन-साइट' : 'Field Team Dispatch'}</span>
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="relative flex-1 rounded-2xl overflow-hidden bg-gradient-to-br from-emerald-700 to-teal-900 shadow-card group">
+                    <img
+                      src="https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=600&q=80"
+                      alt="Green City and Clean Parks Initiative"
+                      className="w-full h-full object-cover group-hover:scale-105 transition duration-500"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-civic-950/75 via-transparent to-transparent"></div>
+                    <div className="absolute bottom-2.5 left-2.5 right-2.5">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-emerald-900/90 text-emerald-100 text-[10px] font-semibold backdrop-blur-xs">
+                        <ShieldCheck className="w-3 h-3 text-emerald-300" />
+                        <span>{language === 'hi' ? '33 वार्ड लाइव' : '33 Wards Live'}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ===================================================================== */}
+        {/* 3. LIVE METRICS BAR (Total, Pending, Verified, Resolved)              */}
+        {/* ===================================================================== */}
+        <StatsSection />
+
+        {/* ===================================================================== */}
+        {/* 4. FEATURED SERVICE BANNER: GREEN WASTE COLLECTION                    */}
+        {/* ===================================================================== */}
+        <section className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-civic-900 via-civic-800 to-teal-900 text-white shadow-soft border border-civic-700/50">
+          <div className="grid grid-cols-1 md:grid-cols-12 items-center">
+            <div className="md:col-span-8 p-6 sm:p-8 space-y-3">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 border border-white/15 text-teal-200 text-[11px] font-bold uppercase tracking-wider">
+                <Leaf className="w-3.5 h-3.5 text-emerald-300" />
+                <span>{language === 'hi' ? 'विशिष्ट नागरिक सेवा' : 'Featured Service'}</span>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-extrabold tracking-tight">
+                {language === 'hi' ? 'हरित कचरा संग्रहण' : 'Green Waste Collection'}
               </h2>
-              <p className="special-desc" style={{ fontSize: 10.5, marginBottom: 6, lineHeight: 1.3 }}>
-                {t(language, 'greenDeptSubtitle')}
+              <p className="text-civic-100 text-xs sm:text-sm max-w-xl leading-relaxed">
+                {language === 'hi'
+                  ? 'बैतूल के सभी 33 वार्डों में घर-घर से जैविक, सूखे पत्ते और बगीचे के कचरे के संग्रहण हेतु पिकअप का अनुरोध करें।'
+                  : 'Report biodegradable & garden waste for scheduled doorstep municipal pickup across all 33 wards in Betul.'}
               </p>
+              <div className="pt-1">
+                <Link
+                  to="/department/green"
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-white text-civic-950 hover:bg-civic-50 font-bold text-xs sm:text-sm shadow-sm transition active:scale-95 text-decoration-none"
+                >
+                  <Truck className="w-4 h-4 text-emerald-600" />
+                  <span>{language === 'hi' ? 'पिकअप अनुरोध करें' : 'REQUEST PICKUP'}</span>
+                  <ArrowRight className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
 
-              <span className="special-cta" style={{ fontSize: 9.5, padding: '4px 10px' }}>
-                {language === 'hi' ? 'अनुरोध करें' : 'Request Pickup'} →
-              </span>
+            {/* Real Garden/Green Waste Photography Side Panel */}
+            <div className="md:col-span-4 h-44 md:h-full relative bg-emerald-950">
+              <img
+                src="https://images.unsplash.com/photo-1416879595882-3373a0480b5b?auto=format&fit=crop&w=700&q=80"
+                alt="Green Garden Waste Pickup"
+                className="w-full h-full object-cover opacity-85"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t md:bg-gradient-to-r from-teal-900 via-teal-900/30 to-transparent"></div>
             </div>
           </div>
-        </Link>
-      </section>
+        </section>
 
-      {/* ── Municipal Services Grid ── */}
-      <ServicesGrid />
+        {/* ===================================================================== */}
+        {/* 5. OUR SERVICES (12 Standardized Departments Grid)                    */}
+        {/* ===================================================================== */}
+        <ServicesGrid />
 
-      {/* ── Local Community News ── */}
-      <LocalNewsSection />
+        {/* ===================================================================== */}
+        {/* 6. WARD COVERAGE & LIVE SLA RESOLUTION (Real Photo + Ward Pills)      */}
+        {/* ===================================================================== */}
+        <WardCoverageSection />
 
-      {/* ── Recent Complaints Activity ── */}
-      <RecentComplaints />
-
-      {/* ── Footer ── */}
-      <footer style={{ padding: '24px 20px 20px' }}>
-        <div
-          style={{
-            background: '#FFFFFF',
-            borderRadius: 24,
-            padding: '24px',
-            border: '1px solid rgba(20, 108, 148, 0.06)',
-            display: 'flex',
-            flexWrap: 'wrap' as const,
-            justifyContent: 'space-between',
-            gap: 20,
-            boxShadow: '0 10px 24px -12px rgba(20, 108, 148, 0.08)',
-          }}
-        >
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-              <div style={{
-                width: 28, height: 28, borderRadius: 8,
-                background: '#146C94',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                color: '#fff', fontFamily: 'var(--font-primary)',
-                fontSize: 14, fontWeight: 600, fontStyle: 'normal',
-              }}>
-                B
-              </div>
-              <span style={{
-                fontFamily: 'var(--font-primary)',
-                fontWeight: 600, fontSize: 16, color: '#0f1f26',
-              }}>
-                Jila Betul
-              </span>
-            </div>
-            <p style={{
-              margin: 0, fontSize: 12, color: '#6b8a99',
-              fontFamily: 'var(--font-primary)', fontWeight: 400, fontStyle: 'normal',
-              maxWidth: 360, lineHeight: 1.5,
-            }}>
-              {language === 'hi'
-                ? 'नागरिक शिकायत समाधान और नगर निगम विभागीय प्रबंधन पोर्टल। त्वरित निराकरण हेतु 24x7 सेवा।'
-                : 'Digital Civic Grievance Redressal and Department Management Portal. Connecting citizens directly with municipal field teams.'}
-            </p>
+        {/* ===================================================================== */}
+        {/* 7. LOCAL NEWS & RECENT COMPLAINTS (Side-by-Side 12-Column Grid)       */}
+        {/* ===================================================================== */}
+        <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-start">
+          {/* Left 5 Columns: Local News */}
+          <div className="lg:col-span-5">
+            <LocalNewsSection />
           </div>
 
-          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' as const }}>
-            <div>
-              <p style={{
-                margin: '0 0 8px',
-                fontFamily: 'var(--font-primary)',
-                fontSize: 10, fontWeight: 500, fontStyle: 'normal', color: '#6b8a99',
-                textTransform: 'uppercase' as const, letterSpacing: '0.08em',
-              }}>
-                {language === 'hi' ? 'विभागीय पोर्टल' : 'Department Portals'}
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <Link
-                  to="/dept/login"
-                  style={{
-                    fontFamily: 'var(--font-primary)',
-                    fontSize: 13, fontWeight: 500,
-                    color: '#146C94', textDecoration: 'none',
-                    display: 'flex', alignItems: 'center', gap: 6,
-                  }}
-                >
-                  <Building2 size={14} />
-                  {language === 'hi' ? 'विभाग स्टाफ लॉगिन / पंजीकरण' : 'Department Staff Login & Register'}
-                </Link>
-                <Link
-                  to="/admin"
-                  style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#1f3540', textDecoration: 'none' }}
-                >
-                  {language === 'hi' ? 'नगर निगम एडमिन कंसोल' : 'Municipal Admin Console'}
-                </Link>
-              </div>
-            </div>
+          {/* Right 7 Columns: Recent Complaints Feed */}
+          <div className="lg:col-span-7">
+            <RecentComplaints onTrackTicket={openTrackModalFor} />
+          </div>
+        </section>
+      </main>
 
-            <div>
-              <p style={{
-                margin: '0 0 8px',
-                fontFamily: 'var(--font-primary)',
-                fontSize: 10, fontWeight: 500, fontStyle: 'normal', color: '#6b8a99',
-                textTransform: 'uppercase' as const, letterSpacing: '0.08em',
-              }}>
-                {language === 'hi' ? 'नागरिक सेवाएं' : 'Citizen Quick Links'}
-              </p>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                <Link to="/complaint/new" style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#1f3540', textDecoration: 'none' }}>
-                  {t(language, 'reportIssue')}
-                </Link>
-                <Link to="/track" style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#1f3540', textDecoration: 'none' }}>
-                  {t(language, 'trackComplaint')}
-                </Link>
-                <Link to="/callback" style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#1f3540', textDecoration: 'none' }}>
-                  {language === 'hi' ? 'कॉल बैक का अनुरोध करें' : 'Request a callback'}
-                </Link>
-                <Link to="/department/green" style={{ fontFamily: 'var(--font-primary)', fontSize: 12, color: '#1f3540', textDecoration: 'none' }}>
-                  <span className="material-symbols-rounded" style={{ fontSize: 15, verticalAlign: 'middle', marginRight: 4 }}>eco</span>{language === 'hi' ? 'हरित अपशिष्ट संग्रहण' : 'Green Waste Pickup'}
-                </Link>
-              </div>
+      {/* ===================================================================== */}
+      {/* 8. CITIZEN MUNICIPAL FOOTER                                           */}
+      {/* ===================================================================== */}
+      <footer className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-14 pb-8">
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-sand-200 shadow-soft flex flex-wrap items-center justify-between gap-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-civic-800 text-white flex items-center justify-center font-extrabold text-lg shadow-xs">
+              B
             </div>
+            <div>
+              <div className="font-extrabold text-sm sm:text-base text-civic-950">
+                Nagar Palika Parishad Betul
+              </div>
+              <p className="text-xs text-slate-500">
+                {language === 'hi'
+                  ? 'नागरिक शिकायत समाधान एवं नगरपालिका सेवा प्रबंधन पोर्टल'
+                  : 'Digital Civic Grievance Redressal and Department Management'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4 text-xs font-semibold text-slate-600">
+            <Link to="/complaint/new" className="hover:text-civic-800 text-decoration-none">
+              {language === 'hi' ? 'समस्या दर्ज करें' : 'Report Issue'}
+            </Link>
+            <Link to="/track" className="hover:text-civic-800 text-decoration-none">
+              {language === 'hi' ? 'शिकायत ट्रैक करें' : 'Track Status'}
+            </Link>
+            <Link to="/department/green" className="hover:text-civic-800 text-decoration-none">
+              {language === 'hi' ? 'हरित कचरा' : 'Green Waste'}
+            </Link>
+            <Link to="/dept/login" className="text-civic-700 hover:text-civic-900 text-decoration-none font-bold">
+              {language === 'hi' ? 'स्टाफ पोर्टल' : 'Department Staff'}
+            </Link>
           </div>
         </div>
       </footer>
 
+      {/* ===================================================================== */}
+      {/* 9. FLOATING BOTTOM NAVIGATION (Mobile Only)                           */}
+      {/* ===================================================================== */}
       <BottomNav />
+
+      {/* ===================================================================== */}
+      {/* MODAL: TRACK TICKET STATUS (Step-by-Step Resolution Timeline)         */}
+      {/* ===================================================================== */}
+      {trackModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-civic-950/60 backdrop-blur-xs">
+          <div className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl border border-sand-200 overflow-hidden max-h-[90vh] flex flex-col">
+            <div className="px-6 py-4 bg-civic-900 text-white flex items-center justify-between">
+              <div>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-teal-300">
+                  Live SLA Status
+                </span>
+                <h3 className="text-lg font-extrabold">Track Complaint</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTrackModalOpen(false)}
+                className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-5 overflow-y-auto">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={trackTicketInput}
+                  onChange={(e) => setTrackTicketInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') executeTrackLookup();
+                  }}
+                  placeholder="Enter Ticket ID (e.g. BTL-2026-00020)"
+                  className="flex-1 rounded-xl border border-sand-200 bg-sand-50 px-3.5 py-2.5 text-sm font-mono font-bold text-civic-950 uppercase focus:outline-none focus:ring-2 focus:ring-civic-600"
+                />
+                <button
+                  type="button"
+                  onClick={executeTrackLookup}
+                  className="px-4 py-2.5 rounded-xl bg-civic-700 hover:bg-civic-800 text-white text-sm font-bold transition cursor-pointer"
+                >
+                  Track
+                </button>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                <span className="text-slate-400 font-medium">Recent IDs:</span>
+                {['BTL-2026-00020', 'BTL-2026-00019', 'BTL-2026-00018'].map((id) => (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => openTrackModalFor(id)}
+                    className="px-2 py-0.5 rounded-md bg-sand-100 hover:bg-civic-100 text-civic-800 font-mono font-semibold cursor-pointer"
+                  >
+                    #{id}
+                  </button>
+                ))}
+              </div>
+
+              {activeTicket && (
+                <div className="rounded-2xl border border-sand-200 bg-sand-50/70 p-4 space-y-4">
+                  <div className="flex items-start justify-between gap-2 pb-3 border-b border-sand-200">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono text-sm font-extrabold text-civic-800">
+                          #{activeTicket.id}
+                        </span>
+                        <span className="text-xs font-semibold text-slate-500">• {activeTicket.department}</span>
+                      </div>
+                      <p className="text-xs sm:text-sm font-bold text-civic-950 mt-1">{activeTicket.title}</p>
+                      <p className="text-[11px] text-slate-500 mt-1">
+                        {activeTicket.ward} • {activeTicket.engineer}
+                      </p>
+                    </div>
+                    <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full border shrink-0 bg-amber-50 text-amber-700 border-amber-200">
+                      {activeTicket.status}
+                    </span>
+                  </div>
+
+                  <div className="space-y-3 pt-1">
+                    {activeTicket.timeline.map((step, i) => (
+                      <div key={i} className="flex items-start gap-3">
+                        <div className="flex flex-col items-center">
+                          <div
+                            className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                              step.done ? 'bg-emerald-500 text-white' : 'bg-sand-200 text-slate-400'
+                            }`}
+                          >
+                            {step.done ? <Check className="w-3 h-3" /> : <span className="w-1.5 h-1.5 rounded-full bg-slate-400"></span>}
+                          </div>
+                          {i < activeTicket.timeline.length - 1 && (
+                            <div
+                              className={`w-0.5 h-5 ${step.done ? 'bg-emerald-300' : 'bg-sand-200'}`}
+                            ></div>
+                          )}
+                        </div>
+                        <div className="flex-1 -mt-0.5">
+                          <div
+                            className={`text-xs font-bold ${step.done ? 'text-civic-950' : 'text-slate-400'}`}
+                          >
+                            {step.step}
+                          </div>
+                          <div className="text-[11px] text-slate-400">{step.time}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ===================================================================== */}
+      {/* TOAST NOTIFICATION                                                    */}
+      {/* ===================================================================== */}
+      {toastMessage && (
+        <div className="fixed top-20 right-4 z-50 max-w-sm w-full">
+          <div className="bg-civic-900 border border-civic-700 text-white text-xs sm:text-sm font-semibold px-4 py-3 rounded-2xl shadow-float flex items-center justify-between gap-3 animate-fade-in">
+            <span>{toastMessage}</span>
+            <button
+              type="button"
+              onClick={() => setToastMessage(null)}
+              className="text-white/70 hover:text-white font-bold cursor-pointer"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

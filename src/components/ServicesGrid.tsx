@@ -1,321 +1,156 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { motion, useReducedMotion, type Variants } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
-import { t } from '../lib/i18n';
+import {
+  Sprout,
+  Droplet,
+  CloudRain,
+  Truck,
+  Sparkles,
+  Route,
+  LampCeiling,
+  Waves,
+  Trees,
+  Zap,
+  Trash2,
+  Volume2,
+} from 'lucide-react';
 
-type Service = {
-  slug: string;
-  icon?: string;
-  image?: string;
-  gradient: string;
-  shadow: string;
+interface DepartmentService {
+  name: string;
+  hi: string;
+  icon: React.ReactNode;
+  color: string;
   route: string;
-  svgIcon?: React.ReactNode;
-};
+}
 
-const SERVICES: Service[] = [
+const DEPARTMENTS: DepartmentService[] = [
   {
-    slug: 'Green City',
-    image: '/green-city-icon-logo-free-vector.jpg',
-    gradient: 'linear-gradient(135deg, #166534, #16a34a)',
-    shadow: 'rgba(22,163,74,0.3)',
+    name: 'Green City',
+    hi: 'हरित शहर',
+    icon: <Sprout className="w-6 h-6" />,
+    color: 'bg-emerald-50 text-emerald-600 border-emerald-100',
     route: '/department/green',
-    svgIcon: (
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 22c4.97 0 9-4.03 9-9-4.97 0-9 4.03-9 9z"/>
-        <path d="M5.5 12.5C8 15 10 18 12 22c2-4 4-7 6.5-9.5"/>
-        <path d="M12 2v10"/>
-        <path d="M12 2c-3 0-6 2-6 5s3 5 6 5 6-2 6-5-3-5-6-5z"/>
-      </svg>
-    ),
   },
   {
-    slug: 'water',
-    image: '/rain-droplet-into-rings_78370-3843.avif',
-    gradient: 'linear-gradient(135deg, #146C94, #19A7CE)',
-    shadow: 'rgba(37,99,235,0.3)',
+    name: 'Water',
+    hi: 'पेयजल',
+    icon: <Droplet className="w-6 h-6" />,
+    color: 'bg-sky-50 text-sky-600 border-sky-100',
     route: '/complaint/new?dept=water',
-    svgIcon: (
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
-      </svg>
-    ),
   },
   {
-    slug: 'rainwater',
-    image: '/rainwater-harvesting-vector-icon-sustainable-260nw-2506520391.webp',
-    icon: 'rainy',
-    gradient: 'linear-gradient(135deg, #4338ca, #6366f1)',
-    shadow: 'rgba(99,102,241,0.3)',
+    name: 'Rain Water',
+    hi: 'वर्षा जल',
+    icon: <CloudRain className="w-6 h-6" />,
+    color: 'bg-cyan-50 text-cyan-600 border-cyan-100',
     route: '/complaint/new?dept=rainwater',
-    svgIcon: (
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
-        <path d="M8 14a4 4 0 0 0 8 0"/>
-      </svg>
-    ),
   },
   {
-    slug: 'cnd',
-    image: '/C&D.png',
-    gradient: 'linear-gradient(135deg, #92400e, #b45309)',
-    shadow: 'rgba(180,83,9,0.3)',
+    name: 'C&D Waste',
+    hi: 'मलबा निस्तारण',
+    icon: <Truck className="w-6 h-6" />,
+    color: 'bg-orange-50 text-orange-600 border-orange-100',
     route: '/complaint/new?dept=cnd',
-    svgIcon: (
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="2" y="7" width="20" height="14" rx="2"/>
-        <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-      </svg>
-    ),
   },
   {
-    slug: 'clean',
-    image: '/cleaning.png',
-    gradient: 'linear-gradient(135deg, #065f46, #059669)',
-    shadow: 'rgba(5,150,105,0.3)',
+    name: 'Cleanliness',
+    hi: 'स्वच्छता',
+    icon: <Sparkles className="w-6 h-6" />,
+    color: 'bg-teal-50 text-teal-600 border-teal-100',
     route: '/complaint/new?dept=clean',
-    svgIcon: (
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-        <path d="M9 12l2 2 4-4"/>
-      </svg>
-    ),
   },
   {
-    slug: 'roads',
-    image: '/road.png',
-    gradient: 'linear-gradient(135deg, #991b1b, #dc2626)',
-    shadow: 'rgba(220,38,38,0.3)',
+    name: 'Roads',
+    hi: 'सड़कें',
+    icon: <Route className="w-6 h-6" />,
+    color: 'bg-slate-100 text-slate-700 border-slate-200',
     route: '/complaint/new?dept=roads',
-    svgIcon: (
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 19l4-14h8l4 14"/>
-        <path d="M2 19h20"/>
-        <path d="M12 5v14"/>
-      </svg>
-    ),
   },
   {
-    slug: 'streetlight',
-    image: '/street_light.png',
-    gradient: 'linear-gradient(135deg, #78350f, #d97706)',
-    shadow: 'rgba(217,119,6,0.3)',
+    name: 'Streetlight',
+    hi: 'स्ट्रीट लाइट',
+    icon: <LampCeiling className="w-6 h-6" />,
+    color: 'bg-amber-50 text-amber-600 border-amber-100',
     route: '/complaint/new?dept=streetlight',
-    svgIcon: (
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M9 21h6"/>
-        <path d="M12 17v4"/>
-        <path d="M12 3a6 6 0 0 0-6 6c0 2 1 3.5 2 4.5h8c1-1 2-2.5 2-4.5a6 6 0 0 0-6-6z"/>
-      </svg>
-    ),
   },
   {
-    slug: 'sewage',
-    image: '/sewage.png',
-    gradient: 'linear-gradient(135deg, #4c1d95, #7c3aed)',
-    shadow: 'rgba(124,58,237,0.3)',
+    name: 'Sewage',
+    hi: 'सीवेज',
+    icon: <Waves className="w-6 h-6" />,
+    color: 'bg-indigo-50 text-indigo-600 border-indigo-100',
     route: '/complaint/new?dept=sewage',
-    svgIcon: (
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 12h18"/>
-        <path d="M5 12V6a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v6"/>
-        <path d="M7 12v6a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2v-6"/>
-      </svg>
-    ),
   },
-  // ── 4 new categories ──────────────────────────────────────────────────────
   {
-    slug: 'parks',
-    icon: 'park',
-    gradient: 'linear-gradient(135deg, #15803d, #0d9488)',
-    shadow: 'rgba(13,148,136,0.3)',
+    name: 'Parks',
+    hi: 'उद्यान',
+    icon: <Trees className="w-6 h-6" />,
+    color: 'bg-green-50 text-green-600 border-green-100',
     route: '/complaint/new?dept=parks',
-    svgIcon: (
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M12 22V12m0 0c-3.5-2-6-5-6-8a6 6 0 0 1 12 0c0 3-2.5 6-6 8z"/>
-      </svg>
-    ),
   },
   {
-    slug: 'electricity',
-    icon: 'bolt',
-    gradient: 'linear-gradient(135deg, #ca8a04, #d97706)',
-    shadow: 'rgba(217,119,6,0.35)',
+    name: 'Electricity',
+    hi: 'विद्युत',
+    icon: <Zap className="w-6 h-6" />,
+    color: 'bg-yellow-50 text-yellow-600 border-yellow-100',
     route: '/complaint/new?dept=electricity',
-    svgIcon: (
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
-      </svg>
-    ),
   },
   {
-    slug: 'solid-waste',
-    icon: 'delete',
-    gradient: 'linear-gradient(135deg, #475569, #64748b)',
-    shadow: 'rgba(100,116,139,0.3)',
+    name: 'Solid Waste',
+    hi: 'ठोस अपशिष्ट',
+    icon: <Trash2 className="w-6 h-6" />,
+    color: 'bg-rose-50 text-rose-600 border-rose-100',
     route: '/complaint/new?dept=solid-waste',
-    svgIcon: (
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
-      </svg>
-    ),
   },
   {
-    slug: 'noise',
-    icon: 'volume_up',
-    gradient: 'linear-gradient(135deg, #ea580c, #dc2626)',
-    shadow: 'rgba(234,88,12,0.3)',
+    name: 'Noise',
+    hi: 'ध्वनि प्रदूषण',
+    icon: <Volume2 className="w-6 h-6" />,
+    color: 'bg-purple-50 text-purple-600 border-purple-100',
     route: '/complaint/new?dept=noise',
-    svgIcon: (
-      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M11 5L6 9H2v6h4l5 4V5z"/>
-        <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
-      </svg>
-    ),
   },
 ];
 
-// ── Inline responsive grid styles injected once ───────────────────────────────
-const GRID_STYLE_ID = 'services-grid-responsive-style';
-
-function ensureGridStyles() {
-  if (typeof document === 'undefined') return;
-  if (document.getElementById(GRID_STYLE_ID)) return;
-  const style = document.createElement('style');
-  style.id = GRID_STYLE_ID;
-  style.textContent = `
-    .services-grid-container {
-      max-width: 1080px;
-      margin: 12px auto 0;
-      padding: 0 20px;
-      box-sizing: border-box;
-    }
-    .services-grid-responsive {
-      display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px 6px;
-    }
-    @media (min-width: 768px) {
-      .services-grid-container {
-        background: #ffffff;
-        border-radius: 24px;
-        border: 1px solid rgba(20, 108, 148, 0.1);
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
-        padding: 24px 28px !important;
-        margin-top: 24px;
-      }
-      .services-grid-responsive {
-        grid-template-columns: repeat(6, 1fr);
-        gap: 16px 14px;
-      }
-      .services-grid-container .service-item {
-        background: #f8fafc;
-        border: 1px solid rgba(20, 108, 148, 0.08);
-        border-radius: 16px;
-        padding: 14px 8px;
-        gap: 8px;
-        transition: background 0.25s ease, border-color 0.25s ease;
-      }
-      .services-grid-container .service-item:hover {
-        background: #f0f7fa;
-        border-color: rgba(20, 108, 148, 0.28);
-      }
-    }
-  `;
-  document.head.appendChild(style);
-}
-
-const containerVariants: Variants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.04,
-      delayChildren: 0.05,
-    },
-  },
-};
-
-const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 16, scale: 0.95 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      type: 'spring',
-      stiffness: 350,
-      damping: 24,
-    },
-  },
-};
-
 export const ServicesGrid: React.FC = () => {
   const { language } = useAuth();
-  const shouldReduceMotion = useReducedMotion();
-
-  // Inject grid + hover styles once on first render
-  React.useEffect(() => {
-    ensureGridStyles();
-  }, []);
 
   return (
-    <div className="services-grid-container">
-      <div className="section-header" style={{ padding: 0 }}>
-        <div className="left">
-          <h3>
-            {t(language, 'ourServices')}
-          </h3>
-          <p>
-            {language === 'hi' ? 'सभी नगर निगम विभाग' : 'All Municipal Departments'}
-          </p>
+    <section id="services-section" className="space-y-4">
+      <div className="flex items-end justify-between gap-2">
+        <div>
+          <span className="text-xs font-bold uppercase tracking-widest text-civic-600">
+            {language === 'hi' ? 'सभी नगर पालिका विभाग' : 'All Municipal Departments'}
+          </span>
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-civic-950 tracking-tight">
+            {language === 'hi' ? 'हमारी सेवाएं' : 'Our Services'}
+          </h2>
         </div>
-        <Link
-          to="/complaint/new"
-          className="right"
-        >
-          {t(language, 'viewAll')} →
-        </Link>
+        <span className="text-xs font-semibold text-slate-500">
+          {language === 'hi' ? '12 विभाग' : '12 Departments'}
+        </span>
       </div>
 
-      <motion.div
-        className="services-grid services-grid-responsive"
-        variants={shouldReduceMotion ? undefined : containerVariants}
-        initial={shouldReduceMotion ? undefined : 'hidden'}
-        whileInView={shouldReduceMotion ? undefined : 'visible'}
-        viewport={{ once: true, amount: 0.1 }}
-      >
-        {SERVICES.map((svc) => {
-          const label = t(language, svc.slug as any) || svc.slug;
-
-          return (
-            <motion.div
-              key={svc.slug}
-              variants={shouldReduceMotion ? undefined : itemVariants}
-              whileTap={shouldReduceMotion ? undefined : { scale: 0.96 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-              style={{ display: 'flex', flexDirection: 'column' }}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
+        {DEPARTMENTS.map((dept) => (
+          <Link
+            key={dept.name}
+            to={dept.route}
+            className="group bg-white hover:bg-civic-50/70 rounded-2xl p-4 border border-sand-200 hover:border-civic-300 shadow-card hover:shadow-soft transition flex flex-col items-center text-center active:scale-[0.98] text-decoration-none"
+          >
+            <div
+              className={`w-12 h-12 rounded-2xl ${dept.color} border flex items-center justify-center mb-3 group-hover:scale-105 transition`}
             >
-              <Link
-                to={svc.route}
-                className="service-item"
-                style={{ height: '100%' }}
-              >
-                {/* SVG icon in white card */}
-                <div className="service-icon">
-                  {svc.svgIcon}
-                </div>
-
-                {/* Label always below */}
-                <span>
-                  {label}
-                </span>
-              </Link>
-            </motion.div>
-          );
-        })}
-      </motion.div>
-    </div>
+              {dept.icon}
+            </div>
+            <span className="font-bold text-xs sm:text-sm text-civic-950 leading-snug">
+              {dept.name}
+            </span>
+            <span className="text-[11px] text-slate-400 font-medium mt-0.5">
+              {dept.hi}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </section>
   );
 };

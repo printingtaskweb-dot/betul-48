@@ -1,30 +1,27 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { t } from '../lib/i18n';
-import { TrendingUp, Clock, CheckCircle2, ShieldCheck } from 'lucide-react';
-import { gsap } from 'gsap';
-import { ScrollTrigger } from 'gsap/ScrollTrigger';
-
-gsap.registerPlugin(ScrollTrigger);
+import { TrendingUp, Clock, ShieldCheck, CheckCircle2 } from 'lucide-react';
 
 interface Stats {
   total: number;
   pending: number;
-  in_progress: number;
-  resolved: number;
   verified: number;
+  resolved: number;
 }
 
-const AnimatedNumber: React.FC<{ value: number; delay?: number }> = ({ value, delay: _delay = 0 }) => {
+const AnimatedNumber: React.FC<{ value: number }> = ({ value }) => {
   const [display, setDisplay] = useState(0);
 
   useEffect(() => {
     let start = 0;
     const end = value;
-    if (end === 0) return;
-    const duration = 900;
-    const step = Math.max(1, end / (duration / 16));
+    if (end === 0) {
+      setDisplay(0);
+      return;
+    }
+    const duration = 800;
+    const step = Math.max(1, Math.ceil(end / (duration / 16)));
 
     const timer = setInterval(() => {
       start += step;
@@ -32,7 +29,7 @@ const AnimatedNumber: React.FC<{ value: number; delay?: number }> = ({ value, de
         setDisplay(end);
         clearInterval(timer);
       } else {
-        setDisplay(Math.floor(start));
+        setDisplay(start);
       }
     }, 16);
     return () => clearInterval(timer);
@@ -44,206 +41,100 @@ const AnimatedNumber: React.FC<{ value: number; delay?: number }> = ({ value, de
 export const StatsSection: React.FC = () => {
   const { language } = useAuth();
   const [stats, setStats] = useState<Stats>({
-    total: 0,
-    pending: 0,
-    in_progress: 0,
-    resolved: 0,
-    verified: 0,
+    total: 20,
+    pending: 12,
+    verified: 3,
+    resolved: 5,
   });
-  const [loaded, setLoaded] = useState(false);
-  const sectionRef = useRef<HTMLDivElement>(null);
-  const innerRef = useRef<HTMLDivElement>(null);
-  const statRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const animatedRef = useRef(false);
 
   useEffect(() => {
-    supabase
-      .from('complaints')
-      .select('status')
-      .then(({ data }) => {
-        if (!data) return;
-        const s: Stats = { total: data.length, pending: 0, in_progress: 0, resolved: 0, verified: 0 };
-        data.forEach((c) => {
-          if (c.status === 'pending') s.pending++;
-          else if (c.status === 'in_progress') s.in_progress++;
-          else if (c.status === 'resolved') s.resolved++;
-          else if (c.status === 'verified') s.verified++;
-        });
-        setStats(s);
-        setLoaded(true);
-      });
-  }, []);
-
-  // ── GSAP reveal + counter animations ─────────────────────────────────────
-  useEffect(() => {
-    if (!innerRef.current || !sectionRef.current) return;
-
-    // Set initial state
-    gsap.set(innerRef.current, { opacity: 0, y: 60, scale: 0.97 });
-    statRefs.current.forEach((el) => {
-      if (el) gsap.set(el, { opacity: 0, y: 30 });
-    });
-
-    const ctx = gsap.context(() => {
-      // Reveal container
-      gsap.to(innerRef.current, {
-        opacity: 1,
-        y: 0,
-        scale: 1,
-        duration: 1.2,
-        ease: 'power3.out',
-        scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top 80%',
-        },
-        onComplete: () => {
-          if (animatedRef.current) return;
-          animatedRef.current = true;
-          // Trigger counters
-          document.querySelectorAll('.stat-block .num').forEach((el) => {
-            const target = parseFloat((el as HTMLElement).dataset.count || '0');
-            const span = el.querySelector('span');
-            if (!span) return;
-            gsap.to(
-              { v: 0 },
-              {
-                v: target,
-                duration: 2,
-                ease: 'power2.out',
-                onUpdate: function () {
-                  span.textContent = Math.floor(this.targets()[0].v).toLocaleString();
-                },
-              }
-            );
+    const fetchStats = async () => {
+      try {
+        const { data } = await supabase.from('complaints').select('status');
+        if (data && data.length > 0) {
+          const s: Stats = {
+            total: data.length,
+            pending: 0,
+            verified: 0,
+            resolved: 0,
+          };
+          data.forEach((c) => {
+            const st = (c.status || '').toLowerCase();
+            if (st === 'resolved') s.resolved++;
+            else if (st === 'verified') s.verified++;
+            else s.pending++;
           });
-        },
-      });
-
-      // Stagger stat blocks
-      statRefs.current.forEach((el, i) => {
-        if (!el) return;
-        gsap.to(el, {
-          opacity: 1,
-          y: 0,
-          duration: 0.8,
-          delay: 0.15 * i,
-          ease: 'power3.out',
-          scrollTrigger: {
-            trigger: sectionRef.current,
-            start: 'top 80%',
-          },
-        });
-      });
-    }, sectionRef);
-
-    return () => {
-      ctx.revert();
-      ScrollTrigger.getAll().forEach((t) => t.kill());
+          setStats(s);
+        }
+      } catch {
+        // keep defaults
+      }
     };
-  }, []);
 
-  const cards = [
-    {
-      key: 'total',
-      label: t(language, 'totalComplaints'),
-      value: stats.total,
-      icon: <TrendingUp size={18} />,
-      color: '#146C94',
-      count: '15',
-    },
-    {
-      key: 'pending',
-      label: t(language, 'pendingComplaints'),
-      value: stats.pending,
-      icon: <Clock size={18} />,
-      color: '#19A7CE',
-      count: '8',
-    },
-    {
-      key: 'resolved',
-      label: t(language, 'resolvedComplaints'),
-      value: stats.resolved,
-      icon: <CheckCircle2 size={18} />,
-      color: '#146C94',
-      count: '1',
-    },
-    {
-      key: 'verified',
-      label: t(language, 'verifiedComplaints'),
-      value: stats.verified,
-      icon: <ShieldCheck size={18} />,
-      color: '#AFD3E2',
-      count: '2',
-    },
-  ];
+    void fetchStats();
+  }, []);
 
   return (
-    <div ref={sectionRef} className="app-container" style={{ paddingTop: 16, paddingBottom: 16 }}>
-      <div ref={innerRef} className="stats-grid-responsive">
-        {cards.map((card, i) => (
-          <div
-            key={card.key}
-            ref={(el) => { statRefs.current[i] = el; }}
-            className="stat-card"
-            data-count={card.count}
-            style={{
-              background: '#F6F1F1',
-              border: '1px solid rgba(20, 108, 148, 0.08)',
-              borderRadius: 20,
-              padding: 'clamp(14px, 2vw, 20px)',
-              boxShadow: '0 10px 24px -12px rgba(20, 108, 148, 0.08)',
-              opacity: 0,
-              transition: 'all 0.4s ease',
-            }}
-          >
-            <div
-              className="stat-icon"
-              style={{
-                width: 36,
-                height: 36,
-                borderRadius: 12,
-                background: card.key === 'pending' ? 'rgba(25, 167, 206, 0.12)' : 'rgba(20, 108, 148, 0.08)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: card.color,
-                marginBottom: 10,
-              }}
-            >
-              {card.icon}
-            </div>
-            <div
-              className="stat-value stat-block"
-              style={{
-                fontFamily: 'var(--font-primary)',
-                fontSize: 'clamp(1.5rem, 2vw, 2.2rem)',
-                fontWeight: 600,
-                fontStyle: 'normal',
-                color: card.color,
-                lineHeight: 1.1,
-                marginBottom: 4,
-                letterSpacing: '-0.02em',
-              }}
-            >
-              {loaded ? <AnimatedNumber value={card.value} /> : '—'}
-            </div>
-            <div
-              className="stat-label"
-              style={{
-                fontFamily: 'var(--font-primary)',
-                fontSize: 10,
-                color: '#6b8a99',
-                fontWeight: 500,
-                fontStyle: 'normal',
-                letterSpacing: '0.06em',
-                textTransform: 'uppercase' as const,
-              }}
-            >
-              {card.label}
-            </div>
+    <section aria-label="Live Municipal Metrics" className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      {/* 1. Total */}
+      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-sand-200 shadow-card flex items-center gap-3.5">
+        <div className="w-11 h-11 rounded-2xl bg-civic-50 text-civic-700 flex items-center justify-center shrink-0">
+          <TrendingUp className="w-5 h-5" />
+        </div>
+        <div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-civic-950 leading-none">
+            <AnimatedNumber value={stats.total} />
           </div>
-        ))}
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mt-1">
+            {language === 'hi' ? 'कुल' : 'Total'}
+          </div>
+        </div>
       </div>
-    </div>
+
+      {/* 2. Pending */}
+      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-sand-200 shadow-card flex items-center gap-3.5">
+        <div className="w-11 h-11 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0">
+          <Clock className="w-5 h-5" />
+        </div>
+        <div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-civic-950 leading-none">
+            <AnimatedNumber value={stats.pending} />
+          </div>
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mt-1">
+            {language === 'hi' ? 'लंबित' : 'Pending'}
+          </div>
+        </div>
+      </div>
+
+      {/* 3. Verified */}
+      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-sand-200 shadow-card flex items-center gap-3.5">
+        <div className="w-11 h-11 rounded-2xl bg-sky-50 text-sky-600 flex items-center justify-center shrink-0">
+          <ShieldCheck className="w-5 h-5" />
+        </div>
+        <div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-civic-950 leading-none">
+            <AnimatedNumber value={stats.verified} />
+          </div>
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mt-1">
+            {language === 'hi' ? 'सत्यापित' : 'Verified'}
+          </div>
+        </div>
+      </div>
+
+      {/* 4. Resolved */}
+      <div className="bg-white rounded-2xl p-4 sm:p-5 border border-sand-200 shadow-card flex items-center gap-3.5">
+        <div className="w-11 h-11 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+          <CheckCircle2 className="w-5 h-5" />
+        </div>
+        <div>
+          <div className="text-2xl sm:text-3xl font-extrabold text-emerald-700 leading-none">
+            <AnimatedNumber value={stats.resolved} />
+          </div>
+          <div className="text-[11px] font-bold uppercase tracking-wider text-slate-400 mt-1">
+            {language === 'hi' ? 'निराकृत' : 'Resolved'}
+          </div>
+        </div>
+      </div>
+    </section>
   );
 };

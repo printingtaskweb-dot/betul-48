@@ -33,6 +33,27 @@
   box-sizing: border-box;
 }
 
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #f3f1ec;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 9999px;
+}
+
+/* Safe-area bottom mask so scrolling content never peeks around the floating pill */
+.bottom-nav-mask {
+  background: linear-gradient(to top, rgba(250, 249, 246, 0.99) 58%, rgba(250, 249, 246, 0.88) 82%, rgba(250, 249, 246, 0) 100%);
+  pointer-events: none;
+}
+.bottom-nav-mask > * {
+  pointer-events: auto;
+}
+
 :root {
   /* =========================================================================
      BETUL CIVIC PALETTE — UPDATED
