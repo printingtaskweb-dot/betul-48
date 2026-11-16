@@ -59,7 +59,7 @@ interface UserProfileModalData {
 
 export const LocalNewsPage: React.FC = () => {
   const navigate = useNavigate();
-  const { language, profile, user } = useAuth();
+  const { language, profile, user, loading: authLoading } = useAuth();
   const { uploadPhoto, uploading, progress, statusText } = useStorage();
 
   // Feed & Tab State
@@ -298,6 +298,11 @@ export const LocalNewsPage: React.FC = () => {
   // Submit Thought
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!user) {
+      showToast(language === 'hi' ? 'पोस्ट करने के लिए कृपया लॉगिन करें।' : 'Please login to post.');
+      navigate('/auth?redirect=/news');
+      return;
+    }
     if (!content.trim()) return;
 
     setIsPosting(true);
@@ -361,8 +366,14 @@ export const LocalNewsPage: React.FC = () => {
     }
   };
 
-  // Like Toggle
+  // Like Toggle (Requires login)
   const handleToggleLike = async (postId: string) => {
+    if (!user) {
+      showToast(language === 'hi' ? 'लाइक करने के लिए कृपया लॉगिन करें।' : 'Please login to like this post.');
+      navigate('/auth?redirect=/news');
+      return;
+    }
+
     const isLiked = likedPostIds.has(postId);
     const delta = isLiked ? -1 : 1;
 
@@ -380,14 +391,10 @@ export const LocalNewsPage: React.FC = () => {
     );
 
     try {
-      if (user?.id) {
-        if (isLiked) {
-          await supabase.from('local_news_likes').delete().eq('news_id', postId).eq('user_id', user.id);
-        } else {
-          await supabase.from('local_news_likes').insert({ news_id: postId, user_id: user.id });
-        }
+      if (isLiked) {
+        await supabase.from('local_news_likes').delete().eq('news_id', postId).eq('user_id', user.id);
       } else {
-        await supabase.rpc('increment_local_news_likes', { news_id: postId });
+        await supabase.from('local_news_likes').insert({ news_id: postId, user_id: user.id });
       }
     } catch {
       // safe fallback
@@ -430,11 +437,16 @@ export const LocalNewsPage: React.FC = () => {
     }
   };
 
-  // Follow Toggle (Supports both authenticated citizens and guest visitors)
+  // Follow Toggle (Requires citizen login)
   const handleToggleFollow = async (
     targetAuthorId?: string | null,
     targetAuthorName?: string | null
   ) => {
+    if (!user) {
+      showToast(language === 'hi' ? 'फ़ॉलो करने के लिए कृपया लॉगिन करें।' : 'Please login to follow authors.');
+      navigate('/auth?redirect=/news');
+      return;
+    }
     const rawName = targetAuthorName?.trim() || '';
     const authorSlug = rawName ? `author_${rawName.toLowerCase()}` : '';
 
@@ -765,6 +777,44 @@ export const LocalNewsPage: React.FC = () => {
     }
     return matchesArea;
   });
+
+  /* ─── Auth Guard: News section requires citizen login ─── */
+  if (!authLoading && !user) {
+    return (
+      <div className="min-h-screen bg-sand-50 text-civic-950 font-sans pb-28 lg:pb-12 flex flex-col justify-between">
+        <CivicHeader
+          title={language === 'hi' ? 'बैतूल समाचार' : 'Betul News'}
+          subtitle={language === 'hi' ? 'नागरिक विचार व स्थानीय अपडेट' : 'Civic Updates & Community Feed'}
+          showBack
+        />
+        <div className="max-w-md mx-auto px-4 w-full py-12">
+          <div className="bg-white rounded-3xl border border-sand-200 p-8 shadow-card text-center space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-civic-50 border border-civic-100 text-civic-700 flex items-center justify-center mx-auto shadow-2xs">
+              <Radio size={32} />
+            </div>
+            <div>
+              <h2 className="text-xl font-extrabold text-civic-950 tracking-tight">
+                {language === 'hi' ? 'लॉगिन आवश्यक है' : 'Login Required'}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
+                {language === 'hi'
+                  ? 'स्थानीय समाचार व नागरिक विचार देखने, पोस्ट करने और लाइक करने के लिए कृपया पहले लॉगिन करें।'
+                  : 'Please log in first to access the Betul civic news feed, post updates, and like community posts.'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/auth?redirect=/news')}
+              className="w-full py-3.5 rounded-2xl bg-civic-700 hover:bg-civic-800 text-white font-bold text-sm shadow-sm transition active:scale-[0.99] cursor-pointer"
+            >
+              {language === 'hi' ? 'लॉगिन / पंजीकरण' : 'Login / Register'}
+            </button>
+          </div>
+        </div>
+        <BottomNav />
+      </div>
+    );
+  }
 
   return (
     <div className="x-page-root">
