@@ -59,11 +59,11 @@
      BETUL CIVIC PALETTE — UPDATED
      ========================================================================= */
   /* Backgrounds */
-  --bg-1: #F6F1F1;
-  --bg-2: #AFD3E2;
-  --page-background: radial-gradient(120% 70% at 50% 0%, #FFFFFF 0%, #F6F1F1 60%, #AFD3E2 150%);
+  --bg-1: #faf9f6;
+  --bg-2: #f3f1ec;
+  --page-background: #faf9f6;
   --surface: #FFFFFF;
-  --surface-2: #F6F1F1;
+  --surface-2: #f3f1ec;
 
   /* Shared civic blue palette */
   --peach: #AFD3E2;
@@ -193,8 +193,9 @@ html {
 
 html,
 body {
-  background: var(--page-background) fixed;
-  color: var(--ink);
+  background-color: #faf9f6;
+  background: #faf9f6;
+  color: #0f2531;
   font-family: var(--font-primary);
   min-height: 100vh;
   overflow-x: hidden;
@@ -326,7 +327,7 @@ input:focus, textarea:focus, select:focus {
 /* Scrollbar */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #AFD3E2; border-radius: 999px; }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--mute); }
 
 /* Global Component & Card Defaults (Premium Editorial) */
