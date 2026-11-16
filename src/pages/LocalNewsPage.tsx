@@ -27,6 +27,7 @@ import { useStorage } from '../hooks/useStorage';
 import { supabase } from '../lib/supabase';
 import type { LocalNews, LocalNewsCategory, LocalNewsComment } from '../lib/supabase';
 import { BottomNav } from '../components/BottomNav';
+import { CivicHeader } from '../components/common/CivicHeader';
 
 const CATEGORY_LABELS: Record<LocalNewsCategory, { en: string; hi: string }> = {
   thought: { en: 'Civic Thought', hi: 'नागरिक विचार' },
@@ -767,30 +768,35 @@ export const LocalNewsPage: React.FC = () => {
 
   return (
     <div className="x-page-root">
+      <CivicHeader
+        title={language === 'hi' ? 'बैतूल समाचार' : 'Betul News'}
+        subtitle={language === 'hi' ? 'नागरिक विचार व स्थानीय अपडेट' : 'Civic Updates & Community Feed'}
+        showBack
+      />
       <style>{`
         .x-page-root {
           min-height: 100vh;
-          background: #f8fafc;
-          padding-bottom: calc(72px + env(safe-area-inset-bottom));
-          color: #0f1419;
-          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          background: #faf9f6;
+          padding-bottom: calc(88px + env(safe-area-inset-bottom));
+          color: #0f2531;
+          font-family: "Plus Jakarta Sans", "Noto Sans Devanagari", sans-serif;
         }
 
         .x-feed-container {
-          max-width: 620px;
-          margin: 0 auto;
+          max-width: 680px;
+          margin: 16px auto;
           background: #ffffff;
-          min-height: 100vh;
-          box-shadow: 0 0 24px rgba(0, 0, 0, 0.05);
-          border-left: 1px solid #edf2f7;
-          border-right: 1px solid #edf2f7;
+          border-radius: 24px;
+          border: 1px solid #e6e2d8;
+          box-shadow: 0 4px 20px -2px rgba(15, 37, 49, 0.06);
+          overflow: hidden;
         }
 
         /* Header */
         .x-page-header {
           position: sticky;
-          top: 0;
-          z-index: 100;
+          top: 64px;
+          z-index: 30;
           background: rgba(255, 255, 255, 0.94);
           backdrop-filter: blur(14px);
           -webkit-backdrop-filter: blur(14px);
@@ -798,7 +804,7 @@ export const LocalNewsPage: React.FC = () => {
         }
 
         .x-header-nav {
-          padding: 10px 16px;
+          padding: 12px 18px;
           display: flex;
           align-items: center;
           justify-content: space-between;
@@ -838,21 +844,22 @@ export const LocalNewsPage: React.FC = () => {
         }
 
         .x-header-compose-btn {
-          padding: 6px 14px;
+          padding: 8px 18px;
           border-radius: 99px;
           border: none;
-          background: #146C94;
+          background: #225368;
           color: #fff;
-          font-size: 0.8rem;
+          font-size: 0.82rem;
           font-weight: 700;
           cursor: pointer;
           display: flex;
           align-items: center;
           gap: 6px;
-          transition: background 0.15s;
+          transition: all 0.15s;
+          box-shadow: 0 2px 6px rgba(34, 83, 104, 0.2);
         }
         .x-header-compose-btn:hover {
-          background: #0E526F;
+          background: #1e3b4a;
         }
 
         /* Tabs */
@@ -889,7 +896,7 @@ export const LocalNewsPage: React.FC = () => {
           transform: translateX(-50%);
           width: 48px;
           height: 3.5px;
-          background: #146C94;
+          background: #225368;
           border-radius: 99px;
         }
 
@@ -919,9 +926,9 @@ export const LocalNewsPage: React.FC = () => {
           transition: all 0.15s;
         }
         .x-area-pill.is-active {
-          background: #146C94;
+          background: #225368;
           color: #ffffff;
-          border-color: #146C94;
+          border-color: #225368;
         }
 
         /* Composer */
@@ -938,7 +945,7 @@ export const LocalNewsPage: React.FC = () => {
           width: 42px;
           height: 42px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #146C94, #19A7CE);
+          background: linear-gradient(135deg, #225368, #25667f);
           color: #ffffff;
           display: flex;
           align-items: center;
@@ -1002,7 +1009,7 @@ export const LocalNewsPage: React.FC = () => {
           border-radius: 99px;
           border: 1px solid #e2e8f0;
           background: #f8fafc;
-          color: #146C94;
+          color: #225368;
           font-size: 0.78rem;
           font-weight: 600;
           cursor: pointer;
@@ -1011,7 +1018,7 @@ export const LocalNewsPage: React.FC = () => {
           padding: 7px 18px;
           border-radius: 99px;
           border: none;
-          background: #146C94;
+          background: #225368;
           color: #fff;
           font-size: 0.85rem;
           font-weight: 700;
@@ -1040,7 +1047,7 @@ export const LocalNewsPage: React.FC = () => {
           width: 44px;
           height: 44px;
           border-radius: 50%;
-          background: linear-gradient(135deg, #146C94, #19A7CE);
+          background: linear-gradient(135deg, #225368, #25667f);
           color: #ffffff;
           display: flex;
           align-items: center;
@@ -1095,8 +1102,8 @@ export const LocalNewsPage: React.FC = () => {
           border-radius: 99px;
           font-size: 0.72rem;
           font-weight: 700;
-          border: 1px solid #146C94;
-          background: #146C94;
+          border: 1px solid #225368;
+          background: #225368;
           color: #ffffff;
           cursor: pointer;
           transition: all 0.15s ease;
@@ -1127,7 +1134,7 @@ export const LocalNewsPage: React.FC = () => {
         .x-read-more-btn {
           background: transparent;
           border: none;
-          color: #146C94;
+          color: #225368;
           font-weight: 700;
           font-size: 0.82rem;
           cursor: pointer;
@@ -1191,7 +1198,7 @@ export const LocalNewsPage: React.FC = () => {
         }
         .x-action-btn:hover {
           background: rgba(20, 108, 148, 0.08);
-          color: #146C94;
+          color: #225368;
         }
         .x-action-btn.is-liked {
           color: #f43f5e;
@@ -1236,7 +1243,7 @@ export const LocalNewsPage: React.FC = () => {
           padding: 6px 12px;
           border-radius: 99px;
           border: none;
-          background: #146C94;
+          background: #225368;
           color: #fff;
           font-weight: 700;
           cursor: pointer;
@@ -1264,7 +1271,7 @@ export const LocalNewsPage: React.FC = () => {
         }
         .x-modal-banner {
           height: 90px;
-          background: linear-gradient(135deg, #146C94, #19A7CE);
+          background: linear-gradient(135deg, #225368, #25667f);
           position: relative;
         }
         .x-modal-close-btn {
@@ -1297,7 +1304,7 @@ export const LocalNewsPage: React.FC = () => {
           height: 72px;
           border-radius: 50%;
           border: 4px solid #ffffff;
-          background: #146C94;
+          background: #225368;
           color: #ffffff;
           display: flex;
           align-items: center;
@@ -1375,7 +1382,7 @@ export const LocalNewsPage: React.FC = () => {
               </button>
               <div>
                 <h1 className="x-page-title">
-                  <Radio size={17} color="#146C94" />
+                  <Radio size={17} color="#225368" />
                   {language === 'hi' ? 'बैतूल समाचार' : 'Betul News'}
                 </h1>
               </div>
@@ -1625,7 +1632,7 @@ export const LocalNewsPage: React.FC = () => {
                       {isOfficial ? (
                         <ShieldCheck size={16} color="#15803d" />
                       ) : (
-                        <CheckCircle2 size={15} color="#146C94" />
+                        <CheckCircle2 size={15} color="#225368" />
                       )}
 
                       <span className="x-tweet-time">· {formatTimeAgo(post.created_at)}</span>
@@ -1881,7 +1888,7 @@ export const LocalNewsPage: React.FC = () => {
                 {viewingProfile.isOfficial ? (
                   <ShieldCheck size={18} color="#15803d" />
                 ) : (
-                  <CheckCircle2 size={17} color="#146C94" />
+                  <CheckCircle2 size={17} color="#225368" />
                 )}
               </div>
 

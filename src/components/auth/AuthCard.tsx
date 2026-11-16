@@ -5,16 +5,8 @@ interface Props {
 }
 
 export const AuthCard: React.FC<Props> = ({ children }) => (
-  <div style={{ maxWidth: 440, margin: '10px auto 0', padding: '0 16px 100px' }}>
-    <div
-      style={{
-        background: 'var(--theme-component, #d9d9d9)',
-        borderRadius: 20,
-        boxShadow: '0 8px 40px rgba(0,0,0,0.1)',
-        overflow: 'hidden',
-        border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-      }}
-    >
+  <div className="max-w-md mx-auto px-4 mt-6">
+    <div className="bg-white rounded-3xl border border-sand-200 shadow-card overflow-hidden">
       {children}
     </div>
   </div>

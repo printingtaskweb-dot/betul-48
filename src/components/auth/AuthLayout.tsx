@@ -1,5 +1,5 @@
 import React from 'react';
-import { LanguageSwitcher } from './LanguageSwitcher';
+import { CivicHeader } from '../common/CivicHeader';
 
 interface Props {
   language: 'en' | 'hi';
@@ -9,53 +9,27 @@ interface Props {
 
 export const AuthLayout: React.FC<Props> = ({
   language,
-  onLanguageChange,
   children,
 }) => (
-  <div style={{ minHeight: '100vh', background: 'var(--page-background)' }}>
-    <div
-      style={{
-        background:
-          'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
-        padding: '40px 24px 60px',
-        textAlign: 'center',
-        position: 'relative',
-        overflow: 'hidden',
-      }}
-    >
-      <div
-        style={{
-          position: 'absolute',
-          top: -70,
-          right: -40,
-          width: 180,
-          height: 180,
-          borderRadius: '50%',
-          background: 'rgba(255,255,255,0.07)',
-        }}
-      />
-      <div style={{ marginBottom: 10 }}><span className="material-symbols-rounded" style={{ fontSize: 48, color: '#146C94' }}>account_balance</span></div>
-      <h1
-        style={{
-          color: '#fff',
-          fontSize: 26,
-          fontWeight: 900,
-          margin: 0,
-          letterSpacing: 1,
-        }}
-      >
-        IMC 311
+  <div className="min-h-screen bg-sand-50 text-civic-950 font-sans pb-16">
+    <CivicHeader
+      title={language === 'hi' ? 'नागरिक खाता' : 'Citizen Account'}
+      subtitle={language === 'hi' ? 'नगर पालिका परिषद बैतूल • स्मार्ट नागरिक पोर्टल' : 'Nagar Palika Parishad Betul • Smart Citizen Portal'}
+      showBack
+    />
+    <div className="max-w-md mx-auto px-4 pt-8 text-center">
+      <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-civic-50 border border-civic-100 text-civic-800 text-xs font-semibold mb-3">
+        <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+        <span>{language === 'hi' ? 'सुरक्षित नागरिक लॉगिन' : 'Verified Citizen Access'}</span>
+      </div>
+      <h1 className="text-2xl font-extrabold text-civic-950 tracking-tight">
+        {language === 'hi' ? 'बैतूल 311 पोर्टल' : 'Betul 311 Portal'}
       </h1>
-      <p
-        style={{
-          color: 'rgba(255,255,255,0.75)',
-          marginTop: 4,
-          fontSize: 13,
-        }}
-      >
-        Indore Municipal Corporation
+      <p className="text-xs text-slate-500 mt-1">
+        {language === 'hi'
+          ? 'नागरिक शिकायतें दर्ज करें व रियल-टाइम स्थिति ट्रैक करें'
+          : 'Report civic issues & track municipal resolution in real time'}
       </p>
-      <LanguageSwitcher value={language} onChange={onLanguageChange} />
     </div>
     {children}
   </div>

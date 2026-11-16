@@ -1,15 +1,10 @@
 import React, { useState } from 'react';
-import { ArrowLeft, PhoneCall, Send } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { PhoneCall, Send, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { isValidMobile, lettersAndSpaces, mobileDigits } from '../lib/inputValidation';
-
-const input: React.CSSProperties = {
-  width: '100%', boxSizing: 'border-box', padding: '10px 12px',
-  borderRadius: 6, border: '1px solid var(--theme-component-border, #bfbfbf)',
-  background: 'var(--theme-bg, #F6F1F1)', font: 'inherit',
-};
+import { CivicHeader } from '../components/common/CivicHeader';
+import { BottomNav } from '../components/BottomNav';
 
 export default function CitizenCallbackPage() {
   const { user, language } = useAuth();
@@ -67,27 +62,156 @@ export default function CitizenCallbackPage() {
   };
 
   return (
-    <main style={{ minHeight: '100vh', padding: '24px 16px', background: 'var(--theme-bg, #F6F1F1)' }}>
-      <div style={{ maxWidth: 620, margin: '0 auto', display: 'grid', gap: 16 }}>
-        <Link to="/" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, color: 'var(--theme-primary, #146C94)', textDecoration: 'none', fontWeight: 700 }}><ArrowLeft size={16} />{hi ? 'होम' : 'Home'}</Link>
-        <section style={{ background: 'var(--theme-component, #d9d9d9)', border: '1px solid var(--theme-component-border, #bfbfbf)', borderRadius: 8, padding: 22 }}>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}><PhoneCall size={22} color="var(--theme-primary, #146C94)" /><h1 style={{ margin: 0, fontSize: '1.25rem' }}>{hi ? 'कॉल बैक अनुरोध' : 'Request a callback'}</h1></div>
+    <div className="min-h-screen bg-sand-50 text-civic-950 font-sans pb-28 lg:pb-12">
+      <CivicHeader
+        title={hi ? 'कॉल बैक अनुरोध' : 'Request Callback'}
+        subtitle={hi ? 'कंट्रोल रूम सहायता • नगर पालिका परिषद' : 'Control Room Assistance • Municipal Council'}
+        showBack
+      />
+
+      <main className="max-w-2xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 space-y-6">
+        <section className="bg-white rounded-3xl border border-sand-200 p-6 sm:p-8 shadow-card space-y-6">
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-civic-50 border border-civic-100 text-civic-700 flex items-center justify-center shrink-0">
+              <PhoneCall size={22} />
+            </div>
+            <div>
+              <h1 className="text-xl sm:text-2xl font-extrabold text-civic-950 tracking-tight">
+                {hi ? 'नागरिक सहायता व अपील' : 'Citizen Assistance & Appeal'}
+              </h1>
+              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+                {hi
+                  ? 'नगर पालिका कंट्रोल रूम अधिकारी आपसे संपर्क करेंगे।'
+                  : 'Municipal control room officers will connect with you.'}
+              </p>
+            </div>
+          </div>
+
           {submitted ? (
-            <div role="status" style={{ marginTop: 18, color: '#166534', fontWeight: 700 }}>{hi ? 'आपका अनुरोध कंट्रोल रूम को भेज दिया गया है।' : 'Your request has been sent to the municipal control room.'}</div>
+            <div className="p-6 rounded-2xl bg-emerald-50 border border-emerald-200 text-center space-y-2">
+              <CheckCircle2 size={36} className="text-emerald-600 mx-auto" />
+              <h3 className="text-base font-bold text-emerald-950">
+                {hi ? 'अनुरोध सफलतापूर्वक भेजा गया!' : 'Request Sent Successfully!'}
+              </h3>
+              <p className="text-xs sm:text-sm text-emerald-800 leading-relaxed max-w-md mx-auto">
+                {hi
+                  ? 'आपका अनुरोध नगर पालिका कंट्रोल रूम को प्राप्त हो गया है। जल्द ही आपसे संपर्क किया जाएगा।'
+                  : 'Your request has been delivered to the municipal control room. An officer will call you soon.'}
+              </p>
+            </div>
           ) : (
-            <form onSubmit={submit} style={{ display: 'grid', gap: 12, marginTop: 18 }}>
-              {error && <div role="alert" style={{ color: '#991b1b' }}>{error}</div>}
-              <label style={{ display: 'grid', gap: 5, fontSize: '0.8rem', fontWeight: 700 }}>{hi ? 'नाम' : 'Name'}<input required value={name} onChange={(e) => setName(lettersAndSpaces(e.target.value))} style={input} /></label>
-              <label style={{ display: 'grid', gap: 5, fontSize: '0.8rem', fontWeight: 700 }}>{hi ? 'फोन नंबर' : 'Phone number'}<input required type="tel" inputMode="numeric" maxLength={10} value={phone} onChange={(e) => setPhone(mobileDigits(e.target.value))} style={input} /></label>
-              <label style={{ display: 'grid', gap: 5, fontSize: '0.8rem', fontWeight: 700 }}>{hi ? 'अनुरोध का प्रकार' : 'Request type'}<select value={requestType} onChange={(e) => setRequestType(e.target.value as 'callback' | 'appeal')} style={input}><option value="callback">{hi ? 'कॉल बैक / सहायता' : 'Callback / assistance'}</option><option value="appeal">{hi ? 'शिकायत पर अपील' : 'Appeal a complaint decision'}</option></select></label>
-              <label style={{ display: 'grid', gap: 5, fontSize: '0.8rem', fontWeight: 700 }}>{hi ? 'टिकट नंबर (वैकल्पिक)' : 'Complaint ticket (optional)'}<input value={ticket} onChange={(e) => setTicket(e.target.value)} style={input} /></label>
-              <label style={{ display: 'grid', gap: 5, fontSize: '0.8rem', fontWeight: 700 }}>{hi ? 'किस बारे में सहायता चाहिए?' : 'How can we help?'}<textarea required rows={4} value={message} onChange={(e) => setMessage(e.target.value)} style={input} /></label>
-              <label style={{ display: 'grid', gap: 5, fontSize: '0.8rem', fontWeight: 700 }}>{hi ? 'कॉल का पसंदीदा समय (वैकल्पिक)' : 'Preferred callback time (optional)'}<input type="datetime-local" value={preferredAt} onChange={(e) => setPreferredAt(e.target.value)} style={input} /></label>
-              <button type="submit" disabled={saving} style={{ justifySelf: 'start', display: 'inline-flex', alignItems: 'center', gap: 7, padding: '10px 14px', border: 0, borderRadius: 6, background: 'var(--theme-primary, #146C94)', color: '#fff', fontWeight: 800, cursor: 'pointer' }}><Send size={14} />{saving ? (hi ? 'भेज रहे हैं…' : 'Sending…') : (hi ? 'अनुरोध भेजें' : 'Send request')}</button>
+            <form onSubmit={submit} className="space-y-4">
+              {error && (
+                <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-sm font-semibold">
+                  {error}
+                </div>
+              )}
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                  {hi ? 'पूरा नाम *' : 'Full Name *'}
+                </label>
+                <input
+                  required
+                  value={name}
+                  onChange={(e) => setName(lettersAndSpaces(e.target.value))}
+                  placeholder={hi ? 'उदा. राहुल वर्मा' : 'e.g. Rahul Verma'}
+                  className="w-full bg-sand-50 border border-sand-200 rounded-2xl p-3.5 text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:border-civic-500 focus:ring-4 focus:ring-civic-500/10 transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                  {hi ? 'मोबाइल नंबर *' : 'Mobile Number *'}
+                </label>
+                <input
+                  required
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={10}
+                  value={phone}
+                  onChange={(e) => setPhone(mobileDigits(e.target.value))}
+                  placeholder="10-digit mobile number"
+                  className="w-full bg-sand-50 border border-sand-200 rounded-2xl p-3.5 text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:border-civic-500 focus:ring-4 focus:ring-civic-500/10 transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                  {hi ? 'अनुरोध का प्रकार *' : 'Request Type *'}
+                </label>
+                <select
+                  value={requestType}
+                  onChange={(e) => setRequestType(e.target.value as 'callback' | 'appeal')}
+                  className="w-full bg-sand-50 border border-sand-200 rounded-2xl p-3.5 text-sm text-slate-800 focus:bg-white focus:border-civic-500 focus:ring-4 focus:ring-civic-500/10 transition"
+                >
+                  <option value="callback">{hi ? 'कॉल बैक / सामान्य सहायता' : 'Callback / General Assistance'}</option>
+                  <option value="appeal">{hi ? 'शिकायत समाधान पर अपील' : 'Appeal a Complaint Decision'}</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                  {hi ? 'शिकायत टिकट नंबर' : 'Complaint Ticket ID'}{' '}
+                  <span className="text-slate-400 font-normal lowercase">({hi ? 'वैकल्पिक' : 'optional'})</span>
+                </label>
+                <input
+                  value={ticket}
+                  onChange={(e) => setTicket(e.target.value)}
+                  placeholder="e.g. BTL-2026-00020"
+                  className="w-full bg-sand-50 border border-sand-200 rounded-2xl p-3.5 text-sm font-mono text-slate-800 placeholder-slate-400 focus:bg-white focus:border-civic-500 focus:ring-4 focus:ring-civic-500/10 transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                  {hi ? 'किस बारे में सहायता चाहिए? *' : 'How can we help? *'}
+                </label>
+                <textarea
+                  required
+                  rows={4}
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder={
+                    hi
+                      ? 'कृपया अपनी समस्या या अपील का संक्षेप में विवरण दें...'
+                      : 'Briefly explain your concern or the reason for your appeal…'
+                  }
+                  className="w-full bg-sand-50 border border-sand-200 rounded-2xl p-3.5 text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:border-civic-500 focus:ring-4 focus:ring-civic-500/10 transition resize-y"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                  {hi ? 'कॉल का पसंदीदा समय' : 'Preferred Callback Time'}{' '}
+                  <span className="text-slate-400 font-normal lowercase">({hi ? 'वैकल्पिक' : 'optional'})</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  value={preferredAt}
+                  onChange={(e) => setPreferredAt(e.target.value)}
+                  className="w-full bg-sand-50 border border-sand-200 rounded-2xl p-3.5 text-sm text-slate-800 focus:bg-white focus:border-civic-500 focus:ring-4 focus:ring-civic-500/10 transition"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={saving}
+                className={`w-full py-4 rounded-2xl font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 transition active:scale-[0.99] cursor-pointer shadow-sm ${
+                  saving
+                    ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                    : 'bg-civic-700 hover:bg-civic-800 text-white'
+                }`}
+              >
+                <Send size={16} />
+                <span>{saving ? (hi ? 'भेज रहे हैं…' : 'Sending…') : (hi ? 'अनुरोध भेजें' : 'Send Request')}</span>
+              </button>
             </form>
           )}
         </section>
-      </div>
-    </main>
+      </main>
+
+      <BottomNav />
+    </div>
   );
 }

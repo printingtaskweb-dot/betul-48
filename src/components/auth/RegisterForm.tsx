@@ -113,22 +113,11 @@ export const RegisterForm: React.FC<Props> = ({ language, selectedLang }) => {
       <button
         type="submit"
         disabled={loading}
-        style={{
-          width: '100%',
-          padding: '14px 0',
-          borderRadius: 10,
-          border: 'none',
-          background: loading
-            ? 'var(--gray-300)'
-            : 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
-          color: '#fff',
-          fontWeight: 700,
-          fontSize: 16,
-          cursor: loading ? 'not-allowed' : 'pointer',
-          marginTop: 8,
-          boxShadow: '0 4px 16px rgba(102,0,51,0.3)',
-          transition: 'opacity 0.15s',
-        }}
+        className={`w-full py-3.5 rounded-2xl font-bold text-sm sm:text-base transition active:scale-[0.99] cursor-pointer shadow-sm mt-2 ${
+          loading
+            ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+            : 'bg-civic-700 hover:bg-civic-800 text-white'
+        }`}
       >
         {loading ? '...' : t(language, 'createAccount')}
       </button>

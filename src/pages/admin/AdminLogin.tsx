@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
-import { Lock, ArrowLeft, ShieldCheck, LogIn, AlertCircle } from 'lucide-react';
+import { Lock, ShieldCheck, LogIn, AlertCircle } from 'lucide-react';
+import { CivicHeader } from '../../components/common/CivicHeader';
 
 export const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
@@ -58,7 +59,6 @@ export const AdminLogin: React.FC = () => {
         }
 
         await refreshProfile();
-        // Redirect directly to admin dashboard
         navigate('/admin/dashboard', { replace: true });
       }
     } catch (err: any) {
@@ -71,215 +71,101 @@ export const AdminLogin: React.FC = () => {
   // While auth state is loading, show spinner
   if (loading) {
     return (
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
-        }}
-      >
-        <div style={{ color: '#fff', fontWeight: 700, fontSize: '1rem' }}>Checking administrator authentication…</div>
+      <div className="min-h-screen bg-sand-50 flex items-center justify-center">
+        <div className="text-civic-900 font-bold text-sm">Checking administrator authentication…</div>
       </div>
     );
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: 'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
-        padding: 20,
-      }}
-    >
-      <div
-        style={{
-          background: 'var(--theme-component, #d9d9d9)',
-          border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-          borderRadius: 'var(--radius-xl)',
-          padding: 'clamp(28px, 4vw, 40px) clamp(20px, 3vw, 36px)',
-          width: '100%',
-          maxWidth: 440,
-          boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-          position: 'relative',
-        }}
-      >
-        <Link
-          to="/"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: 5,
-            fontSize: '0.84rem',
-            color: 'var(--gray-700)',
-            marginBottom: 20,
-            textDecoration: 'none',
-            fontWeight: 600,
-          }}
-        >
-          <ArrowLeft size={16} /> Back to Citizen Portal
-        </Link>
+    <div className="min-h-screen bg-sand-50 text-civic-950 font-sans pb-16">
+      <CivicHeader
+        title="Admin Console"
+        subtitle="Nagar Palika Parishad Betul • Central Administration"
+        showBack
+      />
 
-        <div style={{ textAlign: 'center', marginBottom: 24 }}>
-          <div
-            style={{
-              width: 56,
-              height: 56,
-              borderRadius: '50%',
-              background: 'var(--theme-bg, #F6F1F1)',
-              color: 'var(--theme-primary, #146C94)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              margin: '0 auto 12px',
-              border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-            }}
-          >
-            <ShieldCheck size={32} />
+      <div className="max-w-md mx-auto px-4 pt-10">
+        <div className="bg-white rounded-3xl border border-sand-200 shadow-card overflow-hidden">
+          <div className="bg-gradient-to-r from-civic-800 to-civic-950 p-6 text-center text-white">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-2 text-white">
+              <ShieldCheck size={26} />
+            </div>
+            <h1 className="text-lg font-extrabold tracking-tight">
+              Administrator Login
+            </h1>
+            <p className="text-xs text-civic-200 mt-0.5">
+              Municipal Corporation Admin Console
+            </p>
           </div>
-          <h2 style={{ margin: '0 0 4px', fontSize: 'var(--text-xl)', fontWeight: 800, color: 'var(--gray-900)' }}>
-            Admin Console
-          </h2>
-          <p style={{ margin: 0, color: 'var(--gray-600)', fontSize: '0.85rem' }}>
-            Municipal Corporation Administration Portal
-          </p>
+
+          <div className="p-6 sm:p-8 space-y-4">
+            {error && (
+              <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-sm font-semibold flex items-center gap-2">
+                <AlertCircle size={16} className="shrink-0" />
+                <span>{error}</span>
+              </div>
+            )}
+
+            <form onSubmit={handleAdminSignIn} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                  Admin Email Address
+                </label>
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="admin@betulnagar.co.in"
+                  className="w-full bg-sand-50 border border-sand-200 rounded-2xl p-3.5 text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:border-civic-500 focus:ring-4 focus:ring-civic-500/10 transition"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                  Password
+                </label>
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  className="w-full bg-sand-50 border border-sand-200 rounded-2xl p-3.5 text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:border-civic-500 focus:ring-4 focus:ring-civic-500/10 transition"
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={submitting}
+                className={`w-full py-3.5 rounded-2xl font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 transition active:scale-[0.99] cursor-pointer shadow-sm mt-2 ${
+                  submitting
+                    ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                    : 'bg-civic-700 hover:bg-civic-800 text-white'
+                }`}
+              >
+                <LogIn size={16} />
+                <span>{submitting ? 'Authenticating…' : 'Sign In to Admin Dashboard'}</span>
+              </button>
+            </form>
+
+            <div className="p-3 rounded-2xl bg-sand-50 border border-sand-200 flex items-center gap-2.5 text-xs text-slate-600">
+              <Lock size={15} className="text-civic-700 shrink-0" />
+              <span>
+                Department Staff: Please use the{' '}
+                <Link to="/dept/login" className="font-bold text-civic-800 hover:underline">
+                  Staff Login Portal
+                </Link>
+                .
+              </span>
+            </div>
+
+            <p className="text-xs text-slate-400 text-center pt-2">
+              Authorized municipal administrators only. All activity is audited.
+            </p>
+          </div>
         </div>
-
-        {error && (
-          <div
-            style={{
-              background: '#fee2e2',
-              border: '1px solid #fecaca',
-              borderRadius: 'var(--radius-sm)',
-              padding: '10px 14px',
-              marginBottom: 16,
-              fontSize: '0.85rem',
-              color: '#dc2626',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 8,
-            }}
-          >
-            <AlertCircle size={16} style={{ flexShrink: 0 }} />
-            <span>{error}</span>
-          </div>
-        )}
-
-        <form onSubmit={handleAdminSignIn}>
-          <div style={{ marginBottom: 14 }}>
-            <label
-              style={{
-                display: 'block',
-                fontSize: '0.82rem',
-                fontWeight: 700,
-                color: 'var(--gray-700)',
-                marginBottom: 6,
-              }}
-            >
-              Admin Email Address
-            </label>
-            <input
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@imc.gov.in"
-              style={{
-                width: '100%',
-                padding: '11px 14px',
-                borderRadius: 'var(--radius-md)',
-                border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                background: 'var(--theme-bg, #F6F1F1)',
-                fontSize: '0.9rem',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
-
-          <div style={{ marginBottom: 20 }}>
-            <label
-              style={{
-                display: 'block',
-                fontSize: '0.82rem',
-                fontWeight: 700,
-                color: 'var(--gray-700)',
-                marginBottom: 6,
-              }}
-            >
-              Password
-            </label>
-            <input
-              type="password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              style={{
-                width: '100%',
-                padding: '11px 14px',
-                borderRadius: 'var(--radius-md)',
-                border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                background: 'var(--theme-bg, #F6F1F1)',
-                fontSize: '0.9rem',
-                color: 'var(--gray-900)',
-                outline: 'none',
-                boxSizing: 'border-box',
-              }}
-            />
-          </div>
-
-          <button
-            type="submit"
-            disabled={submitting}
-            style={{
-              width: '100%',
-              padding: '13px 0',
-              borderRadius: 'var(--radius-md)',
-              border: 'none',
-              background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
-              color: '#fff',
-              fontWeight: 800,
-              fontSize: '0.95rem',
-              cursor: submitting ? 'wait' : 'pointer',
-              boxShadow: '0 4px 14px rgba(102,0,51,0.35)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 8,
-              opacity: submitting ? 0.75 : 1,
-            }}
-          >
-            <LogIn size={16} /> {submitting ? 'Authenticating…' : 'Sign In to Admin Dashboard'}
-          </button>
-        </form>
-
-        <div
-          style={{
-            marginTop: 18,
-            padding: '10px 12px',
-            background: 'var(--theme-bg, #F6F1F1)',
-            border: '1px solid var(--theme-component-border, #bfbfbf)',
-            borderRadius: 'var(--radius-sm)',
-            fontSize: '0.8rem',
-            color: 'var(--gray-700)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: 8,
-          }}
-        >
-          <Lock size={14} color="var(--theme-primary, #146C94)" style={{ flexShrink: 0 }} />
-          <span>Department Heads & Staff: Please use the <strong><Link to="/dept/login" style={{ color: 'var(--theme-primary, #146C94)' }}>Department Login Portal</Link></strong>.</span>
-        </div>
-
-        <p style={{ textAlign: 'center', marginTop: 18, fontSize: '0.78rem', color: 'var(--gray-500)', margin: '18px 0 0' }}>
-          Authorized municipal administrators only. All activity is audited.
-        </p>
       </div>
     </div>
   );

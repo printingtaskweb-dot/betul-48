@@ -9,9 +9,10 @@ import { PhotoUploader } from '../components/common/PhotoUploader';
 import { LocationPicker } from '../components/common/LocationPicker';
 import { ComplaintCard } from '../components/common/ComplaintCard';
 import { BottomNav } from '../components/BottomNav';
+import { CivicHeader } from '../components/common/CivicHeader';
 import { watermarkPhoto } from '../lib/watermarkPhoto';
 import { isValidMobile, lettersAndSpaces, mobileDigits } from '../lib/inputValidation';
-import { ArrowLeft, Recycle, Info } from 'lucide-react';
+import { Recycle, Info, CheckCircle2 } from 'lucide-react';
 import { GoogleIcon } from '../components/common/GoogleIcon';
 import { ArcLoader } from '../components/common/ArcLoader';
 
@@ -264,120 +265,66 @@ export const GreenDepartmentPage: React.FC = () => {
      ───────────────────────────────────────────── */
   if (ticket) {
     return (
-      <div
-        style={{
-          minHeight: '100vh',
-          background: 'var(--green-50)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: 24,
-        }}
-      >
-        <div style={{ textAlign: 'center', maxWidth: 420, width: '100%' }}>
-          <div
-            style={{
-              fontSize: 64,
-              animation: 'bounceIn 0.5s ease',
-              marginBottom: 12,
-            }}
-          >
-            <span className="material-symbols-rounded" style={{ fontSize: 16, color: '#16a34a' }}>check_circle</span>
-          </div>
-          <h2
-            style={{
-              color: 'var(--green-900)',
-              marginBottom: 8,
-              fontSize: 'var(--text-xl)',
-              fontWeight: 800,
-            }}
-          >
-            {language === 'hi'
-              ? 'हरित कचरा शिकायत दर्ज हुई!'
-              : 'Green Waste Request Submitted!'}
-          </h2>
-          <p
-            style={{
-              color: 'var(--gray-500)',
-              marginBottom: 8,
-              fontSize: '0.88rem',
-            }}
-          >
-            {language === 'hi'
-              ? 'आपका ट्रैकिंग टिकट नंबर:'
-              : 'Your tracking ticket number:'}
-          </p>
-          <div
-            style={{
-              background: '#fff',
-              border: '2px solid var(--green-400)',
-              borderRadius: 'var(--radius-md)',
-              padding: '14px 20px',
-              marginBottom: 16,
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
-            <span
-              style={{
-                fontSize: 'clamp(1.2rem, 2vw, 1.8rem)',
-                fontWeight: 900,
-                color: 'var(--green-800)',
-                letterSpacing: 2,
-                fontFamily: 'monospace',
-              }}
-            >
-              {ticket}
-            </span>
-          </div>
-          <p
-            style={{
-              color: 'var(--gray-500)',
-              fontSize: '0.82rem',
-              marginBottom: 24,
-              lineHeight: 1.6,
-            }}
-          >
-            {language === 'hi'
-              ? 'नगर निगम की हरित कचरा टीम जल्द ही कचरा उठाने पहुंचेगी। समाधान के बाद आप इसे सत्यापित कर सकेंगे।'
-              : 'The municipal green waste collection team has received your ticket and location. You will verify once completed.'}
-          </p>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-            <button
-              onClick={() => navigate(`/track?ticket=${ticket}`)}
-              style={{
-                padding: '11px 22px',
-                borderRadius: 'var(--radius-sm)',
-                border: 'none',
-                background: 'var(--green-600)',
-                color: '#fff',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              {language === 'hi' ? 'स्थिति देखें' : 'Track Status'}
-            </button>
-            <button
-              onClick={() => {
-                setTicket(null);
-                setOriginalFile(null);
-                setPhotoFile(null);
-                setPreview(null);
-                setDescription('');
-                setSelectedType('');
-                gps.detectLocation();
-              }}
-              style={{
-                padding: '11px 22px',
-                borderRadius: 'var(--radius-sm)',
-                border: '1.5px solid var(--gray-300)',
-                background: '#fff',
-                color: 'var(--gray-700)',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              {language === 'hi' ? 'नई शिकायत' : 'New Request'}
-            </button>
+      <div className="min-h-screen bg-sand-50 text-civic-950 font-sans pb-28 lg:pb-12">
+        <CivicHeader title={language === 'hi' ? 'हरित कचरा पिकअप' : 'Green Waste Pickup'} />
+        <div className="max-w-xl mx-auto px-4 pt-12 text-center">
+          <div className="bg-white rounded-3xl border border-sand-200 p-8 sm:p-10 shadow-soft space-y-5">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center mx-auto shadow-xs">
+              <CheckCircle2 className="w-9 h-9" />
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-extrabold text-civic-950">
+                {language === 'hi'
+                  ? 'हरित कचरा पिकअप अनुरोध दर्ज हुआ!'
+                  : 'Green Waste Request Submitted!'}
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">
+                {language === 'hi'
+                  ? 'नगर निगम की हरित कचरा टीम जल्द ही कचरा उठाने पहुंचेगी।'
+                  : 'The municipal green waste team has received your doorstep pickup request.'}
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-sand-50 border border-sand-200">
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
+                {language === 'hi' ? 'ट्रैकिंग टिकट नंबर' : 'Tracking Ticket ID'}
+              </div>
+              <div className="font-mono text-2xl sm:text-3xl font-extrabold text-emerald-700 tracking-wider">
+                #{ticket}
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
+              {language === 'hi'
+                ? 'कचरा उठाने के बाद आप कार्य का सत्यापन कर सकेंगे। इस टिकट नंबर से स्थिति ट्रैक करें।'
+                : 'Track field truck dispatch and verify resolution once the garden waste is collected.'}
+            </p>
+
+            <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                type="button"
+                onClick={() => navigate(`/track?ticket=${ticket}`)}
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-civic-700 hover:bg-civic-800 text-white font-bold text-sm shadow-sm transition active:scale-95 cursor-pointer"
+              >
+                {language === 'hi' ? 'स्थिति देखें' : 'Track Status'}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setTicket(null);
+                  setOriginalFile(null);
+                  setPhotoFile(null);
+                  setPreview(null);
+                  setDescription('');
+                  setSelectedType('');
+                  gps.detectLocation();
+                }}
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-sand-50 hover:bg-civic-50 text-civic-900 border border-sand-200 font-bold text-sm transition cursor-pointer"
+              >
+                {language === 'hi' ? 'नया अनुरोध' : 'New Request'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -385,175 +332,78 @@ export const GreenDepartmentPage: React.FC = () => {
   }
 
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'var(--page-background)',
-        paddingBottom: 90,
-      }}
-    >
-      {/* Header */}
-      <header
-        style={{
-          background:
-            'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
-          padding: '16px 20px 24px',
-          color: '#fff',
-          boxShadow: 'var(--shadow-sm)',
-        }}
-      >
-        <div
-          className="app-container"
-          style={{ paddingLeft: 0, paddingRight: 0 }}
-        >
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: 12,
-              marginBottom: 16,
-            }}
-          >
-            <button
-              onClick={() => navigate(-1)}
-              style={{
-                border: 'none',
-                background: 'rgba(255,255,255,0.18)',
-                borderRadius: 'var(--radius-sm)',
-                width: 36,
-                height: 36,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                color: '#fff',
-              }}
-            >
-              <ArrowLeft size={18} color="#fff" />
-            </button>
-            <div>
-              <h1
-                style={{
-                  margin: 0,
-                  fontSize: 'var(--text-lg)',
-                  fontWeight: 800,
-                  color: '#fff',
-                }}
-              >
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 20, color: '#16a34a' }}>eco</span>{t(language, 'greenDeptTitle')}</span>
-              </h1>
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: '0.78rem',
-                  color: 'rgba(255,255,255,0.85)',
-                }}
-              >
-                {t(language, 'greenDeptSubtitle')}
-              </p>
-            </div>
-          </div>
+    <div className="min-h-screen bg-sand-50 text-civic-950 font-sans pb-28 lg:pb-12">
+      <CivicHeader
+        title={language === 'hi' ? 'हरित कचरा' : 'Green Waste'}
+        subtitle={language === 'hi' ? 'विशिष्ट नागरिक सेवा • नगर पालिका परिषद' : 'Featured Civic Service • Municipal Council'}
+        showBack
+      />
 
-          {/* Tabs */}
-          <div style={{ display: 'flex', gap: 8 }}>
-            {[
-              {
-                id: 'report',
-                label:
-                  language === 'hi'
-                    ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 16 }}>photo_camera</span>शिकायत दर्ज करें</span>
-                    : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 16 }}>photo_camera</span>Request Pickup</span>,
-              },
-              {
-                id: 'status',
-                label:
-                  language === 'hi'
-                    ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 16 }}>assignment</span>हाल की स्थिति</span>
-                    : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 16 }}>assignment</span>Recent Green Status</span>,
-              },
-            ].map((tb) => (
-              <button
-                key={tb.id}
-                onClick={() => setTab(tb.id as any)}
-                style={{
-                  padding: '7px 18px',
-                  borderRadius: 'var(--radius-full)',
-                  border: 'none',
-                  cursor: 'pointer',
-                  background:
-                    tab === tb.id ? '#fff' : 'rgba(255,255,255,0.2)',
-                  color: tab === tb.id ? 'var(--green-900)' : '#fff',
-                  fontWeight: 700,
-                  fontSize: '0.82rem',
-                  transition: 'var(--transition)',
-                }}
-              >
-                {tb.label}
-              </button>
-            ))}
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 space-y-6">
+        <div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-100 text-emerald-800 text-xs font-semibold mb-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>{language === 'hi' ? 'हरित पर्यावरण साथी' : 'Swachh Green Initiative'}</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-civic-950 tracking-tight">
+            {t(language, 'greenDeptTitle')}
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            {t(language, 'greenDeptSubtitle')} (Fallen leaves, tree pruning & garden waste)
+          </p>
+
+          {/* Clean Pill Tabs */}
+          <div className="flex gap-2 mt-4 bg-white p-1 rounded-2xl border border-sand-200 shadow-2xs max-w-fit">
+            <button
+              type="button"
+              onClick={() => setTab('report')}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer ${
+                tab === 'report'
+                  ? 'bg-civic-800 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-civic-900 hover:bg-sand-50'
+              }`}
+            >
+              {language === 'hi' ? 'पिकअप अनुरोध' : 'Request Pickup'}
+            </button>
+            <button
+              type="button"
+              onClick={() => setTab('status')}
+              className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition cursor-pointer ${
+                tab === 'status'
+                  ? 'bg-civic-800 text-white shadow-xs'
+                  : 'text-slate-600 hover:text-civic-900 hover:bg-sand-50'
+              }`}
+            >
+              {language === 'hi' ? 'हाल की स्थिति' : 'Recent Status'}
+            </button>
           </div>
         </div>
-      </header>
 
-      {/* ── TAB: REPORT ──────────────────────────────────────── */}
-      {tab === 'report' && (
-        <div className="content-container-sm" style={{ paddingTop: 20 }}>
+        {/* ── TAB: REPORT ──────────────────────────────────────── */}
+        {tab === 'report' && (
           <form
             onSubmit={handleSubmit}
-            style={{
-              background: 'var(--theme-component, #d9d9d9)',
-              borderRadius: 'var(--radius-lg)',
-              padding: 'clamp(16px, 3vw, 28px)',
-              border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-              boxShadow: 'var(--shadow-sm)',
-            }}
+            className="bg-white rounded-3xl border border-sand-200 p-6 sm:p-8 shadow-card space-y-6"
           >
             {/* Helpful Tip Callout */}
-            <div
-              style={{
-                background: 'var(--theme-bg, #F6F1F1)',
-                border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                borderRadius: 'var(--radius-md)',
-                padding: '12px 14px',
-                display: 'flex',
-                gap: 10,
-                marginBottom: 20,
-              }}
-            >
+            <div className="flex items-start gap-3 p-4 rounded-2xl bg-emerald-50/80 border border-emerald-100 text-emerald-900">
               <Info
                 size={18}
-                color="var(--green-600)"
-                style={{ flexShrink: 0, marginTop: 2 }}
+                className="text-emerald-700 shrink-0 mt-0.5"
               />
-              <p
-                style={{
-                  margin: 0,
-                  fontSize: '0.82rem',
-                  color: 'var(--green-800)',
-                  lineHeight: 1.5,
-                }}
-              >
+              <p className="text-xs sm:text-sm leading-relaxed text-emerald-800">
                 {t(language, 'greenDeptTip')}
               </p>
             </div>
 
             {/* Waste type selection */}
-            <div style={{ marginBottom: 22 }}>
-              <label style={labelStyle}>
-                <span className="material-symbols-rounded" style={{ fontSize: 16, verticalAlign: 'middle', marginRight: 4 }}>category</span>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
                 {language === 'hi'
                   ? 'कचरे का प्रकार चुनें *'
                   : 'Select Waste Category *'}
               </label>
-              <div
-                style={{
-                  display: 'grid',
-                  gridTemplateColumns:
-                    'repeat(auto-fill, minmax(130px, 1fr))',
-                  gap: 8,
-                  marginTop: 10,
-                }}
-              >
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                 {WASTE_TYPES.map((wt) => {
                   const isSelected = selectedType === wt.id;
                   return (
@@ -561,49 +411,18 @@ export const GreenDepartmentPage: React.FC = () => {
                       key={wt.id}
                       type="button"
                       onClick={() => setSelectedType(wt.id)}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        padding: '10px 10px',
-                        borderRadius: 'var(--radius-sm)',
-                        border: isSelected
-                          ? '2px solid var(--green-600)'
-                          : '1.5px solid var(--gray-200)',
-                        background: isSelected ? 'var(--green-50)' : '#fff',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        transition: 'var(--transition)',
-                        position: 'relative',
-                      }}
+                      className={`relative flex items-center gap-2.5 p-3 rounded-2xl border text-left transition cursor-pointer ${
+                        isSelected
+                          ? 'bg-emerald-50/80 border-emerald-500 ring-2 ring-emerald-500/20 text-emerald-950 font-bold'
+                          : 'bg-sand-50/60 border-sand-200 hover:bg-sand-100/60 text-slate-700 font-medium'
+                      }`}
                     >
-                      <GoogleIcon name={wt.icon} size={20} color="var(--green-600)" />
-                      <span
-                        style={{
-                          fontSize: '0.78rem',
-                          fontWeight: isSelected ? 800 : 600,
-                          color: isSelected
-                            ? 'var(--green-900)'
-                            : 'var(--gray-800)',
-                          lineHeight: 1.25,
-                        }}
-                      >
+                      <GoogleIcon name={wt.icon} size={20} color={isSelected ? '#059669' : '#64748b'} />
+                      <span className="text-xs leading-tight">
                         {language === 'hi' ? wt.hi : wt.label}
                       </span>
                       {wt.urgent && (
-                        <span
-                          style={{
-                            position: 'absolute',
-                            top: -6,
-                            right: 6,
-                            background: '#dc2626',
-                            color: '#fff',
-                            fontSize: '0.62rem',
-                            fontWeight: 800,
-                            padding: '2px 5px',
-                            borderRadius: 4,
-                          }}
-                        >
+                        <span className="absolute -top-1.5 right-2 bg-rose-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-full shadow-2xs">
                           URGENT
                         </span>
                       )}
@@ -613,16 +432,16 @@ export const GreenDepartmentPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Photo — GPS camera style (moved above location, no gating) */}
-            <div style={{ marginBottom: 22 }}>
-              <label style={labelStyle}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                  <span className="material-symbols-rounded" style={{ fontSize: 15 }}>photo_camera</span>
+            {/* Photo — Live GPS camera */}
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="material-symbols-rounded text-sm">photo_camera</span>
                   {language === 'hi' ? 'लाइव कैमरा फोटो' : 'Live Camera Photo'} *
                 </span>
               </label>
 
-              <div style={{ marginTop: 8 }}>
+              <div>
                 <PhotoUploader
                   onFileSelected={handleFileSelected}
                   preview={preview}
@@ -632,48 +451,18 @@ export const GreenDepartmentPage: React.FC = () => {
                 />
 
                 {watermarking && (
-                  <p
-                    style={{
-                      marginTop: 8,
-                      fontSize: '0.75rem',
-                      color: 'var(--gray-500)',
-                      textAlign: 'center',
-                      fontStyle: 'italic',
-                    }}
-                  >
+                  <p className="mt-2 text-xs text-slate-500 text-center italic">
                     {language === 'hi'
                       ? 'स्टैम्प लगाया जा रहा है…'
                       : 'Stamping…'}
                   </p>
                 )}
 
-                {/* GPS location strip below the preview */}
+                {/* GPS location strip below preview */}
                 {preview && !watermarking && locationReady && (
-                  <div
-                    style={{
-                      marginTop: 10,
-                      padding: '8px 12px',
-                      borderRadius: 8,
-                      background: 'rgba(0,0,0,0.05)',
-                      border:
-                        '1px solid var(--theme-component-border, #bfbfbf)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 8,
-                      fontSize: '0.75rem',
-                      color: 'var(--gray-600, #4b5563)',
-                    }}
-                  >
-                    <span className="material-symbols-rounded" style={{ fontSize: 15, color: '#16a34a' }}>location_on</span>
-                    <span
-                      style={{
-                        flex: 1,
-                        overflow: 'hidden',
-                        textOverflow: 'ellipsis',
-                        whiteSpace: 'nowrap',
-                        fontWeight: 600,
-                      }}
-                    >
+                  <div className="mt-2.5 p-3 rounded-2xl bg-sand-50 border border-sand-200 flex items-center gap-2 text-xs text-slate-600">
+                    <span className="material-symbols-rounded text-emerald-600 text-sm">location_on</span>
+                    <span className="truncate font-semibold">
                       {gps.address ||
                         `${gps.latitude?.toFixed(4)}, ${gps.longitude?.toFixed(4)}`}
                     </span>
@@ -682,8 +471,8 @@ export const GreenDepartmentPage: React.FC = () => {
               </div>
             </div>
 
-            {/* Silent GPS indicator — only visible while locking */}
-            <div style={{ marginBottom: 22 }}>
+            {/* Silent GPS indicator */}
+            <div>
               <LocationPicker
                 latitude={gps.latitude}
                 longitude={gps.longitude}
@@ -696,13 +485,13 @@ export const GreenDepartmentPage: React.FC = () => {
             </div>
 
             {/* Description */}
-            <div style={{ marginBottom: 22 }}>
-              <label style={labelStyle}>
-                <span className="material-symbols-rounded" style={{ fontSize: 16, verticalAlign: 'middle', marginRight: 4 }}>edit_note</span>
-                {language === 'hi'
-                  ? 'अतिरिक्त विवरण'
-                  : 'Additional Details'}{' '}
-                ({t(language, 'optional')})
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="material-symbols-rounded text-sm">edit_note</span>
+                  {language === 'hi' ? 'अतिरिक्त विवरण' : 'Additional Details'}
+                </span>{' '}
+                <span className="text-slate-400 font-normal lowercase">({t(language, 'optional')})</span>
               </label>
               <textarea
                 placeholder={
@@ -713,21 +502,25 @@ export const GreenDepartmentPage: React.FC = () => {
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 rows={3}
-                style={{ ...inputStyle, marginTop: 8, resize: 'vertical' }}
+                className="w-full bg-sand-50 border border-sand-200 rounded-2xl p-3.5 text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:border-civic-500 focus:ring-4 focus:ring-civic-500/10 transition resize-y"
               />
             </div>
 
             {/* Contact details */}
-            <div style={{ marginBottom: 24 }}>
-              <label style={labelStyle}>
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 15 }}>person</span>{t(language, 'yourDetails')}</span> ({t(language, 'optional')})
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="material-symbols-rounded text-sm">person</span>
+                  {t(language, 'yourDetails')}
+                </span>{' '}
+                <span className="text-slate-400 font-normal lowercase">({t(language, 'optional')})</span>
               </label>
-              <div className="two-col-responsive" style={{ marginTop: 8 }}>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <input
                   placeholder={t(language, 'name')}
                   value={citizenName}
                   onChange={(e) => setCitizenName(lettersAndSpaces(e.target.value))}
-                  style={inputStyle}
+                  className="w-full bg-sand-50 border border-sand-200 rounded-2xl p-3.5 text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:border-civic-500 focus:ring-4 focus:ring-civic-500/10 transition"
                 />
                 <input
                   placeholder={t(language, 'phone')}
@@ -736,53 +529,26 @@ export const GreenDepartmentPage: React.FC = () => {
                   maxLength={10}
                   value={citizenPhone}
                   onChange={(e) => setCitizenPhone(mobileDigits(e.target.value))}
-                  style={inputStyle}
+                  className="w-full bg-sand-50 border border-sand-200 rounded-2xl p-3.5 text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:border-civic-500 focus:ring-4 focus:ring-civic-500/10 transition"
                 />
               </div>
             </div>
 
             {error && (
-              <div
-                style={{
-                  background: '#fee2e2',
-                  border: '1px solid #fecaca',
-                  borderRadius: 'var(--radius-sm)',
-                  padding: '10px 14px',
-                  marginBottom: 18,
-                  color: '#dc2626',
-                  fontSize: '0.85rem',
-                  fontWeight: 600,
-                }}
-              >
-                <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 16, color: '#dc2626' }}>warning</span>{error}</span>
+              <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-sm font-semibold flex items-center gap-2">
+                <span className="material-symbols-rounded text-rose-600 text-base">warning</span>
+                <span>{error}</span>
               </div>
             )}
 
             <button
               type="submit"
               disabled={submitting || uploading || watermarking}
-              style={{
-                width: '100%',
-                padding: '14px 0',
-                borderRadius: 'var(--radius-md)',
-                border: 'none',
-                background:
-                  submitting || uploading || watermarking
-                    ? 'var(--gray-300)'
-                    : 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
-                color: '#fff',
-                fontWeight: 800,
-                fontSize: '1rem',
-                cursor:
-                  submitting || uploading || watermarking
-                    ? 'not-allowed'
-                    : 'pointer',
-                boxShadow: '0 6px 20px rgba(102,0,51,0.3)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: 8,
-              }}
+              className={`w-full py-4 rounded-2xl font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 transition active:scale-[0.99] cursor-pointer shadow-sm ${
+                submitting || uploading || watermarking
+                  ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                  : 'bg-civic-700 hover:bg-civic-800 text-white'
+              }`}
             >
               <Recycle size={18} />
               {submitting
@@ -792,61 +558,43 @@ export const GreenDepartmentPage: React.FC = () => {
                   ? 'फोटो तैयार हो रहा है…'
                   : 'Preparing photo…'
                 : language === 'hi'
-                ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 18 }}>local_shipping</span>हरित कचरा उठाने हेतु अनुरोध भेजें</span>
-                : <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 18 }}>local_shipping</span>Request Green Waste Pickup</span>}
+                ? 'हरित कचरा उठाने हेतु अनुरोध भेजें'
+                : 'Request Green Waste Pickup'}
             </button>
           </form>
-        </div>
-      )}
+        )}
 
-      {/* ── TAB: STATUS ──────────────────────────────────────── */}
-      {tab === 'status' && (
-        <div className="content-container-sm" style={{ paddingTop: 20 }}>
-          <h3
-            style={{
-              marginBottom: 14,
-              fontSize: 'var(--text-lg)',
-              fontWeight: 800,
-              color: 'var(--gray-900)',
-            }}
-          >
-            {language === 'hi'
-              ? 'हाल की हरित कचरा शिकायतें'
-              : 'Recent Green Waste Complaints'}
-          </h3>
-          {complaints.length === 0 && (
-            <div
-              style={{
-                textAlign: 'center',
-                padding: '48px 20px',
-                background: 'var(--theme-component, #d9d9d9)',
-                borderRadius: 'var(--radius-md)',
-                border:
-                  '1.5px dashed var(--theme-component-border, #bfbfbf)',
-                color: 'var(--gray-600)',
-              }}
-            >
-              <p style={{ margin: '0 0 8px' }}><span className="material-symbols-rounded" style={{ fontSize: 44, color: '#16a34a' }}>eco</span></p>
-              <p style={{ fontWeight: 600 }}>
-                {language === 'hi'
-                  ? 'अभी कोई शिकायत नहीं है'
-                  : 'No green complaints recorded yet'}
-              </p>
+        {/* ── TAB: STATUS ──────────────────────────────────────── */}
+        {tab === 'status' && (
+          <div className="bg-white rounded-3xl border border-sand-200 p-6 sm:p-8 shadow-card space-y-4">
+            <h3 className="text-base sm:text-lg font-bold text-civic-950">
+              {language === 'hi'
+                ? 'हाल की हरित कचरा शिकायतें'
+                : 'Recent Green Waste Complaints'}
+            </h3>
+            {complaints.length === 0 && (
+              <div className="text-center py-12 px-4 rounded-2xl bg-sand-50 border border-dashed border-sand-200 text-slate-500">
+                <p className="mb-2"><span className="material-symbols-rounded text-4xl text-emerald-600">eco</span></p>
+                <p className="font-semibold text-sm">
+                  {language === 'hi'
+                    ? 'अभी कोई शिकायत नहीं है'
+                    : 'No green complaints recorded yet'}
+                </p>
+              </div>
+            )}
+            <div className="flex flex-col gap-3">
+              {complaints.map((c) => (
+                <ComplaintCard
+                  key={c.id}
+                  complaint={c}
+                  onClick={() => navigate(`/track?ticket=${c.ticket_number}`)}
+                />
+              ))}
             </div>
-          )}
-          <div
-            style={{ display: 'flex', flexDirection: 'column', gap: 10 }}
-          >
-            {complaints.map((c) => (
-              <ComplaintCard
-                key={c.id}
-                complaint={c}
-                onClick={() => navigate(`/track?ticket=${c.ticket_number}`)}
-              />
-            ))}
           </div>
-        </div>
-      )}
+        )}
+
+      </div>
 
       {(submitting || uploading || watermarking) && (
         <ArcLoader
@@ -876,25 +624,4 @@ export const GreenDepartmentPage: React.FC = () => {
       <BottomNav />
     </div>
   );
-};
-
-/* ─── Shared styles ─── */
-
-const labelStyle: React.CSSProperties = {
-  display: 'block',
-  fontSize: '0.88rem',
-  fontWeight: 700,
-  color: 'var(--gray-800)',
-};
-
-const inputStyle: React.CSSProperties = {
-  width: '100%',
-  boxSizing: 'border-box',
-  padding: '11px 14px',
-  borderRadius: 'var(--radius-sm)',
-  border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-  fontSize: '0.88rem',
-  color: 'var(--gray-900)',
-  outline: 'none',
-  background: 'var(--theme-bg, #F6F1F1)',
 };

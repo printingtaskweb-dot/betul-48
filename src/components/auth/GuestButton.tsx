@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-
+import { User } from 'lucide-react';
 import { t } from '../../lib/i18n';
 
 interface Props {
@@ -11,29 +11,18 @@ export const GuestButton: React.FC<Props> = ({ language }) => {
   const navigate = useNavigate();
 
   return (
-    <>
-      <div style={{ textAlign: 'center', marginTop: 20 }}>
-        <span style={{ fontSize: 13, color: 'var(--gray-400)' }}>
-          {t(language, 'orContinueAs')}
-        </span>
+    <div className="mt-5 text-center">
+      <div className="text-xs text-slate-400 font-medium">
+        {t(language, 'orContinueAs')}
       </div>
       <button
+        type="button"
         onClick={() => navigate('/')}
-        style={{
-          width: '100%',
-          padding: '11px 0',
-          marginTop: 12,
-          borderRadius: 10,
-          border: '1.5px solid var(--gray-200)',
-          background: 'var(--gray-50)',
-          color: 'var(--gray-600)',
-          fontWeight: 600,
-          fontSize: 14,
-          cursor: 'pointer',
-        }}
+        className="w-full mt-2.5 py-3 rounded-2xl bg-sand-50 hover:bg-civic-50 text-civic-900 border border-sand-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-2 transition active:scale-[0.99] cursor-pointer"
       >
-        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><span className="material-symbols-rounded" style={{ fontSize: 18 }}>person</span>{t(language, 'guestMode')}</span>
+        <User size={16} className="text-civic-700" />
+        <span>{t(language, 'guestMode')}</span>
       </button>
-    </>
+    </div>
   );
 };

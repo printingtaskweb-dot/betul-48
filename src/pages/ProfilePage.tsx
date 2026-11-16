@@ -5,7 +5,6 @@ import {
   Phone,
   Hash,
   Globe,
-  ChevronLeft,
   CheckCircle,
   Clock,
   XCircle,
@@ -28,6 +27,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import type { LocalNews } from '../lib/supabase';
 import { BottomNav } from '../components/BottomNav';
+import { CivicHeader } from '../components/common/CivicHeader';
 import { useFCM } from '../hooks/useFCM';
 import { isValidMobile, lettersAndSpaces, mobileDigits, wholeNumber } from '../lib/inputValidation';
 
@@ -43,7 +43,7 @@ interface Complaint {
 /* ─── Status helpers ─── */
 const STATUS_STYLES: Record<string, { bg: string; color: string; label_en: string; label_hi: string; icon: React.ReactNode }> = {
   pending:     { bg: 'var(--status-pending-bg, #fef3c7)', color: 'var(--status-pending, #b45309)', label_en: 'Pending',     label_hi: 'लंबित',      icon: <Clock size={13} /> },
-  in_progress: { bg: 'var(--primary-100, #e0f2fe)', color: 'var(--burgundy, #146C94)', label_en: 'In Progress', label_hi: 'प्रगति में', icon: <Clock size={13} /> },
+  in_progress: { bg: 'var(--primary-100, #e0f2fe)', color: 'var(--burgundy, #225368)', label_en: 'In Progress', label_hi: 'प्रगति में', icon: <Clock size={13} /> },
   resolved:    { bg: '#d1fae5', color: '#065f46', label_en: 'Resolved',    label_hi: 'हल किया',    icon: <CheckCircle size={13} /> },
   verified:    { bg: '#ede9fe', color: '#5b21b6', label_en: 'Verified',    label_hi: 'सत्यापित',   icon: <ShieldCheck size={13} /> },
   rejected:    { bg: '#fee2e2', color: '#991b1b', label_en: 'Rejected',    label_hi: 'अस्वीकृत',  icon: <XCircle size={13} /> },
@@ -268,23 +268,35 @@ export const ProfilePage: React.FC = () => {
   /* ─── Not logged in ─── */
   if (!authLoading && !user) {
     return (
-      <div style={{ minHeight: '100vh', background: 'var(--theme-bg, #F6F1F1)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <div style={{ background: '#ffffff', borderRadius: 20, padding: '36px 24px', maxWidth: 380, width: '100%', textAlign: 'center', border: '1px solid rgba(20, 108, 148, 0.15)', boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
-          <User size={48} color="#146C94" style={{ marginBottom: 16 }} />
-          <h2 style={{ color: '#146C94', margin: '0 0 10px', fontWeight: 800 }}>
-            {language === 'hi' ? 'लॉगिन करें' : 'Login Required'}
-          </h2>
-          <p style={{ color: '#555', fontSize: '0.9rem', marginBottom: 20 }}>
-            {language === 'hi'
-              ? 'अपनी प्रोफ़ाइल, विचार और शिकायतें देखने के लिए लॉगिन करें।'
-              : 'Please log in to view your profile, thoughts, and complaints.'}
-          </p>
-          <button
-            onClick={() => navigate('/auth')}
-            style={{ padding: '12px 28px', borderRadius: 999, border: 'none', background: 'linear-gradient(135deg,#146C94,#0E526F)', color: '#fff', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer', boxShadow: '0 4px 14px rgba(20, 108, 148, 0.3)' }}
-          >
-            {language === 'hi' ? 'लॉगिन / पंजीकरण' : 'Login / Register'}
-          </button>
+      <div className="min-h-screen bg-sand-50 text-civic-950 font-sans pb-28 lg:pb-12 flex flex-col justify-between">
+        <CivicHeader
+          title={language === 'hi' ? 'नागरिक खाता' : 'Citizen Account'}
+          subtitle={language === 'hi' ? 'नगर पालिका परिषद बैतूल • स्मार्ट नागरिक पोर्टल' : 'Nagar Palika Parishad Betul • Smart Citizen Portal'}
+          showBack
+        />
+        <div className="max-w-md mx-auto px-4 w-full py-12">
+          <div className="bg-white rounded-3xl border border-sand-200 p-8 shadow-card text-center space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-civic-50 border border-civic-100 text-civic-700 flex items-center justify-center mx-auto shadow-2xs">
+              <User size={32} />
+            </div>
+            <div>
+              <h2 className="text-xl font-extrabold text-civic-950 tracking-tight">
+                {language === 'hi' ? 'लॉगिन आवश्यक है' : 'Login Required'}
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">
+                {language === 'hi'
+                  ? 'अपनी प्रोफ़ाइल, विचार और शिकायतें देखने के लिए लॉगिन करें।'
+                  : 'Please log in to view your profile, community thoughts, and complaints.'}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate('/auth')}
+              className="w-full py-3.5 rounded-2xl bg-civic-700 hover:bg-civic-800 text-white font-bold text-sm shadow-sm transition active:scale-[0.99] cursor-pointer"
+            >
+              {language === 'hi' ? 'लॉगिन / पंजीकरण' : 'Login / Register'}
+            </button>
+          </div>
         </div>
         <BottomNav />
       </div>
@@ -298,177 +310,108 @@ export const ProfilePage: React.FC = () => {
 
   /* ─── Main render ─── */
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--page-background, #F6F1F1)', paddingBottom: 90 }}>
-      {/* ── Header banner card ── */}
-      <div
-        style={{
-          background: 'linear-gradient(135deg, #146C94 0%, #0E526F 100%)',
-          color: '#fff',
-          padding: '20px 20px 26px',
-          boxShadow: '0 4px 20px rgba(20, 108, 148, 0.25)',
-        }}
-      >
-        {/* Back + logout row */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
-          <button
-            onClick={() => navigate('/')}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.18)', border: 'none', color: '#fff', padding: '7px 14px', borderRadius: 999, fontWeight: 700, fontSize: '0.84rem', cursor: 'pointer', backdropFilter: 'blur(4px)' }}
-          >
-            <ChevronLeft size={16} />
-            {language === 'hi' ? 'होम' : 'Home'}
-          </button>
-          <button
-            onClick={async () => { await signOut(); navigate('/'); }}
-            style={{ background: 'rgba(255,255,255,0.14)', border: '1px solid rgba(255,255,255,0.25)', color: '#fff', padding: '7px 14px', borderRadius: 999, fontWeight: 700, fontSize: '0.82rem', cursor: 'pointer' }}
-          >
-            {language === 'hi' ? 'लॉगआउट' : 'Logout'}
-          </button>
-        </div>
+    <div className="min-h-screen bg-sand-50 text-civic-950 font-sans pb-28 lg:pb-12">
+      <CivicHeader
+        title={language === 'hi' ? 'नागरिक प्रोफ़ाइल' : 'Citizen Profile'}
+        subtitle={language === 'hi' ? 'नगर पालिका परिषद बैतूल • स्मार्ट नागरिक पोर्टल' : 'Nagar Palika Parishad Betul • Smart Citizen Portal'}
+        showBack
+      />
 
-        {/* Avatar + name */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ width: 62, height: 62, borderRadius: '50%', background: 'linear-gradient(135deg, #AFD3E2, #19A7CE)', border: '2.5px solid rgba(255,255,255,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontWeight: 800, fontSize: '1.4rem', color: '#146C94', boxShadow: '0 4px 12px rgba(0,0,0,0.15)' }}>
-            {profile?.full_name ? profile.full_name[0].toUpperCase() : <User size={30} color="#146C94" />}
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-              <h2 style={{ margin: 0, fontWeight: 800, fontSize: '1.22rem', lineHeight: 1.2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {profile?.full_name || (language === 'hi' ? 'नागरिक' : 'Citizen')}
-              </h2>
-              <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
-                  <span className="material-symbols-rounded" style={{ fontSize: 13 }}>{profile?.role === 'admin' ? 'shield' : 'apartment'}</span>
-                  <span>{profile?.role === 'admin' ? (language === 'hi' ? 'एडमिन' : 'Admin') : profile?.ward_number ? `Ward ${profile.ward_number}` : (language === 'hi' ? 'बेतूल नागरिक' : 'Betul Citizen')}</span>
-                </span>
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 pt-6 space-y-6">
+        {/* ── Profile Summary Card ── */}
+        <div className="bg-white rounded-3xl border border-sand-200 p-6 sm:p-8 shadow-card space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-4">
+              <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-civic-600 to-civic-800 text-white flex items-center justify-center font-extrabold text-2xl shadow-sm shrink-0">
+                {profile?.full_name ? profile.full_name[0].toUpperCase() : <User size={28} />}
+              </div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-2">
+                  <h2 className="text-xl sm:text-2xl font-extrabold text-civic-950 tracking-tight truncate">
+                    {profile?.full_name || (language === 'hi' ? 'नागरिक' : 'Citizen')}
+                  </h2>
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-civic-50 text-civic-800 border border-civic-100 shrink-0">
+                    {profile?.role === 'admin'
+                      ? (language === 'hi' ? 'एडमिन' : 'Admin')
+                      : profile?.ward_number
+                      ? `Ward ${profile.ward_number}`
+                      : (language === 'hi' ? 'बेतूल नागरिक' : 'Citizen')}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-0.5 font-medium">
+                  {user?.email || profile?.phone || 'Betul Smart Citizen'}
+                </p>
+              </div>
             </div>
-          </div>
-        </div>
 
-        {/* ── Social Stats Header Bar (Followers, Following, Thoughts, Views) ── */}
-        <div
-          style={{
-            marginTop: 18,
-            padding: '12px 16px',
-            background: 'rgba(255, 255, 255, 0.15)',
-            backdropFilter: 'blur(8px)',
-            borderRadius: 14,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-around',
-            border: '1px solid rgba(255, 255, 255, 0.2)',
-          }}
-        >
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '1.15rem', fontWeight: 900 }}>{followersCount}</div>
-            <div style={{ fontSize: '0.72rem', opacity: 0.85, fontWeight: 600 }}>
-              {language === 'hi' ? 'फ़ॉलोअर्स' : 'Followers'}
-            </div>
+            <button
+              type="button"
+              onClick={async () => { await signOut(); navigate('/'); }}
+              className="self-start sm:self-auto px-4 py-2 rounded-xl text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition cursor-pointer"
+            >
+              {language === 'hi' ? 'लॉगआउट' : 'Logout'}
+            </button>
           </div>
-          <div style={{ width: 1, height: 26, background: 'rgba(255, 255, 255, 0.25)' }} />
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '1.15rem', fontWeight: 900 }}>{followingCount}</div>
-            <div style={{ fontSize: '0.72rem', opacity: 0.85, fontWeight: 600 }}>
-              {language === 'hi' ? 'फ़ॉलो किए' : 'Following'}
+
+          {/* Social Stats Bar */}
+          <div className="grid grid-cols-4 gap-2 bg-sand-50 rounded-2xl p-3 border border-sand-200 text-center">
+            <div>
+              <div className="text-base sm:text-lg font-extrabold text-civic-950">{followersCount}</div>
+              <div className="text-[11px] font-semibold text-slate-500">{language === 'hi' ? 'फ़ॉलोअर्स' : 'Followers'}</div>
             </div>
-          </div>
-          <div style={{ width: 1, height: 26, background: 'rgba(255, 255, 255, 0.25)' }} />
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '1.15rem', fontWeight: 900 }}>{myThoughts.length}</div>
-            <div style={{ fontSize: '0.72rem', opacity: 0.85, fontWeight: 600 }}>
-              {language === 'hi' ? 'विचार' : 'Thoughts'}
+            <div>
+              <div className="text-base sm:text-lg font-extrabold text-civic-950">{followingCount}</div>
+              <div className="text-[11px] font-semibold text-slate-500">{language === 'hi' ? 'फ़ॉलो किए' : 'Following'}</div>
             </div>
-          </div>
-          <div style={{ width: 1, height: 26, background: 'rgba(255, 255, 255, 0.25)' }} />
-          <div style={{ textAlign: 'center' }}>
-            <div style={{ fontSize: '1.15rem', fontWeight: 900 }}>{profileViewsCount}</div>
-            <div style={{ fontSize: '0.72rem', opacity: 0.85, fontWeight: 600 }}>
-              {language === 'hi' ? 'दृश्य' : 'Views'}
+            <div>
+              <div className="text-base sm:text-lg font-extrabold text-civic-950">{myThoughts.length}</div>
+              <div className="text-[11px] font-semibold text-slate-500">{language === 'hi' ? 'विचार' : 'Thoughts'}</div>
+            </div>
+            <div>
+              <div className="text-base sm:text-lg font-extrabold text-civic-950">{profileViewsCount}</div>
+              <div className="text-[11px] font-semibold text-slate-500">{language === 'hi' ? 'दृश्य' : 'Views'}</div>
             </div>
           </div>
         </div>
-      </div>
 
-      <div style={{ padding: '0 16px', maxWidth: 768, margin: '0 auto' }}>
         {/* ── Modern Navigation Tabs ── */}
-        <div
-          style={{
-            display: 'flex',
-            background: '#ffffff',
-            borderRadius: 14,
-            padding: 4,
-            margin: '16px 0 18px',
-            border: '1px solid rgba(20, 108, 148, 0.12)',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.03)',
-          }}
-        >
+        <div className="flex gap-2 bg-white p-1 rounded-2xl border border-sand-200 shadow-2xs">
           <button
             type="button"
             onClick={() => setActiveTab('complaints')}
-            style={{
-              flex: 1,
-              padding: '9px 4px',
-              borderRadius: 10,
-              border: 'none',
-              background: activeTab === 'complaints' ? '#146C94' : 'transparent',
-              color: activeTab === 'complaints' ? '#ffffff' : '#64748b',
-              fontWeight: 700,
-              fontSize: '0.82rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 5,
-              transition: 'all 0.15s ease',
-            }}
+            className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+              activeTab === 'complaints'
+                ? 'bg-civic-800 text-white shadow-xs'
+                : 'text-slate-600 hover:text-civic-900 hover:bg-sand-50'
+            }`}
           >
-            <FileText size={14} />
+            <FileText size={15} />
             <span>{language === 'hi' ? `शिकायतें (${complaints.length})` : `Complaints (${complaints.length})`}</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('thoughts')}
-            style={{
-              flex: 1,
-              padding: '9px 4px',
-              borderRadius: 10,
-              border: 'none',
-              background: activeTab === 'thoughts' ? '#146C94' : 'transparent',
-              color: activeTab === 'thoughts' ? '#ffffff' : '#64748b',
-              fontWeight: 700,
-              fontSize: '0.82rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 5,
-              transition: 'all 0.15s ease',
-            }}
+            className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+              activeTab === 'thoughts'
+                ? 'bg-civic-800 text-white shadow-xs'
+                : 'text-slate-600 hover:text-civic-900 hover:bg-sand-50'
+            }`}
           >
-            <MessageSquare size={14} />
-            <span>{language === 'hi' ? `मेरे विचार (${myThoughts.length})` : `My Thoughts (${myThoughts.length})`}</span>
+            <MessageSquare size={15} />
+            <span>{language === 'hi' ? `मेरे विचार (${myThoughts.length})` : `Thoughts (${myThoughts.length})`}</span>
           </button>
 
           <button
             type="button"
             onClick={() => setActiveTab('settings')}
-            style={{
-              flex: 1,
-              padding: '9px 4px',
-              borderRadius: 10,
-              border: 'none',
-              background: activeTab === 'settings' ? '#146C94' : 'transparent',
-              color: activeTab === 'settings' ? '#ffffff' : '#64748b',
-              fontWeight: 700,
-              fontSize: '0.82rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 5,
-              transition: 'all 0.15s ease',
-            }}
+            className={`flex-1 py-2.5 px-3 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-1.5 transition cursor-pointer ${
+              activeTab === 'settings'
+                ? 'bg-civic-800 text-white shadow-xs'
+                : 'text-slate-600 hover:text-civic-900 hover:bg-sand-50'
+            }`}
           >
-            <Edit2 size={14} />
+            <Edit2 size={15} />
             <span>{language === 'hi' ? 'सेटिंग' : 'Settings'}</span>
           </button>
         </div>
@@ -479,7 +422,7 @@ export const ProfilePage: React.FC = () => {
             {/* Quick stats pills */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 18 }}>
               {[
-                { label: language === 'hi' ? 'कुल शिकायतें' : 'Total', value: total, color: '#146C94' },
+                { label: language === 'hi' ? 'कुल शिकायतें' : 'Total', value: total, color: '#225368' },
                 { label: language === 'hi' ? 'हल किए' : 'Resolved', value: resolved, color: '#065f46' },
                 { label: language === 'hi' ? 'लंबित' : 'Pending', value: pending, color: '#b45309' },
               ].map((stat) => (
@@ -503,7 +446,7 @@ export const ProfilePage: React.FC = () => {
             {/* Complaint List */}
             <section style={{ marginBottom: 20 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <h3 style={{ margin: 0, color: '#146C94', fontWeight: 800, fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+                <h3 style={{ margin: 0, color: '#225368', fontWeight: 800, fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: 6 }}>
                   <FileText size={16} />
                   {language === 'hi' ? 'मेरी शिकायतें' : 'My Complaints'}
                 </h3>
@@ -513,7 +456,7 @@ export const ProfilePage: React.FC = () => {
                   style={{
                     background: 'transparent',
                     border: 'none',
-                    color: '#146C94',
+                    color: '#225368',
                     fontWeight: 700,
                     fontSize: '0.8rem',
                     cursor: 'pointer',
@@ -542,7 +485,7 @@ export const ProfilePage: React.FC = () => {
                     style={{
                       padding: '8px 18px',
                       borderRadius: 999,
-                      background: '#146C94',
+                      background: '#225368',
                       color: '#fff',
                       border: 'none',
                       fontWeight: 700,
@@ -576,7 +519,7 @@ export const ProfilePage: React.FC = () => {
                       >
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
                           <div>
-                            <div style={{ fontWeight: 800, color: '#146C94', fontSize: '0.92rem', marginBottom: 2 }}>
+                            <div style={{ fontWeight: 800, color: '#225368', fontSize: '0.92rem', marginBottom: 2 }}>
                               #{c.ticket_number}
                             </div>
                             <div style={{ fontSize: '0.8rem', color: '#334155', marginBottom: 4 }}>
@@ -618,7 +561,7 @@ export const ProfilePage: React.FC = () => {
         {activeTab === 'thoughts' && (
           <div>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-              <h3 style={{ margin: 0, color: '#146C94', fontWeight: 800, fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+              <h3 style={{ margin: 0, color: '#225368', fontWeight: 800, fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: 6 }}>
                 <MessageSquare size={16} />
                 {language === 'hi' ? 'मेरे द्वारा साझा विचार' : 'Thoughts You Posted'}
               </h3>
@@ -628,7 +571,7 @@ export const ProfilePage: React.FC = () => {
                 style={{
                   background: 'transparent',
                   border: 'none',
-                  color: '#146C94',
+                  color: '#225368',
                   fontWeight: 700,
                   fontSize: '0.8rem',
                   cursor: 'pointer',
@@ -648,7 +591,7 @@ export const ProfilePage: React.FC = () => {
               </p>
             ) : myThoughts.length === 0 ? (
               <div style={{ background: '#ffffff', borderRadius: 16, padding: '32px 16px', textAlign: 'center', border: '1px solid rgba(20, 108, 148, 0.12)' }}>
-                <Sparkles size={36} color="#146C94" style={{ margin: '0 auto 10px' }} />
+                <Sparkles size={36} color="#225368" style={{ margin: '0 auto 10px' }} />
                 <h4 style={{ margin: '0 0 6px', color: '#0f1419', fontSize: '1rem', fontWeight: 800 }}>
                   {language === 'hi' ? 'अभी तक कोई विचार पोस्ट नहीं किया' : 'No thoughts posted yet'}
                 </h4>
@@ -662,7 +605,7 @@ export const ProfilePage: React.FC = () => {
                   style={{
                     padding: '8px 20px',
                     borderRadius: 999,
-                    background: '#146C94',
+                    background: '#225368',
                     color: '#fff',
                     border: 'none',
                     fontWeight: 700,
@@ -792,7 +735,7 @@ export const ProfilePage: React.FC = () => {
           <div>
             {/* Editable profile form */}
             <section style={{ background: '#ffffff', borderRadius: 16, border: '1px solid rgba(20, 108, 148, 0.14)', padding: '20px 16px', marginBottom: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-              <h3 style={{ margin: '0 0 16px', color: '#146C94', fontWeight: 800, fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h3 style={{ margin: '0 0 16px', color: '#225368', fontWeight: 800, fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Edit2 size={16} />
                 {language === 'hi' ? 'प्रोफ़ाइल विवरण संपादित करें' : 'Edit Profile Details'}
               </h3>
@@ -849,9 +792,9 @@ export const ProfilePage: React.FC = () => {
                           flex: 1,
                           padding: '9px 0',
                           borderRadius: 8,
-                          border: language === lang ? '2px solid #146C94' : '1px solid #cbd5e1',
-                          background: language === lang ? 'linear-gradient(135deg,#146C94,#0E526F)' : '#F6F1F1',
-                          color: language === lang ? '#fff' : '#146C94',
+                          border: language === lang ? '2px solid #225368' : '1px solid #cbd5e1',
+                          background: language === lang ? '#225368' : '#F6F1F1',
+                          color: language === lang ? '#fff' : '#225368',
                           fontWeight: 700,
                           fontSize: '0.88rem',
                           cursor: 'pointer',
@@ -868,7 +811,7 @@ export const ProfilePage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={saving}
-                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 0', borderRadius: 10, border: 'none', background: saving ? '#999' : 'linear-gradient(135deg,#146C94,#0E526F)', color: '#fff', fontWeight: 800, fontSize: '0.95rem', cursor: saving ? 'wait' : 'pointer', marginTop: 4 }}
+                  style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '12px 0', borderRadius: 10, border: 'none', background: saving ? '#999' : '#225368', color: '#fff', fontWeight: 800, fontSize: '0.95rem', cursor: saving ? 'wait' : 'pointer', marginTop: 4 }}
                 >
                   <Save size={16} />
                   {saving
@@ -886,7 +829,7 @@ export const ProfilePage: React.FC = () => {
 
             {/* Push Notifications */}
             <section style={{ background: '#ffffff', borderRadius: 16, border: '1px solid rgba(20, 108, 148, 0.14)', padding: '20px 16px', marginBottom: 18, boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-              <h3 style={{ margin: '0 0 12px', color: '#146C94', fontWeight: 800, fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+              <h3 style={{ margin: '0 0 12px', color: '#225368', fontWeight: 800, fontSize: '0.98rem', display: 'flex', alignItems: 'center', gap: 8 }}>
                 <Bell size={16} />
                 {language === 'hi' ? 'सूचनाएं' : 'Notifications'}
               </h3>
@@ -916,7 +859,7 @@ export const ProfilePage: React.FC = () => {
                   <button
                     onClick={requestPermission}
                     disabled={fcmLoading}
-                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '11px 0', borderRadius: 10, border: 'none', background: fcmLoading ? '#999' : 'linear-gradient(135deg,#146C94,#0E526F)', color: '#fff', fontWeight: 800, fontSize: '0.92rem', cursor: fcmLoading ? 'wait' : 'pointer' }}
+                    style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', padding: '11px 0', borderRadius: 10, border: 'none', background: fcmLoading ? '#999' : '#225368', color: '#fff', fontWeight: 800, fontSize: '0.92rem', cursor: fcmLoading ? 'wait' : 'pointer' }}
                   >
                     <Bell size={16} />
                     {fcmLoading

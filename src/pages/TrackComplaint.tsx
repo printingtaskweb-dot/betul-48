@@ -1,15 +1,15 @@
 import React, { useState, useRef } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { t } from '../lib/i18n';
 import { useComplaints } from '../hooks/useComplaints';
 import type { Complaint } from '../lib/supabase';
 import { StatusBadge } from '../components/common/StatusBadge';
 import { GoogleIcon } from '../components/common/GoogleIcon';
 import { supabase } from '../lib/supabase';
 import { BottomNav } from '../components/BottomNav';
+import { CivicHeader } from '../components/common/CivicHeader';
 import {
-  ArrowLeft, Search, CheckCircle2, XCircle, Compass,
+  Search, CheckCircle2, XCircle, Compass,
   Navigation, Camera, X
 } from 'lucide-react';
 
@@ -23,7 +23,6 @@ interface ResolutionData {
 
 export const TrackComplaint: React.FC = () => {
   const [searchParams] = useSearchParams();
-  const navigate = useNavigate();
   const { user, language, profile, isAdmin } = useAuth();
   const { getComplaintByTicket } = useComplaints();
   const [ticket, setTicket] = useState(searchParams.get('ticket') || '');
@@ -191,112 +190,73 @@ export const TrackComplaint: React.FC = () => {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: 'var(--page-background)', paddingBottom: 90 }}>
-      {/* Header */}
-      <header
-        style={{
-          background: 'var(--header-gradient)',
-          padding: '14px 20px',
-          color: '#fff',
-          boxShadow: 'var(--shadow-sm)',
-        }}
-      >
-        <div className="app-container" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <button
-            onClick={() => navigate(-1)}
-            style={{
-              border: 'none',
-              background: 'rgba(255,255,255,0.18)',
-              borderRadius: 'var(--radius-sm)',
-              width: 36,
-              height: 36,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: '#fff',
-            }}
-          >
-            <ArrowLeft size={20} color="#fff" />
-          </button>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 'var(--text-lg)', fontWeight: 800, color: '#fff' }}>
-              {t(language, 'trackComplaint')}
-            </h1>
-            <p style={{ margin: 0, fontSize: '0.78rem', color: 'rgba(255,255,255,0.85)' }}>
-              {language === 'hi' ? 'शिकायत का टिकट नंबर दर्ज करें' : 'Enter ticket number to track progress'}
-            </p>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-sand-50 text-civic-950 font-sans pb-28 lg:pb-12">
+      <CivicHeader
+        title={language === 'hi' ? 'शिकायत ट्रैक करें' : 'Track Complaint'}
+        subtitle={language === 'hi' ? 'लाइव स्टेटस एवं निराकरण ट्रैकर' : 'Live Status & Resolution Tracker'}
+        showBack
+      />
 
-      <div className="content-container-sm" style={{ paddingTop: 24 }}>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8 space-y-6">
+        <div>
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-civic-50 border border-civic-100 text-civic-800 text-xs font-semibold mb-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>{language === 'hi' ? 'लाइव स्टेटस ट्रैकर' : 'Live Status Tracker'}</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-civic-950 tracking-tight">
+            {language === 'hi' ? 'शिकायत की स्थिति जांचें' : 'Track Grievance Resolution'}
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            {language === 'hi'
+              ? 'टिकट नंबर दर्ज करके फील्ड टीम, समाधान एवं लाइव स्टेटस देखें।'
+              : 'Enter your ticket ID to monitor field team dispatch, SLA, and resolution proof.'}
+          </p>
+        </div>
+
         {/* Search Input Box */}
-        <div
-          style={{
-            display: 'flex',
-            gap: 10,
-            background: 'var(--theme-component, #d9d9d9)',
-            padding: 8,
-            borderRadius: 'var(--radius-md)',
-            boxShadow: 'var(--shadow-sm)',
-            border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-          }}
-        >
+        <div className="bg-white rounded-2xl p-2 border border-sand-200 shadow-card flex items-center gap-2 focus-within:ring-4 focus-within:ring-civic-500/10">
           <input
-            placeholder="e.g. IMC-2024-00001"
+            placeholder="e.g. BTL-2026-00020"
             value={ticket}
             onChange={(e) => setTicket(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
-            style={{
-              flex: 1,
-              padding: '10px 14px',
-              border: 'none',
-              fontSize: '0.95rem',
-              outline: 'none',
-              fontFamily: 'monospace',
-              letterSpacing: 1,
-              background: 'transparent',
-            }}
+            className="flex-1 bg-transparent px-3 py-2 text-sm font-mono font-bold text-civic-950 uppercase placeholder-slate-400 focus:outline-none"
           />
           <button
             onClick={handleSearch}
             disabled={loading}
-            style={{
-              padding: '10px 20px',
-              borderRadius: 'var(--radius-sm)',
-              border: 'none',
-              background: 'var(--theme-primary, #146C94)',
-              color: '#fff',
-              fontWeight: 700,
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              fontSize: '0.88rem',
-            }}
+            className="px-5 py-2.5 rounded-xl bg-civic-700 hover:bg-civic-800 disabled:bg-slate-300 text-white font-bold text-xs sm:text-sm transition flex items-center gap-1.5 shadow-sm cursor-pointer"
           >
-            <Search size={16} /> {loading ? '...' : language === 'hi' ? 'खोजें' : 'Search'}
+            <Search className="w-4 h-4" />
+            <span>{loading ? '...' : language === 'hi' ? 'खोजें' : 'Search'}</span>
           </button>
         </div>
 
+        {/* Quick Sample IDs */}
+        <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+          <span className="font-medium">{language === 'hi' ? 'उदाहरण टिकट:' : 'Sample IDs:'}</span>
+          {['BTL-2026-00020', 'BTL-2026-00019', 'BTL-2026-00018'].map((id) => (
+            <button
+              key={id}
+              type="button"
+              onClick={() => {
+                setTicket(id);
+                setTimeout(() => handleSearch(), 50);
+              }}
+              className="px-2.5 py-1 rounded-md bg-white hover:bg-civic-50 text-civic-800 border border-sand-200 font-mono font-semibold transition cursor-pointer"
+            >
+              #{id}
+            </button>
+          ))}
+        </div>
+
         {notFound && (
-          <div
-            style={{
-              marginTop: 24,
-              textAlign: 'center',
-              padding: '36px 20px',
-              background: 'var(--theme-component, #d9d9d9)',
-              borderRadius: 'var(--radius-md)',
-              border: '1.5px dashed var(--theme-component-border, #bfbfbf)',
-              color: 'var(--gray-600)',
-            }}
-          >
-            <p style={{ margin: '0 0 10px' }}><span className="material-symbols-rounded" style={{ fontSize: 44, color: '#94a3b8' }}>search</span></p>
-            <p style={{ fontWeight: 700, color: 'var(--gray-800)', margin: '0 0 4px' }}>
+          <div className="bg-white rounded-3xl p-8 border border-dashed border-sand-200 text-center shadow-card space-y-2">
+            <p className="text-slate-400 font-bold mb-1"><Search className="w-10 h-10 mx-auto text-slate-300" /></p>
+            <p className="font-bold text-civic-950 text-base">
               {language === 'hi' ? 'कोई शिकायत नहीं मिली' : 'No complaint found'}
             </p>
-            <p style={{ fontSize: '0.85rem', color: 'var(--gray-500)', margin: 0 }}>
+            <p className="text-xs text-slate-500 max-w-sm mx-auto">
               {language === 'hi'
                 ? `टिकट नंबर '${ticket}' की पुनः जांच करें।`
                 : `Please check the ticket number '${ticket}' and try again.`}
@@ -305,16 +265,7 @@ export const TrackComplaint: React.FC = () => {
         )}
 
         {complaint && (
-          <div
-            style={{
-              marginTop: 20,
-              background: 'var(--theme-component, #d9d9d9)',
-              border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-              borderRadius: 'var(--radius-lg)',
-              overflow: 'hidden',
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
+          <div className="bg-white rounded-3xl border border-sand-200 overflow-hidden shadow-card">
             {complaint.photo_url && (
               <img
                 src={complaint.photo_url}

@@ -8,10 +8,11 @@ import { useStorage } from '../hooks/useStorage';
 import { PhotoUploader } from '../components/common/PhotoUploader';
 import { LocationPicker } from '../components/common/LocationPicker';
 import { BottomNav } from '../components/BottomNav';
+import { CivicHeader } from '../components/common/CivicHeader';
 import { watermarkPhoto } from '../lib/watermarkPhoto';
 import type { Department } from '../lib/supabase';
 import { isValidMobile, lettersAndSpaces, mobileDigits } from '../lib/inputValidation';
-import { ArrowLeft, CheckCircle2, ChevronDown, Search, X } from 'lucide-react';
+import { CheckCircle2, ChevronDown, Search, X } from 'lucide-react';
 import { GoogleIcon } from '../components/common/GoogleIcon';
 import { ArcLoader } from '../components/common/ArcLoader';
 
@@ -287,106 +288,56 @@ export const ComplaintForm: React.FC = () => {
      ───────────────────────────────────────────── */
   if (ticket) {
     return (
-      <div
-        style={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          background: 'var(--green-50)',
-          padding: 24,
-        }}
-      >
-        <div style={{ textAlign: 'center', maxWidth: 440, width: '100%' }}>
-          <CheckCircle2
-            size={64}
-            color="var(--green-600)"
-            style={{ marginBottom: 16 }}
-          />
-          <h2
-            style={{
-              color: 'var(--green-900)',
-              marginBottom: 8,
-              fontSize: 'var(--text-xl)',
-            }}
-          >
-            {t(language, 'success')}
-          </h2>
-          <p
-            style={{
-              color: 'var(--gray-500)',
-              marginBottom: 6,
-              fontSize: '0.9rem',
-            }}
-          >
-            {t(language, 'ticketGenerated')}:
-          </p>
-          <div
-            style={{
-              background: 'var(--theme-component, #d9d9d9)',
-              border: '2px solid var(--theme-primary, #146C94)',
-              borderRadius: 'var(--radius-md)',
-              padding: '16px 24px',
-              marginBottom: 20,
-              boxShadow: 'var(--shadow-sm)',
-            }}
-          >
-            <span
-              style={{
-                fontSize: 'clamp(1.2rem, 2vw, 1.8rem)',
-                fontWeight: 900,
-                color: 'var(--theme-primary, #146C94)',
-                letterSpacing: 2,
-                fontFamily: 'monospace',
-              }}
-            >
-              {ticket}
-            </span>
-          </div>
-          <p
-            style={{
-              color: 'var(--gray-600)',
-              fontSize: '0.85rem',
-              marginBottom: 24,
-              lineHeight: 1.5,
-            }}
-          >
-            {language === 'hi'
-              ? 'इस टिकट नंबर को सुरक्षित रखें। विभाग द्वारा समाधान के बाद आपको इसे सत्यापित करने का अवसर मिलेगा।'
-              : 'Save this ticket number to track resolution progress. You will be able to verify once resolved.'}
-          </p>
-          <div style={{ display: 'flex', gap: 10, justifyContent: 'center' }}>
-            <button
-              onClick={() => navigate(`/track?ticket=${ticket}`)}
-              style={{
-                padding: '12px 24px',
-                borderRadius: 'var(--radius-sm)',
-                border: 'none',
-                background:
-                  'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
-                color: '#fff',
-                fontWeight: 700,
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              {t(language, 'trackStatus')}
-            </button>
-            <button
-              onClick={() => navigate('/')}
-              style={{
-                padding: '12px 24px',
-                borderRadius: 'var(--radius-sm)',
-                border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-                background: 'var(--theme-component, #d9d9d9)',
-                color: 'var(--gray-800)',
-                fontWeight: 700,
-                cursor: 'pointer',
-                fontSize: '0.9rem',
-              }}
-            >
-              {t(language, 'home')}
-            </button>
+      <div className="min-h-screen bg-sand-50 text-civic-950 font-sans pb-28 lg:pb-12">
+        <CivicHeader title={language === 'hi' ? 'सफल पंजीकरण' : 'Complaint Submitted'} />
+        <div className="max-w-xl mx-auto px-4 pt-12 text-center">
+          <div className="bg-white rounded-3xl border border-sand-200 p-8 sm:p-10 shadow-soft space-y-5">
+            <div className="w-16 h-16 rounded-2xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center mx-auto shadow-xs">
+              <CheckCircle2 className="w-9 h-9" />
+            </div>
+
+            <div>
+              <h2 className="text-2xl font-extrabold text-civic-950">
+                {language === 'hi' ? 'शिकायत सफलतापूर्वक दर्ज हुई' : 'Grievance Submitted Successfully'}
+              </h2>
+              <p className="text-sm text-slate-500 mt-1">
+                {language === 'hi'
+                  ? 'आपकी समस्या संबंधित नगर पालिका वार्ड फील्ड टीम को आवंटित कर दी गई है।'
+                  : 'Your complaint has been routed to the respective municipal field team.'}
+              </p>
+            </div>
+
+            <div className="p-4 rounded-2xl bg-sand-50 border border-sand-200">
+              <div className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
+                {language === 'hi' ? 'शिकायत टिकट नंबर' : 'Complaint Ticket ID'}
+              </div>
+              <div className="font-mono text-2xl sm:text-3xl font-extrabold text-civic-800 tracking-wider">
+                #{ticket}
+              </div>
+            </div>
+
+            <p className="text-xs text-slate-500 leading-relaxed max-w-sm mx-auto">
+              {language === 'hi'
+                ? 'इस टिकट नंबर को सुरक्षित रखें। फील्ड टीम द्वारा समाधान किए जाने पर आपको सत्यापन का अवसर मिलेगा।'
+                : 'Save this ticket ID to track field status and verify resolution once completed.'}
+            </p>
+
+            <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+              <button
+                type="button"
+                onClick={() => navigate(`/track?ticket=${ticket}`)}
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-civic-700 hover:bg-civic-800 text-white font-bold text-sm shadow-sm transition active:scale-95 cursor-pointer"
+              >
+                {language === 'hi' ? 'लाइव स्थिति ट्रैक करें' : 'Track Status'}
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-sand-50 hover:bg-civic-50 text-civic-900 border border-sand-200 font-bold text-sm transition cursor-pointer"
+              >
+                {language === 'hi' ? 'मुख्य पृष्ठ' : 'Go to Home'}
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -397,77 +348,32 @@ export const ComplaintForm: React.FC = () => {
      Main form
      ───────────────────────────────────────────── */
   return (
-    <div
-      style={{
-        minHeight: '100vh',
-        background: 'var(--page-background)',
-        paddingBottom: 90,
-      }}
-    >
-      <header
-        style={{
-          background:
-            'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))',
-          padding: '14px 20px',
-          color: '#fff',
-          boxShadow: 'var(--shadow-sm)',
-        }}
-      >
-        <div
-          className="app-container"
-          style={{ display: 'flex', alignItems: 'center', gap: 14 }}
-        >
-          <button
-            onClick={() => navigate(-1)}
-            style={{
-              border: 'none',
-              background: 'rgba(255,255,255,0.18)',
-              borderRadius: 'var(--radius-sm)',
-              width: 36,
-              height: 36,
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
-              color: '#fff',
-            }}
-          >
-            <ArrowLeft size={20} color="#fff" />
-          </button>
-          <div>
-            <h1
-              style={{
-                margin: 0,
-                fontSize: 'var(--text-lg)',
-                fontWeight: 800,
-                color: '#fff',
-              }}
-            >
-              {t(language, 'reportIssue')}
-            </h1>
-            <p
-              style={{
-                margin: 0,
-                fontSize: '0.78rem',
-                color: 'rgba(255,255,255,0.8)',
-              }}
-            >
-              IMC & Betul Municipal Corporation · Swachh 311
-            </p>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-sand-50 text-civic-950 font-sans pb-28 lg:pb-12">
+      <CivicHeader
+        title={language === 'hi' ? 'समस्या दर्ज करें' : 'Report Issue'}
+        subtitle={language === 'hi' ? 'नगर पालिका परिषद बैतूल • 311' : 'Nagar Palika Parishad Betul • 311'}
+        showBack
+      />
 
-      <div className="content-container-sm" style={{ paddingTop: 20 }}>
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 pt-6 sm:pt-8">
+        <div className="mb-6">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-civic-50 border border-civic-100 text-civic-800 text-xs font-semibold mb-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span>{language === 'hi' ? 'नागरिक समाधान साथी' : 'Citizen Grievance Redressal'}</span>
+          </div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-civic-950 tracking-tight">
+            {language === 'hi' ? 'नई शिकायत दर्ज करें' : 'Report Civic Issue'}
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            {language === 'hi'
+              ? 'समस्या की लाइव फोटो लें व स्थान का विवरण देकर तुरंत दर्ज करें।'
+              : 'Submit geo-tagged live photo evidence directly to municipal engineers.'}
+          </p>
+        </div>
+
         <form
           onSubmit={handleSubmit}
-          style={{
-            background: 'var(--theme-component, #d9d9d9)',
-            borderRadius: 'var(--radius-lg)',
-            padding: 'clamp(16px, 3vw, 28px)',
-            border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-            boxShadow: 'var(--shadow-sm)',
-          }}
+          className="bg-white rounded-3xl border border-sand-200 p-6 sm:p-8 shadow-card space-y-6"
         >
           {/* Department selector */}
           <div style={{ marginBottom: 22 }}>
@@ -832,25 +738,7 @@ export const ComplaintForm: React.FC = () => {
           <button
             type="submit"
             disabled={submitting || uploading || watermarking}
-            style={{
-              width: '100%',
-              padding: '14px 0',
-              borderRadius: 'var(--radius-md)',
-              border: 'none',
-              background:
-                submitting || uploading || watermarking
-                  ? 'var(--gray-300)'
-                  : 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
-              color: '#fff',
-              fontWeight: 800,
-              fontSize: '1rem',
-              cursor:
-                submitting || uploading || watermarking
-                  ? 'not-allowed'
-                  : 'pointer',
-              boxShadow: '0 4px 16px rgba(102,0,51,0.3)',
-              transition: 'var(--transition)',
-            }}
+            className="w-full py-3.5 px-6 rounded-2xl bg-civic-700 hover:bg-civic-800 disabled:bg-slate-300 text-white font-bold text-sm sm:text-base shadow-sm transition active:scale-95 cursor-pointer flex items-center justify-center gap-2"
           >
             {submitting
               ? 'Submitting…'
@@ -897,20 +785,22 @@ export const ComplaintForm: React.FC = () => {
 
 const labelStyle: React.CSSProperties = {
   display: 'block',
-  fontSize: '0.88rem',
+  fontSize: '0.8rem',
   fontWeight: 700,
-  color: 'var(--gray-800)',
+  textTransform: 'uppercase',
+  letterSpacing: '0.04em',
+  color: '#475569',
   marginBottom: 6,
 };
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
   boxSizing: 'border-box',
-  padding: '11px 14px',
-  borderRadius: 'var(--radius-sm)',
-  border: '1.5px solid var(--theme-component-border, #bfbfbf)',
-  fontSize: '0.88rem',
-  color: 'var(--gray-900)',
+  padding: '12px 14px',
+  borderRadius: 14,
+  border: '1px solid #e6e2d8',
+  fontSize: '0.9rem',
+  color: '#0f2531',
   outline: 'none',
-  background: 'var(--theme-bg, #F6F1F1)',
+  background: '#faf9f6',
 };

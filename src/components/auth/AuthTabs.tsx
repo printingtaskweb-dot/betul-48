@@ -10,24 +10,17 @@ interface Props {
 }
 
 export const AuthTabs: React.FC<Props> = ({ mode, onChange, language }) => (
-  <div style={{ display: 'flex', borderBottom: '1.5px solid var(--gray-100)' }}>
+  <div className="flex border-b border-sand-200 bg-sand-50/60 p-1.5">
     {(['login', 'register'] as Mode[]).map((m) => (
       <button
         key={m}
+        type="button"
         onClick={() => onChange(m)}
-        style={{
-          flex: 1,
-          padding: '16px 0',
-          border: 'none',
-          cursor: 'pointer',
-          background: 'transparent',
-          fontWeight: 700,
-          fontSize: 15,
-          color: mode === m ? 'var(--green-700)' : 'var(--gray-400)',
-          borderBottom:
-            mode === m ? '2.5px solid var(--green-600)' : '2.5px solid transparent',
-          transition: 'all 0.2s',
-        }}
+        className={`flex-1 py-3 text-center rounded-2xl text-xs sm:text-sm font-bold transition cursor-pointer ${
+          mode === m
+            ? 'bg-white text-civic-950 shadow-2xs'
+            : 'text-slate-500 hover:text-civic-900'
+        }`}
       >
         {m === 'login' ? t(language, 'login') : t(language, 'register')}
       </button>

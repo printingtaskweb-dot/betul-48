@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
 import { Building2, ArrowRight, Clock, LogOut } from 'lucide-react';
-
+import { CivicHeader } from '../components/common/CivicHeader';
 import { FormInput } from '../components/auth/FormInput';
 import { PasswordInput } from '../components/auth/PasswordInput';
 import { AlertBanner } from '../components/auth/AlertBanner';
@@ -41,7 +41,6 @@ export default function DeptLogin() {
     try {
       let mail = idInput.toLowerCase();
       if (!mail.includes('@')) {
-        // Query user_profiles by staff_code
         const { data: userProf, error: profErr } = await supabase
           .from('user_profiles')
           .select('email')
@@ -72,84 +71,121 @@ export default function DeptLogin() {
     setIdentifier(''); setPassword(''); setError('');
   };
 
-  const pageBg = 'var(--header-gradient, linear-gradient(135deg, #0E526F 0%, #146C94 50%, #0E526F 100%))';
-  const btnPrimary: React.CSSProperties = {
-    width: '100%', padding: 13, border: 'none', borderRadius: 'var(--radius-md)',
-    background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))', color: '#fff', fontWeight: 800,
-    fontSize: '0.95rem', cursor: 'pointer', display: 'flex', alignItems: 'center',
-    justifyContent: 'center', gap: 8, boxShadow: '0 4px 14px rgba(102,0,51,0.35)',
-  };
-  const linkBtn: React.CSSProperties = {
-    marginTop: 10, width: '100%', padding: 10, border: 'none', background: 'none',
-    color: 'var(--gray-700)', fontSize: '0.82rem', cursor: 'pointer',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
-  };
-
   /* Logged in, but account not approved yet (or not a staff account) */
   if (user && profile && !isStaff) {
     return (
-      <div style={{ minHeight: '100vh', background: pageBg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}>
-        <div style={{ maxWidth: 440, width: '100%', background: 'var(--theme-component, #d9d9d9)', borderRadius: 'var(--radius-xl)', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', padding: 36, textAlign: 'center', border: '1.5px solid var(--theme-component-border, #bfbfbf)' }}>
-          <div style={{ width: 72, height: 72, borderRadius: '50%', background: 'var(--theme-bg, #F6F1F1)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
-            <Clock size={32} color={isPending ? 'var(--status-pending)' : 'var(--theme-primary, #146C94)'} />
+      <div className="min-h-screen bg-sand-50 text-civic-950 font-sans pb-16 flex flex-col justify-between">
+        <CivicHeader
+          title={hi ? 'स्टाफ पोर्टल' : 'Department Portal'}
+          subtitle={hi ? 'नगर पालिका परिषद बैतूल' : 'Nagar Palika Parishad Betul'}
+          showBack
+        />
+        <div className="max-w-md mx-auto px-4 w-full py-12">
+          <div className="bg-white rounded-3xl border border-sand-200 shadow-card p-8 text-center space-y-4">
+            <div className="w-16 h-16 rounded-2xl bg-amber-50 border border-amber-100 text-amber-600 flex items-center justify-center mx-auto shadow-2xs">
+              <Clock size={32} />
+            </div>
+            <h2 className="text-xl font-extrabold text-civic-950 tracking-tight">
+              {isPending ? (hi ? 'अनुमोदन की प्रतीक्षा' : 'Awaiting Approval')
+                         : (hi ? 'स्टाफ खाता नहीं मिला' : 'Not a Staff Account')}
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">
+              {isPending
+                ? (hi ? 'आपका खाता अभी नोडल अधिकारी द्वारा अनुमोदित नहीं हुआ है।' : 'Your account has not been approved by the municipal administrator yet.')
+                : (hi ? 'यह खाता स्टाफ के रूप में पंजीकृत नहीं है। कृपया एडमिन से संपर्क करें।'
+                      : 'This account is not registered as staff. Please contact your admin.')}
+            </p>
+            <div className="pt-2 flex flex-col gap-2">
+              <button
+                type="button"
+                onClick={() => navigate('/')}
+                className="w-full py-3.5 rounded-2xl bg-civic-700 hover:bg-civic-800 text-white font-bold text-sm shadow-sm transition active:scale-[0.99] cursor-pointer"
+              >
+                {hi ? 'होम पर जाएं' : 'Go to Home'}
+              </button>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="w-full py-3 rounded-2xl bg-sand-50 hover:bg-civic-50 text-civic-900 border border-sand-200 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition cursor-pointer"
+              >
+                <LogOut size={14} />
+                <span>{hi ? 'लॉगआउट करें' : 'Log out / Switch User'}</span>
+              </button>
+            </div>
           </div>
-          <h2 style={{ margin: '0 0 10px', fontSize: '1.25rem', fontWeight: 900 }}>
-            {isPending ? (hi ? 'अनुमोदन की प्रतीक्षा' : 'Awaiting Approval')
-                       : (hi ? 'स्टाफ खाता नहीं मिला' : 'Not a staff account')}
-          </h2>
-          <p style={{ margin: '0 0 20px', fontSize: '0.88rem', color: 'var(--gray-600)', lineHeight: 1.7 }}>
-            {isPending
-              ? (hi ? 'आपका खाता अभी अनुमोदित नहीं हुआ है।' : 'Your account has not been approved yet.')
-              : (hi ? 'यह खाता स्टाफ के रूप में पंजीकृत नहीं है। कृपया एडमिन से संपर्क करें।'
-                    : 'This account is not registered as staff. Please contact your admin.')}
-          </p>
-          <button onClick={() => navigate('/')} style={btnPrimary}>{hi ? 'होम पर जाएं' : 'Go to Home'}</button>
-          <button onClick={handleSignOut} style={linkBtn}>
-            <LogOut size={13} /> {hi ? 'लॉगआउट करें' : 'Log out / Switch User'}
-          </button>
         </div>
       </div>
     );
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: pageBg, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '24px 16px' }}>
-      <div style={{ width: '100%', maxWidth: 440, background: 'var(--theme-component, #d9d9d9)', borderRadius: 'var(--radius-xl)', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', overflow: 'hidden', border: '1.5px solid var(--theme-component-border, #bfbfbf)' }}>
-        <div style={{ background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))', padding: '22px 26px', textAlign: 'center' }}>
-          <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 10px' }}>
-            <Building2 size={26} color="#fff" />
+    <div className="min-h-screen bg-sand-50 text-civic-950 font-sans pb-16">
+      <CivicHeader
+        title={hi ? 'स्टाफ पोर्टल' : 'Department Portal'}
+        subtitle={hi ? 'नगर पालिका परिषद बैतूल • विभागीय कंसोल' : 'Nagar Palika Parishad Betul • Staff Console'}
+        showBack
+      />
+
+      <div className="max-w-md mx-auto px-4 pt-10">
+        <div className="bg-white rounded-3xl border border-sand-200 shadow-card overflow-hidden">
+          <div className="bg-gradient-to-r from-civic-800 to-civic-900 p-6 text-center text-white">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 flex items-center justify-center mx-auto mb-2 text-white">
+              <Building2 size={24} />
+            </div>
+            <h1 className="text-lg font-extrabold tracking-tight">
+              {hi ? 'विभागीय स्टाफ लॉगिन' : 'Department Staff Login'}
+            </h1>
+            <p className="text-xs text-civic-200 mt-0.5">
+              {hi ? 'फील्ड इंजीनियर व विभागीय अधिकारी' : 'Field Engineers & Ward Inspectors'}
+            </p>
           </div>
-          <h1 style={{ margin: 0, fontSize: '1.15rem', fontWeight: 900, color: '#fff' }}>
-            {hi ? 'स्टाफ लॉगिन' : 'Staff Login'}
-          </h1>
-        </div>
 
-        <div style={{ padding: '20px 24px 24px' }}>
-          <AlertBanner type="error" message={error} />
+          <div className="p-6 sm:p-8 space-y-4">
+            <AlertBanner type="error" message={error} />
 
-          <FormInput icon={Building2} type="text"
-            placeholder={hi ? 'स्टाफ आईडी / विभाग कोड या ईमेल *' : 'Staff ID / Dept ID or Email *'}
-            value={identifier} onChange={e => setIdentifier(e.target.value)} />
-          <PasswordInput
-            placeholder={hi ? 'पासवर्ड *' : 'Password *'}
-            value={password} onChange={e => setPassword(e.target.value)} />
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                {hi ? 'स्टाफ आईडी / विभाग कोड या ईमेल *' : 'Staff ID / Dept ID or Email *'}
+              </label>
+              <FormInput
+                icon={Building2}
+                type="text"
+                placeholder={hi ? 'उदा. ENG-04 या email@betulnagar.co.in' : 'e.g. ENG-04 or email'}
+                value={identifier}
+                onChange={e => setIdentifier(e.target.value)}
+              />
+            </div>
 
-          <button type="button" onClick={handleLogin} disabled={loading}
-            style={{ ...btnPrimary, marginTop: 12, opacity: loading ? 0.7 : 1, cursor: loading ? 'wait' : 'pointer' }}>
-            {loading ? (hi ? 'कृपया प्रतीक्षा करें…' : 'Please wait…')
-                     : <>{hi ? 'लॉग इन' : 'Log in'} <ArrowRight size={15} /></>}
-          </button>
+            <div>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1.5">
+                {hi ? 'पासवर्ड *' : 'Password *'}
+              </label>
+              <PasswordInput
+                placeholder={hi ? 'पासवर्ड दर्ज करें' : 'Enter password'}
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+              />
+            </div>
 
-          <p style={{ margin: '14px 0 0', fontSize: '0.75rem', color: 'var(--gray-500)', textAlign: 'center' }}>
-            {hi ? 'खाता और स्टाफ आईडी एडमिन द्वारा प्रदान किए जाते हैं।'
-                : 'Account & Staff ID are provided by your administrator.'}
-          </p>
+            <button
+              type="button"
+              onClick={handleLogin}
+              disabled={loading}
+              className={`w-full py-3.5 rounded-2xl font-extrabold text-sm sm:text-base flex items-center justify-center gap-2 transition active:scale-[0.99] cursor-pointer shadow-sm mt-2 ${
+                loading
+                  ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                  : 'bg-civic-700 hover:bg-civic-800 text-white'
+              }`}
+            >
+              {loading ? (hi ? 'कृपया प्रतीक्षा करें…' : 'Please wait…')
+                       : <>{hi ? 'लॉग इन करें' : 'Log In'} <ArrowRight size={16} /></>}
+            </button>
 
-          <button type="button" onClick={() => navigate('/')}
-            style={{ ...linkBtn, marginTop: 12 }}>
-            <ArrowRight size={13} style={{ transform: 'rotate(180deg)' }} />
-            {hi ? 'होम पर वापस जाएं' : 'Back to Home'}
-          </button>
+            <p className="text-xs text-slate-400 text-center pt-2">
+              {hi ? 'खाता और स्टाफ आईडी नगर पालिका एडमिन द्वारा प्रदान किए जाते हैं।'
+                  : 'Account & Staff ID credentials are provided by your administrator.'}
+            </p>
+          </div>
         </div>
       </div>
     </div>

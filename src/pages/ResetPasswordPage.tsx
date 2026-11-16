@@ -9,9 +9,9 @@ import { PasswordInput } from '../components/auth/PasswordInput';
 import { AlertBanner } from '../components/auth/AlertBanner';
 
 const buttonStyle: React.CSSProperties = {
-  width: '100%', padding: '13px 16px', border: 0, borderRadius: 10,
-  color: '#fff', background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
-  fontSize: 15, fontWeight: 800, cursor: 'pointer', marginTop: 6,
+  width: '100%', padding: '14px 16px', border: 0, borderRadius: 16,
+  color: '#fff', background: '#225368',
+  fontSize: 15, fontWeight: 800, cursor: 'pointer', marginTop: 8,
 };
 
 export default function ResetPasswordPage() {
