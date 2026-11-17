@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { Landmark, Globe, ArrowLeft, Plus, LogOut } from 'lucide-react';
+import { Landmark, Globe, ArrowLeft } from 'lucide-react';
 
 interface CivicHeaderProps {
   title?: string;
@@ -18,7 +18,7 @@ export const CivicHeader: React.FC<CivicHeaderProps> = ({
   backTo,
   actionButton,
 }) => {
-  const { language, setLanguage, user, profile, signOut } = useAuth();
+  const { language, setLanguage, user, profile } = useAuth();
   const navigate = useNavigate();
 
   const handleBack = () => {
@@ -31,11 +31,6 @@ export const CivicHeader: React.FC<CivicHeaderProps> = ({
 
   const toggleLanguage = () => {
     setLanguage(language === 'en' ? 'hi' : 'en');
-  };
-
-  const handleLogout = async () => {
-    await signOut();
-    navigate('/auth');
   };
 
   return (
@@ -117,44 +112,25 @@ export const CivicHeader: React.FC<CivicHeaderProps> = ({
 
           {actionButton}
 
+          {/* Translator (Icon Only) */}
           <button
             type="button"
             onClick={toggleLanguage}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-full bg-white hover:bg-civic-50 text-civic-900 border border-sand-200 shadow-2xs text-xs sm:text-sm font-semibold transition active:scale-95 cursor-pointer"
-            aria-label="Switch Language"
+            className="w-10 h-10 rounded-full bg-white hover:bg-civic-50 text-civic-900 border border-sand-200 shadow-2xs flex items-center justify-center transition active:scale-95 cursor-pointer shrink-0"
+            aria-label={language === 'en' ? 'हिन्दी में बदलें' : 'Switch to English'}
+            title={language === 'en' ? 'हिन्दी' : 'English'}
           >
-            <Globe className="w-4 h-4 text-civic-600" />
-            <span>{language === 'en' ? 'हिन्दी' : 'English'}</span>
+            <Globe className="w-4.5 h-4.5 text-civic-600" />
           </button>
 
-          {!actionButton && (
-            <Link
-              to="/complaint/new"
-              className="hidden sm:flex items-center gap-1.5 px-4 py-2 rounded-full bg-civic-700 hover:bg-civic-800 text-white text-xs sm:text-sm font-bold shadow-sm transition active:scale-95 text-decoration-none"
-            >
-              <Plus className="w-4 h-4" />
-              <span>{language === 'hi' ? 'समस्या दर्ज करें' : 'Report Issue'}</span>
-            </Link>
-          )}
-
           {user ? (
-            <div className="flex items-center gap-1.5 ml-1">
-              <Link
-                to="/profile"
-                className="w-9 h-9 rounded-full bg-civic-700 text-white flex items-center justify-center font-bold text-xs shadow-xs text-decoration-none"
-                title={user.email || 'Profile'}
-              >
-                {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
-              </Link>
-              <button
-                type="button"
-                onClick={handleLogout}
-                className="w-8 h-8 rounded-full bg-sand-100 hover:bg-sand-200 text-slate-700 flex items-center justify-center transition cursor-pointer"
-                title="Logout"
-              >
-                <LogOut className="w-4 h-4" />
-              </button>
-            </div>
+            <Link
+              to="/profile"
+              className="w-10 h-10 rounded-full bg-civic-700 hover:bg-civic-800 text-white flex items-center justify-center font-bold text-xs shadow-xs text-decoration-none transition active:scale-95 ml-1"
+              title={user.email || 'Profile'}
+            >
+              {profile?.full_name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase() || 'U'}
+            </Link>
           ) : (
             <Link
               to="/auth"
