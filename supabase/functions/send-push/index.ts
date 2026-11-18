@@ -81,6 +81,57 @@ async function sendFCMMessage(
   body: string,
   url: string,
 ): Promise<boolean> {
+  const payload = {
+    message: {
+      token,
+      notification: {
+        title,
+        body,
+      },
+      // Native Android configuration for APK
+      android: {
+        priority: 'HIGH',
+        direct_boot_ok: true,
+        notification: {
+          title,
+          body,
+          icon: 'ic_launcher',
+          color: '#146c94',
+          click_action: url,
+          default_sound: true,
+          default_vibrate_timings: true,
+          notification_priority: 'PRIORITY_HIGH',
+          channel_id: 'betul_alerts',
+        },
+      },
+      // WebPush configuration for browsers
+      webpush: {
+        headers: {
+          Urgency: 'high',
+        },
+        notification: {
+          title,
+          body,
+          icon: '/logo.png',
+          badge: '/logo.png',
+          click_action: url,
+          tag: 'betul-311-alert',
+          renotify: true,
+        },
+        fcm_options: {
+          link: url,
+        },
+      },
+      // Data payload accessible in background and foreground
+      data: {
+        title: String(title),
+        body: String(body),
+        url: String(url),
+        sent_at: new Date().toISOString(),
+      },
+    },
+  };
+
   const res = await fetch(
     `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
     {
@@ -89,23 +140,7 @@ async function sendFCMMessage(
         Authorization:  `Bearer ${accessToken}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        message: {
-          token,
-          notification: { title, body },
-          webpush: {
-            notification: {
-              title,
-              body,
-              icon:  '/logo.png',
-              badge: '/logo.png',
-              click_action: url,
-            },
-            fcm_options: { link: url },
-          },
-          data: { url, sent_at: new Date().toISOString() },
-        },
-      }),
+      body: JSON.stringify(payload),
     },
   );
   return res.ok;
@@ -119,18 +154,22 @@ serve(async (req: Request) => {
 
   try {
     /* 1. Parse request body */
-    const { title, body, url = '/', tokens: requestedTokens, user_ids, sent_by } = await req.json() as {
-      title:   string;
-      body:    string;
-      url?:    string;
-      tokens?: string[];
+    const reqBody = await req.json() as {
+      title:     string;
+      body:      string;
+      url?:      string;
+      tokens?:   string[];
       user_ids?: string[];
-      sent_by?: string;
+      sent_by?:  string;
+      send_all?: boolean;
+      all?:      boolean;
     };
 
-    if (!title || !body || (!requestedTokens?.length && !user_ids?.length)) {
+    const { title, body, url = '/', tokens: requestedTokens, user_ids, sent_by, send_all, all } = reqBody;
+
+    if (!title || !body) {
       return new Response(
-        JSON.stringify({ error: 'title, body, and tokens[] or user_ids[] are required' }),
+        JSON.stringify({ error: 'title and body are required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
       );
     }
@@ -151,37 +190,53 @@ serve(async (req: Request) => {
       global: { headers: { Authorization: authorization } },
     });
     const { data: authData, error: authError } = await authClient.auth.getUser();
-    if (authError || !authData.user) {
-      return new Response(JSON.stringify({ error: 'Invalid authentication' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+
+    // Check authorization: allow admin/officers, ouikey41@gmail.com, or service role calls
+    const tokenBearer = authorization.replace(/^Bearer\s+/i, '');
+    const isServiceRole = tokenBearer === supabaseSecret;
+
+    if (!isServiceRole) {
+      if (authError || !authData.user) {
+        return new Response(JSON.stringify({ error: 'Invalid authentication' }), {
+          status: 401,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
+
+      const { data: actor } = await supa.from('user_profiles')
+        .select('role, is_admin, approval_status')
+        .eq('id', authData.user.id)
+        .maybeSingle();
+      const canSend = actor?.approval_status !== 'rejected' && (
+        actor?.is_admin === true ||
+        ['admin', 'municipal_administrator', 'deputy_commissioner', 'verification_officer'].includes(actor?.role || '') ||
+        authData.user.email?.toLowerCase() === 'ouikey41@gmail.com'
+      );
+      if (!canSend) {
+        return new Response(JSON.stringify({ error: 'Not authorized to send notifications' }), {
+          status: 403,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        });
+      }
     }
 
-    const { data: actor } = await supa.from('user_profiles')
-      .select('role, is_admin, approval_status')
-      .eq('id', authData.user.id)
-      .maybeSingle();
-    const canSend = actor?.approval_status !== 'rejected' && (
-      actor?.is_admin === true ||
-      ['admin', 'municipal_administrator', 'deputy_commissioner', 'verification_officer'].includes(actor?.role || '') ||
-      authData.user.email?.toLowerCase() === 'ouikey41@gmail.com'
-    );
-    if (!canSend) {
-      return new Response(JSON.stringify({ error: 'Not authorized to send notifications' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    }
-
+    /* 2. Resolve target tokens */
     let tokens = requestedTokens || [];
-    if (user_ids?.length) {
-      const { data: userTokens, error: tokenError } = await supa.from('fcm_tokens')
+    if (send_all || all || (!tokens.length && !user_ids?.length)) {
+      const { data: allTokens, error: tokenError } = await supa
+        .from('fcm_tokens')
+        .select('token');
+      if (tokenError) throw tokenError;
+      tokens = (allTokens || []).map((row: { token: string }) => row.token);
+    } else if (user_ids?.length) {
+      const { data: userTokens, error: tokenError } = await supa
+        .from('fcm_tokens')
         .select('token')
         .in('user_id', Array.from(new Set(user_ids)));
       if (tokenError) throw tokenError;
       tokens = [...tokens, ...(userTokens || []).map((row: { token: string }) => row.token)];
     }
+
     if (!tokens.length) {
       return new Response(JSON.stringify({ error: 'No registered devices found for recipients' }), {
         status: 404,
@@ -189,16 +244,42 @@ serve(async (req: Request) => {
       });
     }
 
-    /* 2. Load Firebase service account from env secret */
-    const serviceAccountJson = Deno.env.get('FIREBASE_SERVICE_ACCOUNT');
-    if (!serviceAccountJson) {
-      throw new Error('FIREBASE_SERVICE_ACCOUNT secret is not set in Supabase dashboard.');
-    }
-    const serviceAccount = JSON.parse(serviceAccountJson);
-    const projectId = serviceAccount.project_id || 'printing-task-78a01';
+    /* 3. Load Firebase service account from env secrets */
+    let serviceAccount: { client_email?: string; private_key?: string; project_id?: string } = {};
 
-    /* 3. Get OAuth2 access token */
-    const accessToken = await getAccessToken(serviceAccount);
+    const serviceAccountJson = Deno.env.get('FIREBASE_SERVICE_ACCOUNT');
+    if (serviceAccountJson) {
+      try {
+        serviceAccount = JSON.parse(serviceAccountJson.trim());
+      } catch {
+        try {
+          serviceAccount = JSON.parse(atob(serviceAccountJson.trim()));
+        } catch {
+          console.warn('Could not parse FIREBASE_SERVICE_ACCOUNT as JSON or Base64.');
+        }
+      }
+    }
+
+    if (!serviceAccount.client_email) {
+      serviceAccount.client_email = Deno.env.get('FIREBASE_CLIENT_EMAIL')?.trim();
+    }
+    if (!serviceAccount.private_key) {
+      const rawKey = Deno.env.get('FIREBASE_PRIVATE_KEY')?.trim();
+      if (rawKey) {
+        serviceAccount.private_key = rawKey.includes('\n') ? rawKey : rawKey.replace(/\\n/g, '\n');
+      }
+    }
+    if (!serviceAccount.project_id) {
+      serviceAccount.project_id = Deno.env.get('FIREBASE_PROJECT_ID')?.trim() || 'jila-betul';
+    }
+
+    if (!serviceAccount.client_email || !serviceAccount.private_key) {
+      throw new Error('Firebase credentials missing. Please set FIREBASE_SERVICE_ACCOUNT or FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY in Supabase dashboard.');
+    }
+    const projectId = serviceAccount.project_id || 'jila-betul';
+
+    /* 4. Get OAuth2 access token */
+    const accessToken = await getAccessToken(serviceAccount as Record<string, string>);
 
     /* 4. Send to all unique tokens (in parallel batches of 100) */
     const uniqueTokens = Array.from(new Set(tokens.filter(Boolean)));
