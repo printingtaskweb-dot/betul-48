@@ -68,6 +68,10 @@ jobs:
           SDK_DIR="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
           echo "Using Android SDK at: $SDK_DIR"
 
+          # Export environment variables for all subsequent workflow steps
+          echo "ANDROID_HOME=$SDK_DIR" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK_DIR" >> "$GITHUB_ENV"
+
           # Bubblewrap checks for $SDK_DIR/tools or $SDK_DIR/bin
           # Ensure cmdline-tools is symlinked to tools and bin so Bubblewrap passes validation
           if [ -d "$SDK_DIR/cmdline-tools/latest" ]; then
@@ -78,6 +82,7 @@ jobs:
 
           if [ -n "$CMD_DIR" ] && [ -d "$CMD_DIR" ]; then
             echo "Found cmdline-tools at: $CMD_DIR"
+            echo "$CMD_DIR/bin" >> "$GITHUB_PATH"
             sudo ln -sf "$CMD_DIR" "$SDK_DIR/tools" 2>/dev/null || ln -sf "$CMD_DIR" "$SDK_DIR/tools" 2>/dev/null || true
             sudo ln -sf "$CMD_DIR/bin" "$SDK_DIR/bin" 2>/dev/null || ln -sf "$CMD_DIR/bin" "$SDK_DIR/bin" 2>/dev/null || true
           fi
@@ -134,10 +139,20 @@ jobs:
         working-directory: android
         run: |
           yes | bubblewrap update --skipVersionUpgrade --manifest=twa-manifest.json
+          
+          # Generate manifest-checksum.txt so bubblewrap build never prompts for user confirmation in CI
+          node -e '
+            const fs = require("fs");
+            const crypto = require("crypto");
+            const sum = crypto.createHash("sha1").update(fs.readFileSync("twa-manifest.json")).digest("hex");
+            fs.writeFileSync("manifest-checksum.txt", sum);
+          '
+
           # Copy keystore to app subfolder and aliases so Gradle resolves it regardless of relative base
           cp -f betulnagar-release.keystore app/betulnagar-release.keystore 2>/dev/null || true
           cp -f betulnagar-release.keystore android.keystore 2>/dev/null || true
           cp -f betulnagar-release.keystore app/android.keystore 2>/dev/null || true
+          
           # Optimize Gradle memory in project
           cat <<EOF >> gradle.properties
           org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8
@@ -147,60 +162,71 @@ jobs:
       - name: Build signed APK and app bundle
         working-directory: android
         env:
+          KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'betulnagar123' }}
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD || secrets.ANDROID_KEYSTORE_PASSWORD || 'betulnagar123' }}
           BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'betulnagar123' }}
           BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD || secrets.ANDROID_KEYSTORE_PASSWORD || 'betulnagar123' }}
         run: |
-          KEY_PASS="${BUBBLEWRAP_KEYSTORE_PASSWORD}"
-          BUILD_SUCCESS=0
-          if bubblewrap build --manifest=twa-manifest.json --signingKeyPath=./betulnagar-release.keystore --signingKeyAlias=betulnagar --skipPwaValidation; then
-            BUILD_SUCCESS=1
-          else
-            echo "Bubblewrap build command reported failure. Checking and diagnosing with gradlew..."
-            ./gradlew assembleRelease bundleRelease --stacktrace --info || true
-          fi
+          export BUBBLEWRAP_KEYSTORE_PASSWORD="${KEYSTORE_PASS}"
+          export BUBBLEWRAP_KEY_PASSWORD="${KEY_PASS}"
 
-          # If app-release-signed.apk was not output by bubblewrap, sign it directly using apksigner
+          echo "Attempting build via Bubblewrap CLI..."
+          yes | bubblewrap build --manifest=twa-manifest.json --signingKeyPath=./betulnagar-release.keystore --signingKeyAlias=betulnagar --skipPwaValidation || true
+
+          # If app-release-signed.apk was not output by bubblewrap, compile and sign via Gradle + apksigner
           if [ ! -f "app-release-signed.apk" ]; then
-            echo "Signing APK directly using apksigner..."
-            UNSIGNED_APK=$(find app/build/outputs/apk -name "*unsigned.apk" -o -name "*release.apk" 2>/dev/null | head -n 1)
-            if [ -n "$UNSIGNED_APK" ] && [ -f "$UNSIGNED_APK" ]; then
-              APKSIGNER=$(find "${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}/build-tools" -name "apksigner" 2>/dev/null | sort -V | tail -n 1)
-              ZIPALIGN=$(find "${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}/build-tools" -name "zipalign" 2>/dev/null | sort -V | tail -n 1)
-              
-              if [ -n "$ZIPALIGN" ] && [ -x "$ZIPALIGN" ]; then
-                "$ZIPALIGN" -v -p 4 "$UNSIGNED_APK" app-aligned.apk || cp "$UNSIGNED_APK" app-aligned.apk
+            echo "Running gradlew assembleRelease bundleRelease directly..."
+            ./gradlew assembleRelease bundleRelease --stacktrace
+
+            FOUND_APK=$(find app/build/outputs/apk -type f -name "*.apk" | head -n 1)
+            echo "Found compiled APK: $FOUND_APK"
+
+            BUILD_TOOLS_DIR=$(find "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}/build-tools" -maxdepth 1 -mindepth 1 -type d | sort -V | tail -n 1)
+            echo "Using Android build-tools from: $BUILD_TOOLS_DIR"
+
+            if [ -n "$FOUND_APK" ] && [ -f "$FOUND_APK" ]; then
+              if [ -f "$BUILD_TOOLS_DIR/zipalign" ]; then
+                "$BUILD_TOOLS_DIR/zipalign" -v -p 4 "$FOUND_APK" app-aligned.apk || cp "$FOUND_APK" app-aligned.apk
               else
-                cp "$UNSIGNED_APK" app-aligned.apk
+                cp "$FOUND_APK" app-aligned.apk
               fi
 
-              if [ -n "$APKSIGNER" ] && [ -x "$APKSIGNER" ]; then
-                "$APKSIGNER" sign --ks ./betulnagar-release.keystore --ks-key-alias betulnagar \
-                  --ks-pass "pass:$KEY_PASS" --key-pass "pass:$KEY_PASS" \
+              if [ -f "$BUILD_TOOLS_DIR/apksigner" ]; then
+                "$BUILD_TOOLS_DIR/apksigner" sign \
+                  --ks ./betulnagar-release.keystore \
+                  --ks-key-alias betulnagar \
+                  --ks-pass "pass:$KEYSTORE_PASS" \
+                  --key-pass "pass:$KEY_PASS" \
                   --out app-release-signed.apk app-aligned.apk
-                echo "Successfully signed APK via apksigner: app-release-signed.apk"
+                echo "Successfully signed APK with apksigner: app-release-signed.apk"
+              else
+                cp app-aligned.apk app-release-signed.apk
               fi
             fi
           fi
 
           # If app-release-bundle.aab was not output by bubblewrap, sign it directly using jarsigner
           if [ ! -f "app-release-bundle.aab" ]; then
-            AAB_FILE=$(find app/build/outputs/bundle -name "*.aab" 2>/dev/null | head -n 1)
-            if [ -n "$AAB_FILE" ] && [ -f "$AAB_FILE" ]; then
+            FOUND_AAB=$(find app/build/outputs/bundle -type f -name "*.aab" | head -n 1)
+            echo "Found compiled bundle: $FOUND_AAB"
+            if [ -n "$FOUND_AAB" ] && [ -f "$FOUND_AAB" ]; then
               jarsigner -keystore ./betulnagar-release.keystore \
-                -storepass "$KEY_PASS" -keypass "$KEY_PASS" \
-                "$AAB_FILE" betulnagar
-              cp "$AAB_FILE" app-release-bundle.aab
-              echo "Successfully signed AAB via jarsigner: app-release-bundle.aab"
+                -storepass "$KEYSTORE_PASS" -keypass "$KEY_PASS" \
+                "$FOUND_AAB" betulnagar
+              cp "$FOUND_AAB" app-release-bundle.aab
+              echo "Successfully signed AAB with jarsigner: app-release-bundle.aab"
             fi
           fi
 
-          # Verify that at least the APK was produced
+          # Final verification
           if [ ! -f "app-release-signed.apk" ]; then
             echo "ERROR: Could not generate app-release-signed.apk"
             exit 1
           fi
-          echo "Build completed successfully. Artifacts ready:"
-          ls -lh app-release-signed.apk app-release-bundle.aab 2>/dev/null || ls -lh app-release-signed.apk
+
+          echo "Build completed successfully! Artifacts ready:"
+          ls -lh app-release-signed.apk
+          ls -lh app-release-bundle.aab 2>/dev/null || true
 
       - name: Generate Digital Asset Links file
         working-directory: android
