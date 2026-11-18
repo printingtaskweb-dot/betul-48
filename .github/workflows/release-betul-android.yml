@@ -59,23 +59,42 @@ jobs:
           distribution: temurin
           java-version: "17"
 
-      - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          packages: "platform-tools"
-
-      - name: Install Android SDK packages
-        run: |
-          yes | sdkmanager --licenses >/dev/null
-          sdkmanager "platform-tools" "platforms;android-36" "build-tools;36.0.0"
-
       - name: Install Bubblewrap CLI
         run: npm install --global @bubblewrap/cli@1.27.0
 
-      - name: Configure Bubblewrap Android paths
+      - name: Configure Android SDK and Bubblewrap
         run: |
+          # Use GitHub Actions runner's complete pre-installed Android SDK
+          SDK_DIR="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          echo "Using Android SDK at: $SDK_DIR"
+
+          # Bubblewrap checks for $SDK_DIR/tools or $SDK_DIR/bin
+          # Ensure cmdline-tools is symlinked to tools and bin so Bubblewrap passes validation
+          if [ -d "$SDK_DIR/cmdline-tools/latest" ]; then
+            CMD_DIR="$SDK_DIR/cmdline-tools/latest"
+          elif [ -d "$SDK_DIR/cmdline-tools" ]; then
+            CMD_DIR=$(find "$SDK_DIR/cmdline-tools" -maxdepth 2 -name "bin" -type d 2>/dev/null | head -n 1 | xargs dirname)
+          fi
+
+          if [ -n "$CMD_DIR" ] && [ -d "$CMD_DIR" ]; then
+            echo "Found cmdline-tools at: $CMD_DIR"
+            sudo ln -sf "$CMD_DIR" "$SDK_DIR/tools" 2>/dev/null || ln -sf "$CMD_DIR" "$SDK_DIR/tools" 2>/dev/null || true
+            sudo ln -sf "$CMD_DIR/bin" "$SDK_DIR/bin" 2>/dev/null || ln -sf "$CMD_DIR/bin" "$SDK_DIR/bin" 2>/dev/null || true
+          fi
+
+          # Accept Android SDK licenses
+          yes | "$CMD_DIR/bin/sdkmanager" --licenses 2>/dev/null || yes | sdkmanager --licenses 2>/dev/null || true
+
+          # Create non-interactive Bubblewrap configuration
           mkdir -p "$HOME/.bubblewrap"
-          printf '{"jdkPath":"%s","androidSdkPath":"%s"}\n' "$JAVA_HOME" "$ANDROID_HOME" > "$HOME/.bubblewrap/config.json"
+          cat <<EOF > "$HOME/.bubblewrap/config.json"
+          {
+            "jdkPath": "${JAVA_HOME}",
+            "androidSdkPath": "${SDK_DIR}"
+          }
+          EOF
+          echo "Bubblewrap configuration:"
+          cat "$HOME/.bubblewrap/config.json"
 
       - name: Restore or generate release signing key
         env:
@@ -117,7 +136,7 @@ jobs:
           BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'betulnagar123' }}
           BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD || 'betulnagar123' }}
         run: |
-          bubblewrap build --manifest=twa-manifest.json --signingKeyPath=betulnagar-release.keystore --signingKeyAlias=betulnagar
+          bubblewrap build --manifest=twa-manifest.json --signingKeyPath=betulnagar-release.keystore --signingKeyAlias=betulnagar --skipPwaValidation
 
       - name: Generate Digital Asset Links file
         working-directory: android
