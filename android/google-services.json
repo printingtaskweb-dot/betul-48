@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "552918515736",
+    "project_id": "jila-betul",
+    "storage_bucket": "jila-betul.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:552918515736:android:49d911fad8e64294a4036d",
+        "android_client_info": {
+          "package_name": "com.company.betul"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBAX5ds0BRRL-elSb1ztm6XRaFlC1fAoF8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

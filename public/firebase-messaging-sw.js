@@ -29,12 +29,12 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
 firebase.initializeApp({
-  apiKey:            'AIzaSyBHfEU3SdN4bZQzdOVo6L9aPwErHBanHI4',
-  authDomain:        'printing-task-78a01.firebaseapp.com',
-  projectId:         'printing-task-78a01',
-  storageBucket:     'printing-task-78a01.firebasestorage.app',
-  messagingSenderId: '436690225125',
-  appId:             '1:436690225125:web:ff11ddf8cc4fe55442910c',
+  apiKey:            'AIzaSyBAX5ds0BRRL-elSb1ztm6XRaFlC1fAoF8',
+  authDomain:        'jila-betul.firebaseapp.com',
+  projectId:         'jila-betul',
+  storageBucket:     'jila-betul.firebasestorage.app',
+  messagingSenderId: '552918515736',
+  appId:             '1:552918515736:android:49d911fad8e64294a4036d',
   measurementId:     'G-K57MSQ3YBN',
 });
 

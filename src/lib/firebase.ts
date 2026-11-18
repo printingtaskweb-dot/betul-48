@@ -2,12 +2,12 @@ import { initializeApp, getApps } from 'firebase/app';
 import { getMessaging, type Messaging } from 'firebase/messaging';
 
 const firebaseConfig = {
-  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY            || 'AIzaSyBHfEU3SdN4bZQzdOVo6L9aPwErHBanHI4',
-  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN        || 'printing-task-78a01.firebaseapp.com',
-  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID         || 'printing-task-78a01',
-  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET     || 'printing-task-78a01.firebasestorage.app',
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '436690225125',
-  appId:             import.meta.env.VITE_FIREBASE_APP_ID             || '1:436690225125:web:ff11ddf8cc4fe55442910c',
+  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY            || 'AIzaSyBAX5ds0BRRL-elSb1ztm6XRaFlC1fAoF8',
+  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN        || 'jila-betul.firebaseapp.com',
+  projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID         || 'jila-betul',
+  storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET     || 'jila-betul.firebasestorage.app',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '552918515736',
+  appId:             import.meta.env.VITE_FIREBASE_APP_ID             || '1:552918515736:android:49d911fad8e64294a4036d',
   measurementId:     import.meta.env.VITE_FIREBASE_MEASUREMENT_ID     || 'G-K57MSQ3YBN',
 };
 
