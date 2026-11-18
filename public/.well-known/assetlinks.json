@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.company.betul",
+      "sha256_cert_fingerprints": [
+        "D3:2B:7C:A9:84:02:D4:D7:3C:BC:B7:E1:7C:CF:4C:BC:53:11:54:CB:C7:EB:8E:CA:75:E7:55:BC:74:A6:9D:23"
+      ]
+    }
+  }
+]

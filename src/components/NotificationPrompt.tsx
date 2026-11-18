@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BellRing, X, CheckCircle2, Share, PlusSquare } from 'lucide-react';
-import { getToken, isSupported } from 'firebase/messaging';
+import { getToken } from 'firebase/messaging';
 import { messaging, VAPID_KEY, saveFCMTokenToSupabase } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -26,41 +26,32 @@ export const NotificationPrompt: React.FC = () => {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
 
-    // Check recent dismissal (within last 24 hours)
-    const dismissedAt = localStorage.getItem('imc_fcm_prompt_dismissed');
-    if (dismissedAt) {
-      const hoursSince = (Date.now() - parseInt(dismissedAt, 10)) / (1000 * 60 * 60);
-      if (hoursSince < 24) return;
+    if (isIOS && !isStandalone) {
+      setIsIOSDevice(true);
     }
 
-    const checkSupportAndShow = async () => {
-      try {
-        const supported = await isSupported();
-
-        if (!supported) {
-          // If iOS Safari without PWA installation, show iOS instructions
-          if (isIOS && !isStandalone) {
-            setIsIOSDevice(true);
-            setTimeout(() => setShow(true), 1500);
-          }
-          return;
-        }
-
-        // For supported browsers, check Notification permission
-        if (typeof Notification !== 'undefined') {
-          if (Notification.permission === 'granted' || Notification.permission === 'denied') {
-            return;
-          }
-        }
-
-        // Show prompt after 1.5 seconds
-        setTimeout(() => setShow(true), 1500);
-      } catch (err) {
-        console.warn('[FCM] Error checking messaging support:', err);
-      }
+    const openHandler = () => {
+      setShow(true);
+      setStatus('idle');
     };
+    window.addEventListener('betul:open-notifications', openHandler);
 
-    checkSupportAndShow();
+    // If notifications are already granted, don't show the initial prompt
+    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      return () => {
+        window.removeEventListener('betul:open-notifications', openHandler);
+      };
+    }
+
+    // Auto-prompt to request notification permissions
+    const timer = setTimeout(() => {
+      setShow(true);
+    }, 1200);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('betul:open-notifications', openHandler);
+    };
   }, []);
 
   const handleDismiss = () => {
@@ -69,11 +60,16 @@ export const NotificationPrompt: React.FC = () => {
   };
 
   const handleAllow = async () => {
-    if (!messaging) return;
     setStatus('requesting');
 
     try {
-      // 1. Direct user gesture: trigger browser permission prompt
+      if (typeof Notification === 'undefined') {
+        alert(language === 'hi' ? 'इस डिवाइस पर पुश नोटिफिकेशन समर्थित नहीं है।' : 'Push notifications are not supported on this device.');
+        setStatus('idle');
+        return;
+      }
+
+      // 1. Direct user gesture: trigger browser / Android permission prompt
       const permission = await Notification.requestPermission();
 
       if (permission === 'granted') {
@@ -81,15 +77,26 @@ export const NotificationPrompt: React.FC = () => {
         localStorage.removeItem('imc_fcm_prompt_dismissed');
 
         // 2. Fetch FCM token from Google
-        const token = await getToken(messaging, { vapidKey: VAPID_KEY });
-        if (token) {
-          // 3. Register device in Supabase fcm_tokens table
-          const { error: saveErr } = await saveFCMTokenToSupabase(token, user?.id);
-          if (saveErr) {
-            console.error('[FCM] Error saving token to Supabase:', saveErr);
-          } else {
-            console.log('[FCM] Device token successfully registered in Supabase.');
+        try {
+          let token: string | null = null;
+          if (messaging) {
+            try {
+              token = await getToken(messaging, { vapidKey: VAPID_KEY });
+            } catch (vapidErr) {
+              console.warn('[FCM] Error with VAPID key, trying default:', vapidErr);
+              try {
+                token = await getToken(messaging);
+              } catch (innerErr) {
+                console.warn('[FCM] Token generation fallback error:', innerErr);
+              }
+            }
           }
+          if (token) {
+            await saveFCMTokenToSupabase(token, user?.id);
+            console.log('[FCM] Device token registered:', token);
+          }
+        } catch (fcmErr) {
+          console.warn('[FCM] Token generation deferred:', fcmErr);
         }
 
         // Auto close after 2 seconds

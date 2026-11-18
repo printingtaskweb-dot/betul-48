@@ -10,6 +10,7 @@ import { BottomNav } from '../components/BottomNav';
 import {
   Landmark,
   Globe,
+  Bell,
   Search,
   Camera,
   Radar,
@@ -261,6 +262,17 @@ export const Home: React.FC = () => {
 
           {/* Right Controls: Translator (Icon Only) & Profile */}
           <div className="flex items-center gap-2 shrink-0">
+            <button
+              type="button"
+              onClick={() => window.dispatchEvent(new CustomEvent('betul:open-notifications'))}
+              className="w-10 h-10 rounded-full bg-white hover:bg-civic-50 text-civic-900 border border-sand-200 shadow-2xs flex items-center justify-center transition active:scale-95 cursor-pointer relative"
+              aria-label={language === 'hi' ? 'पुश सूचनाएं' : 'Push Notifications'}
+              title={language === 'hi' ? 'सूचनाएं सक्षम करें' : 'Enable Notifications'}
+            >
+              <Bell className="w-4.5 h-4.5 text-civic-600" />
+              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            </button>
+
             <button
               type="button"
               onClick={toggleLanguage}
