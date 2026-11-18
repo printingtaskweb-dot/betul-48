@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { getToken } from 'firebase/messaging';
-import { messaging, VAPID_KEY, saveFCMTokenToSupabase } from '../../lib/firebase';
+import { messaging, fetchAndRegisterFCMToken } from '../../lib/firebase';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import {
@@ -128,18 +127,13 @@ export const PushNotificationSender: React.FC = () => {
         setDeviceRegisterMsg({ text: 'Notification permission denied in your browser settings.', isError: true });
         return;
       }
-      const token = await getToken(messaging, { vapidKey: VAPID_KEY });
+      const token = await fetchAndRegisterFCMToken(user?.id);
       if (!token) {
         setDeviceRegisterMsg({ text: 'Could not obtain FCM token from Firebase.', isError: true });
         return;
       }
-      const { error: saveErr } = await saveFCMTokenToSupabase(token, user?.id);
-      if (saveErr) {
-        setDeviceRegisterMsg({ text: `Database error: ${saveErr.message || JSON.stringify(saveErr)}`, isError: true });
-      } else {
-        setDeviceRegisterMsg({ text: 'This device was successfully registered in Supabase!', isError: false });
-        await fetchTokens();
-      }
+      setDeviceRegisterMsg({ text: 'This device was successfully registered in Supabase!', isError: false });
+      await fetchTokens();
     } catch (err: any) {
       setDeviceRegisterMsg({ text: `Error: ${err?.message || err}`, isError: true });
     } finally {

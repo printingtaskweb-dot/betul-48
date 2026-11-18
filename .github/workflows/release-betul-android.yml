@@ -15,12 +15,12 @@ on:
         description: App version shown to users (for example 1.0.0)
         required: true
         type: string
-        default: 1.0.0
+        default: 1.0.1
       version_code:
         description: Positive Android version code; increase it for every update
         required: true
         type: string
-        default: "1"
+        default: "2"
 
 permissions:
   contents: write
@@ -36,7 +36,7 @@ jobs:
 
       - name: Validate selected version
         env:
-          APP_VERSION: ${{ inputs.version_name || '1.0.0' }}
+          APP_VERSION: ${{ inputs.version_name || '1.0.1' }}
           APP_VERSION_CODE: ${{ inputs.version_code || github.run_number }}
         run: |
           if [[ ! "$APP_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9.-]+)?$ ]]; then
@@ -261,12 +261,12 @@ jobs:
             android/assetlinks.json
 
       - name: Publish GitHub Release
-        if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/')
+        if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: betul-v${{ inputs.version_name || '1.0.0' }}
+          tag_name: betul-v${{ inputs.version_name || '1.0.1' }}
           target_commitish: ${{ github.sha }}
-          name: Betul Nagar Android ${{ inputs.version_name || '1.0.0' }}
+          name: Betul Nagar Android ${{ inputs.version_name || '1.0.1' }}
           generate_release_notes: true
           overwrite_files: true
           files: |

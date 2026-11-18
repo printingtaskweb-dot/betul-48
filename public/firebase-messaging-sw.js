@@ -29,13 +29,13 @@ importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js
 importScripts('https://www.gstatic.com/firebasejs/10.12.0/firebase-messaging-compat.js');
 
 firebase.initializeApp({
-  apiKey:            'AIzaSyBAX5ds0BRRL-elSb1ztm6XRaFlC1fAoF8',
+  apiKey:            'AIzaSyAdqMDHy_Uov0rPisb5WVnA-0ZbFD3tpnc',
   authDomain:        'jila-betul.firebaseapp.com',
   projectId:         'jila-betul',
   storageBucket:     'jila-betul.firebasestorage.app',
   messagingSenderId: '552918515736',
-  appId:             '1:552918515736:android:49d911fad8e64294a4036d',
-  measurementId:     'G-K57MSQ3YBN',
+  appId:             '1:552918515736:web:d15ce838af0398afa4036d',
+  measurementId:     'G-891CMNPMR2',
 });
 
 const messaging = firebase.messaging();
@@ -44,16 +44,9 @@ const messaging = firebase.messaging();
 messaging.onBackgroundMessage((payload) => {
   console.log('[FCM SW] Background message received:', payload);
 
-  // When a message contains a 'notification' payload, Firebase SDK automatically
-  // displays it. Avoid calling self.registration.showNotification to prevent double notifications.
-  if (payload.notification) {
-    return;
-  }
-
-  // Only display manually for data-only messages
-  const title = payload.data?.title || 'IMC Betul';
-  const body = payload.data?.body || '';
-  const url = payload.data?.url || '/';
+  const title = payload.notification?.title || payload.data?.title || 'Betul 311';
+  const body = payload.notification?.body || payload.data?.body || 'New municipal alert received.';
+  const url = payload.data?.url || payload.notification?.click_action || '/';
   const icon = '/logo.png';
 
   self.registration.showNotification(title, {
@@ -62,8 +55,8 @@ messaging.onBackgroundMessage((payload) => {
     badge: icon,
     data: { url },
     vibrate: [300, 100, 300],
-    tag: 'imc-betul',
-    renotify: false,
+    tag: payload.data?.tag || 'betul-311-alert',
+    renotify: true,
   });
 });
 

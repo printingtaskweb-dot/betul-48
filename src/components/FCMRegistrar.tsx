@@ -9,8 +9,7 @@
  *   the user explicitly clicks "Enable Notifications" elsewhere.
  */
 import { useEffect } from 'react';
-import { getToken } from 'firebase/messaging';
-import { messaging, VAPID_KEY, saveFCMTokenToSupabase } from '../lib/firebase';
+import { messaging, fetchAndRegisterFCMToken } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 
 export function FCMRegistrar() {
@@ -31,22 +30,7 @@ export function FCMRegistrar() {
     if (typeof window === 'undefined') return;
     if (Notification.permission !== 'granted') return;
 
-    const refresh = async () => {
-      try {
-        const token = await getToken(messaging!, { vapidKey: VAPID_KEY });
-        if (!token) return;
-        const { error } = await saveFCMTokenToSupabase(token, user?.id);
-        if (error) {
-          console.warn('[FCM] Token refresh failed:', error);
-        } else {
-          console.log('[FCM] Token refreshed and saved.');
-        }
-      } catch (e) {
-        console.warn('[FCM] Token refresh failed:', e);
-      }
-    };
-
-    refresh();
+    fetchAndRegisterFCMToken(user?.id);
   }, [user]);
 
   return null; // renders nothing

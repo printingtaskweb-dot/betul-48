@@ -1,14 +1,14 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getMessaging, type Messaging } from 'firebase/messaging';
+import { getMessaging, getToken, type Messaging } from 'firebase/messaging';
 
 const firebaseConfig = {
-  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY            || 'AIzaSyBAX5ds0BRRL-elSb1ztm6XRaFlC1fAoF8',
+  apiKey:            import.meta.env.VITE_FIREBASE_API_KEY            || 'AIzaSyAdqMDHy_Uov0rPisb5WVnA-0ZbFD3tpnc',
   authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN        || 'jila-betul.firebaseapp.com',
   projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID         || 'jila-betul',
   storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET     || 'jila-betul.firebasestorage.app',
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '552918515736',
-  appId:             import.meta.env.VITE_FIREBASE_APP_ID             || '1:552918515736:android:49d911fad8e64294a4036d',
-  measurementId:     import.meta.env.VITE_FIREBASE_MEASUREMENT_ID     || 'G-K57MSQ3YBN',
+  appId:             import.meta.env.VITE_FIREBASE_APP_ID             || '1:552918515736:web:d15ce838af0398afa4036d',
+  measurementId:     import.meta.env.VITE_FIREBASE_MEASUREMENT_ID     || 'G-891CMNPMR2',
 };
 
 // Prevent duplicate app init during HMR
@@ -27,9 +27,7 @@ if (typeof window !== 'undefined' && 'Notification' in window) {
 export { app, messaging };
 
 /** Public VAPID key — used by the browser to subscribe to push */
-export const VAPID_KEY =
-  import.meta.env.VITE_FIREBASE_VAPID_KEY ||
-  'BFFLuQMQRMh679lJ4Hfa9DTZrzUhcbc4Q7JaepHr64JKmydWIAfv6vSYv42cS0QFmIn5_zIU4MF692yCuZiLBVs';
+export const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY || undefined;
 
 import { supabase } from './supabase';
 
@@ -102,5 +100,65 @@ export async function saveFCMTokenToSupabase(token: string, userId?: string | nu
     console.error('[FCM] saveFCMTokenToSupabase exception:', e);
     return { error: e };
   }
+}
+
+/**
+ * Retrieves FCM token from Google and saves it into Supabase.
+ * Handles service worker readiness and VAPID key fallbacks safely.
+ */
+export async function fetchAndRegisterFCMToken(userId?: string | null): Promise<string | null> {
+  if (typeof window === 'undefined' || !('Notification' in window) || !('serviceWorker' in navigator)) {
+    console.warn('[FCM] Push notifications not supported in this environment.');
+    return null;
+  }
+  if (!messaging) {
+    console.warn('[FCM] Firebase Messaging is not available.');
+    return null;
+  }
+
+  try {
+    let registration: ServiceWorkerRegistration | undefined;
+    try {
+      registration = await navigator.serviceWorker.getRegistration('/firebase-messaging-sw.js');
+      if (!registration) {
+        registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+      }
+      await navigator.serviceWorker.ready;
+    } catch (swErr) {
+      console.warn('[FCM] ServiceWorker readiness check error:', swErr);
+    }
+
+    const options: Record<string, any> = {};
+    if (registration) options.serviceWorkerRegistration = registration;
+    if (VAPID_KEY && typeof VAPID_KEY === 'string' && VAPID_KEY.trim() !== '') {
+      options.vapidKey = VAPID_KEY.trim();
+    }
+
+    let token: string | null = null;
+    try {
+      token = await getToken(messaging, options);
+    } catch (optErr) {
+      console.warn('[FCM] getToken with custom options failed, attempting registration fallback:', optErr);
+      try {
+        if (registration) {
+          token = await getToken(messaging, { serviceWorkerRegistration: registration });
+        } else {
+          token = await getToken(messaging);
+        }
+      } catch (fallbackErr) {
+        console.warn('[FCM] Registration fallback failed, attempting default getToken:', fallbackErr);
+        token = await getToken(messaging);
+      }
+    }
+
+    if (token) {
+      console.log('[FCM] Successfully retrieved token:', token);
+      await saveFCMTokenToSupabase(token, userId);
+      return token;
+    }
+  } catch (err) {
+    console.error('[FCM] fetchAndRegisterFCMToken error:', err);
+  }
+  return null;
 }
 

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BellRing, X, CheckCircle2, Share, PlusSquare } from 'lucide-react';
-import { getToken } from 'firebase/messaging';
-import { messaging, VAPID_KEY, saveFCMTokenToSupabase } from '../lib/firebase';
+import { fetchAndRegisterFCMToken } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 
 /**
@@ -76,27 +75,11 @@ export const NotificationPrompt: React.FC = () => {
         setStatus('granted');
         localStorage.removeItem('imc_fcm_prompt_dismissed');
 
-        // 2. Fetch FCM token from Google
+        // 2. Fetch FCM token and register with Supabase
         try {
-          let token: string | null = null;
-          if (messaging) {
-            try {
-              token = await getToken(messaging, { vapidKey: VAPID_KEY });
-            } catch (vapidErr) {
-              console.warn('[FCM] Error with VAPID key, trying default:', vapidErr);
-              try {
-                token = await getToken(messaging);
-              } catch (innerErr) {
-                console.warn('[FCM] Token generation fallback error:', innerErr);
-              }
-            }
-          }
-          if (token) {
-            await saveFCMTokenToSupabase(token, user?.id);
-            console.log('[FCM] Device token registered:', token);
-          }
+          await fetchAndRegisterFCMToken(user?.id);
         } catch (fcmErr) {
-          console.warn('[FCM] Token generation deferred:', fcmErr);
+          console.warn('[FCM] Token registration deferred:', fcmErr);
         }
 
         // Auto close after 2 seconds

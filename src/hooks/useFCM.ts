@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getToken, onMessage, type MessagePayload } from 'firebase/messaging';
-import { messaging, VAPID_KEY, saveFCMTokenToSupabase } from '../lib/firebase';
+import { onMessage, type MessagePayload } from 'firebase/messaging';
+import { messaging, fetchAndRegisterFCMToken } from '../lib/firebase';
 
 export interface FCMState {
   token: string | null;
@@ -21,14 +21,6 @@ export function useFCM(userId?: string | null): FCMState & { requestPermission: 
   const [error, setError]         = useState<string | null>(null);
   const [lastMessage, setLastMessage] = useState<MessagePayload | null>(null);
 
-  // Save / update the FCM token in Supabase
-  const saveToken = useCallback(async (fcmToken: string) => {
-    const { error: saveErr } = await saveFCMTokenToSupabase(fcmToken, userId);
-    if (saveErr) {
-      console.warn('[FCM] saveToken error:', saveErr);
-    }
-  }, [userId]);
-
   const requestPermission = useCallback(async () => {
     if (!messaging) {
       setError('Push notifications are not supported in this browser.');
@@ -43,10 +35,9 @@ export function useFCM(userId?: string | null): FCMState & { requestPermission: 
         setError('Notification permission denied. Please allow notifications in your browser settings.');
         return;
       }
-      const fcmToken = await getToken(messaging, { vapidKey: VAPID_KEY });
+      const fcmToken = await fetchAndRegisterFCMToken(userId);
       if (fcmToken) {
         setToken(fcmToken);
-        await saveToken(fcmToken);
       } else {
         setError('Could not get FCM token. Ensure the service worker is registered.');
       }
@@ -55,7 +46,7 @@ export function useFCM(userId?: string | null): FCMState & { requestPermission: 
     } finally {
       setLoading(false);
     }
-  }, [saveToken]);
+  }, [userId]);
 
   // Listen for foreground messages (when app tab is open)
   useEffect(() => {
