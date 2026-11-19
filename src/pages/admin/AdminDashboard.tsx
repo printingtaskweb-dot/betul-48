@@ -20,7 +20,7 @@ import type { Department } from '../../lib/supabase';
 import {
   LogOut, LayoutDashboard, Menu, X, ArrowLeft, UserPlus, Newspaper,
   Users, Building2, ClipboardCheck, ShieldCheck,
-  FileText, TrendingUp, CheckCircle2, AlertTriangle,
+  FileText, CheckCircle2, AlertTriangle,
   Activity, ArrowRight, ChevronRight, Landmark, RefreshCw, Send,
   MapPin,
 } from 'lucide-react';
@@ -36,7 +36,7 @@ type Tab =
   | 'staff_directory'
   | 'push_notifications';
 
-/* ─── Animated Stat Card ─────────────────────────────────────── */
+/* ─── Animated Compact Stat Card ─────────────────────────────────────── */
 interface StatCardProps {
   icon: React.ReactNode;
   label: string;
@@ -44,10 +44,22 @@ interface StatCardProps {
   suffix?: string;
   color: string;
   bgColor: string;
+  badge?: string;
+  badgeColor?: string;
   delay?: number;
 }
 
-const StatCard: React.FC<StatCardProps> = ({ icon, label, value, suffix = '', color, bgColor, delay = 0 }) => {
+const StatCard: React.FC<StatCardProps> = ({
+  icon,
+  label,
+  value,
+  suffix = '',
+  color,
+  bgColor,
+  badge,
+  badgeColor = '#059669',
+  delay = 0,
+}) => {
   const numRef = useRef<HTMLSpanElement>(null);
   const cardRef = useRef<HTMLDivElement>(null);
 
@@ -55,13 +67,13 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, suffix = '', co
     if (!numRef.current || !cardRef.current) return;
     gsap.fromTo(
       cardRef.current,
-      { opacity: 0, y: 16, scale: 0.98 },
-      { opacity: 1, y: 0, scale: 1, duration: 0.45, delay, ease: 'power2.out' }
+      { opacity: 0, y: 12 },
+      { opacity: 1, y: 0, duration: 0.4, delay, ease: 'power2.out' }
     );
     const obj = { val: 0 };
     gsap.to(obj, {
       val: value,
-      duration: 1.4,
+      duration: 1.2,
       delay: delay + 0.1,
       ease: 'power2.out',
       onUpdate: () => {
@@ -75,35 +87,36 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, suffix = '', co
   return (
     <div
       ref={cardRef}
+      className="admin-stat-card"
       style={{
         background: '#ffffff',
-        borderRadius: 16,
-        padding: '18px 20px',
-        boxShadow: '0 2px 10px rgba(15, 37, 49, 0.04)',
+        borderRadius: 14,
+        padding: '11px 13px',
+        boxShadow: '0 1px 4px rgba(15, 37, 49, 0.04)',
         display: 'flex',
-        alignItems: 'flex-start',
-        gap: 14,
+        alignItems: 'center',
+        gap: 10,
         border: '1px solid #e6e2d8',
         cursor: 'default',
         opacity: 0,
+        position: 'relative',
         transition: 'box-shadow 0.2s, transform 0.2s, border-color 0.2s',
       }}
       onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow = `0 8px 24px ${color}20`;
+        (e.currentTarget as HTMLDivElement).style.boxShadow = `0 4px 16px ${color}18`;
         (e.currentTarget as HTMLDivElement).style.borderColor = color;
-        (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-2px)';
       }}
       onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 2px 10px rgba(15, 37, 49, 0.04)';
+        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 1px 4px rgba(15, 37, 49, 0.04)';
         (e.currentTarget as HTMLDivElement).style.borderColor = '#e6e2d8';
-        (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0)';
       }}
     >
       <div
+        className="stat-icon-wrap"
         style={{
-          width: 42,
-          height: 42,
-          borderRadius: 12,
+          width: 34,
+          height: 34,
+          borderRadius: 10,
           background: bgColor,
           display: 'flex',
           alignItems: 'center',
@@ -113,11 +126,30 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, suffix = '', co
       >
         <span style={{ color }}>{icon}</span>
       </div>
-      <div>
-        <div style={{ fontSize: '0.74rem', color: '#64748b', fontWeight: 700, marginBottom: 4, letterSpacing: '0.02em' }}>
-          {label}
+
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4, marginBottom: 2 }}>
+          <span className="stat-label" style={{ fontSize: '0.68rem', color: '#64748b', fontWeight: 700, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {label}
+          </span>
+          {badge && (
+            <span
+              style={{
+                fontSize: '0.58rem',
+                fontWeight: 800,
+                color: badgeColor,
+                background: `${badgeColor}15`,
+                borderRadius: 4,
+                padding: '1px 5px',
+                lineHeight: 1.2,
+                flexShrink: 0,
+              }}
+            >
+              {badge}
+            </span>
+          )}
         </div>
-        <div style={{ fontSize: '1.5rem', fontWeight: 900, color: '#0f2531', lineHeight: 1 }}>
+        <div className="stat-value" style={{ fontSize: '1.22rem', fontWeight: 900, color: '#0f2531', lineHeight: 1 }}>
           <span ref={numRef}>0{suffix}</span>
         </div>
       </div>
@@ -346,17 +378,10 @@ const AdminOverview: React.FC<OverviewProps> = ({
         </div>
       )}
 
-      {/* ─── Core Executive Metrics Grid (KPIs) ─── */}
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-          gap: 12,
-          marginBottom: 20,
-        }}
-      >
+      {/* ─── Core Executive Metrics Grid (Compact 2x2 on Mobile, 4-col on Desktop) ─── */}
+      <div className="admin-stats-grid">
         <StatCard
-          icon={<Activity size={19} />}
+          icon={<Activity size={16} />}
           label="Total Grievances"
           value={stats.totalComplaints}
           color="#146C94"
@@ -364,37 +389,32 @@ const AdminOverview: React.FC<OverviewProps> = ({
           delay={0}
         />
         <StatCard
-          icon={<CheckCircle2 size={19} />}
-          label="Resolved Grievances"
+          icon={<CheckCircle2 size={16} />}
+          label="Resolved"
           value={stats.resolvedComplaints}
           color="#059669"
           bgColor="#dcfce7"
-          delay={0.05}
+          badge={stats.resolutionRate > 0 ? `${stats.resolutionRate}% rate` : undefined}
+          badgeColor="#059669"
+          delay={0.04}
         />
         <StatCard
-          icon={<AlertTriangle size={19} />}
+          icon={<AlertTriangle size={16} />}
           label="Pending Action"
           value={stats.pendingComplaints}
           color="#dc2626"
           bgColor="#fee2e2"
-          delay={0.1}
+          badge={stats.pendingComplaints > 0 ? `${stats.pendingComplaints} active` : undefined}
+          badgeColor="#dc2626"
+          delay={0.08}
         />
         <StatCard
-          icon={<TrendingUp size={19} />}
-          label="Resolution Rate"
-          value={stats.resolutionRate}
-          suffix="%"
-          color="#7c3aed"
-          bgColor="#ede9fe"
-          delay={0.15}
-        />
-        <StatCard
-          icon={<Users size={19} />}
+          icon={<Users size={16} />}
           label="Citizens & Staff"
           value={stats.totalUsers}
           color="#0d9488"
           bgColor="#ccfbf1"
-          delay={0.2}
+          delay={0.12}
         />
       </div>
 
@@ -402,23 +422,23 @@ const AdminOverview: React.FC<OverviewProps> = ({
       <div
         style={{
           background: '#ffffff',
-          borderRadius: 16,
+          borderRadius: 14,
           border: '1px solid #e6e2d8',
-          padding: '16px 18px',
-          boxShadow: '0 2px 8px rgba(15, 37, 49, 0.04)',
-          marginBottom: 22,
+          padding: '12px 14px',
+          boxShadow: '0 1px 4px rgba(15, 37, 49, 0.04)',
+          marginBottom: 18,
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, flexWrap: 'wrap', gap: 6 }}>
           <div>
-            <div style={{ fontSize: '0.88rem', fontWeight: 900, color: '#0f2531' }}>
+            <div style={{ fontSize: '0.84rem', fontWeight: 900, color: '#0f2531' }}>
               District Grievance Resolution Health
             </div>
-            <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+            <div style={{ fontSize: '0.68rem', color: '#64748b' }}>
               Turnaround benchmark across Betul Municipal Corporation
             </div>
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: '0.74rem', fontWeight: 800, flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: '0.72rem', fontWeight: 800, flexWrap: 'wrap' }}>
             <span style={{ color: '#059669' }}>● {stats.resolvedComplaints} Resolved ({stats.resolutionRate}%)</span>
             <span style={{ color: '#dc2626' }}>● {stats.pendingComplaints} Pending</span>
             <span style={{ color: '#146C94' }}>● {stats.resolvedToday} Resolved Today</span>
@@ -426,7 +446,7 @@ const AdminOverview: React.FC<OverviewProps> = ({
         </div>
 
         {/* Dual-tone Progress Bar */}
-        <div style={{ height: 10, borderRadius: 999, background: '#f1f5f9', overflow: 'hidden', display: 'flex' }}>
+        <div style={{ height: 8, borderRadius: 999, background: '#f1f5f9', overflow: 'hidden', display: 'flex' }}>
           <div
             style={{
               width: `${stats.resolutionRate}%`,
@@ -1595,7 +1615,40 @@ export const AdminDashboard: React.FC = () => {
           transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), left 0.25s ease;
         }
 
+        .admin-stats-grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 12px;
+          margin-bottom: 16px;
+        }
+
         @media (max-width: 768px) {
+          .admin-stats-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: 8px !important;
+            margin-bottom: 12px !important;
+          }
+          .admin-stat-card {
+            padding: 9px 10px !important;
+            gap: 8px !important;
+            border-radius: 12px !important;
+          }
+          .admin-stat-card .stat-icon-wrap {
+            width: 28px !important;
+            height: 28px !important;
+            border-radius: 8px !important;
+          }
+          .admin-stat-card .stat-icon-wrap svg {
+            width: 14px !important;
+            height: 14px !important;
+          }
+          .admin-stat-card .stat-value {
+            font-size: 1.15rem !important;
+          }
+          .admin-stat-card .stat-label {
+            font-size: 0.62rem !important;
+          }
+
           .admin-top-header {
             padding: 8px 12px !important;
           }
