@@ -14,6 +14,7 @@ import { supabase } from '../../lib/supabase';
 import { gsap } from 'gsap';
 import { DepartmentServiceIcon } from '../../components/common/DepartmentServiceIcon';
 import { ArcLoader } from '../../components/common/ArcLoader';
+import { StatusBadge } from '../../components/common/StatusBadge';
 
 import type { Department } from '../../lib/supabase';
 import {
@@ -21,6 +22,7 @@ import {
   Users, Building2, ClipboardCheck, ShieldCheck,
   FileText, TrendingUp, CheckCircle2, AlertTriangle,
   Activity, ArrowRight, ChevronRight, Landmark, RefreshCw, Send,
+  MapPin,
 } from 'lucide-react';
 
 type Tab =
@@ -123,179 +125,28 @@ const StatCard: React.FC<StatCardProps> = ({ icon, label, value, suffix = '', co
   );
 };
 
-/* ─── Service Action Card ─────────────────────────────────────── */
-interface ActionCardProps {
-  icon: React.ReactNode;
-  title: string;
+/* ─── Admin Overview Panel Types ──────────────────────────────── */
+export interface RecentComplaintSummary {
+  id: string;
+  ticket_number: string;
   description: string;
-  gradient: string;
-  onClick: () => void;
-  badge?: string;
-  delay?: number;
+  address?: string;
+  status: string;
+  created_at: string;
+  department_id?: string;
+  department?: { name: string; slug: string } | null;
 }
 
-const ActionCard: React.FC<ActionCardProps> = ({ icon, title, description, gradient, onClick, badge, delay = 0 }) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    if (!cardRef.current) return;
-    gsap.fromTo(
-      cardRef.current,
-      { opacity: 0, y: 20 },
-      { opacity: 1, y: 0, duration: 0.45, delay, ease: 'power2.out' }
-    );
-  }, [delay]);
-
-  return (
-    <div
-      ref={cardRef}
-      onClick={onClick}
-      style={{
-        background: gradient,
-        borderRadius: 18,
-        padding: '20px 18px',
-        cursor: 'pointer',
-        position: 'relative',
-        overflow: 'hidden',
-        transition: 'transform 0.2s, box-shadow 0.2s',
-        opacity: 0,
-        boxShadow: '0 4px 18px rgba(15, 37, 49, 0.1)',
-      }}
-      onMouseEnter={(e) => {
-        (e.currentTarget as HTMLDivElement).style.transform = 'translateY(-3px) scale(1.01)';
-        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 10px 28px rgba(15, 37, 49, 0.18)';
-      }}
-      onMouseLeave={(e) => {
-        (e.currentTarget as HTMLDivElement).style.transform = 'translateY(0) scale(1)';
-        (e.currentTarget as HTMLDivElement).style.boxShadow = '0 4px 18px rgba(15, 37, 49, 0.1)';
-      }}
-    >
-      {/* Decorative ambient rings */}
-      <div
-        style={{
-          position: 'absolute',
-          top: -20,
-          right: -20,
-          width: 90,
-          height: 90,
-          borderRadius: '50%',
-          background: 'rgba(255, 255, 255, 0.12)',
-        }}
-      />
-      <div
-        style={{
-          position: 'absolute',
-          bottom: -25,
-          right: 25,
-          width: 60,
-          height: 60,
-          borderRadius: '50%',
-          background: 'rgba(255, 255, 255, 0.08)',
-        }}
-      />
-
-      {badge && (
-        <div
-          style={{
-            position: 'absolute',
-            top: 12,
-            right: 12,
-            background: 'rgba(255, 255, 255, 0.95)',
-            color: '#dc2626',
-            borderRadius: 20,
-            padding: '2px 8px',
-            fontSize: '0.68rem',
-            fontWeight: 900,
-            boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
-          }}
-        >
-          {badge}
-        </div>
-      )}
-
-      <div
-        style={{
-          width: 40,
-          height: 40,
-          borderRadius: 12,
-          background: 'rgba(255, 255, 255, 0.2)',
-          backdropFilter: 'blur(4px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          marginBottom: 12,
-          color: '#fff',
-        }}
-      >
-        {icon}
-      </div>
-      <div style={{ color: '#fff', fontWeight: 800, fontSize: '0.94rem', marginBottom: 4 }}>
-        {title}
-      </div>
-      <div style={{ color: 'rgba(255, 255, 255, 0.85)', fontSize: '0.74rem', lineHeight: 1.45 }}>
-        {description}
-      </div>
-      <div
-        style={{
-          marginTop: 14,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 4,
-          color: '#ffffff',
-          fontSize: '0.74rem',
-          fontWeight: 800,
-        }}
-      >
-        Open Console <ChevronRight size={13} />
-      </div>
-    </div>
-  );
-};
-
-/* ─── Department Activity Row ─────────────────────────────────── */
-interface DeptRowProps {
-  dept: Department;
-  onClick: () => void;
+export interface DeptBreakdownItem {
+  id: string;
+  name: string;
+  slug: string;
+  total: number;
+  resolved: number;
+  pending: number;
+  rate: number;
 }
-const DeptRow: React.FC<DeptRowProps> = ({ dept, onClick }) => (
-  <button
-    onClick={onClick}
-    style={{
-      width: '100%',
-      display: 'flex',
-      alignItems: 'center',
-      gap: 12,
-      padding: '10px 14px',
-      border: 'none',
-      background: 'transparent',
-      borderRadius: 10,
-      cursor: 'pointer',
-      textAlign: 'left',
-      transition: 'background 0.15s',
-    }}
-    onMouseEnter={(e) => {
-      (e.currentTarget as HTMLButtonElement).style.background = '#f3f1ec';
-    }}
-    onMouseLeave={(e) => {
-      (e.currentTarget as HTMLButtonElement).style.background = 'transparent';
-    }}
-  >
-    <DepartmentServiceIcon slugOrName={dept.slug || dept.name} size={28} iconSize={15} />
-    <div style={{ flex: 1, minWidth: 0 }}>
-      <div style={{ fontWeight: 700, fontSize: '0.8rem', color: '#0f2531', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-        {dept.name}
-      </div>
-      {dept.description && (
-        <div style={{ fontSize: '0.68rem', color: '#64748b', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {dept.description}
-        </div>
-      )}
-    </div>
-    <ArrowRight size={14} color="#94a3b8" />
-  </button>
-);
 
-/* ─── Admin Overview Panel ─────────────────────────────────────── */
 interface LiveStats {
   totalComplaints: number;
   resolvedComplaints: number;
@@ -306,11 +157,13 @@ interface LiveStats {
   pendingStaffCount: number;
   pendingNewsCount: number;
   loading: boolean;
+  recentComplaints: RecentComplaintSummary[];
+  deptBreakdowns: DeptBreakdownItem[];
 }
 
 interface OverviewProps {
   departments: Department[];
-  loadingDepts: boolean;
+  loadingDepts?: boolean;
   onTab: (tab: Tab, dept?: Department) => void;
   stats: LiveStats;
   onRefreshStats: () => void;
@@ -318,7 +171,6 @@ interface OverviewProps {
 
 const AdminOverview: React.FC<OverviewProps> = ({
   departments,
-  loadingDepts,
   onTab,
   stats,
   onRefreshStats,
@@ -335,432 +187,582 @@ const AdminOverview: React.FC<OverviewProps> = ({
     );
   }, []);
 
-  const quickActions: ActionCardProps[] = [
-    {
-      icon: <FileText size={20} />,
-      title: 'All Complaints',
-      description: 'Real-time feed across all civic categories',
-      gradient: 'linear-gradient(135deg, #146C94, #19A7CE)',
-      onClick: () => onTab('complaints'),
-      badge: stats.pendingComplaints > 0 ? `${stats.pendingComplaints} pending` : undefined,
-      delay: 0.05,
-    },
-    {
-      icon: <Building2 size={20} />,
-      title: 'Municipal Console',
-      description: 'District SLA radar, ward mapping & officer dispatch',
-      gradient: 'linear-gradient(135deg, #7c3aed, #a855f7)',
-      onClick: () => navigate('/municipal/dashboard'),
-      delay: 0.1,
-    },
-    {
-      icon: <Send size={20} />,
-      title: 'Push Notifications',
-      description: 'Broadcast alerts to Android APK & web devices',
-      gradient: 'linear-gradient(135deg, #e11d48, #f43f5e)',
-      onClick: () => onTab('push_notifications'),
-      delay: 0.15,
-    },
-    {
-      icon: <ClipboardCheck size={20} />,
-      title: 'Staff Approvals',
-      description: 'Review and verify municipal staff access',
-      gradient: 'linear-gradient(135deg, #dc2626, #f87171)',
-      onClick: () => onTab('staff_approvals'),
-      badge: stats.pendingStaffCount > 0 ? `${stats.pendingStaffCount} new` : undefined,
-      delay: 0.2,
-    },
-    {
-      icon: <Users size={20} />,
-      title: 'User Directory',
-      description: 'Search citizens, officers & registered staff',
-      gradient: 'linear-gradient(135deg, #0f766e, #14b8a6)',
-      onClick: () => onTab('users'),
-      badge: stats.totalUsers > 0 ? `${stats.totalUsers} registered` : undefined,
-      delay: 0.25,
-    },
-    {
-      icon: <UserPlus size={20} />,
-      title: 'Register Staff',
-      description: 'Create new departmental officer credentials',
-      gradient: 'linear-gradient(135deg, #059669, #10b981)',
-      onClick: () => onTab('register'),
-      delay: 0.3,
-    },
-    {
-      icon: <Newspaper size={20} />,
-      title: 'Local News',
-      description: 'Moderate & publish community notices',
-      gradient: 'linear-gradient(135deg, #d97706, #f59e0b)',
-      onClick: () => onTab('local_news'),
-      badge: stats.pendingNewsCount > 0 ? `${stats.pendingNewsCount} review` : undefined,
-      delay: 0.35,
-    },
-    {
-      icon: <ShieldCheck size={20} />,
-      title: 'Staff Management',
-      description: 'Manage officer permissions, roles & departments',
-      gradient: 'linear-gradient(135deg, #1e40af, #3b82f6)',
-      onClick: () => onTab('staff_directory'),
-      delay: 0.4,
-    },
-  ];
-
   return (
-    <div style={{ maxWidth: 1240, margin: '0 auto' }}>
-      {/* ─── DESKTOP OVERVIEW (Hidden on mobile) ─── */}
-      <div className="admin-desktop-view">
-        {/* Header */}
-        <div ref={headerRef} style={{ marginBottom: 24, opacity: 0 }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <div
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 14,
-                  background: 'linear-gradient(135deg, #146C94, #0E526F)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#fff',
-                  boxShadow: '0 4px 12px rgba(20, 108, 148, 0.2)',
-                }}
-              >
-                <LayoutDashboard size={22} />
-              </div>
-              <div>
-                <h2 style={{ margin: 0, fontSize: '1.45rem', fontWeight: 900, color: '#0f2531', letterSpacing: '-0.02em' }}>
-                  Admin Command Center
-                </h2>
-                <p style={{ margin: '2px 0 0', fontSize: '0.82rem', color: '#64748b' }}>
-                  Live municipal telemetry, grievance resolution & officer dispatch
-                </p>
-              </div>
-            </div>
-
-            <button
-              onClick={onRefreshStats}
-              disabled={stats.loading}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: 6,
-                padding: '8px 14px',
-                borderRadius: 10,
-                border: '1px solid #e6e2d8',
-                background: '#ffffff',
-                color: '#146C94',
-                fontSize: '0.78rem',
-                fontWeight: 700,
-                cursor: 'pointer',
-                transition: 'all 0.15s',
-                boxShadow: '0 1px 3px rgba(15, 37, 49, 0.04)',
-              }}
-            >
-              <RefreshCw size={13} className={stats.loading ? 'animate-spin' : ''} />
-              <span>{stats.loading ? 'Syncing…' : 'Sync Live Data'}</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Real Live Stat Cards Grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(185px, 1fr))',
-            gap: 14,
-            marginBottom: 28,
-          }}
-        >
-          <StatCard
-            icon={<Activity size={20} />}
-            label="Total Complaints"
-            value={stats.totalComplaints}
-            color="#146C94"
-            bgColor="#e0f2fe"
-            delay={0}
-          />
-          <StatCard
-            icon={<CheckCircle2 size={20} />}
-            label="Resolved Complaints"
-            value={stats.resolvedComplaints}
-            color="#059669"
-            bgColor="#dcfce7"
-            delay={0.06}
-          />
-          <StatCard
-            icon={<AlertTriangle size={20} />}
-            label="Pending Review"
-            value={stats.pendingComplaints}
-            color="#dc2626"
-            bgColor="#fee2e2"
-            delay={0.12}
-          />
-          <StatCard
-            icon={<TrendingUp size={20} />}
-            label="Resolution Rate"
-            value={stats.resolutionRate}
-            suffix="%"
-            color="#7c3aed"
-            bgColor="#ede9fe"
-            delay={0.18}
-          />
-          <StatCard
-            icon={<Users size={20} />}
-            label="Registered Citizens & Staff"
-            value={stats.totalUsers}
-            color="#0f766e"
-            bgColor="#ccfbf1"
-            delay={0.24}
-          />
-        </div>
-
-        {/* Quick Action Cards Grid */}
-        <div style={{ marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#475569', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            Administrative Capabilities
-          </span>
-          <span style={{ fontSize: '0.74rem', color: '#146C94', fontWeight: 700 }}>
-            {quickActions.length} Modules Available
-          </span>
-        </div>
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-            gap: 14,
-            marginBottom: 32,
-          }}
-        >
-          {quickActions.map((action) => (
-            <ActionCard key={action.title} {...action} />
-          ))}
-        </div>
-
-        {/* Department Quick-filter */}
-        {!loadingDepts && departments.length > 0 && (
-          <>
-            <div style={{ marginBottom: 12, fontSize: '0.78rem', fontWeight: 800, color: '#475569', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-              Complaints by Department Portfolio
-            </div>
-            <div
-              style={{
-                background: '#ffffff',
-                borderRadius: 18,
-                border: '1px solid #e6e2d8',
-                padding: '12px',
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
-                gap: 8,
-                boxShadow: '0 2px 10px rgba(15, 37, 49, 0.03)',
-              }}
-            >
-              {departments.map((dept) => (
-                <DeptRow key={dept.id} dept={dept} onClick={() => onTab('complaints', dept)} />
-              ))}
-            </div>
-          </>
-        )}
-      </div>
-
-      {/* ─── DEDICATED MOBILE SCREEN FEATURE HUB (Shown ONLY on mobile) ─── */}
-      <div className="admin-mobile-view">
-        {/* Mobile Header Banner */}
-        <div
-          style={{
-            background: 'linear-gradient(135deg, #146C94 0%, #0E526F 100%)',
-            borderRadius: 16,
-            padding: '12px 14px',
-            color: '#fff',
-            marginBottom: 12,
-            boxShadow: '0 4px 16px rgba(20, 108, 148, 0.18)',
-          }}
-        >
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <div
-                style={{
-                  width: 30,
-                  height: 30,
-                  borderRadius: 8,
-                  background: 'rgba(255, 255, 255, 0.18)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-              >
-                <Landmark size={16} color="#fff" />
-              </div>
-              <div>
-                <div style={{ fontSize: '0.94rem', fontWeight: 900, lineHeight: 1.2 }}>
-                  Betul Admin Hub
-                </div>
-                <div style={{ fontSize: '0.64rem', color: 'rgba(255, 255, 255, 0.8)' }}>
-                  Central Civic Management
-                </div>
-              </div>
-            </div>
-
-            <button
-              onClick={onRefreshStats}
-              style={{
-                background: 'rgba(255, 255, 255, 0.15)',
-                border: 'none',
-                borderRadius: 8,
-                padding: '5px 8px',
-                color: '#fff',
-                fontSize: '0.65rem',
-                fontWeight: 700,
-                display: 'flex',
-                alignItems: 'center',
-                gap: 4,
-                cursor: 'pointer',
-              }}
-            >
-              <RefreshCw size={11} className={stats.loading ? 'animate-spin' : ''} />
-              <span>{stats.loading ? 'Syncing' : 'Sync'}</span>
-            </button>
-          </div>
-
-          {/* Real Live Metrics Strip */}
+    <div style={{ maxWidth: 1240, margin: '0 auto', width: '100%' }}>
+      {/* ─── Executive Command Header ─── */}
+      <div
+        ref={headerRef}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 12,
+          marginBottom: 18,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div
             style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: 6,
-              paddingTop: 8,
-              borderTop: '1px solid rgba(255, 255, 255, 0.15)',
+              width: 42,
+              height: 42,
+              borderRadius: 14,
+              background: 'linear-gradient(135deg, #146C94, #0E526F)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#fff',
+              boxShadow: '0 4px 12px rgba(20, 108, 148, 0.2)',
             }}
           >
-            <div style={{ background: 'rgba(255, 255, 255, 0.1)', borderRadius: 8, padding: '6px 4px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.96rem', fontWeight: 900 }}>{stats.totalComplaints}</div>
-              <div style={{ fontSize: '0.58rem', textTransform: 'uppercase', opacity: 0.85, fontWeight: 700 }}>Total</div>
-            </div>
-            <div style={{ background: 'rgba(255, 255, 255, 0.1)', borderRadius: 8, padding: '6px 4px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.96rem', fontWeight: 900, color: '#86efac' }}>{stats.resolvedComplaints}</div>
-              <div style={{ fontSize: '0.58rem', textTransform: 'uppercase', opacity: 0.85, fontWeight: 700 }}>Resolved</div>
-            </div>
-            <div style={{ background: 'rgba(255, 255, 255, 0.1)', borderRadius: 8, padding: '6px 4px', textAlign: 'center' }}>
-              <div style={{ fontSize: '0.96rem', fontWeight: 900, color: '#fde047' }}>{stats.pendingComplaints}</div>
-              <div style={{ fontSize: '0.58rem', textTransform: 'uppercase', opacity: 0.85, fontWeight: 700 }}>Pending</div>
-            </div>
+            <LayoutDashboard size={20} />
+          </div>
+          <div>
+            <h2 style={{ margin: 0, fontSize: '1.28rem', fontWeight: 900, color: '#0f2531', letterSpacing: '-0.02em' }}>
+              Executive Command Center
+            </h2>
+            <p style={{ margin: '2px 0 0', fontSize: '0.78rem', color: '#64748b' }}>
+              Real-time civic telemetry, citizen grievances & municipal portfolio performance
+            </p>
           </div>
         </div>
 
-        {/* Feature Title */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8, padding: '0 2px' }}>
-          <span style={{ fontSize: '0.72rem', fontWeight: 900, color: '#475569', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
-            Administrative Modules
-          </span>
-          <span style={{ fontSize: '0.66rem', fontWeight: 700, color: '#146C94' }}>
-            {quickActions.length} Modules Active
-          </span>
-        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <button
+            onClick={() => navigate('/municipal/dashboard')}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '7px 12px',
+              borderRadius: 10,
+              border: '1px solid #ddd6fe',
+              background: '#f5f3ff',
+              color: '#7c3aed',
+              fontSize: '0.75rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+            }}
+          >
+            <Building2 size={13} />
+            <span>Municipal Radar</span>
+            <ChevronRight size={11} />
+          </button>
 
-        {/* Feature-by-Feature Option Cards List */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 7, marginBottom: 16 }}>
-          {quickActions.map((action) => (
+          <button
+            onClick={onRefreshStats}
+            disabled={stats.loading}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              padding: '7px 12px',
+              borderRadius: 10,
+              border: '1px solid #e6e2d8',
+              background: '#ffffff',
+              color: '#146C94',
+              fontSize: '0.75rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.15s',
+              boxShadow: '0 1px 3px rgba(15, 37, 49, 0.04)',
+            }}
+          >
+            <RefreshCw size={12} className={stats.loading ? 'animate-spin' : ''} />
+            <span>{stats.loading ? 'Syncing…' : 'Sync Telemetry'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ─── Urgent Action Alerts ─── */}
+      {(stats.pendingStaffCount > 0 || stats.pendingNewsCount > 0) && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 18 }}>
+          {stats.pendingStaffCount > 0 && (
             <div
-              key={action.title}
-              onClick={action.onClick}
+              onClick={() => onTab('staff_approvals')}
               style={{
-                background: '#ffffff',
-                borderRadius: 14,
-                padding: '9px 12px',
-                border: '1px solid #e6e2d8',
-                boxShadow: '0 1px 4px rgba(15, 37, 49, 0.04)',
+                background: '#fef2f2',
+                border: '1px solid #fecaca',
+                borderRadius: 12,
+                padding: '10px 14px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: 10,
                 cursor: 'pointer',
+                gap: 10,
+                boxShadow: '0 1px 3px rgba(220, 38, 38, 0.04)',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
-                <div
-                  style={{
-                    width: 32,
-                    height: 32,
-                    borderRadius: 9,
-                    background: action.gradient,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    color: '#fff',
-                    flexShrink: 0,
-                    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.1)',
-                  }}
-                >
-                  {action.icon}
-                </div>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
-                    <span style={{ fontWeight: 800, fontSize: '0.82rem', color: '#0f2531' }}>
-                      {action.title}
-                    </span>
-                    {action.badge && (
-                      <span
-                        style={{
-                          background: '#fef2f2',
-                          color: '#dc2626',
-                          border: '1px solid #fecaca',
-                          borderRadius: 999,
-                          padding: '1px 6px',
-                          fontSize: '0.58rem',
-                          fontWeight: 800,
-                        }}
-                      >
-                        {action.badge}
-                      </span>
-                    )}
-                  </div>
-                  <p style={{ margin: '1px 0 0', fontSize: '0.66rem', color: '#64748b', lineHeight: 1.25 }}>
-                    {action.description}
-                  </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <ShieldCheck size={18} color="#dc2626" />
+                <div>
+                  <span style={{ fontWeight: 800, fontSize: '0.82rem', color: '#991b1b' }}>
+                    {stats.pendingStaffCount} Staff Registration {stats.pendingStaffCount === 1 ? 'Request' : 'Requests'} Pending Verification
+                  </span>
+                  <span style={{ fontSize: '0.72rem', color: '#b91c1c', marginLeft: 8 }}>
+                    Action required to grant municipal system access
+                  </span>
                 </div>
               </div>
+              <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#dc2626', display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+                Review <ChevronRight size={13} />
+              </span>
+            </div>
+          )}
 
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  action.onClick();
-                }}
+          {stats.pendingNewsCount > 0 && (
+            <div
+              onClick={() => onTab('local_news')}
+              style={{
+                background: '#fffbeb',
+                border: '1px solid #fef3c7',
+                borderRadius: 12,
+                padding: '10px 14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                cursor: 'pointer',
+                gap: 10,
+                boxShadow: '0 1px 3px rgba(217, 119, 6, 0.04)',
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <Newspaper size={18} color="#d97706" />
+                <div>
+                  <span style={{ fontWeight: 800, fontSize: '0.82rem', color: '#92400e' }}>
+                    {stats.pendingNewsCount} Citizen News {stats.pendingNewsCount === 1 ? 'Post' : 'Posts'} Awaiting Moderation
+                  </span>
+                  <span style={{ fontSize: '0.72rem', color: '#b45309', marginLeft: 8 }}>
+                    Pending public bulletin approval
+                  </span>
+                </div>
+              </div>
+              <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#d97706', display: 'flex', alignItems: 'center', gap: 3, flexShrink: 0 }}>
+                Moderate <ChevronRight size={13} />
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ─── Core Executive Metrics Grid (KPIs) ─── */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+          gap: 12,
+          marginBottom: 20,
+        }}
+      >
+        <StatCard
+          icon={<Activity size={19} />}
+          label="Total Grievances"
+          value={stats.totalComplaints}
+          color="#146C94"
+          bgColor="#e0f2fe"
+          delay={0}
+        />
+        <StatCard
+          icon={<CheckCircle2 size={19} />}
+          label="Resolved Grievances"
+          value={stats.resolvedComplaints}
+          color="#059669"
+          bgColor="#dcfce7"
+          delay={0.05}
+        />
+        <StatCard
+          icon={<AlertTriangle size={19} />}
+          label="Pending Action"
+          value={stats.pendingComplaints}
+          color="#dc2626"
+          bgColor="#fee2e2"
+          delay={0.1}
+        />
+        <StatCard
+          icon={<TrendingUp size={19} />}
+          label="Resolution Rate"
+          value={stats.resolutionRate}
+          suffix="%"
+          color="#7c3aed"
+          bgColor="#ede9fe"
+          delay={0.15}
+        />
+        <StatCard
+          icon={<Users size={19} />}
+          label="Citizens & Staff"
+          value={stats.totalUsers}
+          color="#0d9488"
+          bgColor="#ccfbf1"
+          delay={0.2}
+        />
+      </div>
+
+      {/* ─── Resolution Pace & SLA Health Bar ─── */}
+      <div
+        style={{
+          background: '#ffffff',
+          borderRadius: 16,
+          border: '1px solid #e6e2d8',
+          padding: '16px 18px',
+          boxShadow: '0 2px 8px rgba(15, 37, 49, 0.04)',
+          marginBottom: 22,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10, flexWrap: 'wrap', gap: 8 }}>
+          <div>
+            <div style={{ fontSize: '0.88rem', fontWeight: 900, color: '#0f2531' }}>
+              District Grievance Resolution Health
+            </div>
+            <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+              Turnaround benchmark across Betul Municipal Corporation
+            </div>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, fontSize: '0.74rem', fontWeight: 800, flexWrap: 'wrap' }}>
+            <span style={{ color: '#059669' }}>● {stats.resolvedComplaints} Resolved ({stats.resolutionRate}%)</span>
+            <span style={{ color: '#dc2626' }}>● {stats.pendingComplaints} Pending</span>
+            <span style={{ color: '#146C94' }}>● {stats.resolvedToday} Resolved Today</span>
+          </div>
+        </div>
+
+        {/* Dual-tone Progress Bar */}
+        <div style={{ height: 10, borderRadius: 999, background: '#f1f5f9', overflow: 'hidden', display: 'flex' }}>
+          <div
+            style={{
+              width: `${stats.resolutionRate}%`,
+              background: 'linear-gradient(90deg, #10b981, #059669)',
+              transition: 'width 0.8s ease',
+            }}
+          />
+          <div
+            style={{
+              width: `${100 - stats.resolutionRate}%`,
+              background: stats.pendingComplaints > 0 ? '#fca5a5' : '#e2e8f0',
+              transition: 'width 0.8s ease',
+            }}
+          />
+        </div>
+      </div>
+
+      {/* ─── Live Citizen Grievance Stream (Real Telemetry Feed) ─── */}
+      <div
+        style={{
+          background: '#ffffff',
+          borderRadius: 16,
+          border: '1px solid #e6e2d8',
+          padding: '18px 20px',
+          boxShadow: '0 2px 8px rgba(15, 37, 49, 0.04)',
+          marginBottom: 22,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
+          <div>
+            <div style={{ fontSize: '0.94rem', fontWeight: 900, color: '#0f2531' }}>
+              Live Citizen Grievance Stream
+            </div>
+            <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+              Real-time complaint feed submitted by residents of Betul
+            </div>
+          </div>
+
+          <button
+            onClick={() => onTab('complaints')}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#146C94',
+              fontSize: '0.76rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '4px 8px',
+              borderRadius: 6,
+            }}
+          >
+            View All ({stats.totalComplaints}) <ArrowRight size={13} />
+          </button>
+        </div>
+
+        {stats.loading ? (
+          <div style={{ padding: '24px 0', textAlign: 'center', color: '#64748b', fontSize: '0.8rem' }}>
+            <RefreshCw size={22} className="animate-spin" color="#146C94" style={{ margin: '0 auto' }} />
+            <div style={{ marginTop: 8 }}>Loading live telemetry…</div>
+          </div>
+        ) : stats.recentComplaints.length === 0 ? (
+          <div style={{ padding: '24px 0', textAlign: 'center', color: '#94a3b8', fontSize: '0.8rem' }}>
+            No complaints filed yet.
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {stats.recentComplaints.map((item) => (
+              <div
+                key={item.id}
+                onClick={() => onTab('complaints')}
                 style={{
-                  background: 'linear-gradient(135deg, #146C94, #0E526F)',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: 999,
-                  padding: '4px 10px',
-                  fontSize: '0.68rem',
-                  fontWeight: 800,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: 2,
+                  justifyContent: 'space-between',
+                  padding: '10px 12px',
+                  borderRadius: 12,
+                  border: '1px solid #f1f5f9',
+                  background: '#faf9f6',
                   cursor: 'pointer',
-                  flexShrink: 0,
-                  boxShadow: '0 1px 4px rgba(20, 108, 148, 0.2)',
+                  transition: 'all 0.15s ease',
+                  gap: 12,
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLDivElement).style.background = '#f3f1ec';
+                  (e.currentTarget as HTMLDivElement).style.borderColor = '#e6e2d8';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLDivElement).style.background = '#faf9f6';
+                  (e.currentTarget as HTMLDivElement).style.borderColor = '#f1f5f9';
                 }}
               >
-                Open <ChevronRight size={11} />
-              </button>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1, minWidth: 0 }}>
+                  <div
+                    style={{
+                      padding: '3px 8px',
+                      borderRadius: 6,
+                      background: '#e0f2fe',
+                      color: '#0369a1',
+                      fontSize: '0.7rem',
+                      fontWeight: 900,
+                      fontFamily: 'monospace',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {item.ticket_number || 'IMC-311'}
+                  </div>
+
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                      <span style={{ fontWeight: 800, fontSize: '0.82rem', color: '#0f2531', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {item.description || 'Civic Grievance'}
+                      </span>
+                      {item.department?.name && (
+                        <span style={{ fontSize: '0.66rem', background: '#e2e8f0', color: '#334155', padding: '1px 6px', borderRadius: 4, fontWeight: 700, flexShrink: 0 }}>
+                          {item.department.name}
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: '0.68rem', color: '#64748b', marginTop: 2 }}>
+                      {item.address && (
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 280 }}>
+                          <MapPin size={11} color="#94a3b8" /> {item.address}
+                        </span>
+                      )}
+                      <span style={{ flexShrink: 0, color: '#94a3b8' }}>
+                        {new Date(item.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ flexShrink: 0 }}>
+                  <StatusBadge status={item.status as any} />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* ─── Department Portfolios Workload & Resolution ─── */}
+      <div
+        style={{
+          background: '#ffffff',
+          borderRadius: 16,
+          border: '1px solid #e6e2d8',
+          padding: '18px 20px',
+          boxShadow: '0 2px 8px rgba(15, 37, 49, 0.04)',
+          marginBottom: 22,
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14, flexWrap: 'wrap', gap: 8 }}>
+          <div>
+            <div style={{ fontSize: '0.94rem', fontWeight: 900, color: '#0f2531' }}>
+              Department Portfolios & Workload
+            </div>
+            <div style={{ fontSize: '0.72rem', color: '#64748b' }}>
+              Grievance volume and resolution rate across municipal divisions
+            </div>
+          </div>
+          <span style={{ fontSize: '0.74rem', fontWeight: 800, color: '#146C94' }}>
+            {stats.deptBreakdowns.length} Portfolios
+          </span>
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+            gap: 10,
+          }}
+        >
+          {stats.deptBreakdowns.map((d) => (
+            <div
+              key={d.id}
+              onClick={() => {
+                const deptObj = departments.find((item) => item.id === d.id);
+                onTab('complaints', deptObj);
+              }}
+              style={{
+                border: '1px solid #e6e2d8',
+                borderRadius: 12,
+                padding: '10px 12px',
+                background: '#faf9f6',
+                cursor: 'pointer',
+                transition: 'all 0.15s ease',
+              }}
+              onMouseEnter={(e) => {
+                (e.currentTarget as HTMLDivElement).style.background = '#f3f1ec';
+                (e.currentTarget as HTMLDivElement).style.borderColor = '#146C94';
+              }}
+              onMouseLeave={(e) => {
+                (e.currentTarget as HTMLDivElement).style.background = '#faf9f6';
+                (e.currentTarget as HTMLDivElement).style.borderColor = '#e6e2d8';
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+                  <DepartmentServiceIcon slugOrName={d.slug || d.name} size={24} iconSize={13} />
+                  <span style={{ fontWeight: 800, fontSize: '0.8rem', color: '#0f2531', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {d.name}
+                  </span>
+                </div>
+                <span
+                  style={{
+                    background: d.pending > 0 ? '#fee2e2' : '#e0f2fe',
+                    color: d.pending > 0 ? '#dc2626' : '#0369a1',
+                    borderRadius: 999,
+                    padding: '1px 7px',
+                    fontSize: '0.66rem',
+                    fontWeight: 800,
+                    flexShrink: 0,
+                  }}
+                >
+                  {d.total} {d.total === 1 ? 'case' : 'cases'}
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.68rem', color: '#64748b', marginBottom: 4 }}>
+                <span>{d.resolved} Resolved</span>
+                <span>{d.pending} Pending ({d.rate}%)</span>
+              </div>
+
+              <div style={{ height: 5, borderRadius: 999, background: '#e2e8f0', overflow: 'hidden' }}>
+                <div
+                  style={{
+                    width: `${d.rate}%`,
+                    height: '100%',
+                    background: d.rate >= 80 ? '#10b981' : d.rate >= 50 ? '#0284c7' : '#f59e0b',
+                  }}
+                />
+              </div>
             </div>
           ))}
         </div>
+      </div>
 
-        {/* Mobile Department Selector */}
-        {!loadingDepts && departments.length > 0 && (
-          <div style={{ marginBottom: 14 }}>
-            <div style={{ fontSize: '0.72rem', fontWeight: 900, color: '#475569', letterSpacing: '0.05em', textTransform: 'uppercase', marginBottom: 6, padding: '0 2px' }}>
-              Filter by Department
-            </div>
-            <div style={{ background: '#ffffff', borderRadius: 14, border: '1px solid #e6e2d8', overflow: 'hidden' }}>
-              {departments.map((dept) => (
-                <DeptRow key={dept.id} dept={dept} onClick={() => onTab('complaints', dept)} />
-              ))}
-            </div>
-          </div>
-        )}
+      {/* ─── Compact Administrative Quick Dispatch Strip ─── */}
+      <div style={{ marginBottom: 16 }}>
+        <div style={{ fontSize: '0.74rem', fontWeight: 900, color: '#64748b', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 8 }}>
+          Administrative Quick Actions
+        </div>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+            gap: 8,
+          }}
+        >
+          <button
+            onClick={() => onTab('push_notifications')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '9px 12px',
+              borderRadius: 10,
+              border: '1px solid #fecdd3',
+              background: '#fff1f2',
+              color: '#be123c',
+              fontWeight: 800,
+              fontSize: '0.76rem',
+              cursor: 'pointer',
+              transition: 'background 0.15s',
+            }}
+          >
+            <Send size={15} color="#e11d48" />
+            <span>Broadcast Push Alert</span>
+          </button>
+
+          <button
+            onClick={() => onTab('staff_approvals')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '9px 12px',
+              borderRadius: 10,
+              border: '1px solid #fed7aa',
+              background: '#fff7ed',
+              color: '#c2410c',
+              fontWeight: 800,
+              fontSize: '0.76rem',
+              cursor: 'pointer',
+              transition: 'background 0.15s',
+            }}
+          >
+            <ClipboardCheck size={15} color="#ea580c" />
+            <span>Staff Approvals ({stats.pendingStaffCount})</span>
+          </button>
+
+          <button
+            onClick={() => onTab('register')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '9px 12px',
+              borderRadius: 10,
+              border: '1px solid #bbf7d0',
+              background: '#f0fdf4',
+              color: '#15803d',
+              fontWeight: 800,
+              fontSize: '0.76rem',
+              cursor: 'pointer',
+              transition: 'background 0.15s',
+            }}
+          >
+            <UserPlus size={15} color="#16a34a" />
+            <span>Register New Staff</span>
+          </button>
+
+          <button
+            onClick={() => onTab('users')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 8,
+              padding: '9px 12px',
+              borderRadius: 10,
+              border: '1px solid #ccfbf1',
+              background: '#f0fdfa',
+              color: '#0f766e',
+              fontWeight: 800,
+              fontSize: '0.76rem',
+              cursor: 'pointer',
+              transition: 'background 0.15s',
+            }}
+          >
+            <Users size={15} color="#0d9488" />
+            <span>Citizen Directory ({stats.totalUsers})</span>
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -785,6 +787,8 @@ export const AdminDashboard: React.FC = () => {
     pendingStaffCount: 0,
     pendingNewsCount: 0,
     loading: true,
+    recentComplaints: [],
+    deptBreakdowns: [],
   });
 
   const fetchLiveStats = useCallback(async () => {
@@ -801,6 +805,9 @@ export const AdminDashboard: React.FC = () => {
         usersRes,
         staffApprovalsRes,
         newsRes,
+        recentComplaintsRes,
+        deptRowsRes,
+        deptsListRes,
       ] = await Promise.all([
         supabase.from('complaints').select('*', { count: 'exact', head: true }),
         supabase.from('complaints').select('*', { count: 'exact', head: true }).in('status', ['resolved', 'verified']),
@@ -809,6 +816,9 @@ export const AdminDashboard: React.FC = () => {
         supabase.from('user_profiles').select('*', { count: 'exact', head: true }),
         supabase.from('user_profiles').select('*', { count: 'exact', head: true }).eq('approval_status', 'pending'),
         supabase.from('local_news').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
+        supabase.from('complaints').select('id, ticket_number, description, address, status, created_at, department_id, department:departments(name, slug)').order('created_at', { ascending: false }).limit(6),
+        supabase.from('complaints').select('department_id, status'),
+        supabase.from('departments').select('id, name, slug').order('name'),
       ]);
 
       const total = totalRes.count || 0;
@@ -816,6 +826,36 @@ export const AdminDashboard: React.FC = () => {
       const pending = pendingRes.count || 0;
       const resolvedToday = resolvedTodayRes.count || 0;
       const rate = total > 0 ? Math.round((resolved / total) * 100) : 100;
+
+      // Calculate departmental complaint distribution
+      const deptMap: Record<string, { total: number; resolved: number; pending: number }> = {};
+      (deptRowsRes.data || []).forEach((row: any) => {
+        if (!row.department_id) return;
+        if (!deptMap[row.department_id]) {
+          deptMap[row.department_id] = { total: 0, resolved: 0, pending: 0 };
+        }
+        deptMap[row.department_id].total++;
+        if (['resolved', 'verified'].includes(row.status)) {
+          deptMap[row.department_id].resolved++;
+        } else {
+          deptMap[row.department_id].pending++;
+        }
+      });
+
+      const depts = (deptsListRes.data || departments || []) as Department[];
+      const breakdowns: DeptBreakdownItem[] = depts.map((d) => {
+        const dStats = deptMap[d.id] || { total: 0, resolved: 0, pending: 0 };
+        const dRate = dStats.total > 0 ? Math.round((dStats.resolved / dStats.total) * 100) : 100;
+        return {
+          id: d.id,
+          name: d.name,
+          slug: d.slug || '',
+          total: dStats.total,
+          resolved: dStats.resolved,
+          pending: dStats.pending,
+          rate: dRate,
+        };
+      }).sort((a, b) => b.total - a.total);
 
       setStats({
         totalComplaints: total,
@@ -827,12 +867,14 @@ export const AdminDashboard: React.FC = () => {
         pendingStaffCount: staffApprovalsRes.count || 0,
         pendingNewsCount: newsRes.count || 0,
         loading: false,
+        recentComplaints: (recentComplaintsRes.data as any) || [],
+        deptBreakdowns: breakdowns,
       });
     } catch (e) {
       console.warn('Error loading live admin stats:', e);
       setStats((prev) => ({ ...prev, loading: false }));
     }
-  }, []);
+  }, [departments]);
 
   useEffect(() => {
     if (user && isAdmin) {
