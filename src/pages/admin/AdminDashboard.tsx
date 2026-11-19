@@ -846,6 +846,20 @@ export const AdminDashboard: React.FC = () => {
     setMobileMenuOpen(false);
   };
 
+  // Lock background scroll when mobile sidebar drawer is open
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      const originalBodyOverflow = document.body.style.overflow;
+      const originalHtmlOverflow = document.documentElement.style.overflow;
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
+      return () => {
+        document.body.style.overflow = originalBodyOverflow;
+        document.documentElement.style.overflow = originalHtmlOverflow;
+      };
+    }
+  }, [mobileMenuOpen]);
+
   // Auth guard
   useEffect(() => {
     if (!authLoading && (!user || !isAdmin)) {
@@ -1120,14 +1134,18 @@ export const AdminDashboard: React.FC = () => {
         {/* Modern Sidebar */}
         <aside
           style={{
-            width: 250,
-            background: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(10px)',
+            width: 260,
+            background: 'rgba(255, 255, 255, 0.98)',
+            backdropFilter: 'blur(12px)',
             borderRight: '1px solid #e6e2d8',
-            padding: '16px 12px',
+            padding: '16px 12px 90px',
             flexShrink: 0,
             display: 'flex',
             flexDirection: 'column',
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
+            WebkitOverflowScrolling: 'touch',
+            touchAction: 'pan-y',
           }}
           className={`admin-sidebar ${mobileMenuOpen ? 'open' : ''}`}
         >
@@ -1186,7 +1204,7 @@ export const AdminDashboard: React.FC = () => {
               <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '0 8px', marginBottom: 6 }}>
                 Portfolios
               </div>
-              <div style={{ maxHeight: 220, overflowY: 'auto' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                 {departments.map((dept) => (
                   <button
                     key={dept.id}
@@ -1227,7 +1245,15 @@ export const AdminDashboard: React.FC = () => {
         {mobileMenuOpen && (
           <div
             onClick={() => setMobileMenuOpen(false)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(15, 37, 49, 0.4)', zIndex: 90, backdropFilter: 'blur(2px)' }}
+            onTouchMove={(e) => e.preventDefault()}
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(15, 37, 49, 0.45)',
+              zIndex: 90,
+              backdropFilter: 'blur(3px)',
+              touchAction: 'none',
+            }}
           />
         )}
 
@@ -1480,11 +1506,22 @@ export const AdminDashboard: React.FC = () => {
         @media (max-width: 768px) {
           .admin-sidebar {
             position: fixed !important;
-            top: 58px;
-            bottom: 0;
-            left: -270px;
-            z-index: 100;
-            box-shadow: 4px 0 24px rgba(15, 37, 49, 0.15);
+            top: 58px !important;
+            bottom: 0 !important;
+            left: -320px !important;
+            width: min(290px, 82vw) !important;
+            height: calc(100vh - 58px) !important;
+            height: calc(100dvh - 58px) !important;
+            max-height: calc(100vh - 58px) !important;
+            max-height: calc(100dvh - 58px) !important;
+            overflow-y: auto !important;
+            overflow-x: hidden !important;
+            overscroll-behavior: contain !important;
+            overscroll-behavior-y: contain !important;
+            -webkit-overflow-scrolling: touch !important;
+            touch-action: pan-y !important;
+            z-index: 100 !important;
+            box-shadow: 6px 0 28px rgba(15, 37, 49, 0.22) !important;
           }
           .admin-sidebar.open {
             left: 0 !important;
