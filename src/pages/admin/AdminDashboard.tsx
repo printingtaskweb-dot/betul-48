@@ -1149,6 +1149,56 @@ export const AdminDashboard: React.FC = () => {
           }}
           className={`admin-sidebar ${mobileMenuOpen ? 'open' : ''}`}
         >
+          {/* Mobile Drawer Header with Close Button (shown only on mobile) */}
+          <div
+            className="sidebar-mobile-header"
+            style={{
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '4px 4px 10px',
+              marginBottom: 8,
+              borderBottom: '1px solid #e6e2d8',
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <div
+                style={{
+                  width: 30,
+                  height: 30,
+                  borderRadius: 9,
+                  background: 'linear-gradient(135deg, #146C94, #0E526F)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#fff',
+                  boxShadow: '0 2px 6px rgba(20, 108, 148, 0.25)',
+                }}
+              >
+                <Landmark size={16} />
+              </div>
+              <span style={{ fontSize: '0.92rem', fontWeight: 900, color: '#0f2531' }}>
+                Betul 311 Admin
+              </span>
+            </div>
+            <button
+              onClick={() => setMobileMenuOpen(false)}
+              style={{
+                background: '#f1f5f9',
+                border: 'none',
+                borderRadius: 8,
+                padding: '6px',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#64748b',
+              }}
+              aria-label="Close navigation menu"
+            >
+              <X size={18} />
+            </button>
+          </div>
+
           <div style={{ fontSize: '0.7rem', fontWeight: 900, color: '#94a3b8', textTransform: 'uppercase', letterSpacing: '0.06em', padding: '0 8px', marginBottom: 8 }}>
             Core Console
           </div>
@@ -1504,16 +1554,20 @@ export const AdminDashboard: React.FC = () => {
         }
 
         @media (max-width: 768px) {
+          .admin-top-header {
+            padding: 8px 12px !important;
+          }
           .admin-sidebar {
             position: fixed !important;
-            top: 58px !important;
+            top: 0 !important;
             bottom: 0 !important;
             left: -320px !important;
-            width: min(290px, 82vw) !important;
-            height: calc(100vh - 58px) !important;
-            height: calc(100dvh - 58px) !important;
-            max-height: calc(100vh - 58px) !important;
-            max-height: calc(100dvh - 58px) !important;
+            width: min(290px, 84vw) !important;
+            height: 100vh !important;
+            height: 100dvh !important;
+            max-height: 100vh !important;
+            max-height: 100dvh !important;
+            padding: 12px 12px 90px !important;
             overflow-y: auto !important;
             overflow-x: hidden !important;
             overscroll-behavior: contain !important;
@@ -1525,6 +1579,9 @@ export const AdminDashboard: React.FC = () => {
           }
           .admin-sidebar.open {
             left: 0 !important;
+          }
+          .sidebar-mobile-header {
+            display: flex !important;
           }
           .mobile-dept-toggle {
             display: flex !important;
@@ -1556,11 +1613,14 @@ export const AdminDashboard: React.FC = () => {
             box-shadow: 0 -4px 18px rgba(15, 37, 49, 0.06) !important;
           }
           main {
-            padding-bottom: 64px !important;
+            padding: 8px 10px 64px !important;
           }
         }
 
         @media (min-width: 769px) {
+          .sidebar-mobile-header {
+            display: none !important;
+          }
           .mobile-dept-toggle {
             display: none !important;
           }
