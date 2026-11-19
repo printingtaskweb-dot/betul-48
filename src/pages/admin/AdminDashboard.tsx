@@ -1474,7 +1474,7 @@ export const AdminDashboard: React.FC = () => {
             >
               <Landmark size={20} />
             </div>
-            <div>
+            <div className="hidden sm:block">
               <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                 <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#0f2531', letterSpacing: '-0.02em' }}>
                   Betul 311
@@ -1496,6 +1496,22 @@ export const AdminDashboard: React.FC = () => {
               <p style={{ margin: 0, fontSize: '0.68rem', color: '#64748b', fontWeight: 600 }}>
                 Nagar Palika Parishad Betul
               </p>
+            </div>
+            <div className="sm:hidden">
+              <span
+                style={{
+                  fontSize: '0.72rem',
+                  fontWeight: 900,
+                  padding: '2px 8px',
+                  borderRadius: 6,
+                  background: '#e0f2fe',
+                  color: '#0369a1',
+                  border: '1px solid #bae6fd',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                Admin Console
+              </span>
             </div>
           </Link>
         </div>
@@ -1608,7 +1624,7 @@ export const AdminDashboard: React.FC = () => {
                 <Landmark size={16} />
               </div>
               <span style={{ fontSize: '0.92rem', fontWeight: 900, color: '#0f2531' }}>
-                Betul 311 Admin
+                Admin Console
               </span>
             </div>
             <button
