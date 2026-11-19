@@ -22,7 +22,7 @@ import {
   Users, Building2, ClipboardCheck, ShieldCheck,
   FileText, CheckCircle2, AlertTriangle,
   Activity, ArrowRight, ChevronRight, Landmark, RefreshCw, Send,
-  MapPin,
+  MapPin, Phone, ExternalLink, Calendar, User,
 } from 'lucide-react';
 
 type Tab =
@@ -165,6 +165,13 @@ export interface RecentComplaintSummary {
   address?: string;
   status: string;
   created_at: string;
+  updated_at?: string;
+  citizen_name?: string;
+  citizen_phone?: string;
+  photo_url?: string;
+  ward_id?: string;
+  latitude?: number;
+  longitude?: number;
   department_id?: string;
   department?: { name: string; slug: string } | null;
 }
@@ -209,6 +216,36 @@ const AdminOverview: React.FC<OverviewProps> = ({
 }) => {
   const navigate = useNavigate();
   const headerRef = useRef<HTMLDivElement>(null);
+  const [selectedComplaint, setSelectedComplaint] = useState<RecentComplaintSummary | null>(null);
+  const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [updateSuccessMsg, setUpdateSuccessMsg] = useState<string | null>(null);
+
+  const handleQuickStatusChange = async (newStatus: string) => {
+    if (!selectedComplaint) return;
+    setUpdatingStatus(newStatus);
+    try {
+      const { error } = await supabase
+        .from('complaints')
+        .update({
+          status: newStatus,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', selectedComplaint.id);
+
+      if (error) throw error;
+
+      setSelectedComplaint((prev) =>
+        prev ? { ...prev, status: newStatus, updated_at: new Date().toISOString() } : null
+      );
+      setUpdateSuccessMsg(`Status updated to ${newStatus.replace('_', ' ').toUpperCase()}`);
+      setTimeout(() => setUpdateSuccessMsg(null), 3000);
+      onRefreshStats();
+    } catch (err: any) {
+      alert(err?.message || 'Failed to update complaint status');
+    } finally {
+      setUpdatingStatus(null);
+    }
+  };
 
   useEffect(() => {
     if (!headerRef.current) return;
@@ -519,7 +556,8 @@ const AdminOverview: React.FC<OverviewProps> = ({
             {stats.recentComplaints.map((item) => (
               <div
                 key={item.id}
-                onClick={() => onTab('complaints')}
+                onClick={() => setSelectedComplaint(item)}
+                title="Click to view full complaint details"
                 style={{
                   display: 'flex',
                   alignItems: 'center',
@@ -530,11 +568,11 @@ const AdminOverview: React.FC<OverviewProps> = ({
                   background: '#faf9f6',
                   cursor: 'pointer',
                   transition: 'all 0.15s ease',
-                  gap: 12,
+                  gap: 10,
                 }}
                 onMouseEnter={(e) => {
                   (e.currentTarget as HTMLDivElement).style.background = '#f3f1ec';
-                  (e.currentTarget as HTMLDivElement).style.borderColor = '#e6e2d8';
+                  (e.currentTarget as HTMLDivElement).style.borderColor = '#cbd5e1';
                 }}
                 onMouseLeave={(e) => {
                   (e.currentTarget as HTMLDivElement).style.background = '#faf9f6';
@@ -570,7 +608,7 @@ const AdminOverview: React.FC<OverviewProps> = ({
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 10, fontSize: '0.68rem', color: '#64748b', marginTop: 2 }}>
                       {item.address && (
-                        <span style={{ display: 'flex', alignItems: 'center', gap: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 280 }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: 260 }}>
                           <MapPin size={11} color="#94a3b8" /> {item.address}
                         </span>
                       )}
@@ -581,14 +619,345 @@ const AdminOverview: React.FC<OverviewProps> = ({
                   </div>
                 </div>
 
-                <div style={{ flexShrink: 0 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
                   <StatusBadge status={item.status as any} />
+                  <ChevronRight size={15} color="#94a3b8" />
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
+
+      {/* ─── Interactive Complaint Details Modal ─── */}
+      {selectedComplaint && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            zIndex: 9999,
+            background: 'rgba(15, 37, 49, 0.65)',
+            backdropFilter: 'blur(5px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '16px',
+          }}
+          onClick={() => setSelectedComplaint(null)}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#ffffff',
+              borderRadius: 20,
+              width: '100%',
+              maxWidth: 540,
+              maxHeight: '90vh',
+              overflowY: 'auto',
+              boxShadow: '0 25px 50px -12px rgba(15, 37, 49, 0.35)',
+              border: '1px solid #e2e8f0',
+              padding: '20px 22px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: 16,
+            }}
+          >
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+                  <span
+                    style={{
+                      background: '#e0f2fe',
+                      color: '#0369a1',
+                      padding: '3px 9px',
+                      borderRadius: 8,
+                      fontSize: '0.82rem',
+                      fontWeight: 900,
+                      fontFamily: 'monospace',
+                      letterSpacing: '0.03em',
+                    }}
+                  >
+                    #{selectedComplaint.ticket_number || 'IMC-311'}
+                  </span>
+                  <StatusBadge status={selectedComplaint.status as any} />
+                </div>
+                <div style={{ fontSize: '0.72rem', color: '#64748b', display: 'flex', alignItems: 'center', gap: 4 }}>
+                  <Calendar size={12} color="#94a3b8" />
+                  Submitted {new Date(selectedComplaint.created_at).toLocaleString('en-IN', {
+                    day: 'numeric',
+                    month: 'short',
+                    year: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                  })}
+                </div>
+              </div>
+
+              <button
+                onClick={() => setSelectedComplaint(null)}
+                style={{
+                  border: 'none',
+                  background: '#f1f5f9',
+                  borderRadius: '50%',
+                  width: 34,
+                  height: 34,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: '#64748b',
+                  flexShrink: 0,
+                  transition: 'all 0.15s ease',
+                }}
+                onMouseEnter={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = '#e2e8f0';
+                  (e.currentTarget as HTMLButtonElement).style.color = '#0f2531';
+                }}
+                onMouseLeave={(e) => {
+                  (e.currentTarget as HTMLButtonElement).style.background = '#f1f5f9';
+                  (e.currentTarget as HTMLButtonElement).style.color = '#64748b';
+                }}
+                aria-label="Close"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Success update notification */}
+            {updateSuccessMsg && (
+              <div
+                style={{
+                  padding: '8px 12px',
+                  borderRadius: 8,
+                  background: '#dcfce7',
+                  color: '#15803d',
+                  fontSize: '0.78rem',
+                  fontWeight: 700,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 6,
+                }}
+              >
+                <CheckCircle2 size={16} /> {updateSuccessMsg}
+              </div>
+            )}
+
+            {/* Evidence photo if available */}
+            {selectedComplaint.photo_url && (
+              <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', border: '1px solid #e2e8f0', maxHeight: 220, background: '#0f2531' }}>
+                <img
+                  src={selectedComplaint.photo_url}
+                  alt="Complaint Evidence"
+                  style={{ width: '100%', maxHeight: 220, objectFit: 'cover', display: 'block' }}
+                />
+                <a
+                  href={selectedComplaint.photo_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    position: 'absolute',
+                    bottom: 8,
+                    right: 8,
+                    background: 'rgba(15, 37, 49, 0.85)',
+                    color: '#ffffff',
+                    padding: '4px 10px',
+                    borderRadius: 6,
+                    fontSize: '0.72rem',
+                    fontWeight: 700,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                    textDecoration: 'none',
+                    backdropFilter: 'blur(4px)',
+                  }}
+                >
+                  <ExternalLink size={12} /> Full Image
+                </a>
+              </div>
+            )}
+
+            {/* Grievance Description */}
+            <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: 12, border: '1px solid #e2e8f0' }}>
+              <div style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: '#64748b', marginBottom: 4, letterSpacing: '0.04em' }}>
+                Grievance Description
+              </div>
+              <p style={{ margin: 0, fontSize: '0.88rem', color: '#0f2531', lineHeight: 1.5, wordBreak: 'break-word', fontWeight: 500 }}>
+                {selectedComplaint.description || 'No description provided.'}
+              </p>
+            </div>
+
+            {/* Information Cards Grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 10 }}>
+              {/* Department Card */}
+              <div style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid #f1f5f9', background: '#faf9f6' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#64748b', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                  <Building2 size={13} color="#146C94" /> Department
+                </div>
+                <div style={{ fontWeight: 800, fontSize: '0.84rem', color: '#0f2531', marginTop: 4 }}>
+                  {selectedComplaint.department?.name || 'General Municipal Service'}
+                </div>
+              </div>
+
+              {/* Citizen Contact Card */}
+              <div style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid #f1f5f9', background: '#faf9f6' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#64748b', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                  <User size={13} color="#146C94" /> Citizen Details
+                </div>
+                <div style={{ fontWeight: 800, fontSize: '0.84rem', color: '#0f2531', marginTop: 4 }}>
+                  {selectedComplaint.citizen_name || 'Anonymous Resident'}
+                </div>
+                {selectedComplaint.citizen_phone ? (
+                  <a
+                    href={`tel:${selectedComplaint.citizen_phone}`}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      marginTop: 4,
+                      fontSize: '0.76rem',
+                      color: '#0284c7',
+                      fontWeight: 700,
+                      textDecoration: 'none',
+                    }}
+                  >
+                    <Phone size={12} /> {selectedComplaint.citizen_phone} (Call)
+                  </a>
+                ) : (
+                  <div style={{ fontSize: '0.74rem', color: '#94a3b8', marginTop: 2 }}>Phone not provided</div>
+                )}
+              </div>
+
+              {/* Location & Address Card */}
+              <div style={{ padding: '10px 12px', borderRadius: 10, border: '1px solid #f1f5f9', background: '#faf9f6', gridColumn: '1 / -1' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, color: '#64748b', fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase' }}>
+                  <MapPin size={13} color="#dc2626" /> Location / Address
+                </div>
+                <div style={{ fontWeight: 700, fontSize: '0.82rem', color: '#0f2531', marginTop: 4 }}>
+                  {selectedComplaint.address || 'Betul Municipal Jurisdiction'}
+                </div>
+                {(selectedComplaint.latitude && selectedComplaint.longitude) ? (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${selectedComplaint.latitude},${selectedComplaint.longitude}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      marginTop: 4,
+                      fontSize: '0.74rem',
+                      color: '#0284c7',
+                      fontWeight: 700,
+                      textDecoration: 'none',
+                    }}
+                  >
+                    <ExternalLink size={11} /> Open in Google Maps ({selectedComplaint.latitude.toFixed(4)}, {selectedComplaint.longitude.toFixed(4)})
+                  </a>
+                ) : selectedComplaint.address ? (
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(selectedComplaint.address + ', Betul, MP')}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 4,
+                      marginTop: 4,
+                      fontSize: '0.74rem',
+                      color: '#0284c7',
+                      fontWeight: 700,
+                      textDecoration: 'none',
+                    }}
+                  >
+                    <ExternalLink size={11} /> Locate on Maps
+                  </a>
+                ) : null}
+              </div>
+            </div>
+
+            {/* Quick Status Actions (Admin Control) */}
+            <div style={{ borderTop: '1px solid #e2e8f0', paddingTop: 14 }}>
+              <div style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', color: '#64748b', marginBottom: 8, letterSpacing: '0.03em' }}>
+                Quick Status Actions
+              </div>
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button
+                  onClick={() => handleQuickStatusChange('in_progress')}
+                  disabled={updatingStatus !== null || selectedComplaint.status === 'in_progress'}
+                  style={{
+                    flex: 1,
+                    minWidth: 120,
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    border: '1px solid #bae6fd',
+                    background: selectedComplaint.status === 'in_progress' ? '#f0f9ff' : '#0284c7',
+                    color: selectedComplaint.status === 'in_progress' ? '#0369a1' : '#ffffff',
+                    fontSize: '0.78rem',
+                    fontWeight: 800,
+                    cursor: selectedComplaint.status === 'in_progress' ? 'default' : 'pointer',
+                    opacity: updatingStatus === 'in_progress' ? 0.7 : 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                  }}
+                >
+                  {updatingStatus === 'in_progress' && <RefreshCw size={13} className="animate-spin" />}
+                  {selectedComplaint.status === 'in_progress' ? 'Current: In Progress' : 'Set In Progress'}
+                </button>
+
+                <button
+                  onClick={() => handleQuickStatusChange('resolved')}
+                  disabled={updatingStatus !== null || selectedComplaint.status === 'resolved'}
+                  style={{
+                    flex: 1,
+                    minWidth: 120,
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    border: '1px solid #bbf7d0',
+                    background: selectedComplaint.status === 'resolved' ? '#f0fdf4' : '#16a34a',
+                    color: selectedComplaint.status === 'resolved' ? '#15803d' : '#ffffff',
+                    fontSize: '0.78rem',
+                    fontWeight: 800,
+                    cursor: selectedComplaint.status === 'resolved' ? 'default' : 'pointer',
+                    opacity: updatingStatus === 'resolved' ? 0.7 : 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: 6,
+                  }}
+                >
+                  {updatingStatus === 'resolved' && <RefreshCw size={13} className="animate-spin" />}
+                  {selectedComplaint.status === 'resolved' ? 'Current: Resolved' : 'Mark Resolved'}
+                </button>
+
+                <button
+                  onClick={() => {
+                    setSelectedComplaint(null);
+                    onTab('complaints');
+                  }}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: 8,
+                    border: '1px solid #e2e8f0',
+                    background: '#f8fafc',
+                    color: '#334155',
+                    fontSize: '0.78rem',
+                    fontWeight: 800,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                  }}
+                >
+                  Open in Table <ArrowRight size={13} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ─── Department Portfolios Workload & Resolution ─── */}
       <div
@@ -836,7 +1205,7 @@ export const AdminDashboard: React.FC = () => {
         supabase.from('user_profiles').select('*', { count: 'exact', head: true }),
         supabase.from('user_profiles').select('*', { count: 'exact', head: true }).eq('approval_status', 'pending'),
         supabase.from('local_news').select('*', { count: 'exact', head: true }).eq('status', 'pending'),
-        supabase.from('complaints').select('id, ticket_number, description, address, status, created_at, department_id, department:departments(name, slug)').order('created_at', { ascending: false }).limit(6),
+        supabase.from('complaints').select('id, ticket_number, description, address, status, created_at, updated_at, citizen_name, citizen_phone, photo_url, latitude, longitude, department_id, department:departments(name, slug)').order('created_at', { ascending: false }).limit(6),
         supabase.from('complaints').select('department_id, status'),
         supabase.from('departments').select('id, name, slug').order('name'),
       ]);
