@@ -1,5 +1,8 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getMessaging, getToken, type Messaging } from 'firebase/messaging';
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
+import { supabase } from './supabase';
 
 const firebaseConfig = {
   apiKey:            import.meta.env.VITE_FIREBASE_API_KEY            || 'AIzaSyAdqMDHy_Uov0rPisb5WVnA-0ZbFD3tpnc',
@@ -20,7 +23,7 @@ if (typeof window !== 'undefined' && 'Notification' in window) {
   try {
     messaging = getMessaging(app);
   } catch {
-    console.warn('[FCM] Messaging not supported in this context.');
+    console.warn('[FCM] Messaging not supported in this browser context.');
   }
 }
 
@@ -29,15 +32,19 @@ export { app, messaging };
 /** Public VAPID key — used by the browser to subscribe to push */
 export const VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY || undefined;
 
-import { supabase } from './supabase';
-
 /**
  * Saves or updates an FCM device token in Supabase fcm_tokens table.
  * Resilient against missing unique constraints on token.
  */
-export async function saveFCMTokenToSupabase(token: string, userId?: string | null): Promise<{ error: any }> {
+export async function saveFCMTokenToSupabase(
+  token: string,
+  userId?: string | null,
+  platformOverride?: string
+): Promise<{ error: any }> {
   try {
-    const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent.substring(0, 200) : '';
+    const isNative = Capacitor.isNativePlatform();
+    const platform = platformOverride || (isNative ? 'android' : 'web');
+    const userAgent = typeof navigator !== 'undefined' ? navigator.userAgent.substring(0, 200) : (isNative ? 'Capacitor-Android' : '');
 
     // 1. Try checking if this token already exists
     const { data: existing } = await supabase
@@ -51,7 +58,7 @@ export async function saveFCMTokenToSupabase(token: string, userId?: string | nu
         .from('fcm_tokens')
         .update({
           user_id: userId || null,
-          platform: 'web',
+          platform,
           user_agent: userAgent,
           updated_at: new Date().toISOString(),
         })
@@ -70,7 +77,7 @@ export async function saveFCMTokenToSupabase(token: string, userId?: string | nu
       .insert({
         token,
         user_id: userId || null,
-        platform: 'web',
+        platform,
         user_agent: userAgent,
         updated_at: new Date().toISOString(),
       });
@@ -83,7 +90,7 @@ export async function saveFCMTokenToSupabase(token: string, userId?: string | nu
           {
             token,
             user_id: userId || null,
-            platform: 'web',
+            platform,
             user_agent: userAgent,
             updated_at: new Date().toISOString(),
           },
@@ -103,12 +110,60 @@ export async function saveFCMTokenToSupabase(token: string, userId?: string | nu
 }
 
 /**
- * Retrieves FCM token from Google and saves it into Supabase.
- * Handles service worker readiness and VAPID key fallbacks safely.
+ * Retrieves FCM token from Google (Native Android or Web) and saves it into Supabase.
  */
 export async function fetchAndRegisterFCMToken(userId?: string | null): Promise<string | null> {
+  // ── 1. Native Mobile (Capacitor Android) Push Flow ──
+  if (Capacitor.isNativePlatform()) {
+    try {
+      let permStatus = await PushNotifications.checkPermissions();
+      if (permStatus.receive !== 'granted') {
+        permStatus = await PushNotifications.requestPermissions();
+      }
+      if (permStatus.receive !== 'granted') {
+        console.warn('[Native FCM] Notification permission not granted:', permStatus.receive);
+        return null;
+      }
+
+      return await new Promise<string | null>((resolve) => {
+        let resolved = false;
+
+        PushNotifications.addListener('registration', async (token) => {
+          console.log('[Native FCM] Device token registered:', token.value);
+          await saveFCMTokenToSupabase(token.value, userId, 'android');
+          if (!resolved) {
+            resolved = true;
+            resolve(token.value);
+          }
+        });
+
+        PushNotifications.addListener('registrationError', (error) => {
+          console.error('[Native FCM] Error during push registration:', error);
+          if (!resolved) {
+            resolved = true;
+            resolve(null);
+          }
+        });
+
+        PushNotifications.register();
+
+        setTimeout(() => {
+          if (!resolved) {
+            resolved = true;
+            console.warn('[Native FCM] Registration timed out waiting for token event.');
+            resolve(null);
+          }
+        }, 10000);
+      });
+    } catch (nativeErr) {
+      console.error('[Native FCM] Native registration exception:', nativeErr);
+      return null;
+    }
+  }
+
+  // ── 2. Standard Web Browser Flow ──
   if (typeof window === 'undefined' || !('Notification' in window) || !('serviceWorker' in navigator)) {
-    console.warn('[FCM] Push notifications not supported in this environment.');
+    console.warn('[FCM] Push notifications not supported in this browser environment.');
     return null;
   }
   if (!messaging) {
@@ -152,8 +207,8 @@ export async function fetchAndRegisterFCMToken(userId?: string | null): Promise<
     }
 
     if (token) {
-      console.log('[FCM] Successfully retrieved token:', token);
-      await saveFCMTokenToSupabase(token, userId);
+      console.log('[FCM] Successfully retrieved web token:', token);
+      await saveFCMTokenToSupabase(token, userId, 'web');
       return token;
     }
   } catch (err) {
@@ -161,4 +216,3 @@ export async function fetchAndRegisterFCMToken(userId?: string | null): Promise<
   }
   return null;
 }
-

@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
 import { messaging, fetchAndRegisterFCMToken } from '../../lib/firebase';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
@@ -115,13 +117,29 @@ export const PushNotificationSender: React.FC = () => {
 
   /* ── Self-register this current browser device ── */
   const handleRegisterThisDevice = async () => {
-    if (!messaging) {
-      setDeviceRegisterMsg({ text: 'Push notifications are not supported in this browser.', isError: true });
-      return;
-    }
     setRegisteringDevice(true);
     setDeviceRegisterMsg(null);
     try {
+      if (Capacitor.isNativePlatform()) {
+        const perm = await PushNotifications.requestPermissions();
+        if (perm.receive !== 'granted') {
+          setDeviceRegisterMsg({ text: 'Notification permission denied in device settings.', isError: true });
+          return;
+        }
+        const token = await fetchAndRegisterFCMToken(user?.id);
+        if (!token) {
+          setDeviceRegisterMsg({ text: 'Could not obtain native FCM token from Firebase.', isError: true });
+          return;
+        }
+        setDeviceRegisterMsg({ text: 'This native Android device was successfully registered in Supabase!', isError: false });
+        await fetchTokens();
+        return;
+      }
+
+      if (!messaging) {
+        setDeviceRegisterMsg({ text: 'Push notifications are not supported in this browser.', isError: true });
+        return;
+      }
       const perm = await Notification.requestPermission();
       if (perm !== 'granted') {
         setDeviceRegisterMsg({ text: 'Notification permission denied in your browser settings.', isError: true });

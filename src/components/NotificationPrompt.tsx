@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BellRing, X, CheckCircle2, Share, PlusSquare } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
 import { fetchAndRegisterFCMToken } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -7,10 +9,9 @@ import { useAuth } from '../contexts/AuthContext';
  * NotificationPrompt
  * ─────────────────────────────────────────────────────────────
  * Interactive floating prompt shown to users on their first visit.
- * • Works on both Desktop and Mobile devices.
- * • On Mobile: Positioned cleanly above the bottom navigation bar.
- * • On iOS: Shows helpful "Add to Home Screen" instructions.
- * • On Android/Desktop: One-click "Allow" enables push notifications.
+ * • Native Android APK: Directly requests system push notification permission.
+ * • Desktop / Web: Standard Notification.requestPermission() flow.
+ * • iOS Safari: Shows helpful "Add to Home Screen" instructions.
  */
 export const NotificationPrompt: React.FC = () => {
   const { user, language } = useAuth();
@@ -21,7 +22,31 @@ export const NotificationPrompt: React.FC = () => {
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Detect iOS
+    const openHandler = () => {
+      setShow(true);
+      setStatus('idle');
+    };
+    window.addEventListener('betul:open-notifications', openHandler);
+
+    // 1. Native Mobile Check
+    if (Capacitor.isNativePlatform()) {
+      PushNotifications.checkPermissions()
+        .then((perm) => {
+          if (perm.receive === 'granted') {
+            setShow(false);
+          } else {
+            const timer = setTimeout(() => setShow(true), 1200);
+            return () => clearTimeout(timer);
+          }
+        })
+        .catch(() => setShow(true));
+
+      return () => {
+        window.removeEventListener('betul:open-notifications', openHandler);
+      };
+    }
+
+    // 2. Web / Browser Detection
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
 
@@ -29,13 +54,7 @@ export const NotificationPrompt: React.FC = () => {
       setIsIOSDevice(true);
     }
 
-    const openHandler = () => {
-      setShow(true);
-      setStatus('idle');
-    };
-    window.addEventListener('betul:open-notifications', openHandler);
-
-    // If notifications are already granted, don't show the initial prompt
+    // If notifications are already granted in browser, don't show the initial prompt
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
       return () => {
         window.removeEventListener('betul:open-notifications', openHandler);
@@ -62,27 +81,48 @@ export const NotificationPrompt: React.FC = () => {
     setStatus('requesting');
 
     try {
+      // ── 1. Native Mobile (Capacitor Android) ──
+      if (Capacitor.isNativePlatform()) {
+        const permRes = await PushNotifications.requestPermissions();
+        if (permRes.receive === 'granted') {
+          setStatus('granted');
+          localStorage.removeItem('imc_fcm_prompt_dismissed');
+
+          try {
+            await fetchAndRegisterFCMToken(user?.id);
+          } catch (fcmErr) {
+            console.warn('[Native FCM] Token registration deferred:', fcmErr);
+          }
+
+          setTimeout(() => {
+            setShow(false);
+          }, 2000);
+        } else {
+          setStatus('denied');
+          handleDismiss();
+        }
+        return;
+      }
+
+      // ── 2. Web Browser ──
       if (typeof Notification === 'undefined') {
         alert(language === 'hi' ? 'इस डिवाइस पर पुश नोटिफिकेशन समर्थित नहीं है।' : 'Push notifications are not supported on this device.');
         setStatus('idle');
         return;
       }
 
-      // 1. Direct user gesture: trigger browser / Android permission prompt
       const permission = await Notification.requestPermission();
 
       if (permission === 'granted') {
         setStatus('granted');
         localStorage.removeItem('imc_fcm_prompt_dismissed');
 
-        // 2. Fetch FCM token and register with Supabase
         try {
           await fetchAndRegisterFCMToken(user?.id);
         } catch (fcmErr) {
           console.warn('[FCM] Token registration deferred:', fcmErr);
         }
 
-        // Auto close after 2 seconds
         setTimeout(() => {
           setShow(false);
         }, 2000);
