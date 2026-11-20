@@ -4,70 +4,61 @@ import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { fetchAndRegisterFCMToken } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
+import { triggerDeviceNotification } from '../services/notificationBridge';
 
-/**
- * NotificationPrompt
- * ─────────────────────────────────────────────────────────────
- * Interactive floating prompt shown to users on their first visit.
- * • Native Android APK: Directly requests system push notification permission.
- * • Desktop / Web: Standard Notification.requestPermission() flow.
- * • iOS Safari: Shows helpful "Add to Home Screen" instructions.
- */
 export const NotificationPrompt: React.FC = () => {
   const { user, language } = useAuth();
   const [show, setShow] = useState(false);
-  const [status, setStatus] = useState<'idle' | 'requesting' | 'granted' | 'denied'>('idle');
+  const [status, setStatus] = useState<'idle' | 'requesting' | 'granted' | 'already_active' | 'denied'>('idle');
   const [isIOSDevice, setIsIOSDevice] = useState(false);
+
+  const checkPermissionGranted = async (): Promise<boolean> => {
+    if (Capacitor.isNativePlatform()) {
+      try {
+        const perm = await PushNotifications.checkPermissions();
+        return perm.receive === 'granted';
+      } catch {
+        return false;
+      }
+    }
+    return typeof Notification !== 'undefined' && Notification.permission === 'granted';
+  };
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    const openHandler = () => {
-      setShow(true);
-      setStatus('idle');
-    };
-    window.addEventListener('betul:open-notifications', openHandler);
-
-    // 1. Native Mobile Check
-    if (Capacitor.isNativePlatform()) {
-      PushNotifications.checkPermissions()
-        .then((perm) => {
-          if (perm.receive === 'granted') {
-            setShow(false);
-          } else {
-            const timer = setTimeout(() => setShow(true), 1200);
-            return () => clearTimeout(timer);
-          }
-        })
-        .catch(() => setShow(true));
-
-      return () => {
-        window.removeEventListener('betul:open-notifications', openHandler);
-      };
-    }
-
-    // 2. Web / Browser Detection
+    // Detect iOS Safari
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
-
     if (isIOS && !isStandalone) {
       setIsIOSDevice(true);
     }
 
-    // If notifications are already granted in browser, don't show the initial prompt
-    if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-      return () => {
-        window.removeEventListener('betul:open-notifications', openHandler);
-      };
-    }
-
-    // Auto-prompt to request notification permissions
-    const timer = setTimeout(() => {
+    // Handler when user taps the navbar bell icon
+    const openHandler = async () => {
+      const isGranted = await checkPermissionGranted();
+      if (isGranted) {
+        setStatus('already_active');
+      } else {
+        setStatus('idle');
+      }
       setShow(true);
-    }, 1200);
+    };
+
+    window.addEventListener('betul:open-notifications', openHandler);
+
+    // Initial visit check: only auto-show if NOT already granted
+    let timer: number | undefined;
+    checkPermissionGranted().then((alreadyGranted) => {
+      if (!alreadyGranted) {
+        timer = window.setTimeout(() => {
+          setShow(true);
+        }, 1200);
+      }
+    });
 
     return () => {
-      clearTimeout(timer);
+      if (timer) clearTimeout(timer);
       window.removeEventListener('betul:open-notifications', openHandler);
     };
   }, []);
@@ -93,6 +84,14 @@ export const NotificationPrompt: React.FC = () => {
           } catch (fcmErr) {
             console.warn('[Native FCM] Token registration deferred:', fcmErr);
           }
+
+          // Trigger confirmation device notification
+          await triggerDeviceNotification(
+            language === 'hi' ? '🔔 सूचनाएं चालू हो गईं' : '🔔 Notifications Enabled',
+            language === 'hi'
+              ? 'नगर पालिका बैतूल के अपडेट आपके डिवाइस पर प्राप्त होंगे।'
+              : 'You will now receive Betul 311 alerts on this device.'
+          );
 
           setTimeout(() => {
             setShow(false);
@@ -122,6 +121,13 @@ export const NotificationPrompt: React.FC = () => {
         } catch (fcmErr) {
           console.warn('[FCM] Token registration deferred:', fcmErr);
         }
+
+        await triggerDeviceNotification(
+          language === 'hi' ? '🔔 सूचनाएं चालू हो गईं' : '🔔 Notifications Enabled',
+          language === 'hi'
+            ? 'नगर पालिका बैतूल के अपडेट आपके ब्राउज़र पर प्राप्त होंगे।'
+            : 'You will now receive Betul 311 alerts on this browser.'
+        );
 
         setTimeout(() => {
           setShow(false);
@@ -201,7 +207,67 @@ export const NotificationPrompt: React.FC = () => {
           <X size={18} />
         </button>
 
-        {status === 'granted' ? (
+        {status === 'already_active' ? (
+          /* When clicked from Navbar and already granted */
+          <div style={{ textAlign: 'center', padding: '6px 0' }}>
+            <CheckCircle2 size={42} color="#059669" style={{ margin: '0 auto 8px' }} />
+            <div style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#059669', marginBottom: 2 }}>
+              {isHindi ? 'सक्रिय स्थिति' : 'Active Status'}
+            </div>
+            <h4 style={{ margin: '0 0 6px', color: '#065f46', fontSize: '1.05rem', fontWeight: 800 }}>
+              {isHindi ? 'पुश सूचनाएं सक्रिय हैं' : 'Push Notifications are Active'}
+            </h4>
+            <p style={{ margin: '0 0 16px', fontSize: '0.82rem', color: '#4b5563', lineHeight: 1.45 }}>
+              {isHindi
+                ? 'यह डिवाइस नगर पालिका बैतूल के अपडेट और अलर्ट प्राप्त करने के लिए कनेक्टेड है।'
+                : 'This device is successfully connected to receive instant Betul municipal alerts.'}
+            </p>
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button
+                onClick={async () => {
+                  await triggerDeviceNotification(
+                    isHindi ? '🔔 टेस्ट अलर्ट (Test Alert)' : '🔔 Betul 311 Test Alert',
+                    isHindi ? 'सूचना प्रणाली पूर्ण रूप से कार्यरत है।' : 'Push notification system is working perfectly!'
+                  );
+                }}
+                style={{
+                  flex: 1,
+                  padding: '10px 14px',
+                  borderRadius: 10,
+                  border: 'none',
+                  background: 'linear-gradient(135deg, #146C94, #0E526F)',
+                  color: '#fff',
+                  fontWeight: 800,
+                  fontSize: '0.84rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: 6,
+                  boxShadow: '0 4px 12px rgba(20, 108, 148, 0.25)',
+                }}
+              >
+                <BellRing size={15} />
+                <span>{isHindi ? 'टेस्ट अलर्ट बजाएं' : 'Play Test Alert'}</span>
+              </button>
+              <button
+                onClick={handleDismiss}
+                style={{
+                  padding: '10px 16px',
+                  borderRadius: 10,
+                  border: '1.5px solid #d1d5db',
+                  background: '#f9fafb',
+                  color: '#4b5563',
+                  fontWeight: 700,
+                  fontSize: '0.84rem',
+                  cursor: 'pointer',
+                }}
+              >
+                {isHindi ? 'ठीक है' : 'OK'}
+              </button>
+            </div>
+          </div>
+        ) : status === 'granted' ? (
           <div style={{ textAlign: 'center', padding: '10px 0' }}>
             <CheckCircle2 size={42} color="#059669" style={{ margin: '0 auto 10px' }} />
             <h4 style={{ margin: '0 0 6px', color: '#065f46', fontSize: '1.05rem', fontWeight: 800 }}>
@@ -269,7 +335,7 @@ export const NotificationPrompt: React.FC = () => {
             </button>
           </div>
         ) : (
-          /* Standard Android & Desktop Flow */
+          /* Standard Flow */
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
               <div

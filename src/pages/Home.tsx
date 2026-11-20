@@ -1,5 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { Capacitor } from '@capacitor/core';
+import { PushNotifications } from '@capacitor/push-notifications';
 import { useAuth } from '../contexts/AuthContext';
 import { StatsSection } from '../components/StatsSection';
 import { ServicesGrid } from '../components/ServicesGrid';
@@ -117,6 +119,21 @@ export const Home: React.FC = () => {
 
   // Toast
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [notificationsActive, setNotificationsActive] = useState(false);
+
+  useEffect(() => {
+    const checkState = async () => {
+      if (Capacitor.isNativePlatform()) {
+        try {
+          const perm = await PushNotifications.checkPermissions();
+          setNotificationsActive(perm.receive === 'granted');
+        } catch {}
+      } else if (typeof Notification !== 'undefined') {
+        setNotificationsActive(Notification.permission === 'granted');
+      }
+    };
+    checkState();
+  }, []);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -265,12 +282,24 @@ export const Home: React.FC = () => {
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('betul:open-notifications'))}
-              className="w-10 h-10 rounded-full bg-white hover:bg-civic-50 text-civic-900 border border-sand-200 shadow-2xs flex items-center justify-center transition active:scale-95 cursor-pointer relative"
+              className={`w-10 h-10 rounded-full border shadow-2xs flex items-center justify-center transition active:scale-95 cursor-pointer relative ${
+                notificationsActive
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
+                  : 'bg-white hover:bg-civic-50 text-civic-900 border-sand-200'
+              }`}
               aria-label={language === 'hi' ? 'पुश सूचनाएं' : 'Push Notifications'}
-              title={language === 'hi' ? 'सूचनाएं सक्षम करें' : 'Enable Notifications'}
+              title={
+                notificationsActive
+                  ? (language === 'hi' ? 'पुश सूचनाएं सक्रिय हैं' : 'Push Notifications Active')
+                  : (language === 'hi' ? 'सूचनाएं सक्षम करें' : 'Enable Notifications')
+              }
             >
-              <Bell className="w-4.5 h-4.5 text-civic-600" />
-              <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <Bell className={`w-4.5 h-4.5 ${notificationsActive ? 'text-emerald-700' : 'text-civic-600'}`} />
+              <span
+                className={`absolute top-2 right-2 w-2 h-2 rounded-full ${
+                  notificationsActive ? 'bg-emerald-500' : 'bg-amber-500 animate-pulse'
+                }`}
+              />
             </button>
 
             <button

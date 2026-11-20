@@ -31,3 +31,6 @@ service-account*.json
 *.njsproj
 *.sln
 *.sw?
+
+*.apk
+public/*.apk
