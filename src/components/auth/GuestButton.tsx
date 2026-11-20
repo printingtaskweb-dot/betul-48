@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
 import { t } from '../../lib/i18n';
 
 interface Props {
@@ -9,6 +10,11 @@ interface Props {
 
 export const GuestButton: React.FC<Props> = ({ language }) => {
   const navigate = useNavigate();
+
+  // On native mobile app, mandatory login/register is enforced - guest mode is disabled
+  if (Capacitor.isNativePlatform()) {
+    return null;
+  }
 
   return (
     <div className="mt-5 text-center">

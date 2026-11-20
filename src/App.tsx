@@ -26,7 +26,8 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then((m
 const MunicipalAdministratorDashboard = lazy(() => import('./pages/admin/MunicipalAdministratorDashboard'));
 const PlatformOwnerDashboard = lazy(() => import('./pages/admin/PlatformOwnerDashboard'));
 const FCMRegistrar = lazy(() => import('./components/FCMRegistrar').then((module) => ({ default: module.FCMRegistrar })));
-const NotificationPrompt = lazy(() => import('./components/NotificationPrompt').then((module) => ({ default: module.NotificationPrompt })));
+import { NotificationPrompt } from './components/NotificationPrompt';
+import { AuthChecker } from './components/auth/AuthChecker';
 
 const RouteLoading: React.FC = () => (
   <div role="status" aria-live="polite" style={{ minHeight: '45vh', display: 'grid', placeItems: 'center', color: 'var(--theme-primary, #146C94)', fontWeight: 700 }}>
@@ -212,8 +213,10 @@ const App: React.FC = () => {
         <div className="grain" />
         {!splashDone && <SplashScreen onDone={handleSplashDone} />}
         <BrowserRouter>
-          <LiveAlertToast />
-          <AppRoutes />
+          <AuthChecker>
+            <LiveAlertToast />
+            <AppRoutes />
+          </AuthChecker>
         </BrowserRouter>
       </AuthProvider>
     </ErrorBoundary>

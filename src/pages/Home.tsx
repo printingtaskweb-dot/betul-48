@@ -287,12 +287,8 @@ export const Home: React.FC = () => {
                   ? 'bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100'
                   : 'bg-white hover:bg-civic-50 text-civic-900 border-sand-200'
               }`}
-              aria-label={language === 'hi' ? 'पुश सूचनाएं' : 'Push Notifications'}
-              title={
-                notificationsActive
-                  ? (language === 'hi' ? 'पुश सूचनाएं सक्रिय हैं' : 'Push Notifications Active')
-                  : (language === 'hi' ? 'सूचनाएं सक्षम करें' : 'Enable Notifications')
-              }
+              aria-label={language === 'hi' ? 'नवीनतम अपडेट और सूचनाएं' : 'Latest Updates & Notifications'}
+              title={language === 'hi' ? 'नवीनतम अपडेट और सूचनाएं' : 'Latest Updates & Notifications'}
             >
               <Bell className={`w-4.5 h-4.5 ${notificationsActive ? 'text-emerald-700' : 'text-civic-600'}`} />
               <span

@@ -1,422 +1,456 @@
 import React, { useState, useEffect } from 'react';
-import { BellRing, X, CheckCircle2, Share, PlusSquare } from 'lucide-react';
+import { Bell, BellRing, X, CheckCircle2, Sparkles, Newspaper, ShieldCheck, MapPin, ArrowRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { fetchAndRegisterFCMToken } from '../lib/firebase';
 import { useAuth } from '../contexts/AuthContext';
-import { triggerDeviceNotification } from '../services/notificationBridge';
+import { supabase } from '../lib/supabase';
+
+interface NewsItem {
+  id: string;
+  title: string | null;
+  content: string;
+  area: string;
+  category: string;
+  created_at: string;
+}
+
+const APP_FEATURES_UPDATES = [
+  {
+    version: 'v1.0.0 Native',
+    tag: 'Latest Release',
+    date: 'Today',
+    features: [
+      {
+        icon: '🔥',
+        titleEn: 'Official Municipal Flame Logo',
+        titleHi: 'नया आधिकारिक ज्वाला लोगो',
+        descEn: 'Updated high-definition launcher emblem across Android densities and portal.',
+        descHi: 'एंड्रॉइड और पोर्टल पर नया उच्च-रिज़ॉल्यूशन आधिकारिक लोगो।',
+      },
+      {
+        icon: '🔔',
+        titleEn: 'Real-Time Complaint & Activity Alerts',
+        titleHi: 'रीयल-टाइम शिकायत और गतिविधि सूचनाएं',
+        descEn: 'Instant device alerts when complaints are assigned, resolved, or verified.',
+        descHi: 'शिकायत आवंटन, समाधान या सत्यापन पर डिवाइस पर तुरंत अलर्ट।',
+      },
+      {
+        icon: '📍',
+        titleEn: 'GPS Geofencing & Operational Tracking',
+        titleHi: 'जीपीएस जियोफेंसिंग और मैदानी ट्रैकिंग',
+        descEn: 'Automatic boundary checking and live staff location verification.',
+        descHi: 'वार्ड सीमा जांच और फील्ड स्टाफ के लिए सटीक जीपीएस ट्रैकिंग।',
+      },
+      {
+        icon: '🏛️',
+        titleEn: '9 Municipal Hierarchy Roles',
+        titleHi: '9 नगर पालिका पदानुक्रम भूमिकाएं',
+        descEn: 'Role-specific dashboards from Field Workers & Supervisors to Verifiers.',
+        descHi: 'मैदानी कर्मचारियों और पर्यवेक्षकों से लेकर सत्यापनकर्ताओं तक विशेष डैशबोर्ड।',
+      },
+      {
+        icon: '⚡',
+        titleEn: 'Lightweight 36 MB Build',
+        titleHi: '36 MB हल्का और तेज़ ऐप',
+        descEn: 'Removed duplicate packaging bloat for smooth, battery-friendly performance.',
+        descHi: 'अनावश्यक डेटा हटाकर तीव्र और सुचारू प्रदर्शन।',
+      },
+    ],
+  },
+];
 
 export const NotificationPrompt: React.FC = () => {
   const { user, language } = useAuth();
   const [show, setShow] = useState(false);
-  const [status, setStatus] = useState<'idle' | 'requesting' | 'granted' | 'already_active' | 'denied'>('idle');
-  const [isIOSDevice, setIsIOSDevice] = useState(false);
+  const [isGranted, setIsGranted] = useState(false);
+  const [requesting, setRequesting] = useState(false);
+  const [latestNews, setLatestNews] = useState<NewsItem[]>([]);
+  const [activeTab, setActiveTab] = useState<'app_updates' | 'municipal_news'>('app_updates');
 
-  const checkPermissionGranted = async (): Promise<boolean> => {
+  const isHindi = language === 'hi';
+
+  const checkPermissionState = async () => {
     if (Capacitor.isNativePlatform()) {
       try {
         const perm = await PushNotifications.checkPermissions();
+        setIsGranted(perm.receive === 'granted');
         return perm.receive === 'granted';
       } catch {
         return false;
       }
     }
-    return typeof Notification !== 'undefined' && Notification.permission === 'granted';
+    const granted = typeof Notification !== 'undefined' && Notification.permission === 'granted';
+    setIsGranted(granted);
+    return granted;
   };
 
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    checkPermissionState();
 
-    // Detect iOS Safari
-    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || (navigator as any).standalone === true;
-    if (isIOS && !isStandalone) {
-      setIsIOSDevice(true);
-    }
+    // Fetch latest news announcements
+    supabase
+      .from('local_news')
+      .select('id, title, content, area, category, created_at')
+      .eq('status', 'approved')
+      .order('created_at', { ascending: false })
+      .limit(3)
+      .then(({ data }) => {
+        if (data) setLatestNews(data as NewsItem[]);
+      });
 
-    // Handler when user taps the navbar bell icon
     const openHandler = async () => {
-      const isGranted = await checkPermissionGranted();
-      if (isGranted) {
-        setStatus('already_active');
-      } else {
-        setStatus('idle');
-      }
+      await checkPermissionState();
       setShow(true);
     };
 
     window.addEventListener('betul:open-notifications', openHandler);
 
-    // Initial visit check: only auto-show if NOT already granted
-    let timer: number | undefined;
-    checkPermissionGranted().then((alreadyGranted) => {
-      if (!alreadyGranted) {
-        timer = window.setTimeout(() => {
-          setShow(true);
-        }, 1200);
-      }
-    });
-
     return () => {
-      if (timer) clearTimeout(timer);
       window.removeEventListener('betul:open-notifications', openHandler);
     };
   }, []);
 
-  const handleDismiss = () => {
-    setShow(false);
-    localStorage.setItem('imc_fcm_prompt_dismissed', Date.now().toString());
-  };
-
-  const handleAllow = async () => {
-    setStatus('requesting');
-
+  const handleEnableNotifications = async () => {
+    setRequesting(true);
     try {
-      // ── 1. Native Mobile (Capacitor Android) ──
       if (Capacitor.isNativePlatform()) {
         const permRes = await PushNotifications.requestPermissions();
         if (permRes.receive === 'granted') {
-          setStatus('granted');
-          localStorage.removeItem('imc_fcm_prompt_dismissed');
-
+          setIsGranted(true);
           try {
             await fetchAndRegisterFCMToken(user?.id);
-          } catch (fcmErr) {
-            console.warn('[Native FCM] Token registration deferred:', fcmErr);
+          } catch (e) {
+            console.warn('[FCM] Token deferred:', e);
           }
-
-          // Trigger confirmation device notification
-          await triggerDeviceNotification(
-            language === 'hi' ? '🔔 सूचनाएं चालू हो गईं' : '🔔 Notifications Enabled',
-            language === 'hi'
-              ? 'नगर पालिका बैतूल के अपडेट आपके डिवाइस पर प्राप्त होंगे।'
-              : 'You will now receive Betul 311 alerts on this device.'
-          );
-
-          setTimeout(() => {
-            setShow(false);
-          }, 2000);
-        } else {
-          setStatus('denied');
-          handleDismiss();
         }
-        return;
-      }
-
-      // ── 2. Web Browser ──
-      if (typeof Notification === 'undefined') {
-        alert(language === 'hi' ? 'इस डिवाइस पर पुश नोटिफिकेशन समर्थित नहीं है।' : 'Push notifications are not supported on this device.');
-        setStatus('idle');
-        return;
-      }
-
-      const permission = await Notification.requestPermission();
-
-      if (permission === 'granted') {
-        setStatus('granted');
-        localStorage.removeItem('imc_fcm_prompt_dismissed');
-
-        try {
+      } else if (typeof Notification !== 'undefined') {
+        const res = await Notification.requestPermission();
+        if (res === 'granted') {
+          setIsGranted(true);
           await fetchAndRegisterFCMToken(user?.id);
-        } catch (fcmErr) {
-          console.warn('[FCM] Token registration deferred:', fcmErr);
         }
-
-        await triggerDeviceNotification(
-          language === 'hi' ? '🔔 सूचनाएं चालू हो गईं' : '🔔 Notifications Enabled',
-          language === 'hi'
-            ? 'नगर पालिका बैतूल के अपडेट आपके ब्राउज़र पर प्राप्त होंगे।'
-            : 'You will now receive Betul 311 alerts on this browser.'
-        );
-
-        setTimeout(() => {
-          setShow(false);
-        }, 2000);
-      } else {
-        setStatus('denied');
-        handleDismiss();
       }
-    } catch (err) {
-      console.warn('[FCM] Permission request failed:', err);
-      handleDismiss();
+    } catch {
+      //
+    } finally {
+      setRequesting(false);
     }
   };
 
   if (!show) return null;
 
-  const isHindi = language === 'hi';
-
   return (
-    <>
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 999999,
+        background: 'rgba(0, 0, 0, 0.55)',
+        backdropFilter: 'blur(4px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 16,
+        animation: 'fadeInOverlay 0.2s ease-out',
+        fontFamily: 'system-ui, -apple-system, sans-serif',
+      }}
+    >
       <style>{`
-        .fcm-prompt-card {
-          position: fixed;
-          z-index: 999999;
-          left: 14px;
-          right: 14px;
-          bottom: calc(env(safe-area-inset-bottom, 0px) + 80px);
-          max-width: 420px;
-          margin: 0 auto;
-          background: #ffffff;
-          border-radius: 16px;
-          box-shadow: 0 16px 40px rgba(0, 0, 0, 0.28), 0 2px 10px rgba(0, 0, 0, 0.1);
-          border: 1.5px solid #d1d5db;
-          padding: 18px;
-          animation: slideUpFCM 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-          font-family: inherit;
+        @keyframes fadeInOverlay {
+          from { opacity: 0; }
+          to   { opacity: 1; }
         }
-        @media (min-width: 640px) {
-          .fcm-prompt-card {
-            left: auto;
-            right: 24px;
-            bottom: 24px;
-            margin: 0;
-            width: 390px;
-          }
-        }
-        @keyframes slideUpFCM {
-          from { transform: translateY(30px); opacity: 0; }
-          to   { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes pulseFCM {
-          0%, 100% { transform: scale(1); }
-          50%      { transform: scale(1.1); }
+        @keyframes scaleUpModal {
+          from { transform: scale(0.96) translateY(10px); opacity: 0; }
+          to   { transform: scale(1) translateY(0); opacity: 1; }
         }
       `}</style>
 
-      <aside className="fcm-prompt-card" aria-label="Notification permission prompt">
-        {/* Close button */}
-        <button
-          onClick={handleDismiss}
-          aria-label="Close"
+      <div
+        role="dialog"
+        aria-modal="true"
+        style={{
+          background: '#ffffff',
+          borderRadius: 20,
+          width: '100%',
+          maxWidth: 480,
+          maxHeight: '85vh',
+          display: 'flex',
+          flexDirection: 'column',
+          boxShadow: '0 24px 60px rgba(0,0,0,0.3)',
+          border: '1.5px solid #e2e8f0',
+          overflow: 'hidden',
+          animation: 'scaleUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+        }}
+      >
+        {/* Header */}
+        <div
           style={{
-            position: 'absolute',
-            top: 12,
-            right: 12,
-            background: 'transparent',
-            border: 'none',
-            cursor: 'pointer',
-            color: '#6b7280',
-            padding: 4,
-            borderRadius: 6,
+            background: 'linear-gradient(135deg, #146C94, #0E526F)',
+            color: '#fff',
+            padding: '16px 20px',
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center',
+            justifyContent: 'space-between',
           }}
         >
-          <X size={18} />
-        </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ background: 'rgba(255,255,255,0.15)', padding: '6px 8px', borderRadius: 8 }}>
+              <BellRing size={20} color="#fff" />
+            </div>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, letterSpacing: '-0.01em' }}>
+                {isHindi ? 'नवीनतम अपडेट और सूचनाएं' : 'Latest Updates & Alerts'}
+              </h3>
+              <p style={{ margin: 0, fontSize: '0.72rem', color: '#bae6fd' }}>
+                {isHindi ? 'बैतूल 311 मोबाइल ऐप और नगर पालिका अपडेट' : 'Betul 311 Application & City Updates'}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={() => setShow(false)}
+            aria-label="Close"
+            style={{
+              background: 'rgba(255,255,255,0.15)',
+              border: 'none',
+              color: '#fff',
+              width: 32,
+              height: 32,
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              cursor: 'pointer',
+            }}
+          >
+            <X size={18} />
+          </button>
+        </div>
 
-        {status === 'already_active' ? (
-          /* When clicked from Navbar and already granted */
-          <div style={{ textAlign: 'center', padding: '6px 0' }}>
-            <CheckCircle2 size={42} color="#059669" style={{ margin: '0 auto 8px' }} />
-            <div style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#059669', marginBottom: 2 }}>
-              {isHindi ? 'सक्रिय स्थिति' : 'Active Status'}
-            </div>
-            <h4 style={{ margin: '0 0 6px', color: '#065f46', fontSize: '1.05rem', fontWeight: 800 }}>
-              {isHindi ? 'पुश सूचनाएं सक्रिय हैं' : 'Push Notifications are Active'}
-            </h4>
-            <p style={{ margin: '0 0 16px', fontSize: '0.82rem', color: '#4b5563', lineHeight: 1.45 }}>
-              {isHindi
-                ? 'यह डिवाइस नगर पालिका बैतूल के अपडेट और अलर्ट प्राप्त करने के लिए कनेक्टेड है।'
-                : 'This device is successfully connected to receive instant Betul municipal alerts.'}
-            </p>
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button
-                onClick={async () => {
-                  await triggerDeviceNotification(
-                    isHindi ? '🔔 टेस्ट अलर्ट (Test Alert)' : '🔔 Betul 311 Test Alert',
-                    isHindi ? 'सूचना प्रणाली पूर्ण रूप से कार्यरत है।' : 'Push notification system is working perfectly!'
-                  );
-                }}
-                style={{
-                  flex: 1,
-                  padding: '10px 14px',
-                  borderRadius: 10,
-                  border: 'none',
-                  background: 'linear-gradient(135deg, #146C94, #0E526F)',
-                  color: '#fff',
-                  fontWeight: 800,
-                  fontSize: '0.84rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                  boxShadow: '0 4px 12px rgba(20, 108, 148, 0.25)',
-                }}
-              >
-                <BellRing size={15} />
-                <span>{isHindi ? 'टेस्ट अलर्ट बजाएं' : 'Play Test Alert'}</span>
-              </button>
-              <button
-                onClick={handleDismiss}
-                style={{
-                  padding: '10px 16px',
-                  borderRadius: 10,
-                  border: '1.5px solid #d1d5db',
-                  background: '#f9fafb',
-                  color: '#4b5563',
-                  fontWeight: 700,
-                  fontSize: '0.84rem',
-                  cursor: 'pointer',
-                }}
-              >
-                {isHindi ? 'ठीक है' : 'OK'}
-              </button>
-            </div>
+        {/* Push Notification Status Banner */}
+        <div
+          style={{
+            background: isGranted ? '#f0fdf4' : '#fffbeb',
+            borderBottom: '1px solid',
+            borderColor: isGranted ? '#bbf7d0' : '#fef3c7',
+            padding: '10px 16px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem' }}>
+            {isGranted ? (
+              <>
+                <CheckCircle2 size={16} color="#16a34a" />
+                <span style={{ color: '#166534', fontWeight: 700 }}>
+                  {isHindi ? 'डिवाइस पर पुश अलर्ट सक्रिय हैं' : 'Push Notifications are Active'}
+                </span>
+              </>
+            ) : (
+              <>
+                <Bell size={16} color="#d97706" />
+                <span style={{ color: '#92400e', fontWeight: 600 }}>
+                  {isHindi ? 'पुश सूचनाएं बंद हैं' : 'Notifications are Disabled'}
+                </span>
+              </>
+            )}
           </div>
-        ) : status === 'granted' ? (
-          <div style={{ textAlign: 'center', padding: '10px 0' }}>
-            <CheckCircle2 size={42} color="#059669" style={{ margin: '0 auto 10px' }} />
-            <h4 style={{ margin: '0 0 6px', color: '#065f46', fontSize: '1.05rem', fontWeight: 800 }}>
-              {isHindi ? 'सूचनाएं चालू कर दी गईं!' : 'Notifications Enabled!'}
-            </h4>
-            <p style={{ margin: 0, fontSize: '0.82rem', color: '#555' }}>
-              {isHindi
-                ? 'अब आपको सभी महत्वपूर्ण अपडेट तुरंत प्राप्त होंगे।'
-                : 'You will now receive instant municipal alerts and updates.'}
-            </p>
-          </div>
-        ) : isIOSDevice ? (
-          /* iOS Safari Specific Instruction */
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-              <div
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 12,
-                  background: 'linear-gradient(135deg, #146C94, #0E526F)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#fff',
-                  flexShrink: 0,
-                  boxShadow: '0 4px 12px rgba(20, 108, 148, 0.25)',
-                }}
-              >
-                <BellRing size={22} />
-              </div>
-              <div>
-                <div style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#146C94' }}>
-                  {isHindi ? 'आईफोन सूचनाएं' : 'iPhone Notifications'}
-                </div>
-                <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 800, color: '#111827', lineHeight: 1.25 }}>
-                  {isHindi ? 'ऐप को होम स्क्रीन पर जोड़ें' : 'Add App to Home Screen'}
-                </h4>
-              </div>
-            </div>
-            <p style={{ margin: '0 0 14px', fontSize: '0.82rem', color: '#4b5563', lineHeight: 1.45 }}>
-              {isHindi
-                ? 'iPhone पर पुश नोटिफिकेशन प्राप्त करने के लिए: सफारी में नीचे शेयर (Share) आइकन दबाएं और "Add to Home Screen" चुनें।'
-                : 'To receive push notifications on iOS: tap the Share button in Safari and select "Add to Home Screen".'}
-            </p>
-            <div style={{ display: 'flex', gap: 8, background: '#f3f4f6', padding: '10px 12px', borderRadius: 8, fontSize: '0.78rem', color: '#374151', marginBottom: 14 }}>
-              <Share size={16} color="#146C94" />
-              <span>Tap <strong>Share</strong> → <strong>Add to Home Screen</strong> <PlusSquare size={14} style={{ display: 'inline', verticalAlign: 'middle' }} /></span>
-            </div>
+          {!isGranted && (
             <button
-              onClick={handleDismiss}
+              onClick={handleEnableNotifications}
+              disabled={requesting}
               style={{
-                width: '100%',
-                padding: '10px 0',
-                borderRadius: 8,
-                border: 'none',
-                background: 'linear-gradient(135deg, #146C94, #0E526F)',
+                background: '#146C94',
                 color: '#fff',
+                border: 'none',
+                padding: '5px 12px',
+                borderRadius: 6,
+                fontSize: '0.74rem',
                 fontWeight: 800,
-                fontSize: '0.86rem',
                 cursor: 'pointer',
               }}
             >
-              {isHindi ? 'समझ गया' : 'Got it'}
+              {requesting ? '…' : isHindi ? 'सक्रिय करें' : 'Enable'}
             </button>
-          </div>
-        ) : (
-          /* Standard Flow */
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 12 }}>
-              <div
-                style={{
-                  width: 44,
-                  height: 44,
-                  borderRadius: 12,
-                  background: 'linear-gradient(135deg, #146C94, #0E526F)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#fff',
-                  flexShrink: 0,
-                  boxShadow: '0 4px 12px rgba(20, 108, 148, 0.25)',
-                }}
-              >
-                <BellRing size={22} style={{ animation: 'pulseFCM 2s infinite ease-in-out' }} />
-              </div>
-              <div>
-                <div style={{ fontSize: '0.72rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#146C94' }}>
-                  {isHindi ? 'नगर पालिका बैतूल' : 'IMC Betul 311'}
+          )}
+        </div>
+
+        {/* Tab Selector */}
+        <div style={{ display: 'flex', borderBottom: '1px solid #e2e8f0', background: '#f8fafc' }}>
+          <button
+            onClick={() => setActiveTab('app_updates')}
+            style={{
+              flex: 1,
+              padding: '12px 8px',
+              border: 'none',
+              background: 'none',
+              fontSize: '0.82rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              borderBottom: activeTab === 'app_updates' ? '2.5px solid #146C94' : '2.5px solid transparent',
+              color: activeTab === 'app_updates' ? '#146C94' : '#64748b',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+            }}
+          >
+            <Sparkles size={15} />
+            <span>{isHindi ? 'ऐप में नया क्या है' : "What's New in App"}</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('municipal_news')}
+            style={{
+              flex: 1,
+              padding: '12px 8px',
+              border: 'none',
+              background: 'none',
+              fontSize: '0.82rem',
+              fontWeight: 800,
+              cursor: 'pointer',
+              borderBottom: activeTab === 'municipal_news' ? '2.5px solid #146C94' : '2.5px solid transparent',
+              color: activeTab === 'municipal_news' ? '#146C94' : '#64748b',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 6,
+            }}
+          >
+            <Newspaper size={15} />
+            <span>{isHindi ? 'नगर पालिका समाचार' : 'City News & Alerts'}</span>
+          </button>
+        </div>
+
+        {/* Content Body */}
+        <div style={{ padding: '16px 20px', overflowY: 'auto', flex: 1 }}>
+          {activeTab === 'app_updates' ? (
+            <div>
+              {APP_FEATURES_UPDATES.map((rel, idx) => (
+                <div key={idx}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 900, color: '#146C94' }}>{rel.version}</span>
+                      <span style={{ fontSize: '0.68rem', fontWeight: 700, background: '#e0f2fe', color: '#0369a1', padding: '2px 8px', borderRadius: 10 }}>
+                        {rel.tag}
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '0.72rem', color: '#94a3b8' }}>{rel.date}</span>
+                  </div>
+
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                    {rel.features.map((item, fIdx) => (
+                      <div
+                        key={fIdx}
+                        style={{
+                          background: '#f8fafc',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: 12,
+                          padding: '10px 14px',
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: 12,
+                        }}
+                      >
+                        <span style={{ fontSize: '1.25rem', lineHeight: 1 }}>{item.icon}</span>
+                        <div>
+                          <h4 style={{ margin: '0 0 2px', fontSize: '0.82rem', fontWeight: 800, color: '#1e293b' }}>
+                            {isHindi ? item.titleHi : item.titleEn}
+                          </h4>
+                          <p style={{ margin: 0, fontSize: '0.74rem', color: '#64748b', lineHeight: 1.4 }}>
+                            {isHindi ? item.descHi : item.descEn}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: 800, color: '#111827', lineHeight: 1.25 }}>
-                  {isHindi ? 'पुश सूचनाएं सक्षम करें?' : 'Enable Push Notifications?'}
-                </h4>
-              </div>
+              ))}
             </div>
-
-            <p style={{ margin: '0 0 16px', fontSize: '0.84rem', color: '#4b5563', lineHeight: 1.45 }}>
-              {isHindi
-                ? 'पानी की आपूर्ति, स्वच्छता, शिकायत की स्थिति और आपातकालीन नागरिक घोषणाओं की सूचनाएं तुरंत पाएं।'
-                : 'Stay informed with instant updates on your complaint status, water supply schedules, and municipal announcements.'}
-            </p>
-
-            <div style={{ display: 'flex', gap: 10 }}>
-              <button
-                onClick={handleAllow}
-                disabled={status === 'requesting'}
-                style={{
-                  flex: 1,
-                  padding: '11px 16px',
-                  borderRadius: 10,
-                  border: 'none',
-                  background: status === 'requesting' ? '#999' : 'linear-gradient(135deg, #146C94, #0E526F)',
-                  color: '#fff',
-                  fontWeight: 800,
-                  fontSize: '0.86rem',
-                  cursor: status === 'requesting' ? 'wait' : 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: 6,
-                  boxShadow: '0 4px 14px rgba(20, 108, 148, 0.25)',
-                }}
-              >
-                <BellRing size={15} />
-                {status === 'requesting'
-                  ? (isHindi ? 'सक्षम कर रहे हैं...' : 'Enabling...')
-                  : (isHindi ? 'चालू करें' : 'Allow')}
-              </button>
-
-              <button
-                onClick={handleDismiss}
-                disabled={status === 'requesting'}
-                style={{
-                  padding: '11px 16px',
-                  borderRadius: 10,
-                  border: '1.5px solid #d1d5db',
-                  background: '#f9fafb',
-                  color: '#4b5563',
-                  fontWeight: 700,
-                  fontSize: '0.86rem',
-                  cursor: 'pointer',
-                }}
-              >
-                {isHindi ? 'बाद में' : 'Later'}
-              </button>
+          ) : (
+            <div>
+              {latestNews.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '30px 16px', color: '#64748b' }}>
+                  <ShieldCheck size={36} color="#146C94" style={{ margin: '0 auto 8px', opacity: 0.8 }} />
+                  <p style={{ margin: 0, fontSize: '0.85rem', fontWeight: 700 }}>
+                    {isHindi ? 'कोई नई सूचना उपलब्ध नहीं है।' : 'No new city alerts at this time.'}
+                  </p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {latestNews.map((news) => (
+                    <div
+                      key={news.id}
+                      style={{
+                        background: '#f8fafc',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: 12,
+                        padding: '12px 14px',
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                        <span style={{ fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', color: '#146C94', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <MapPin size={11} /> {news.area}
+                        </span>
+                        <span style={{ fontSize: '0.7rem', color: '#94a3b8' }}>
+                          {new Date(news.created_at).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <h4 style={{ margin: '0 0 4px', fontSize: '0.85rem', fontWeight: 800, color: '#0f172a' }}>
+                        {news.title || (isHindi ? 'नगर पालिका सूचना' : 'Municipal Notice')}
+                      </h4>
+                      <p style={{ margin: 0, fontSize: '0.76rem', color: '#475569', lineHeight: 1.4 }}>
+                        {news.content.slice(0, 120)}{news.content.length > 120 ? '…' : ''}
+                      </p>
+                    </div>
+                  ))}
+                  <Link
+                    to="/news"
+                    onClick={() => setShow(false)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: 6,
+                      fontSize: '0.8rem',
+                      fontWeight: 800,
+                      color: '#146C94',
+                      padding: '8px 0',
+                      textDecoration: 'none',
+                    }}
+                  >
+                    <span>{isHindi ? 'सभी नगर समाचार देखें' : 'View All City News'}</span>
+                    <ArrowRight size={14} />
+                  </Link>
+                </div>
+              )}
             </div>
-          </div>
-        )}
-      </aside>
-    </>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div style={{ padding: '12px 20px', borderTop: '1px solid #f1f5f9', background: '#f8fafc', display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            onClick={() => setShow(false)}
+            style={{
+              padding: '8px 18px',
+              borderRadius: 8,
+              border: 'none',
+              background: '#146C94',
+              color: '#fff',
+              fontWeight: 800,
+              fontSize: '0.82rem',
+              cursor: 'pointer',
+            }}
+          >
+            {isHindi ? 'समझ गया' : 'Got it'}
+          </button>
+        </div>
+      </div>
+    </div>
   );
 };
+
+export default NotificationPrompt;
