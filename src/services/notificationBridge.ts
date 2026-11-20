@@ -106,7 +106,7 @@ export async function triggerDeviceNotification(title: string, body: string, dat
 }
 
 /**
- * Triggered on activity: e.g. when a complaint is created or status is updated
+ * Triggered on activity: when a complaint is created
  */
 export async function notifyComplaintActivity(params: {
   ticketNumber: string;
@@ -134,15 +134,17 @@ export async function notifyComplaintActivity(params: {
     timestamp: Date.now(),
   };
 
-  // 1. In-App Banner/Toast
   broadcastInAppAlert(alert);
-
-  // 2. Device Notification (Status bar & sound)
   await triggerDeviceNotification(title, body, { ticketNumber, url: alert.url });
 }
 
 /**
  * Initializes real-time listener between website and APK
+ * Handles:
+ * 1. New Complaints (INSERT on complaints)
+ * 2. Complaint Status Updates & Assignments (UPDATE on complaints)
+ * 3. News Announcements (INSERT/UPDATE on local_news)
+ * 4. Broadcast Notifications (INSERT on notification_log)
  */
 let realtimeChannel: ReturnType<typeof supabase.channel> | null = null;
 
@@ -151,7 +153,8 @@ export function initNotificationBridge() {
 
   try {
     realtimeChannel = supabase
-      .channel('betul:complaints-bridge')
+      .channel('betul:global-activity-bridge')
+      // ── 1. New Complaint Created ──
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'complaints' },
@@ -159,7 +162,6 @@ export function initNotificationBridge() {
           const newComplaint = payload.new;
           if (!newComplaint || !newComplaint.ticket_number) return;
 
-          // Check if this was submitted by current session
           const myRecentTickets = (() => {
             try {
               const raw = localStorage.getItem('betul_my_complaints') || '[]';
@@ -170,7 +172,6 @@ export function initNotificationBridge() {
           })();
 
           if (myRecentTickets.includes(newComplaint.ticket_number)) {
-            // Already alerted on submission
             return;
           }
 
@@ -182,6 +183,134 @@ export function initNotificationBridge() {
           });
         }
       )
+      // ── 2. Complaint Resolved / Verified / Assigned / Reassigned ──
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'complaints' },
+        (payload: any) => {
+          const oldC = payload.old;
+          const newC = payload.new;
+          if (!newC || !newC.ticket_number) return;
+
+          const ticket = newC.ticket_number;
+
+          // A. Status Changed to Resolved
+          if (newC.status === 'resolved' && oldC?.status !== 'resolved') {
+            const title = '✅ शिकायत का समाधान हुआ (Complaint Resolved)';
+            const body = `शिकायत #${ticket} का समाधान सफलतापूर्वक कर दिया गया है।`;
+            const alert: InAppAlert = {
+              id: `alert-res-${ticket}-${Date.now()}`,
+              title,
+              message: body,
+              type: 'complaint_updated',
+              ticketNumber: ticket,
+              url: `/track?ticket=${encodeURIComponent(ticket)}`,
+              timestamp: Date.now(),
+            };
+            broadcastInAppAlert(alert);
+            triggerDeviceNotification(title, body, { ticketNumber: ticket, url: alert.url });
+          }
+          // B. Status Changed to Verified
+          else if (newC.status === 'verified' && oldC?.status !== 'verified') {
+            const title = '🌟 समाधान सत्यापित (Resolution Verified)';
+            const body = `शिकायत #${ticket} की जांच और समाधान को अंतिम रूप से सत्यापित कर दिया गया है।`;
+            const alert: InAppAlert = {
+              id: `alert-ver-${ticket}-${Date.now()}`,
+              title,
+              message: body,
+              type: 'complaint_updated',
+              ticketNumber: ticket,
+              url: `/track?ticket=${encodeURIComponent(ticket)}`,
+              timestamp: Date.now(),
+            };
+            broadcastInAppAlert(alert);
+            triggerDeviceNotification(title, body, { ticketNumber: ticket, url: alert.url });
+          }
+          // C. Status Changed to In Progress
+          else if (newC.status === 'in_progress' && oldC?.status !== 'in_progress') {
+            const title = '🔧 कार्य प्रगति पर है (Work In Progress)';
+            const body = `शिकायत #${ticket} पर फील्ड टीम द्वारा कार्यवाही शुरू की गई है।`;
+            const alert: InAppAlert = {
+              id: `alert-prog-${ticket}-${Date.now()}`,
+              title,
+              message: body,
+              type: 'complaint_updated',
+              ticketNumber: ticket,
+              url: `/track?ticket=${encodeURIComponent(ticket)}`,
+              timestamp: Date.now(),
+            };
+            broadcastInAppAlert(alert);
+            triggerDeviceNotification(title, body, { ticketNumber: ticket, url: alert.url });
+          }
+          // D. Task Allocated / Reassigned to Staff or Department
+          else if (
+            (newC.assigned_to && newC.assigned_to !== oldC?.assigned_to) ||
+            (newC.department_id && oldC?.department_id && newC.department_id !== oldC?.department_id)
+          ) {
+            const title = '📋 कार्य आवंटित हुआ (Task Allocated)';
+            const body = `शिकायत #${ticket} का कार्य संबंधित अधिकारी/वार्ड को आवंटित/पुनः आवंटित किया गया है।`;
+            const alert: InAppAlert = {
+              id: `alert-assign-${ticket}-${Date.now()}`,
+              title,
+              message: body,
+              type: 'complaint_updated',
+              ticketNumber: ticket,
+              url: `/track?ticket=${encodeURIComponent(ticket)}`,
+              timestamp: Date.now(),
+            };
+            broadcastInAppAlert(alert);
+            triggerDeviceNotification(title, body, { ticketNumber: ticket, url: alert.url });
+          }
+        }
+      )
+      // ── 3. New Municipal News Added ──
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'local_news' },
+        (payload: any) => {
+          const news = payload.new;
+          if (!news || !news.title) return;
+          if (news.status && news.status !== 'approved') return;
+
+          const title = '📰 नई सूचना / समाचार (New Municipal Update)';
+          const body = news.title.length > 70 ? `${news.title.substring(0, 67)}...` : news.title;
+          const alert: InAppAlert = {
+            id: `alert-news-${news.id || Date.now()}`,
+            title,
+            message: body,
+            type: 'info',
+            url: '/news',
+            timestamp: Date.now(),
+          };
+          broadcastInAppAlert(alert);
+          triggerDeviceNotification(title, body, { url: '/news' });
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'local_news' },
+        (payload: any) => {
+          const oldNews = payload.old;
+          const newNews = payload.new;
+          if (!newNews || !newNews.title) return;
+          // Trigger when approved
+          if (newNews.status === 'approved' && oldNews?.status !== 'approved') {
+            const title = '📰 स्वीकृत समाचार (Published Update)';
+            const body = newNews.title.length > 70 ? `${newNews.title.substring(0, 67)}...` : newNews.title;
+            const alert: InAppAlert = {
+              id: `alert-news-app-${newNews.id || Date.now()}`,
+              title,
+              message: body,
+              type: 'info',
+              url: '/news',
+              timestamp: Date.now(),
+            };
+            broadcastInAppAlert(alert);
+            triggerDeviceNotification(title, body, { url: '/news' });
+          }
+        }
+      )
+      // ── 4. Broadcast Notification Center ──
       .on(
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'notification_log' },

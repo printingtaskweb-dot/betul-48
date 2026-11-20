@@ -102,13 +102,17 @@ export const LiveAlertToast: React.FC = () => {
             {currentAlert.message}
           </p>
 
-          {currentAlert.ticketNumber && (
+          {currentAlert.url && (
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <button
                 onClick={() => {
-                  const url = currentAlert.url || `/track?ticket=${encodeURIComponent(currentAlert.ticketNumber!)}`;
+                  const targetUrl =
+                    currentAlert.url ||
+                    (currentAlert.ticketNumber
+                      ? `/track?ticket=${encodeURIComponent(currentAlert.ticketNumber)}`
+                      : '/');
                   setCurrentAlert(null);
-                  navigate(url);
+                  navigate(targetUrl);
                 }}
                 style={{
                   background: 'rgba(255, 255, 255, 0.18)',
@@ -124,7 +128,11 @@ export const LiveAlertToast: React.FC = () => {
                   gap: 4,
                 }}
               >
-                <span>ट्रैक करें (Track Ticket)</span>
+                <span>
+                  {currentAlert.type === 'info'
+                    ? 'समाचार पढ़ें (Read News)'
+                    : 'ट्रैक करें (View Status)'}
+                </span>
                 <ExternalLink size={12} />
               </button>
             </div>
