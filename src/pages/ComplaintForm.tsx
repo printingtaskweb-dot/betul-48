@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { t } from '../lib/i18n';
 import { useDepartments, useComplaints } from '../hooks/useComplaints';
+import { notifyComplaintActivity } from '../services/notificationBridge';
 import { useLocation } from '../hooks/useLocation';
 import { useStorage } from '../hooks/useStorage';
 import { PhotoUploader } from '../components/common/PhotoUploader';
@@ -274,6 +275,14 @@ export const ComplaintForm: React.FC = () => {
         });
         localStorage.setItem('betul_my_complaints', JSON.stringify(stored.slice(0, 50)));
       } catch {}
+
+      // Trigger instant in-app alert & device notification
+      notifyComplaintActivity({
+        ticketNumber: complaint.ticket_number,
+        departmentName: selectedDept.name,
+        address: loc.address,
+        isSelfSubmission: true,
+      });
 
       setTicket(complaint.ticket_number);
     } catch (err: any) {

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { t } from '../lib/i18n';
 import { useDepartments, useComplaints } from '../hooks/useComplaints';
+import { notifyComplaintActivity } from '../services/notificationBridge';
 import { useLocation as useGPS } from '../hooks/useLocation';
 import { useStorage } from '../hooks/useStorage';
 import { PhotoUploader } from '../components/common/PhotoUploader';
@@ -253,6 +254,14 @@ export const GreenDepartmentPage: React.FC = () => {
           : 'Request submitted successfully!'
       );
       setTicket(result.ticket_number);
+
+      // Trigger instant in-app alert & device notification
+      notifyComplaintActivity({
+        ticketNumber: result.ticket_number,
+        departmentName: 'हरित विभाग (Green Dept)',
+        address: gps.address,
+        isSelfSubmission: true,
+      });
     } catch (err: any) {
       setError(err.message || 'Error submitting complaint');
     }

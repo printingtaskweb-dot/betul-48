@@ -4,6 +4,8 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { SplashScreen } from './components/SplashScreen';
 import { SeoHead } from './components/SeoHead';
+import { LiveAlertToast } from './components/LiveAlertToast';
+import { Capacitor } from '@capacitor/core';
 
 const Home = lazy(() => import('./pages/Home').then((module) => ({ default: module.Home })));
 const LocalNewsPage = lazy(() => import('./pages/LocalNewsPage').then((module) => ({ default: module.LocalNewsPage })));
@@ -31,15 +33,16 @@ const RouteLoading: React.FC = () => (
 
 const DeferredNotificationFeatures: React.FC = () => {
   const [promptReady, setPromptReady] = useState(false);
-  const [registrarReady, setRegistrarReady] = useState(false);
+  const [registrarReady, setRegistrarReady] = useState(() => Capacitor.isNativePlatform());
 
   useEffect(() => {
     let promptTimer: number;
     let registrarTimer: number;
     const schedule = () => {
-      // The notification UI is non-critical; token refresh can wait until after LCP.
       promptTimer = window.setTimeout(() => setPromptReady(true), 500);
-      registrarTimer = window.setTimeout(() => setRegistrarReady(true), 8000);
+      if (!Capacitor.isNativePlatform()) {
+        registrarTimer = window.setTimeout(() => setRegistrarReady(true), 2000);
+      }
     };
 
     if (document.readyState === 'complete') schedule();
@@ -203,6 +206,7 @@ const App: React.FC = () => {
         <div className="grain" />
         {!splashDone && <SplashScreen onDone={handleSplashDone} />}
         <BrowserRouter>
+          <LiveAlertToast />
           <AppRoutes />
         </BrowserRouter>
       </AuthProvider>

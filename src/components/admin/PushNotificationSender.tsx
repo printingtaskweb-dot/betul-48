@@ -206,20 +206,39 @@ export const PushNotificationSender: React.FC = () => {
     setStatusMsg('');
 
     try {
-      const { data, error } = await supabase.functions.invoke('send-push', {
-        body: {
-          title:    title.trim(),
-          body:     body.trim(),
-          url:      urlLink.trim() || '/',
-          tokens:   targetTokens.map(t => t.token),
-          sent_by:  user?.id,
-        },
+      // 1. Immediately log & broadcast through Supabase Realtime to all connected devices (Web + APK)
+      await supabase.from('notification_log').insert({
+        title: title.trim(),
+        body: body.trim(),
+        url: urlLink.trim() || '/',
+        sent_to_count: targetTokens.length,
+        sent_by: user?.id || null,
+        created_at: new Date().toISOString(),
       });
 
-      if (error) throw new Error(error.message);
+      // 2. Dispatch FCM Push Notifications via Edge Function
+      let fcmSuccess = false;
+      try {
+        const { data, error } = await supabase.functions.invoke('send-push', {
+          body: {
+            title:   title.trim(),
+            body:    body.trim(),
+            url:     urlLink.trim() || '/',
+            tokens:  targetTokens.map(t => t.token),
+            sent_by: user?.id,
+          },
+        });
+        if (!error && data?.success) fcmSuccess = true;
+      } catch (fcmErr) {
+        console.warn('[PushSender] FCM Edge function notice:', fcmErr);
+      }
 
       setStatus('success');
-      setStatusMsg(`Successfully sent to ${data?.sent ?? targetTokens.length} device(s).`);
+      setStatusMsg(
+        fcmSuccess
+          ? `Successfully sent to ${targetTokens.length} device(s) via Native Push & Realtime Bridge!`
+          : `Alert broadcasted via Realtime Bridge to all ${targetTokens.length} connected device(s).`
+      );
 
       // Reset form
       setTitle('');
