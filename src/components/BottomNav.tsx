@@ -1,12 +1,24 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, Newspaper, Plus, Search, User } from 'lucide-react';
+import { Home, Newspaper, Plus, Search, User, Briefcase } from 'lucide-react';
 
 export const BottomNav: React.FC = () => {
-  const { language, user } = useAuth();
+  const { language, user, profile } = useAuth();
   const location = useLocation();
   const path = location.pathname;
+
+  const isStaff = Boolean(
+    profile?.role && [
+      'field_employee',
+      'supervisor',
+      'operational_staff',
+      'department_head',
+      'dept_staff',
+      'control_room',
+      'verification_officer'
+    ].includes(profile.role)
+  );
 
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bottom-nav-mask pt-4 pb-3 px-4 pointer-events-none">
@@ -46,17 +58,31 @@ export const BottomNav: React.FC = () => {
           </Link>
         </div>
 
-        <Link
-          to="/track"
-          className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
-            path === '/track'
-              ? 'text-civic-700 bg-civic-50 font-bold'
-              : 'text-slate-500 hover:text-civic-800 font-medium'
-          }`}
-        >
-          <Search className="w-4 h-4 mb-0.5" />
-          <span>{language === 'hi' ? 'ट्रैक' : 'Track'}</span>
-        </Link>
+        {isStaff ? (
+          <Link
+            to="/dept/dashboard"
+            className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
+              path.startsWith('/dept/dashboard')
+                ? 'text-civic-700 bg-civic-50 font-bold'
+                : 'text-slate-500 hover:text-civic-800 font-medium'
+            }`}
+          >
+            <Briefcase className="w-4 h-4 mb-0.5" />
+            <span>{language === 'hi' ? 'कार्य (Tasks)' : 'Tasks'}</span>
+          </Link>
+        ) : (
+          <Link
+            to="/track"
+            className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
+              path === '/track'
+                ? 'text-civic-700 bg-civic-50 font-bold'
+                : 'text-slate-500 hover:text-civic-800 font-medium'
+            }`}
+          >
+            <Search className="w-4 h-4 mb-0.5" />
+            <span>{language === 'hi' ? 'ट्रैक' : 'Track'}</span>
+          </Link>
+        )}
 
         <Link
           to={user ? '/profile' : '/auth'}
