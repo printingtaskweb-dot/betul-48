@@ -2,274 +2,78 @@ name: Release Betul Nagar Android app
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - 'android/**'
-      - 'src/**'
-      - 'public/**'
-      - '.github/workflows/release-betul-android.yml'
+    tags:
+      - 'v*'
   workflow_dispatch:
     inputs:
       version_name:
-        description: App version shown to users (for example 1.0.0)
+        description: 'App version display name (e.g. 1.0.0)'
         required: true
         type: string
-        default: 1.0.1
-      version_code:
-        description: Positive Android version code; increase it for every update
-        required: true
-        type: string
-        default: "2"
+        default: '1.0.0'
 
 permissions:
   contents: write
 
 jobs:
   build-and-release:
-    name: Build and publish signed Android app
+    name: Build and publish Capacitor Android Native APK
     runs-on: ubuntu-latest
-    timeout-minutes: 45
-    steps:
-      - name: Check out source
-        uses: actions/checkout@v4
+    timeout-minutes: 30
 
-      - name: Validate selected version
-        env:
-          APP_VERSION: ${{ inputs.version_name || '1.0.1' }}
-          APP_VERSION_CODE: ${{ inputs.version_code || github.run_number }}
-        run: |
-          if [[ ! "$APP_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+([.-][A-Za-z0-9.-]+)?$ ]]; then
-            echo "version_name must look like 1.2.3 or 1.2.3-beta."
-            exit 1
-          fi
-          if [[ ! "$APP_VERSION_CODE" =~ ^[1-9][0-9]*$ ]] || (( APP_VERSION_CODE > 2100000000 )); then
-            echo "version_code must be a positive integer no greater than 2100000000."
-            exit 1
-          fi
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 22
+          cache: 'npm'
 
-      - name: Set up Java
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
           distribution: temurin
-          java-version: "17"
+          java-version: '21'
 
-      - name: Install Bubblewrap CLI
-        run: npm install --global @bubblewrap/cli@1.27.0
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-      - name: Configure Android SDK and Bubblewrap
-        run: |
-          # Use GitHub Actions runner's complete pre-installed Android SDK
-          SDK_DIR="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
-          echo "Using Android SDK at: $SDK_DIR"
+      - name: Install dependencies
+        run: npm ci || npm install
 
-          # Export environment variables for all subsequent workflow steps
-          echo "ANDROID_HOME=$SDK_DIR" >> "$GITHUB_ENV"
-          echo "ANDROID_SDK_ROOT=$SDK_DIR" >> "$GITHUB_ENV"
+      - name: Build web application
+        run: npm run build
 
-          # Bubblewrap checks for $SDK_DIR/tools or $SDK_DIR/bin
-          # Ensure cmdline-tools is symlinked to tools and bin so Bubblewrap passes validation
-          if [ -d "$SDK_DIR/cmdline-tools/latest" ]; then
-            CMD_DIR="$SDK_DIR/cmdline-tools/latest"
-          elif [ -d "$SDK_DIR/cmdline-tools" ]; then
-            CMD_DIR=$(find "$SDK_DIR/cmdline-tools" -maxdepth 2 -name "bin" -type d 2>/dev/null | head -n 1 | xargs dirname)
-          fi
+      - name: Sync with Capacitor
+        run: npx cap sync android
 
-          if [ -n "$CMD_DIR" ] && [ -d "$CMD_DIR" ]; then
-            echo "Found cmdline-tools at: $CMD_DIR"
-            echo "$CMD_DIR/bin" >> "$GITHUB_PATH"
-            sudo ln -sf "$CMD_DIR" "$SDK_DIR/tools" 2>/dev/null || ln -sf "$CMD_DIR" "$SDK_DIR/tools" 2>/dev/null || true
-            sudo ln -sf "$CMD_DIR/bin" "$SDK_DIR/bin" 2>/dev/null || ln -sf "$CMD_DIR/bin" "$SDK_DIR/bin" 2>/dev/null || true
-          fi
-
-          # Install Android Platform 36 and Build-Tools 36.1.0 required by Bubblewrap 1.27.0
-          echo "Installing Android SDK Platform 36 and Build-Tools 36.1.0..."
-          yes | "$CMD_DIR/bin/sdkmanager" --install "platforms;android-36" "build-tools;36.1.0" "platforms;android-34" 2>/dev/null || true
-
-          # Accept all Android SDK licenses
-          yes | "$CMD_DIR/bin/sdkmanager" --licenses 2>/dev/null || yes | sdkmanager --licenses 2>/dev/null || true
-
-          # Create non-interactive Bubblewrap configuration
-          mkdir -p "$HOME/.bubblewrap"
-          cat <<EOF > "$HOME/.bubblewrap/config.json"
-          {
-            "jdkPath": "${JAVA_HOME}",
-            "androidSdkPath": "${SDK_DIR}"
-          }
-          EOF
-          echo "Bubblewrap configuration:"
-          cat "$HOME/.bubblewrap/config.json"
-
-      - name: Restore or generate release signing key
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'betulnagar123' }}
-          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD || secrets.ANDROID_KEYSTORE_PASSWORD || 'betulnagar123' }}
-        run: |
-          if [ -f "android/betulnagar-release.keystore" ]; then
-            echo "Using tracked release keystore."
-          elif [[ -n "$ANDROID_KEYSTORE_BASE64" ]]; then
-            printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/betulnagar-release.keystore
-          else
-            echo "Decoding permanent release keystore matching assetlinks.json..."
-            printf '%s' "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" | base64 --decode > android/betulnagar-release.keystore
-          fi
-
-      - name: Set selected app version
-        env:
-          APP_VERSION: ${{ inputs.version_name || '1.0.0' }}
-          APP_VERSION_CODE: ${{ inputs.version_code || github.run_number }}
-        run: |
-          node --input-type=module -e '
-            import fs from "node:fs";
-            const file = "android/twa-manifest.json";
-            const manifest = JSON.parse(fs.readFileSync(file, "utf8"));
-            manifest.appVersion = process.env.APP_VERSION;
-            manifest.appVersionCode = Number(process.env.APP_VERSION_CODE);
-            fs.writeFileSync(file, `${JSON.stringify(manifest, null, 2)}\n`);
-          '
-
-      - name: Generate Android project from TWA configuration
+      - name: Grant execute permission for gradlew
         working-directory: android
-        run: |
-          yes | bubblewrap update --skipVersionUpgrade --manifest=twa-manifest.json
-          
-          # Generate manifest-checksum.txt so bubblewrap build never prompts for user confirmation in CI
-          node -e '
-            const fs = require("fs");
-            const crypto = require("crypto");
-            const sum = crypto.createHash("sha1").update(fs.readFileSync("twa-manifest.json")).digest("hex");
-            fs.writeFileSync("manifest-checksum.txt", sum);
-          '
+        run: chmod +x gradlew
 
-          # Copy keystore to app subfolder and aliases so Gradle resolves it regardless of relative base
-          cp -f betulnagar-release.keystore app/betulnagar-release.keystore 2>/dev/null || true
-          cp -f betulnagar-release.keystore android.keystore 2>/dev/null || true
-          cp -f betulnagar-release.keystore app/android.keystore 2>/dev/null || true
-          
-          # Optimize Gradle memory in project
-          cat <<EOF >> gradle.properties
-          org.gradle.jvmargs=-Xmx3072m -XX:MaxMetaspaceSize=768m -Dfile.encoding=UTF-8
-          android.useAndroidX=true
-          EOF
-
-      - name: Build signed APK and app bundle
+      - name: Build Debug APK
         working-directory: android
-        env:
-          KEYSTORE_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'betulnagar123' }}
-          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD || secrets.ANDROID_KEYSTORE_PASSWORD || 'betulnagar123' }}
-          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'betulnagar123' }}
-          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD || secrets.ANDROID_KEYSTORE_PASSWORD || 'betulnagar123' }}
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Rename & prepare APK
         run: |
-          export BUBBLEWRAP_KEYSTORE_PASSWORD="${KEYSTORE_PASS}"
-          export BUBBLEWRAP_KEY_PASSWORD="${KEY_PASS}"
-
-          echo "Attempting build via Bubblewrap CLI..."
-          yes | bubblewrap build --manifest=twa-manifest.json --signingKeyPath=./betulnagar-release.keystore --signingKeyAlias=betulnagar --skipPwaValidation || true
-
-          # If app-release-signed.apk was not output by bubblewrap, compile and sign via Gradle + apksigner
-          if [ ! -f "app-release-signed.apk" ]; then
-            echo "Running gradlew assembleRelease bundleRelease directly..."
-            ./gradlew assembleRelease bundleRelease --stacktrace
-
-            FOUND_APK=$(find app/build/outputs/apk -type f -name "*.apk" | head -n 1)
-            echo "Found compiled APK: $FOUND_APK"
-
-            BUILD_TOOLS_DIR=$(find "${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}/build-tools" -maxdepth 1 -mindepth 1 -type d | sort -V | tail -n 1)
-            echo "Using Android build-tools from: $BUILD_TOOLS_DIR"
-
-            if [ -n "$FOUND_APK" ] && [ -f "$FOUND_APK" ]; then
-              if [ -f "$BUILD_TOOLS_DIR/zipalign" ]; then
-                "$BUILD_TOOLS_DIR/zipalign" -v -p 4 "$FOUND_APK" app-aligned.apk || cp "$FOUND_APK" app-aligned.apk
-              else
-                cp "$FOUND_APK" app-aligned.apk
-              fi
-
-              if [ -f "$BUILD_TOOLS_DIR/apksigner" ]; then
-                "$BUILD_TOOLS_DIR/apksigner" sign \
-                  --ks ./betulnagar-release.keystore \
-                  --ks-key-alias betulnagar \
-                  --ks-pass "pass:$KEYSTORE_PASS" \
-                  --key-pass "pass:$KEY_PASS" \
-                  --out app-release-signed.apk app-aligned.apk
-                echo "Successfully signed APK with apksigner: app-release-signed.apk"
-              else
-                cp app-aligned.apk app-release-signed.apk
-              fi
-            fi
-          fi
-
-          # If app-release-bundle.aab was not output by bubblewrap, sign it directly using jarsigner
-          if [ ! -f "app-release-bundle.aab" ]; then
-            FOUND_AAB=$(find app/build/outputs/bundle -type f -name "*.aab" | head -n 1)
-            echo "Found compiled bundle: $FOUND_AAB"
-            if [ -n "$FOUND_AAB" ] && [ -f "$FOUND_AAB" ]; then
-              jarsigner -keystore ./betulnagar-release.keystore \
-                -storepass "$KEYSTORE_PASS" -keypass "$KEY_PASS" \
-                "$FOUND_AAB" betulnagar
-              cp "$FOUND_AAB" app-release-bundle.aab
-              echo "Successfully signed AAB with jarsigner: app-release-bundle.aab"
-            fi
-          fi
-
-          # Final verification
-          if [ ! -f "app-release-signed.apk" ]; then
-            echo "ERROR: Could not generate app-release-signed.apk"
-            exit 1
-          fi
-
-          echo "Build completed successfully! Artifacts ready:"
-          ls -lh app-release-signed.apk
-          ls -lh app-release-bundle.aab 2>/dev/null || true
-
-      - name: Generate Digital Asset Links file
-        working-directory: android
-        env:
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD || 'betulnagar123' }}
-        run: |
-          fingerprint=$(keytool -list -v -keystore betulnagar-release.keystore -alias betulnagar -storepass "$ANDROID_KEYSTORE_PASSWORD" | sed -n 's/.*SHA256: //p' | head -n 1 | tr -d '\r')
-          if [[ -z "$fingerprint" ]]; then
-            echo "Could not read the release certificate SHA-256 fingerprint."
-            exit 1
-          fi
-          CERT_FINGERPRINT="$fingerprint" node --input-type=module -e '
-            import fs from "node:fs";
-            const fingerprint = process.env.CERT_FINGERPRINT;
-            const links = [{
-              relation: ["delegate_permission/common.handle_all_urls"],
-              target: {
-                namespace: "android_app",
-                package_name: "com.company.betul",
-                sha256_cert_fingerprints: [fingerprint]
-              }
-            }];
-            fs.writeFileSync("assetlinks.json", `${JSON.stringify(links, null, 2)}\n`);
-          '
+          mkdir -p release-output
+          cp android/app/build/outputs/apk/debug/app-debug.apk release-output/Betul-311-Staff-v${{ inputs.version_name || '1.0.0' }}.apk
 
       - name: Upload build artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: betul-android-release-${{ inputs.version_name || '1.0.0' }}
-          path: |
-            android/app-release-signed.apk
-            android/app-release-bundle.aab
-            android/assetlinks.json
+          name: Betul-311-Staff-APK
+          path: release-output/*.apk
 
       - name: Publish GitHub Release
-        if: github.event_name == 'workflow_dispatch' || startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/main'
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: betul-v${{ inputs.version_name || '1.0.1' }}
-          target_commitish: ${{ github.sha }}
-          name: Betul Nagar Android ${{ inputs.version_name || '1.0.1' }}
+          tag_name: ${{ github.ref_name || format('v{0}', inputs.version_name || '1.0.0') }}
+          name: Betul 311 Staff & Municipal Citizen App ${{ inputs.version_name || github.ref_name }}
+          files: release-output/*.apk
           generate_release_notes: true
-          overwrite_files: true
-          files: |
-            android/app-release-signed.apk
-            android/app-release-bundle.aab
-            android/assetlinks.json
+          make_latest: true
