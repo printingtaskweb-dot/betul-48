@@ -48,6 +48,11 @@ export function getTier(
 ): number {
   const code = (hierarchyCode || authorityRole || role || '').toLowerCase().trim();
 
+  // Tier -1: Platform Owner (Technical & Tenant Admin)
+  if (code === 'platform_owner' || code === 'super_admin') {
+    return -1;
+  }
+
   // Tier 0: Municipal / Organisation Head & Platform Admin
   if (
     code === 'admin' ||
@@ -59,8 +64,14 @@ export function getTier(
     return 0;
   }
 
-  // Tier 1: Deputy Commissioner
-  if (code === 'deputy_commissioner' || code.includes('deputy_comm')) {
+  // Tier 1: Deputy Commissioner & Verification Officer
+  if (
+    code === 'deputy_commissioner' ||
+    code.includes('deputy_comm') ||
+    code === 'verification_officer' ||
+    code === 'verifier' ||
+    code === 'appeals_officer'
+  ) {
     return 1;
   }
 
@@ -69,13 +80,14 @@ export function getTier(
     return 2;
   }
 
-  // Tier 3: Area Officer
+  // Tier 3: Area Officer & Control Room
   if (
     code === 'area_officer' ||
     code.includes('area_officer') ||
     code.includes('zone_officer') ||
     code.includes('ward_officer') ||
-    code === 'area_inspector'
+    code === 'area_inspector' ||
+    code === 'control_room'
   ) {
     return 3;
   }
@@ -96,7 +108,12 @@ export function getTier(
     return 5;
   }
 
-  return 6;
+  // Tier 6: Management Viewer / Observer
+  if (code === 'management_viewer' || code === 'viewer' || code === 'observer') {
+    return 6;
+  }
+
+  return 7;
 }
 
 export const FLOW_STEPS = [0, 1, 2, 3, 4, 5];
@@ -105,6 +122,13 @@ export const TIER_LABEL: Record<
   number,
   { en: string; hi: string; short: string; badgeColor: string; icon: string }
 > = {
+  '-1': {
+    en: 'Platform Owner',
+    hi: 'प्लेटफ़ॉर्म स्वामी',
+    short: 'Platform Owner',
+    badgeColor: '#4f46e5',
+    icon: 'settings_suggest',
+  },
   0: {
     en: 'Municipal / Organisation Head',
     hi: 'नगर पालिका / संगठन प्रमुख',
@@ -113,9 +137,9 @@ export const TIER_LABEL: Record<
     icon: 'admin_panel_settings',
   },
   1: {
-    en: 'Deputy Commissioner',
-    hi: 'उपायुक्त (डिप्टी कमिश्नर)',
-    short: 'Deputy Comm.',
+    en: 'Deputy Commissioner / Verifier',
+    hi: 'उपायुक्त / सत्यापन अधिकारी',
+    short: 'Deputy / Verifier',
     badgeColor: '#7c2d12',
     icon: 'account_balance',
   },
@@ -127,9 +151,9 @@ export const TIER_LABEL: Record<
     icon: 'apartment',
   },
   3: {
-    en: 'Area Officer',
-    hi: 'क्षेत्र अधिकारी',
-    short: 'Area Officer',
+    en: 'Area Officer / Control Room',
+    hi: 'क्षेत्र / कंट्रोल रूम अधिकारी',
+    short: 'Area / Control Room',
     badgeColor: '#065f46',
     icon: 'pin_drop',
   },
@@ -141,24 +165,31 @@ export const TIER_LABEL: Record<
     icon: 'engineering',
   },
   5: {
-    en: 'Operational Staff',
+    en: 'Operational Staff / Field Worker',
     hi: 'परिचालन / मैदानी कर्मचारी',
     short: 'Field Worker',
     badgeColor: '#374151',
     icon: 'construction',
   },
   6: {
-    en: 'View Only / Citizen',
-    hi: 'केवल दर्शक / नागरिक',
+    en: 'Management Viewer',
+    hi: 'प्रबंधन दर्शक',
     short: 'Viewer',
-    badgeColor: '#6b7280',
+    badgeColor: '#64748b',
+    icon: 'visibility',
+  },
+  7: {
+    en: 'Citizen',
+    hi: 'नागरिक',
+    short: 'Citizen',
+    badgeColor: '#14b8a6',
     icon: 'person',
   },
 };
 
 export function roleLabel(role: string | null | undefined, language: 'en' | 'hi') {
   const tier = getTier(role);
-  return TIER_LABEL[tier][language];
+  return (TIER_LABEL[tier] || TIER_LABEL[7])[language];
 }
 
 interface ComplaintLike {

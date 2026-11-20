@@ -4,6 +4,7 @@ import { card, field, primaryBtn } from '../styles';
 import { BORDER } from '../constants';
 import { isDone } from '../utils/statusStyle';
 import { canAllotComplaint } from '../../../../lib/hierarchy';
+import { maskPhoneNumber } from '../../../../lib/roleDefinitions';
 import type { StaffMember, Viewer } from '../../../../lib/hierarchy';
 import type { Ward } from '../../../../lib/wardTypes';
 import type { ComplaintRecord } from '../types';
@@ -74,7 +75,7 @@ export const ComplaintDetailModal: React.FC<Props> = ({
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 8, fontSize: '0.8rem' }}>
           <div><b>Citizen:</b> {detail.citizen_name || 'Anonymous'}</div>
-          <div><b>Phone:</b> {detail.citizen_phone || 'N/A'}</div>
+          <div><b>Phone:</b> {viewer.role === 'management_viewer' ? maskPhoneNumber(detail.citizen_phone) : (detail.citizen_phone || 'N/A')}</div>
           <div><b>Department:</b> {detail.department?.name || 'N/A'}</div>
           <div>
             <b>Status:</b>{' '}

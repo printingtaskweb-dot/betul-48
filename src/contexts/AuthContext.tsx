@@ -16,6 +16,11 @@ export interface UserProfile {
   assigned_ward_id?: string | null;
   authority_role?: string | null;
   hierarchy_code?: string | null;
+  city_id?: string | null;
+  can_export_data?: boolean;
+  is_available?: boolean;
+  unavailability_reason?: string | null;
+  last_sync_at?: string | null;
 }
 
 interface AuthContextType {

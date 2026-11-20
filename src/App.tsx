@@ -19,9 +19,12 @@ const CitizenCallbackPage = lazy(() => import('./pages/CitizenCallbackPage'));
 const GreenDepartmentPage = lazy(() => import('./pages/GreenDepartmentPage').then((module) => ({ default: module.GreenDepartmentPage })));
 const DeptLogin = lazy(() => import('./pages/DeptLogin'));
 const DeptDashboard = lazy(() => import('./pages/DeptDashboard'));
+const ControlRoomDashboard = lazy(() => import('./pages/ControlRoomDashboard'));
+const VerifierDashboard = lazy(() => import('./pages/VerifierDashboard'));
 const AdminLogin = lazy(() => import('./pages/admin/AdminLogin').then((module) => ({ default: module.AdminLogin })));
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then((module) => ({ default: module.AdminDashboard })));
 const MunicipalAdministratorDashboard = lazy(() => import('./pages/admin/MunicipalAdministratorDashboard'));
+const PlatformOwnerDashboard = lazy(() => import('./pages/admin/PlatformOwnerDashboard'));
 const FCMRegistrar = lazy(() => import('./components/FCMRegistrar').then((module) => ({ default: module.FCMRegistrar })));
 const NotificationPrompt = lazy(() => import('./components/NotificationPrompt').then((module) => ({ default: module.NotificationPrompt })));
 
@@ -174,11 +177,14 @@ const AppRoutes: React.FC = () => (
     {/* Department Portal (staff login + dashboard) */}
     <Route path="/dept/login" element={<DeptLogin />} />
     <Route path="/dept/dashboard" element={<DeptDashboard />} />
+    <Route path="/control-room" element={<ControlRoomDashboard />} />
+    <Route path="/verifier" element={<VerifierDashboard />} />
 
     {/* Admin routes */}
     <Route path="/admin" element={<AdminLogin />} />
     <Route path="/admin/dashboard" element={<AdminDashboard />} />
     <Route path="/municipal/dashboard" element={<MunicipalAdministratorDashboard />} />
+    <Route path="/platform/dashboard" element={<PlatformOwnerDashboard />} />
 
     {/* Fallback */}
     <Route path="*" element={<Navigate to="/" replace />} />
