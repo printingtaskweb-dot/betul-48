@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   User,
   Phone,
@@ -22,6 +22,7 @@ import {
   Plus,
   MapPin,
   Camera,
+  ArrowRight,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -62,7 +63,7 @@ function formatDate(iso: string, lang: 'en' | 'hi') {
 
 /* ─── Component ─── */
 export const ProfilePage: React.FC = () => {
-  const { user, profile, language, setLanguage, refreshProfile, signOut, loading: authLoading } = useAuth();
+  const { user, profile, isAdmin, language, setLanguage, refreshProfile, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { permission, loading: fcmLoading, requestPermission } = useFCM(user?.id ?? null);
 
@@ -372,6 +373,32 @@ export const ProfilePage: React.FC = () => {
               <div className="text-[11px] font-semibold text-slate-500">{language === 'hi' ? 'दृश्य' : 'Views'}</div>
             </div>
           </div>
+
+          {/* Admin Dashboard Entry Card (Strictly visible ONLY to logged-in Admins on their Profile) */}
+          {isAdmin && (
+            <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-orange-500 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm sm:text-base leading-tight">
+                    {language === 'hi' ? 'नगर पालिका एडमिन कंट्रोल रूम' : 'Municipal Administrator Console'}
+                  </h3>
+                  <p className="text-xs text-amber-100 mt-1">
+                    {language === 'hi' ? 'वार्ड मैपिंग, अधिकारी आवंटन एवं शिकायत मॉनिटरिंग' : 'Ward boundary mapping, officer management & city grievance control'}
+                  </p>
+                </div>
+              </div>
+              <Link
+                to="/admin/dashboard"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-amber-800 font-extrabold text-xs shadow-xs hover:bg-amber-50 active:scale-95 transition shrink-0"
+              >
+                <span>{language === 'hi' ? 'डैशबोर्ड खोलें' : 'Open Admin Console'}</span>
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* ── Modern Navigation Tabs ── */}

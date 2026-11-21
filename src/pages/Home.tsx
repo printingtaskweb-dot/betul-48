@@ -105,7 +105,7 @@ const SAMPLE_TICKETS: Record<string, TrackedTicket> = {
 };
 
 export const Home: React.FC = () => {
-  const { language, setLanguage, user, profile, isAdmin } = useAuth();
+  const { language, setLanguage, user, profile } = useAuth();
   const navigate = useNavigate();
 
   // Search State
@@ -279,17 +279,6 @@ export const Home: React.FC = () => {
 
           {/* Right Controls: Translator (Icon Only) & Profile */}
           <div className="flex items-center gap-2 shrink-0">
-            {isAdmin && (
-              <Link
-                to="/admin/dashboard"
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-white font-bold text-xs shadow-2xs hover:shadow active:scale-95 transition"
-                title={language === 'hi' ? 'एडमिन डैशबोर्ड' : 'Admin Dashboard'}
-              >
-                <ShieldCheck className="w-3.5 h-3.5" />
-                <span>{language === 'hi' ? 'एडमिन' : 'Admin'}</span>
-              </Link>
-            )}
-
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('betul:open-notifications'))}
@@ -335,31 +324,7 @@ export const Home: React.FC = () => {
       {/* ===================================================================== */}
       {/* 2. HERO SECTION (Clean Typography + Framed Civic Photography)         */}
       {/* ===================================================================== */}
-      <main id="top" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4 sm:pt-8 space-y-6 sm:space-y-10">
-        {/* Mobile Admin Command Button Banner (Only visible to Admin on mobile view) */}
-        {isAdmin && (
-          <div className="lg:hidden p-3.5 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-orange-500 text-white flex items-center justify-between shadow-md">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center font-bold">
-                <ShieldCheck className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <p className="text-xs font-bold leading-tight">
-                  {language === 'hi' ? 'एडमिन कमांड सेंटर' : 'Admin Command Center'}
-                </p>
-                <p className="text-[10px] text-amber-100">
-                  {language === 'hi' ? 'वार्ड परिसीमन मैपिंग व शिकायत प्रबंधन' : 'Ward maps, staff tracking & complaints'}
-                </p>
-              </div>
-            </div>
-            <Link
-              to="/admin/dashboard"
-              className="px-3 py-1.5 rounded-lg bg-white text-amber-800 font-extrabold text-xs shadow-xs active:scale-95 transition shrink-0"
-            >
-              {language === 'hi' ? 'प्रवेश करें →' : 'Open →'}
-            </Link>
-          </div>
-        )}
+      <main id="top" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 space-y-8 sm:space-y-10">
         <section className="relative rounded-3xl bg-white border border-sand-200 p-6 sm:p-8 lg:p-10 shadow-soft overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             {/* Left 7 Columns: Headline, Search Bar & Two Primary Action Cards */}

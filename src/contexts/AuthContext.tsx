@@ -61,8 +61,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         if (data.is_admin || ['admin', 'municipal_administrator', 'platform_owner', 'super_admin'].includes(r)) {
           sessionStorage.setItem('imc_admin', '1');
           localStorage.setItem('imc_admin', '1');
+        } else {
+          sessionStorage.removeItem('imc_admin');
+          localStorage.removeItem('imc_admin');
         }
         if (data.language) setLanguageState(data.language);
+      } else {
+        sessionStorage.removeItem('imc_admin');
+        localStorage.removeItem('imc_admin');
       }
     } catch {
       // fallback
@@ -75,6 +81,9 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       setUser(session?.user ?? null);
       if (session?.user) {
         await fetchProfile(session.user.id);
+      } else {
+        sessionStorage.removeItem('imc_admin');
+        localStorage.removeItem('imc_admin');
       }
       setLoading(false);
     }).catch((err) => {
@@ -88,6 +97,8 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       if (session?.user) {
         await fetchProfile(session.user.id);
       } else {
+        sessionStorage.removeItem('imc_admin');
+        localStorage.removeItem('imc_admin');
         setProfile(null);
       }
       setLoading(false);
@@ -117,12 +128,12 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const userEmail = user?.email?.toLowerCase();
   const userRole = (profile?.role || (user?.user_metadata as any)?.role || '')?.toLowerCase();
   const isAdmin = Boolean(
-    profile?.is_admin === true ||
-    (user?.user_metadata as any)?.is_admin === true ||
-    ['admin', 'municipal_administrator', 'platform_owner', 'super_admin'].includes(userRole) ||
-    (userEmail && DESIGNATED_ADMIN_EMAILS.includes(userEmail)) ||
-    sessionStorage.getItem('imc_admin') === '1' ||
-    localStorage.getItem('imc_admin') === '1'
+    user && (
+      profile?.is_admin === true ||
+      (user?.user_metadata as any)?.is_admin === true ||
+      ['admin', 'municipal_administrator', 'platform_owner', 'super_admin'].includes(userRole) ||
+      (userEmail && DESIGNATED_ADMIN_EMAILS.includes(userEmail))
+    )
   );
 
   return (

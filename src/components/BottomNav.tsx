@@ -1,10 +1,10 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, Newspaper, Plus, Search, User, Briefcase, ShieldCheck } from 'lucide-react';
+import { Home, Newspaper, Plus, Search, User, Briefcase } from 'lucide-react';
 
 export const BottomNav: React.FC = () => {
-  const { language, user, profile, isAdmin } = useAuth();
+  const { language, user, profile } = useAuth();
   const location = useLocation();
   const path = location.pathname;
 
@@ -58,19 +58,7 @@ export const BottomNav: React.FC = () => {
           </Link>
         </div>
 
-        {isAdmin ? (
-          <Link
-            to="/admin/dashboard"
-            className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
-              path.startsWith('/admin')
-                ? 'text-amber-700 bg-amber-50 font-bold'
-                : 'text-slate-500 hover:text-amber-700 font-medium'
-            }`}
-          >
-            <ShieldCheck className="w-4 h-4 mb-0.5 text-amber-600" />
-            <span>{language === 'hi' ? 'एडमिन' : 'Admin'}</span>
-          </Link>
-        ) : isStaff ? (
+        {isStaff ? (
           <Link
             to="/dept/dashboard"
             className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
