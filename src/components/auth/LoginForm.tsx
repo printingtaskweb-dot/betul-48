@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { useAuth } from '../../contexts/AuthContext';
 import { t } from '../../lib/i18n';
 import { FormInput } from './FormInput';
 import { PasswordInput } from './PasswordInput';
@@ -19,6 +20,7 @@ interface Props {
 
 export const LoginForm: React.FC<Props> = ({ language }) => {
   const navigate = useNavigate();
+  const { refreshProfile } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
@@ -59,13 +61,17 @@ export const LoginForm: React.FC<Props> = ({ language }) => {
           .eq('id', data.user.id)
           .maybeSingle();
 
+        const role = (profile?.role || (data.user.user_metadata as any)?.role || '')?.toLowerCase();
         const isAdmin =
           profile?.is_admin === true ||
-          profile?.role === 'admin' ||
-          profile?.role === 'municipal_administrator' ||
+          (data.user.user_metadata as any)?.is_admin === true ||
+          ['admin', 'municipal_administrator', 'platform_owner', 'super_admin'].includes(role) ||
           cleanEmail === 'ouikey41@gmail.com';
 
         if (isAdmin) {
+          sessionStorage.setItem('imc_admin', '1');
+          localStorage.setItem('imc_admin', '1');
+          await refreshProfile();
           navigate('/admin/dashboard', { replace: true });
           setLoading(false);
           return;

@@ -125,9 +125,29 @@ async function handlePositionUpdate(pos: Position | GeolocationPosition, ward: W
 
   notifyListeners();
 
-  // If newly stepped outside allocated zone, trigger alert
+  // If newly stepped outside allocated zone, trigger alert & log to database
   if (isOutside && !previousOutside) {
     await triggerGeofenceAlert(ward.name, distance, ward.departmentName);
+
+    try {
+      const { data: authData } = await supabase.auth.getUser();
+      if (authData?.user) {
+        await supabase.from('staff_geofence_alerts').insert({
+          staff_id: authData.user.id,
+          ward_id: ward.id,
+          ward_name: ward.name,
+          department_name: ward.departmentName || null,
+          latitude: lat,
+          longitude: lng,
+          distance_meters: distance,
+          alert_type: 'boundary_breach',
+          status: 'active',
+          created_at: new Date().toISOString(),
+        });
+      }
+    } catch (alertErr) {
+      console.debug('Failed to record staff geofence alert:', alertErr);
+    }
   }
 
   // Persist location breadcrumb & breach status to Supabase

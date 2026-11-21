@@ -1291,12 +1291,18 @@ export const AdminDashboard: React.FC = () => {
     }
   }, [mobileMenuOpen]);
 
+  const isAuthorizedAdmin = Boolean(
+    isAdmin ||
+    sessionStorage.getItem('imc_admin') === '1' ||
+    localStorage.getItem('imc_admin') === '1'
+  );
+
   // Auth guard
   useEffect(() => {
-    if (!authLoading && (!user || !isAdmin)) {
+    if (!authLoading && (!user || !isAuthorizedAdmin)) {
       navigate('/admin', { replace: true });
     }
-  }, [user, isAdmin, authLoading, navigate]);
+  }, [user, isAuthorizedAdmin, authLoading, navigate]);
 
   const handleLogout = async () => {
     await signOut();
@@ -1316,7 +1322,7 @@ export const AdminDashboard: React.FC = () => {
     );
   }
 
-  if (!user || !isAdmin) return null;
+  if (!user || !isAuthorizedAdmin) return null;
 
   if (loading && departments.length === 0) {
     return (

@@ -54,9 +54,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         .from('user_profiles')
         .select('*')
         .eq('id', userId)
-        .single();
+        .maybeSingle();
       if (data) {
         setProfile(data);
+        const r = (data.role || '').toLowerCase();
+        if (data.is_admin || ['admin', 'municipal_administrator', 'platform_owner', 'super_admin'].includes(r)) {
+          sessionStorage.setItem('imc_admin', '1');
+          localStorage.setItem('imc_admin', '1');
+        }
         if (data.language) setLanguageState(data.language);
       }
     } catch {
@@ -65,21 +70,27 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
+      if (session?.user) {
+        await fetchProfile(session.user.id);
+      }
       setLoading(false);
     }).catch((err) => {
       console.warn('Auth session fetch error:', err);
       setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      if (session?.user) fetchProfile(session.user.id);
-      else { setProfile(null); setLoading(false); }
+      if (session?.user) {
+        await fetchProfile(session.user.id);
+      } else {
+        setProfile(null);
+      }
+      setLoading(false);
     });
 
     return () => subscription.unsubscribe();
@@ -93,7 +104,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   const signOut = async () => {
     await supabase.auth.signOut();
     sessionStorage.removeItem('imc_admin');
+    localStorage.removeItem('imc_admin');
     setProfile(null);
+    setUser(null);
+    setSession(null);
   };
 
   const refreshProfile = async () => {
@@ -101,10 +115,14 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   const userEmail = user?.email?.toLowerCase();
+  const userRole = (profile?.role || (user?.user_metadata as any)?.role || '')?.toLowerCase();
   const isAdmin = Boolean(
     profile?.is_admin === true ||
+    (user?.user_metadata as any)?.is_admin === true ||
+    ['admin', 'municipal_administrator', 'platform_owner', 'super_admin'].includes(userRole) ||
     (userEmail && DESIGNATED_ADMIN_EMAILS.includes(userEmail)) ||
-    sessionStorage.getItem('imc_admin') === '1'
+    sessionStorage.getItem('imc_admin') === '1' ||
+    localStorage.getItem('imc_admin') === '1'
   );
 
   return (

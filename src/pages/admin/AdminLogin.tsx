@@ -48,15 +48,22 @@ export const AdminLogin: React.FC = () => {
           .eq('id', data.user.id)
           .maybeSingle();
 
+        const role = (prof?.role || (data.user.user_metadata as any)?.role || '')?.toLowerCase();
         const isUserAdmin =
           prof?.is_admin === true ||
-          prof?.role === 'admin' ||
-          prof?.role === 'municipal_administrator' ||
+          (data.user.user_metadata as any)?.is_admin === true ||
+          ['admin', 'municipal_administrator', 'platform_owner', 'super_admin'].includes(role) ||
           cleanEmail === 'ouikey41@gmail.com';
 
-        if (isUserAdmin) {
-          sessionStorage.setItem('imc_admin', '1');
+        if (!isUserAdmin) {
+          setError(
+            'Access Denied: This account is authenticated but does not have the Administrator role. Run the provided SQL update command in Supabase to grant is_admin = true.'
+          );
+          return;
         }
+
+        sessionStorage.setItem('imc_admin', '1');
+        localStorage.setItem('imc_admin', '1');
 
         await refreshProfile();
         navigate('/admin/dashboard', { replace: true });
