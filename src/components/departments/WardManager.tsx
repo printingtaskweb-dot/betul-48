@@ -84,6 +84,15 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
 
   const [viewMode, setViewMode] = useState<'polygon_map' | 'directory'>('polygon_map');
   const [wards, setWards] = useState<Ward[]>([]);
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  );
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -265,20 +274,24 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
           style={{
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'center',
             gap: 6,
-            padding: '8px 16px',
+            padding: isMobile ? '8px 10px' : '8px 16px',
             borderRadius: 8,
             border: 'none',
             fontWeight: 800,
-            fontSize: '0.84rem',
+            fontSize: isMobile ? '0.76rem' : '0.84rem',
             cursor: 'pointer',
+            flex: isMobile ? '1 1 calc(50% - 4px)' : 'none',
             background: viewMode === 'polygon_map' ? PRIMARY : '#f1f5f9',
             color: viewMode === 'polygon_map' ? '#fff' : '#475569',
             boxShadow: viewMode === 'polygon_map' ? '0 2px 6px rgba(20,108,148,0.25)' : 'none',
           }}
         >
           <Map size={15} />
-          {hi ? '🗺️ ओपनस्ट्रीटमैप सीमा और स्टाफ अलर्ट' : '🗺️ OpenStreetMap Boundary & Staff Tracking'}
+          {isMobile
+            ? (hi ? '🗺️ सीमा मानचित्र' : '🗺️ Map & Alerts')
+            : (hi ? '🗺️ ओपनस्ट्रीटमैप सीमा और स्टाफ अलर्ट' : '🗺️ OpenStreetMap Boundary & Staff Tracking')}
         </button>
 
         <button
@@ -286,13 +299,15 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
           style={{
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'center',
             gap: 6,
-            padding: '8px 16px',
+            padding: isMobile ? '8px 10px' : '8px 16px',
             borderRadius: 8,
             border: 'none',
             fontWeight: 800,
-            fontSize: '0.84rem',
+            fontSize: isMobile ? '0.76rem' : '0.84rem',
             cursor: 'pointer',
+            flex: isMobile ? '1 1 calc(50% - 4px)' : 'none',
             background: viewMode === 'directory' ? PRIMARY : '#f1f5f9',
             color: viewMode === 'directory' ? '#fff' : '#475569',
             boxShadow: viewMode === 'directory' ? '0 2px 6px rgba(20,108,148,0.25)' : 'none',
@@ -462,7 +477,7 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
           style={{
             position: 'fixed', inset: 0, zIndex: 1200,
             background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(3px)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16,
+            display: 'flex', alignItems: isMobile ? 'flex-end' : 'center', justifyContent: 'center', padding: isMobile ? 0 : 16,
           }}
           onClick={(e) => {
             if (e.target === e.currentTarget) {
@@ -471,7 +486,15 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
             }
           }}
         >
-          <div style={{ ...card, width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto', padding: 0 }}>
+          <div style={{
+            ...card,
+            width: '100%',
+            maxWidth: 560,
+            maxHeight: isMobile ? '88vh' : '90vh',
+            borderRadius: isMobile ? '16px 16px 0 0' : 'var(--radius-lg, 12px)',
+            overflowY: 'auto',
+            padding: 0
+          }}>
             <div
               style={{
                 background: 'var(--header-gradient, linear-gradient(135deg, #0E526F, #146C94, #0E526F))',
@@ -498,7 +521,7 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
               </button>
             </div>
 
-            <div style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+            <div style={{ padding: isMobile ? '14px 12px' : '18px 20px', display: 'flex', flexDirection: 'column', gap: 14 }}>
               {/* GPS capture */}
               <div>
                 <button
@@ -577,7 +600,7 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
               </div>
 
               {/* Fields */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 2fr', gap: 10 }}>
                 <label style={{ fontSize: '0.78rem', fontWeight: 700 }}>
                   {hi ? 'वार्ड नंबर *' : 'Ward Number *'}
                   <input
@@ -612,7 +635,7 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
                 />
               </label>
 
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 10 }}>
                 <label style={{ fontSize: '0.78rem', fontWeight: 700 }}>
                   {hi ? 'त्रिज्या (मीटर)' : 'Radius (meters)'}
                   <input

@@ -79,6 +79,28 @@ export const WardPolygonMap: React.FC<WardPolygonMapProps> = ({
   // Selected Ward for Detail Preview
   const [selectedWard, setSelectedWard] = useState<Ward | null>(null);
 
+  // Responsive state
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < 768 : false
+  );
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+      mapInstanceRef.current?.invalidateSize();
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Invalidate map size on mode switch or mobile change
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      mapInstanceRef.current?.invalidateSize();
+    }, 150);
+    return () => clearTimeout(timer);
+  }, [isDrawing, isMobile]);
+
   // New Ward Form State
   const [wardForm, setWardForm] = useState({
     wardNumber: '',
@@ -490,14 +512,14 @@ export const WardPolygonMap: React.FC<WardPolygonMapProps> = ({
       )}
 
       {/* Main Grid: Map + Side Panel */}
-      <div style={{ display: 'grid', gridTemplateColumns: isDrawing ? '1fr 380px' : '1fr', gap: 16 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : (isDrawing ? '1fr 380px' : '1fr'), gap: 16 }}>
         {/* Map Container */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           {isDrawing && (
             <div style={{
               background: '#0f172a',
               color: '#fff',
-              padding: '10px 14px',
+              padding: isMobile ? '8px 10px' : '10px 14px',
               borderRadius: 10,
               display: 'flex',
               alignItems: 'center',
@@ -506,17 +528,24 @@ export const WardPolygonMap: React.FC<WardPolygonMapProps> = ({
               gap: 8,
               fontSize: '0.82rem',
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span style={{ background: '#38bdf8', color: '#0f172a', padding: '3px 8px', borderRadius: 6, fontWeight: 900 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, width: isMobile ? '100%' : 'auto' }}>
+                <span style={{ background: '#38bdf8', color: '#0f172a', padding: '3px 8px', borderRadius: 6, fontWeight: 900, fontSize: '0.74rem' }}>
                   STEP 1
                 </span>
-                <span>Click directly on the OpenStreetMap or use GPS to place boundary corners.</span>
+                <span style={{ fontSize: isMobile ? '0.75rem' : '0.82rem' }}>
+                  {isHindi ? 'मानचित्र पर क्लिक करें या GPS से कोने जोड़ें।' : 'Click map or use GPS to add corners.'}
+                </span>
               </div>
-              <div style={{ display: 'flex', gap: 8 }}>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', width: isMobile ? '100%' : 'auto' }}>
                 {!isGpsTracking ? (
                   <button
                     onClick={startGpsTracking}
-                    style={{ background: '#3b82f6', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}
+                    style={{
+                      background: '#3b82f6', color: '#fff', border: 'none', padding: '7px 12px',
+                      borderRadius: 6, cursor: 'pointer', fontWeight: 700, display: 'flex',
+                      alignItems: 'center', justifyContent: 'center', gap: 6,
+                      flex: isMobile ? '1 1 calc(50% - 6px)' : 'none', fontSize: '0.78rem'
+                    }}
                   >
                     <Compass size={14} /> Start GPS
                   </button>
@@ -524,13 +553,22 @@ export const WardPolygonMap: React.FC<WardPolygonMapProps> = ({
                   <>
                     <button
                       onClick={addCurrentGpsCorner}
-                      style={{ background: '#10b981', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6 }}
+                      style={{
+                        background: '#10b981', color: '#fff', border: 'none', padding: '7px 12px',
+                        borderRadius: 6, cursor: 'pointer', fontWeight: 700, display: 'flex',
+                        alignItems: 'center', justifyContent: 'center', gap: 6,
+                        flex: isMobile ? '1 1 calc(50% - 6px)' : 'none', fontSize: '0.78rem'
+                      }}
                     >
                       <Crosshair size={14} /> Add GPS Corner
                     </button>
                     <button
                       onClick={stopGpsTracking}
-                      style={{ background: '#64748b', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', fontWeight: 700 }}
+                      style={{
+                        background: '#64748b', color: '#fff', border: 'none', padding: '7px 12px',
+                        borderRadius: 6, cursor: 'pointer', fontWeight: 700,
+                        flex: isMobile ? '1 1 calc(50% - 6px)' : 'none', fontSize: '0.78rem'
+                      }}
                     >
                       Stop GPS
                     </button>
@@ -539,13 +577,22 @@ export const WardPolygonMap: React.FC<WardPolygonMapProps> = ({
                 <button
                   onClick={finishBoundary}
                   disabled={corners.length < 3}
-                  style={{ background: corners.length >= 3 ? '#10b981' : '#475569', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: 6, cursor: corners.length >= 3 ? 'pointer' : 'not-allowed', fontWeight: 700 }}
+                  style={{
+                    background: corners.length >= 3 ? '#10b981' : '#475569', color: '#fff', border: 'none',
+                    padding: '7px 12px', borderRadius: 6, cursor: corners.length >= 3 ? 'pointer' : 'not-allowed',
+                    fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
+                    flex: isMobile ? '1 1 calc(50% - 6px)' : 'none', fontSize: '0.78rem'
+                  }}
                 >
-                  <Check size={14} style={{ display: 'inline', marginRight: 4 }} /> Finish Boundary
+                  <Check size={14} /> Finish Boundary
                 </button>
                 <button
                   onClick={resetDrawing}
-                  style={{ background: '#ef4444', color: '#fff', border: 'none', padding: '6px 10px', borderRadius: 6, cursor: 'pointer', fontWeight: 700 }}
+                  style={{
+                    background: '#ef4444', color: '#fff', border: 'none', padding: '7px 10px',
+                    borderRadius: 6, cursor: 'pointer', fontWeight: 700,
+                    flex: isMobile ? '1 1 calc(50% - 6px)' : 'none', fontSize: '0.78rem'
+                  }}
                 >
                   Reset
                 </button>
@@ -557,7 +604,7 @@ export const WardPolygonMap: React.FC<WardPolygonMapProps> = ({
           <div
             ref={mapContainerRef}
             style={{
-              height: isDrawing ? 480 : 540,
+              height: isMobile ? (isDrawing ? 320 : 380) : (isDrawing ? 480 : 540),
               width: '100%',
               borderRadius: 14,
               border: '1.5px solid #cbd5e1',
@@ -585,12 +632,12 @@ export const WardPolygonMap: React.FC<WardPolygonMapProps> = ({
             background: '#ffffff',
             borderRadius: 14,
             border: '1.5px solid #cbd5e1',
-            padding: 18,
+            padding: isMobile ? '14px 12px' : 18,
             display: 'flex',
             flexDirection: 'column',
-            gap: 14,
-            maxHeight: 560,
-            overflowY: 'auto',
+            gap: 12,
+            maxHeight: isMobile ? 'none' : 560,
+            overflowY: isMobile ? 'visible' : 'auto',
             boxShadow: '0 4px 12px rgba(0,0,0,0.06)',
           }}>
             <div style={{ borderBottom: '1px solid #f1f5f9', paddingBottom: 10 }}>
@@ -622,7 +669,7 @@ export const WardPolygonMap: React.FC<WardPolygonMapProps> = ({
 
             {/* Form */}
             <form onSubmit={handleSaveWard} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 8 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 2fr', gap: 8 }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#475569', marginBottom: 3 }}>Ward # *</label>
                   <input
@@ -691,7 +738,7 @@ export const WardPolygonMap: React.FC<WardPolygonMapProps> = ({
               </div>
 
               {/* Pincode & Description */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 8 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 2fr', gap: 8 }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 700, color: '#475569', marginBottom: 3 }}>Pincode</label>
                   <input
