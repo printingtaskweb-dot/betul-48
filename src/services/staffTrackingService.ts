@@ -2,6 +2,7 @@ import { Capacitor } from '@capacitor/core';
 import { Geolocation, type Position } from '@capacitor/geolocation';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { supabase } from '../lib/supabase';
+import { isPointInPolygon } from '../lib/wardTypes';
 
 export interface WardArea {
   id: string;
@@ -9,6 +10,8 @@ export interface WardArea {
   centerLat: number;
   centerLng: number;
   radiusMeters: number; // e.g. 1500 meters (1.5 km)
+  boundaryCoords?: [number, number][] | null;
+  departmentName?: string | null;
 }
 
 export interface StaffTrackingState {
@@ -59,28 +62,33 @@ export function calculateDistanceMeters(
 }
 
 /**
- * Trigger an instant high-priority native notification if outside assigned ward
+ * Trigger an instant high-priority native notification if outside assigned ward or department boundary
  */
-async function triggerGeofenceAlert(wardName: string, distanceMeters: number) {
+async function triggerGeofenceAlert(wardName: string, distanceMeters: number, deptName?: string | null) {
   try {
+    const alertTitle = '⚠️ Duty Boundary Breach Alert';
+    const alertBody = deptName
+      ? `You have stepped outside the operational boundary for ${wardName} (${deptName}). Please return to your assigned sector immediately.`
+      : `You are outside your assigned duty area for ${wardName}. Please return to your operational sector immediately.`;
+
     if (Capacitor.isNativePlatform()) {
       await LocalNotifications.requestPermissions();
       await LocalNotifications.schedule({
         notifications: [
           {
             id: 9901,
-            title: '⚠️ Duty Area Breach Alert',
-            body: `You are ${distanceMeters}m away from your assigned area (${wardName}). Please return to your operational sector immediately.`,
+            title: alertTitle,
+            body: alertBody,
             schedule: { at: new Date(Date.now() + 200) },
             sound: 'beep.wav',
             actionTypeId: '',
-            extra: { wardName, distanceMeters },
+            extra: { wardName, distanceMeters, deptName },
           },
         ],
       });
     } else if ('Notification' in window && Notification.permission === 'granted') {
-      new Notification('⚠️ Duty Area Breach Alert', {
-        body: `You are ${distanceMeters}m away from your assigned area (${wardName}).`,
+      new Notification(alertTitle, {
+        body: alertBody,
       });
     }
   } catch (err) {
@@ -95,7 +103,16 @@ async function handlePositionUpdate(pos: Position | GeolocationPosition, ward: W
   const lat = pos.coords.latitude;
   const lng = pos.coords.longitude;
   const distance = calculateDistanceMeters(lat, lng, ward.centerLat, ward.centerLng);
-  const isOutside = distance > ward.radiusMeters;
+
+  // Check polygon boundary first if defined; otherwise fallback to circular radius
+  const hasPolygon =
+    ward.boundaryCoords &&
+    Array.isArray(ward.boundaryCoords) &&
+    ward.boundaryCoords.length >= 3;
+
+  const isOutside = hasPolygon
+    ? !isPointInPolygon([lat, lng], ward.boundaryCoords!)
+    : distance > ward.radiusMeters;
 
   const previousOutside = currentTrackingState.isOutsideArea;
 
@@ -110,7 +127,7 @@ async function handlePositionUpdate(pos: Position | GeolocationPosition, ward: W
 
   // If newly stepped outside allocated zone, trigger alert
   if (isOutside && !previousOutside) {
-    await triggerGeofenceAlert(ward.name, distance);
+    await triggerGeofenceAlert(ward.name, distance, ward.departmentName);
   }
 
   // Persist location breadcrumb & breach status to Supabase

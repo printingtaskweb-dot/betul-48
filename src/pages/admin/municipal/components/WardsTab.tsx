@@ -8,6 +8,7 @@ import type { ComplaintRecord } from '../types';
 import type { DepartmentRow } from '../types';
 import { isComplaintInWard } from '../utils/complaintWard';
 import { WardAssignmentPanel } from './WardAssignmentPanel';
+import { WardPolygonMap } from '../../../../components/departments/WardPolygonMap';
 
 interface WardMetric {
   ward: Ward;
@@ -68,6 +69,9 @@ export const WardsTab: React.FC<Props> = ({
           </button>
         </div>
       </div>
+
+      {/* Interactive OpenStreetMap Ward Boundary Polygon Map */}
+      <WardPolygonMap language="en" onWardSaved={onAssignmentSaved} />
 
       {canManageWardAssignments && (
         <WardAssignmentPanel

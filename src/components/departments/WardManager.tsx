@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import {
   MapPin, Plus, X, Save, Trash2, Search, Navigation,
-  RefreshCw, Layers, Compass,
+  RefreshCw, Layers, Compass, Map, List, AlertTriangle,
 } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { LocationPicker } from '../common/LocationPicker';
@@ -11,6 +11,7 @@ import {
   reverseGeocode,
   type Ward,
 } from '../../lib/wardTypes';
+import { WardPolygonMap } from './WardPolygonMap';
 
 const BORDER = '1.5px solid var(--theme-component-border, #bfbfbf)';
 const PRIMARY = 'var(--theme-primary, #146C94)';
@@ -74,8 +75,14 @@ const EMPTY_FORM: WardForm = {
 
 export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
   const hi = language === 'hi';
-  const { user } = useAuth();
+  const { user, profile, isAdmin } = useAuth();
+  const isAdminUser = Boolean(
+    isAdmin ||
+    profile?.is_admin ||
+    ['admin', 'municipal_administrator', 'platform_owner'].includes(profile?.role || '')
+  );
 
+  const [viewMode, setViewMode] = useState<'polygon_map' | 'directory'>('polygon_map');
   const [wards, setWards] = useState<Ward[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -251,38 +258,96 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
         </div>
       )}
 
-      {/* Header */}
-      <div style={{ ...card, padding: '16px 20px', display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <Layers size={20} color={PRIMARY} />
-          <div>
-            <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 900 }}>
-              {hi ? 'वार्ड पंजीकरण' : 'Ward Registration'}
-            </h3>
-            <p style={{ margin: 0, fontSize: '0.74rem', color: 'var(--gray-600)' }}>
-              {hi
-                ? 'GPS से वर्तमान स्थान लें, वार्ड नाम दर्ज करें और सहेजें।'
-                : 'Capture current GPS location, name the ward, and save. Complaints within radius auto-link.'}
-            </p>
+      {/* View Switcher Tabs */}
+      <div style={{ display: 'flex', gap: 8, alignItems: 'center', borderBottom: '1.5px solid #e2e8f0', paddingBottom: 10, flexWrap: 'wrap' }}>
+        <button
+          onClick={() => setViewMode('polygon_map')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '8px 16px',
+            borderRadius: 8,
+            border: 'none',
+            fontWeight: 800,
+            fontSize: '0.84rem',
+            cursor: 'pointer',
+            background: viewMode === 'polygon_map' ? PRIMARY : '#f1f5f9',
+            color: viewMode === 'polygon_map' ? '#fff' : '#475569',
+            boxShadow: viewMode === 'polygon_map' ? '0 2px 6px rgba(20,108,148,0.25)' : 'none',
+          }}
+        >
+          <Map size={15} />
+          {hi ? '🗺️ ओपनस्ट्रीटमैप सीमा और स्टाफ अलर्ट' : '🗺️ OpenStreetMap Boundary & Staff Tracking'}
+        </button>
+
+        <button
+          onClick={() => setViewMode('directory')}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '8px 16px',
+            borderRadius: 8,
+            border: 'none',
+            fontWeight: 800,
+            fontSize: '0.84rem',
+            cursor: 'pointer',
+            background: viewMode === 'directory' ? PRIMARY : '#f1f5f9',
+            color: viewMode === 'directory' ? '#fff' : '#475569',
+            boxShadow: viewMode === 'directory' ? '0 2px 6px rgba(20,108,148,0.25)' : 'none',
+          }}
+        >
+          <List size={15} />
+          {hi ? '📋 वार्ड निर्देशिका' : '📋 Ward Directory'}
+        </button>
+
+        {!isAdminUser && (
+          <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6, fontSize: '0.76rem', color: '#64748b', background: '#f8fafc', padding: '6px 12px', borderRadius: 6, border: '1px solid #e2e8f0' }}>
+            <AlertTriangle size={13} color="#f59e0b" />
+            <span>{hi ? 'वार्ड पंजीकरण केवल व्यवस्थापक के लिए उपलब्ध है' : 'Ward registration restricted to Municipal Admin'}</span>
           </div>
-        </div>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={fetchWards} style={outlineBtn}>
-            <RefreshCw size={14} /> {hi ? 'रिफ्रेश' : 'Refresh'}
-          </button>
-          <button
-            onClick={() => {
-              resetForm();
-              setShowForm(true);
-              // Auto-trigger GPS on open
-              setTimeout(detectLocation, 100);
-            }}
-            style={primaryBtn}
-          >
-            <Plus size={14} /> {hi ? 'नया वार्ड जोड़ें' : 'Add New Ward'}
-          </button>
-        </div>
+        )}
       </div>
+
+      {viewMode === 'polygon_map' ? (
+        <WardPolygonMap language={language} onWardSaved={fetchWards} />
+      ) : (
+        <>
+          {/* Header */}
+          <div style={{ ...card, padding: '16px 20px', display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'center', justifyContent: 'space-between' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <Layers size={20} color={PRIMARY} />
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.05rem', fontWeight: 900 }}>
+                  {hi ? 'वार्ड निर्देशिका एवं विवरण' : 'Ward Directory & Records'}
+                </h3>
+                <p style={{ margin: 0, fontSize: '0.74rem', color: 'var(--gray-600)' }}>
+                  {hi
+                    ? 'पंजीकृत वार्डों की सूची और उनके जीपीएस निर्देशांक।'
+                    : 'List of registered wards, centroids, and linked service parameters.'}
+                </p>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button onClick={fetchWards} style={outlineBtn}>
+                <RefreshCw size={14} /> {hi ? 'रिफ्रेश' : 'Refresh'}
+              </button>
+              {isAdminUser && (
+                <button
+                  onClick={() => {
+                    resetForm();
+                    setShowForm(true);
+                    // Auto-trigger GPS on open
+                    setTimeout(detectLocation, 100);
+                  }}
+                  style={primaryBtn}
+                >
+                  <Plus size={14} /> {hi ? 'नया वार्ड जोड़ें' : 'Add New Ward'}
+                </button>
+              )}
+            </div>
+          </div>
 
       {/* Search */}
       <div style={{ ...card, padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -339,13 +404,15 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
                     </div>
                   )}
                 </div>
-                <button
-                  onClick={() => deleteWard(ward)}
-                  title="Delete ward"
-                  style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 3 }}
-                >
-                  <Trash2 size={14} color="#991b1b" />
-                </button>
+                {isAdminUser && (
+                  <button
+                    onClick={() => deleteWard(ward)}
+                    title="Delete ward"
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 3 }}
+                  >
+                    <Trash2 size={14} color="#991b1b" />
+                  </button>
+                )}
               </div>
 
               <div style={{ fontSize: '0.74rem', color: 'var(--gray-700)', display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -390,7 +457,7 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
       )}
 
       {/* Add Ward Modal */}
-      {showForm && (
+      {showForm && isAdminUser && (
         <div
           style={{
             position: 'fixed', inset: 0, zIndex: 1200,
@@ -608,6 +675,8 @@ export const WardManager: React.FC<Props> = ({ language = 'en' }) => {
             </div>
           </div>
         </div>
+      )}
+        </>
       )}
     </div>
   );

@@ -10,6 +10,11 @@ export interface Ward {
   radius_meters: number;
   pincode: string | null;
   is_active: boolean;
+  boundary_coordinates?: [number, number][] | null;
+  area_sq_meters?: number | null;
+  assigned_department_id?: string | null;
+  assigned_head_id?: string | null;
+  assigned_supervisor_id?: string | null;
   created_at: string;
   updated_at: string;
   created_by: string | null;
@@ -48,11 +53,70 @@ export function distanceMeters(
   return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
+/**
+ * Geodesic area calculation for polygon coordinates on Earth (in square meters)
+ */
+export function calculateGeodesicArea(coords: [number, number][]): number {
+  if (!coords || coords.length < 3) return 0;
+  const RADIUS = 6378137; // Earth's radius in meters
+  let total = 0;
+  const len = coords.length;
+
+  for (let i = 0; i < len; i++) {
+    const p1 = coords[i];
+    const p2 = coords[(i + 1) % len];
+    const lat1 = (p1[0] * Math.PI) / 180;
+    const lon1 = (p1[1] * Math.PI) / 180;
+    const lat2 = (p2[0] * Math.PI) / 180;
+    const lon2 = (p2[1] * Math.PI) / 180;
+
+    total += (lon2 - lon1) * (2 + Math.sin(lat1) + Math.sin(lat2));
+  }
+
+  return Math.abs((total * RADIUS * RADIUS) / 2.0);
+}
+
+/**
+ * Ray-Casting Point-in-Polygon test for geographic coordinates [lat, lon]
+ */
+export function isPointInPolygon(
+  point: [number, number],
+  polygon: [number, number][]
+): boolean {
+  if (!polygon || polygon.length < 3) return false;
+  const [lat, lon] = point;
+  let inside = false;
+  const len = polygon.length;
+
+  for (let i = 0, j = len - 1; i < len; j = i++) {
+    const [xi, yi] = polygon[i];
+    const [xj, yj] = polygon[j];
+
+    const intersect =
+      yi > lon !== yj > lon &&
+      lat < ((xj - xi) * (lon - yi)) / (yj - yi) + xi;
+    if (intersect) inside = !inside;
+  }
+
+  return inside;
+}
+
 export function findWardForPoint(
   lat: number,
   lon: number,
   wards: Ward[],
 ): Ward | null {
+  // 1. First priority: Check exact polygon boundaries
+  for (const w of wards) {
+    if (!w.is_active) continue;
+    if (w.boundary_coordinates && Array.isArray(w.boundary_coordinates) && w.boundary_coordinates.length >= 3) {
+      if (isPointInPolygon([lat, lon], w.boundary_coordinates)) {
+        return w;
+      }
+    }
+  }
+
+  // 2. Second priority: Fall back to Haversine radius from center point
   let best: Ward | null = null;
   let bestDist = Infinity;
   for (const w of wards) {
