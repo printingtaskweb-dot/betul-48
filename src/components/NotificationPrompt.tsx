@@ -112,6 +112,24 @@ export const NotificationPrompt: React.FC = () => {
     };
   }, []);
 
+  // Prevent background page from scrolling when notification panel is open
+  useEffect(() => {
+    if (show) {
+      const originalOverflow = document.body.style.overflow;
+      const originalOverscroll = document.body.style.overscrollBehavior;
+      const originalTouchAction = document.body.style.touchAction;
+
+      document.body.style.overflow = 'hidden';
+      document.body.style.overscrollBehavior = 'none';
+
+      return () => {
+        document.body.style.overflow = originalOverflow;
+        document.body.style.overscrollBehavior = originalOverscroll;
+        document.body.style.touchAction = originalTouchAction;
+      };
+    }
+  }, [show]);
+
   const handleEnableNotifications = async () => {
     setRequesting(true);
     try {
@@ -143,6 +161,14 @@ export const NotificationPrompt: React.FC = () => {
 
   return (
     <div
+      onClick={(e) => {
+        if (e.target === e.currentTarget) setShow(false);
+      }}
+      onTouchMove={(e) => {
+        if (e.target === e.currentTarget) {
+          e.preventDefault();
+        }
+      }}
       style={{
         position: 'fixed',
         inset: 0,
@@ -153,6 +179,8 @@ export const NotificationPrompt: React.FC = () => {
         alignItems: 'center',
         justifyContent: 'center',
         padding: 16,
+        touchAction: 'none',
+        overscrollBehavior: 'contain',
         animation: 'fadeInOverlay 0.2s ease-out',
         fontFamily: 'system-ui, -apple-system, sans-serif',
       }}
@@ -171,17 +199,21 @@ export const NotificationPrompt: React.FC = () => {
       <div
         role="dialog"
         aria-modal="true"
+        onClick={(e) => e.stopPropagation()}
         style={{
           background: '#ffffff',
           borderRadius: 20,
           width: '100%',
           maxWidth: 480,
           maxHeight: '85vh',
+          height: '85vh',
           display: 'flex',
           flexDirection: 'column',
           boxShadow: '0 24px 60px rgba(0,0,0,0.3)',
           border: '1.5px solid #e2e8f0',
           overflow: 'hidden',
+          overscrollBehavior: 'contain',
+          touchAction: 'pan-y',
           animation: 'scaleUpModal 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
         }}
       >
@@ -325,7 +357,19 @@ export const NotificationPrompt: React.FC = () => {
         </div>
 
         {/* Content Body */}
-        <div style={{ padding: '16px 20px', overflowY: 'auto', flex: 1 }}>
+        <div
+          style={{
+            padding: '16px 20px',
+            overflowY: 'auto',
+            flex: 1,
+            WebkitOverflowScrolling: 'touch',
+            overscrollBehavior: 'contain',
+            touchAction: 'pan-y',
+          }}
+          onTouchMove={(e) => {
+            e.stopPropagation();
+          }}
+        >
           {activeTab === 'app_updates' ? (
             <div>
               {APP_FEATURES_UPDATES.map((rel, idx) => (
