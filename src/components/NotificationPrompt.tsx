@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { Bell, BellRing, X, CheckCircle2, Sparkles, Newspaper, ShieldCheck, MapPin, ArrowRight } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { fetchAndRegisterFCMToken } from '../lib/firebase';
@@ -450,9 +449,22 @@ export const NotificationPrompt: React.FC = () => {
                       </p>
                     </div>
                   ))}
-                  <Link
-                    to="/news"
-                    onClick={() => setShow(false)}
+                  <a
+                    href="/news"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setShow(false);
+                      if (window.location.pathname === '/news') {
+                        window.scrollTo({ top: 0, behavior: 'smooth' });
+                      } else {
+                        try {
+                          window.history.pushState({}, '', '/news');
+                          window.dispatchEvent(new PopStateEvent('popstate'));
+                        } catch {
+                          window.location.href = '/news';
+                        }
+                      }
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
@@ -463,11 +475,12 @@ export const NotificationPrompt: React.FC = () => {
                       color: '#146C94',
                       padding: '8px 0',
                       textDecoration: 'none',
+                      cursor: 'pointer',
                     }}
                   >
                     <span>{isHindi ? 'सभी नगर समाचार देखें' : 'View All City News'}</span>
                     <ArrowRight size={14} />
-                  </Link>
+                  </a>
                 </div>
               )}
             </div>

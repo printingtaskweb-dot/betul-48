@@ -209,10 +209,10 @@ const App: React.FC = () => {
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <DeferredNotificationFeatures />
         <div className="grain" />
         {!splashDone && <SplashScreen onDone={handleSplashDone} />}
         <BrowserRouter>
+          <DeferredNotificationFeatures />
           <AuthChecker>
             <LiveAlertToast />
             <AppRoutes />
