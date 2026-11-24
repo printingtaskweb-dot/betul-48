@@ -23,6 +23,7 @@ import {
   MapPin,
   Camera,
   ArrowRight,
+  Briefcase,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
@@ -66,6 +67,19 @@ export const ProfilePage: React.FC = () => {
   const { user, profile, isAdmin, language, setLanguage, refreshProfile, signOut, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const { permission, loading: fcmLoading, requestPermission } = useFCM(user?.id ?? null);
+
+  const isStaff = Boolean(
+    user &&
+    profile?.role && [
+      'field_employee',
+      'supervisor',
+      'operational_staff',
+      'department_head',
+      'dept_staff',
+      'control_room',
+      'verification_officer',
+    ].includes(profile.role)
+  );
 
   /* navigation tabs */
   const [activeTab, setActiveTab] = useState<'complaints' | 'thoughts' | 'settings'>('complaints');
@@ -375,7 +389,7 @@ export const ProfilePage: React.FC = () => {
           </div>
 
           {/* Admin Dashboard Entry Card (Strictly visible ONLY to logged-in Admins on their Profile) */}
-          {isAdmin && (
+          {user && isAdmin && (
             <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-orange-500 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
               <div className="flex items-center gap-3.5">
                 <div className="w-11 h-11 rounded-xl bg-white/20 backdrop-blur-xs flex items-center justify-center shrink-0">
@@ -386,15 +400,59 @@ export const ProfilePage: React.FC = () => {
                     {language === 'hi' ? 'नगर पालिका एडमिन कंट्रोल रूम' : 'Municipal Administrator Console'}
                   </h3>
                   <p className="text-xs text-amber-100 mt-1">
-                    {language === 'hi' ? 'वार्ड मैपिंग, अधिकारी आवंटन एवं शिकायत मॉनिटरिंग' : 'Ward boundary mapping, officer management & city grievance control'}
+                    {language === 'hi' ? 'वार्ड परिसीमन, अधिकारी नियंत्रण एवं शिकायत मॉनिटरिंग' : 'Ward boundaries, staff allocations & grievance governance'}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <Link
+                  to="/admin/dashboard"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-white text-amber-800 font-extrabold text-xs shadow-xs hover:bg-amber-50 active:scale-95 transition"
+                >
+                  <span>{language === 'hi' ? 'एडमिन पोर्टल' : 'Admin Portal'}</span>
+                  <ArrowRight size={13} />
+                </Link>
+                <Link
+                  to="/municipal/dashboard"
+                  className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-amber-900/40 text-white border border-white/25 font-bold text-xs hover:bg-amber-900/60 active:scale-95 transition"
+                >
+                  <span>{language === 'hi' ? 'वार्ड कंट्रोल' : 'Ward Radar'}</span>
+                  <ArrowRight size={13} />
+                </Link>
+              </div>
+            </div>
+          )}
+
+          {/* Department Staff Operations Link (Strictly visible ONLY to logged-in Department Staff on their Profile) */}
+          {user && isStaff && (
+            <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-civic-700 via-civic-800 to-slate-800 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center shrink-0">
+                  <Briefcase className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-extrabold text-sm sm:text-base leading-tight">
+                      {language === 'hi' ? 'विभागीय कार्य निष्पादन पोर्टल' : 'Department Operations Portal'}
+                    </h3>
+                    {profile?.role && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white border border-white/20">
+                        {profile.role.replace(/_/g, ' ').toUpperCase()}
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-xs text-sky-100 mt-1">
+                    {language === 'hi'
+                      ? 'आवंटित फील्ड कार्य, वार्ड शिकायतें एवं समाधान रिपोर्टिंग'
+                      : 'Assigned field tasks, ward complaints & SLA verification updates'}
                   </p>
                 </div>
               </div>
               <Link
-                to="/admin/dashboard"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-amber-800 font-extrabold text-xs shadow-xs hover:bg-amber-50 active:scale-95 transition shrink-0"
+                to="/dept/dashboard"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-civic-900 font-extrabold text-xs shadow-xs hover:bg-sky-50 active:scale-95 transition shrink-0"
               >
-                <span>{language === 'hi' ? 'डैशबोर्ड खोलें' : 'Open Admin Console'}</span>
+                <span>{language === 'hi' ? 'कार्य पोर्टल खोलें' : 'Open Tasks Portal'}</span>
                 <ArrowRight size={14} />
               </Link>
             </div>

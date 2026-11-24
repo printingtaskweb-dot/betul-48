@@ -42,12 +42,36 @@ import type { AreaHotspot, ComplaintRecord, ViewTab } from './municipal/types';
 
 export const MunicipalAdministratorDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { user, profile, loading: authLoading } = useAuth();
+  const { user, profile, isAdmin, loading: authLoading } = useAuth();
   const { assignComplaint } = useDeptComplaints('all');
 
   useEffect(() => {
-    if (!authLoading && !user) navigate('/admin', { replace: true });
-  }, [user, authLoading, navigate]);
+    if (!authLoading) {
+      if (!user) {
+        navigate('/admin', { replace: true });
+        return;
+      }
+      const isAuthorized = Boolean(
+        isAdmin ||
+        (profile?.role && [
+          'admin',
+          'municipal_administrator',
+          'platform_owner',
+          'super_admin',
+          'department_head',
+          'supervisor',
+          'operational_staff',
+          'field_employee',
+          'dept_staff',
+          'control_room',
+          'verification_officer',
+        ].includes(profile.role))
+      );
+      if (!isAuthorized) {
+        navigate('/', { replace: true });
+      }
+    }
+  }, [user, profile, isAdmin, authLoading, navigate]);
 
   const { departments, complaints, staff, wards, loading, error: dataError, fetchData } = useMunicipalData();
 

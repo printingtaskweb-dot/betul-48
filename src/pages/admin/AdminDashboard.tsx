@@ -1160,7 +1160,7 @@ const AdminOverview: React.FC<OverviewProps> = ({
 /* ─── Main AdminDashboard ─────────────────────────────────────── */
 export const AdminDashboard: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isAdmin, loading: authLoading, signOut } = useAuth();
+  const { user, profile, isAdmin, loading: authLoading, signOut } = useAuth();
   const { departments, loading } = useDepartments();
   const [activeTab, setActiveTab] = useState<Tab>('overview');
   const [activeDept, setActiveDept] = useState<Department | null>(null);
@@ -1292,9 +1292,15 @@ export const AdminDashboard: React.FC = () => {
   }, [mobileMenuOpen]);
 
   const isAuthorizedAdmin = Boolean(
-    isAdmin ||
-    sessionStorage.getItem('imc_admin') === '1' ||
-    localStorage.getItem('imc_admin') === '1'
+    user && (
+      isAdmin ||
+      (profile?.role && [
+        'admin',
+        'municipal_administrator',
+        'platform_owner',
+        'super_admin',
+      ].includes(profile.role))
+    )
   );
 
   // Auth guard

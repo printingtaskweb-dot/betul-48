@@ -9,6 +9,7 @@ export const BottomNav: React.FC = () => {
   const path = location.pathname;
 
   const isStaff = Boolean(
+    user &&
     profile?.role && [
       'field_employee',
       'supervisor',
