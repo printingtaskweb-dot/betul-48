@@ -274,19 +274,18 @@ export const NavigationTabs: React.FC<Props> = ({
                   flexDirection: 'column',
                   alignItems: 'center',
                   textAlign: 'center',
-                  padding: '12px 10px',
-                  borderRadius: 14,
+                  padding: '12px 10px 10px',
+                  borderRadius: 12,
                   border: isActive
-                    ? `2px solid ${tab.activeBorder}`
+                    ? '1.5px solid #0284c7'
                     : '1px solid #e2e8f0',
                   background: isActive ? '#ffffff' : '#f8fafc',
                   cursor: 'pointer',
                   position: 'relative',
-                  transition: 'all 0.18s ease',
+                  transition: 'all 0.15s ease',
                   boxShadow: isActive
-                    ? '0 6px 18px rgba(0, 0, 0, 0.08)'
-                    : '0 1px 3px rgba(0,0,0,0.03)',
-                  transform: isActive ? 'translateY(-2px)' : 'none',
+                    ? '0 2px 8px rgba(2, 132, 199, 0.08)'
+                    : '0 1px 2px rgba(0,0,0,0.02)',
                 }}
               >
                 {tab.badge !== undefined && (
@@ -295,12 +294,12 @@ export const NavigationTabs: React.FC<Props> = ({
                       position: 'absolute',
                       top: 6,
                       right: 6,
-                      background: isActive ? tab.activeBorder : '#64748b',
-                      color: '#fff',
-                      borderRadius: 12,
+                      background: isActive ? '#0284c7' : '#e2e8f0',
+                      color: isActive ? '#ffffff' : '#475569',
+                      borderRadius: 10,
                       padding: '1px 6px',
-                      fontSize: '0.65rem',
-                      fontWeight: 800,
+                      fontSize: '0.62rem',
+                      fontWeight: 700,
                     }}
                   >
                     {tab.badge}
@@ -309,20 +308,17 @@ export const NavigationTabs: React.FC<Props> = ({
 
                 <div
                   style={{
-                    width: 44,
-                    height: 44,
-                    borderRadius: 12,
-                    background: tab.gradient,
-                    color: '#fff',
+                    width: 36,
+                    height: 36,
+                    borderRadius: 8,
+                    background: isActive ? '#f0f9ff' : '#ffffff',
+                    border: isActive ? '1px solid #bae6fd' : '1px solid #e2e8f0',
+                    color: isActive ? '#0284c7' : '#64748b',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    marginBottom: 8,
-                    boxShadow: isActive
-                      ? '0 4px 12px rgba(0,0,0,0.18)'
-                      : '0 2px 6px rgba(0,0,0,0.08)',
-                    transition: 'transform 0.18s ease',
-                    transform: isActive ? 'scale(1.05)' : 'scale(1)',
+                    marginBottom: 6,
+                    transition: 'all 0.15s ease',
                   }}
                 >
                   {tab.icon}
@@ -331,7 +327,7 @@ export const NavigationTabs: React.FC<Props> = ({
                 <span
                   style={{
                     fontSize: '0.78rem',
-                    fontWeight: isActive ? 800 : 700,
+                    fontWeight: isActive ? 700 : 600,
                     color: isActive ? '#0f172a' : '#475569',
                     lineHeight: 1.25,
                     marginBottom: 2,
@@ -343,7 +339,7 @@ export const NavigationTabs: React.FC<Props> = ({
                 {tab.sublabel && (
                   <span
                     style={{
-                      fontSize: '0.66rem',
+                      fontSize: '0.65rem',
                       color: '#94a3b8',
                       fontWeight: 500,
                       lineHeight: 1.1,

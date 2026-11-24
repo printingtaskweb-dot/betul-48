@@ -1,38 +1,38 @@
 import type React from 'react';
-import { BORDER, PRIMARY } from './constants';
 
 export const card: React.CSSProperties = {
-  background: 'var(--theme-component, #d9d9d9)',
-  border: BORDER,
-  borderRadius: 'var(--radius-lg, 12px)',
+  background: '#ffffff',
+  border: '1px solid #e2e8f0',
+  borderRadius: '16px',
+  boxShadow: '0 1px 3px rgba(0, 0, 0, 0.03)',
 };
 
 export const field: React.CSSProperties = {
-  padding: '9px 12px',
-  borderRadius: 'var(--radius-md, 8px)',
-  border: BORDER,
-  background: 'var(--theme-bg, #F6F1F1)',
+  padding: '8px 12px',
+  borderRadius: '8px',
+  border: '1px solid #cbd5e1',
+  background: '#ffffff',
   fontSize: '0.84rem',
   boxSizing: 'border-box',
 };
 
 export const primaryBtn: React.CSSProperties = {
-  background: 'var(--primary-gradient, linear-gradient(135deg, #146C94, #0E526F))',
+  background: '#0284c7',
   color: '#fff',
   border: 'none',
-  borderRadius: 'var(--radius-sm, 6px)',
-  padding: '7px 14px',
-  fontSize: '0.78rem',
-  fontWeight: 800,
+  borderRadius: '8px',
+  padding: '8px 16px',
+  fontSize: '0.8rem',
+  fontWeight: 600,
   cursor: 'pointer',
   display: 'flex',
   alignItems: 'center',
-  gap: 5,
+  gap: 6,
 };
 
 export const outlineBtn: React.CSSProperties = {
   ...primaryBtn,
-  background: 'var(--theme-bg, #F6F1F1)',
-  color: PRIMARY,
-  border: `1.5px solid ${PRIMARY}`,
+  background: '#ffffff',
+  color: '#0284c7',
+  border: '1px solid #0284c7',
 };
