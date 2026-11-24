@@ -17,9 +17,44 @@ interface NewsItem {
 
 const APP_FEATURES_UPDATES = [
   {
-    version: 'v1.0.0 Native',
+    version: 'v1.1.2 Production',
     tag: 'Latest Release',
     date: 'Today',
+    features: [
+      {
+        icon: '📊',
+        titleEn: 'Redesigned Caseload & SLA Ledger',
+        titleHi: 'नया कार्यभार और एसएलए लेजर',
+        descEn: 'Executive multi-segment workload progression, tabular figures, and SLA turnaround tracking.',
+        descHi: 'कार्यभार प्रगति, स्पष्ट संख्यात्मक आंकड़े और समयबद्ध समाधान ट्रैकिंग।',
+      },
+      {
+        icon: '🗺️',
+        titleEn: 'Interactive Ward Polygon & Geofencing',
+        titleHi: 'वार्ड मैपिंग और जियोफेंस सुरक्षा अलर्ट',
+        descEn: 'Touch-optimized boundary polygon mapping with automatic staff containment breach alerts.',
+        descHi: 'सटीक वार्ड परिसीमन मैपिंग और कर्मचारियों के लिए स्वचालित सीमा अलर्ट।',
+      },
+      {
+        icon: '🛡️',
+        titleEn: 'Secure Role-Based Dashboard Access',
+        titleHi: 'सुरक्षित भूमिका-आधारित डैशबोर्ड एक्सेस',
+        descEn: 'Admin control console strictly restricted to verified municipal administrator profiles.',
+        descHi: 'सत्यापित एडमिन प्रोफाइल के लिए विशेष सुरक्षित नियंत्रण कक्ष।',
+      },
+      {
+        icon: '🔔',
+        titleEn: 'Smooth Notification & Alerts Drawer',
+        titleHi: 'सुगम सूचना और अपडेट पैनल',
+        descEn: 'Fixed gesture containment and background scroll isolation on mobile viewports.',
+        descHi: 'बैकग्राउंड स्क्रॉल लॉक के साथ सुचारू मोबाइल सूचना ड्रॉअर।',
+      },
+    ],
+  },
+  {
+    version: 'v1.1.1',
+    tag: 'Previous Build',
+    date: '21 Nov',
     features: [
       {
         icon: '🔥',
