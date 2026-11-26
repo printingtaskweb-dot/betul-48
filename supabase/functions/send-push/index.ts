@@ -191,7 +191,7 @@ serve(async (req: Request) => {
     });
     const { data: authData, error: authError } = await authClient.auth.getUser();
 
-    // Check authorization: allow admin/officers, ouikey41@gmail.com, or service role calls
+    // Check authorization: allow admin/officers, designated admins, or service role calls
     const tokenBearer = authorization.replace(/^Bearer\s+/i, '');
     const isServiceRole = tokenBearer === supabaseSecret;
 
@@ -207,10 +207,14 @@ serve(async (req: Request) => {
         .select('role, is_admin, approval_status')
         .eq('id', authData.user.id)
         .maybeSingle();
+      const designatedAdmins = (Deno.env.get('DESIGNATED_ADMIN_EMAILS') || '')
+        .split(',')
+        .map((e) => e.trim().toLowerCase())
+        .filter(Boolean);
       const canSend = actor?.approval_status !== 'rejected' && (
         actor?.is_admin === true ||
         ['admin', 'municipal_administrator', 'deputy_commissioner', 'verification_officer'].includes(actor?.role || '') ||
-        authData.user.email?.toLowerCase() === 'ouikey41@gmail.com'
+        Boolean(authData.user.email && designatedAdmins.includes(authData.user.email.toLowerCase()))
       );
       if (!canSend) {
         return new Response(JSON.stringify({ error: 'Not authorized to send notifications' }), {

@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
-import type { Ward } from '../../../../lib/wardTypes';
+import { getWardPolygons, type Ward } from '../../../../lib/wardTypes';
 import type { ComplaintRecord, NearbyComplaint } from '../types';
 import { haversineMeters } from '../utils/haversine';
+import { isComplaintInWard } from '../utils/complaintWard';
 
 export const useRadarScanner = (
   scopedComplaints: ComplaintRecord[],
@@ -20,22 +21,49 @@ export const useRadarScanner = (
   const runRadar = () => {
     setRadarMsg(null);
     const w = selectedWard;
-    if (!w || w.center_latitude == null || w.center_longitude == null) {
+    if (!w) {
       setNearby([]);
-      setRadarMsg('Please select a ward with GPS center coordinates.');
+      setRadarMsg('Please select a ward.');
+      return;
+    }
+
+    const hasPolygon = getWardPolygons(w.boundary_coordinates).length > 0;
+    if (!hasPolygon && (w.center_latitude == null || w.center_longitude == null)) {
+      setNearby([]);
+      setRadarMsg('Please select a ward with boundary polygon or GPS center coordinates.');
       return;
     }
     const radius = w.radius_meters || 2000;
 
     const list = scopedComplaints
-      .filter((c) => c.latitude != null && c.longitude != null)
-      .map((c) => {
-        const dist = haversineMeters(
-          w.center_latitude!,
-          w.center_longitude!,
-          c.latitude!,
-          c.longitude!
+      .filter((c) => {
+        if (hasPolygon) return isComplaintInWard(c, w);
+        return (
+          c.latitude != null &&
+          c.longitude != null &&
+          haversineMeters(
+            w.center_latitude!,
+            w.center_longitude!,
+            c.latitude,
+            c.longitude
+          ) <= radius
         );
+      })
+      .map((c) => {
+        const dist =
+          c.latitude != null &&
+          c.longitude != null &&
+          w.center_latitude != null &&
+          w.center_longitude != null
+            ? Math.round(
+                haversineMeters(
+                  w.center_latitude,
+                  w.center_longitude,
+                  c.latitude,
+                  c.longitude
+                )
+              )
+            : 0;
         return {
           id: c.id,
           ticket_number: c.ticket_number,
@@ -45,13 +73,14 @@ export const useRadarScanner = (
           distance_meters: dist,
         };
       })
-      .filter((c) => c.distance_meters <= radius)
       .sort((a, b) => a.distance_meters - b.distance_meters);
 
     setNearby(list);
     if (!list.length) {
       setRadarMsg(
-        `No complaints found within ${radius} m of Ward ${w.ward_number} · ${w.name}.`
+        hasPolygon
+          ? `No complaints found inside Ward ${w.ward_number} · ${w.name} boundary.`
+          : `No complaints found within ${radius} m of Ward ${w.ward_number} · ${w.name}.`
       );
     }
   };

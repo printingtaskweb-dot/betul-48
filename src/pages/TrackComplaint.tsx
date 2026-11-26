@@ -1,9 +1,14 @@
-import React, { useState, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { useComplaints } from '../hooks/useComplaints';
 import type { Complaint } from '../lib/supabase';
+import { findWardForPoint, type Ward } from '../lib/wardTypes';
+import { mergeWithOfficialBetulWards } from '../data/betulWardBoundaries';
+import { InteractiveWardComplaintMap } from '../components/maps/InteractiveWardComplaintMap';
 import { StatusBadge } from '../components/common/StatusBadge';
+import { ComplaintStatusTimeline } from '../components/common/ComplaintStatusTimeline';
+import { canResolveComplaint, getTier, type Viewer } from '../lib/hierarchy';
 import { GoogleIcon } from '../components/common/GoogleIcon';
 import { supabase } from '../lib/supabase';
 import { BottomNav } from '../components/BottomNav';
@@ -27,6 +32,36 @@ export const TrackComplaint: React.FC = () => {
   const { getComplaintByTicket } = useComplaints();
   const [ticket, setTicket] = useState(searchParams.get('ticket') || '');
   const [complaint, setComplaint] = useState<Complaint | null>(null);
+  const [dbWards, setDbWards] = useState<Ward[]>([]);
+
+  useEffect(() => {
+    supabase
+      .from('wards')
+      .select('*')
+      .eq('is_active', true)
+      .order('ward_number', { ascending: true })
+      .then(({ data }) => {
+        if (data) setDbWards(data as Ward[]);
+      });
+  }, []);
+
+  const effectiveWards = useMemo(
+    () => mergeWithOfficialBetulWards(dbWards, true),
+    [dbWards]
+  );
+
+  const trackedWard = useMemo(() => {
+    if (!complaint) return null;
+    const cWithWard = complaint as Complaint & { ward_id?: string | null };
+    if (cWithWard.ward_id) {
+      const byId = effectiveWards.find((w) => w.id === cWithWard.ward_id);
+      if (byId) return byId;
+    }
+    if (complaint.latitude != null && complaint.longitude != null) {
+      return findWardForPoint(complaint.latitude, complaint.longitude, effectiveWards);
+    }
+    return null;
+  }, [complaint, effectiveWards]);
   const [resolution, setResolution] = useState<ResolutionData | null>(null);
   const [loading, setLoading] = useState(false);
   const [notFound, setNotFound] = useState(false);
@@ -57,27 +92,113 @@ export const TrackComplaint: React.FC = () => {
     }
   };
 
-  const handleSearch = async () => {
-    if (!ticket.trim()) return;
-    setLoading(true);
-    setNotFound(false);
-    setComplaint(null);
-    setResolution(null);
-    const result = await getComplaintByTicket(ticket.trim().toUpperCase());
-    if (result) {
-      setComplaint(result);
-      await fetchResolution(result.id);
-    } else {
-      setNotFound(true);
-    }
-    setLoading(false);
-  };
+  const [recentTicketIds, setRecentTicketIds] = useState<string[]>([]);
+  const getComplaintRef = useRef(getComplaintByTicket);
+  useEffect(() => {
+    getComplaintRef.current = getComplaintByTicket;
+  }, [getComplaintByTicket]);
 
-  const isDeptStaff = profile?.role === 'dept_staff' && !isAdmin;
+  useEffect(() => {
+    let cancelled = false;
+    supabase
+      .from('complaints')
+      .select('ticket_number')
+      .not('ticket_number', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(3)
+      .then(({ data }) => {
+        if (!cancelled && data) {
+          setRecentTicketIds(
+            data
+              .map((row: { ticket_number?: string | null }) => row.ticket_number)
+              .filter((t): t is string => Boolean(t && t.trim()))
+          );
+        }
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const handleSearch = useCallback(
+    async (ticketOverride?: string) => {
+      const lookup = (ticketOverride ?? ticket)
+        .replace(/^#/, '')
+        .trim()
+        .toUpperCase();
+      if (!lookup) return;
+      setTicket(lookup);
+      setLoading(true);
+      setNotFound(false);
+      setVerified(false);
+      setComplaint(null);
+      setResolution(null);
+      const result = await getComplaintRef.current(lookup);
+      if (result) {
+        setComplaint(result);
+        await fetchResolution(result.id);
+      } else {
+        setNotFound(true);
+      }
+      setLoading(false);
+    },
+    [ticket]
+  );
+
+  const urlTicketParam = searchParams.get('ticket');
+  useEffect(() => {
+    if (urlTicketParam && urlTicketParam.trim()) {
+      void handleSearch(urlTicketParam);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [urlTicketParam]);
+
+  const viewer: Viewer = useMemo(
+    () => ({
+      id: user?.id || '',
+      role: profile?.role || null,
+      linked_department_id: profile?.linked_department_id || null,
+      hierarchy_code: profile?.hierarchy_code || null,
+      authority_role: profile?.authority_role || null,
+      is_admin: isAdmin,
+    }),
+    [user, profile, isAdmin]
+  );
+
+  const userTier = getTier(
+    profile?.role,
+    profile?.hierarchy_code,
+    profile?.authority_role
+  );
+  const isStaffNonAdmin = Boolean(
+    user &&
+      !isAdmin &&
+      (userTier <= 6 || (profile?.role && profile.role !== 'citizen'))
+  );
+
+  const canStaffResolve = Boolean(
+    user && complaint && (isAdmin || canResolveComplaint(viewer, complaint))
+  );
+
+  const isReportingCitizen = useMemo(() => {
+    if (!user || !complaint || isStaffNonAdmin) return false;
+    const userPhone = (profile?.phone || '').replace(/\D/g, '').slice(-10);
+    const compPhone = (complaint.citizen_phone || '').replace(/\D/g, '').slice(-10);
+    const phoneMatches = Boolean(userPhone && compPhone && userPhone === compPhone);
+
+    if (complaint.created_by) {
+      return user.id === complaint.created_by || phoneMatches;
+    }
+    if (compPhone) {
+      return phoneMatches;
+    }
+    // Legacy anonymous ticket with neither created_by nor citizen_phone
+    return true;
+  }, [user, complaint, profile?.phone, isStaffNonAdmin]);
 
   const handleCitizenVerify = async (satisfied: boolean) => {
     if (!complaint) return;
-    if (isDeptStaff) {
+    if (isStaffNonAdmin) {
       alert(
         language === 'hi'
           ? 'विभाग स्टाफ अपने स्वयं के कार्य को सत्यापित नहीं कर सकता। केवल शिकायतकर्ता नागरिक या एडमिन ही सत्यापन कर सकते हैं।'
@@ -85,6 +206,7 @@ export const TrackComplaint: React.FC = () => {
       );
       return;
     }
+    if (!isReportingCitizen) return;
     setVerifying(true);
 
     await supabase.from('verifications').insert({
@@ -136,7 +258,7 @@ export const TrackComplaint: React.FC = () => {
 
   const handleSubmitResolve = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!complaint) return;
+    if (!complaint || !canStaffResolve) return;
     if (!resolveNote.trim()) {
       alert(language === 'hi' ? 'कृपया कार्य का विवरण दर्ज करें' : 'Please enter resolution notes');
       return;
@@ -219,11 +341,12 @@ export const TrackComplaint: React.FC = () => {
             placeholder="e.g. BTL-2026-00020"
             value={ticket}
             onChange={(e) => setTicket(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+            onKeyDown={(e) => e.key === 'Enter' && void handleSearch()}
             className="flex-1 bg-transparent px-3 py-2 text-sm font-mono font-bold text-civic-950 uppercase placeholder-slate-400 focus:outline-none"
           />
           <button
-            onClick={handleSearch}
+            type="button"
+            onClick={() => void handleSearch()}
             disabled={loading}
             className="px-5 py-2.5 rounded-xl bg-civic-700 hover:bg-civic-800 disabled:bg-slate-300 text-white font-bold text-xs sm:text-sm transition flex items-center gap-1.5 shadow-sm cursor-pointer"
           >
@@ -232,23 +355,22 @@ export const TrackComplaint: React.FC = () => {
           </button>
         </div>
 
-        {/* Quick Sample IDs */}
-        <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
-          <span className="font-medium">{language === 'hi' ? 'उदाहरण टिकट:' : 'Sample IDs:'}</span>
-          {['BTL-2026-00020', 'BTL-2026-00019', 'BTL-2026-00018'].map((id) => (
-            <button
-              key={id}
-              type="button"
-              onClick={() => {
-                setTicket(id);
-                setTimeout(() => handleSearch(), 50);
-              }}
-              className="px-2.5 py-1 rounded-md bg-white hover:bg-civic-50 text-civic-800 border border-sand-200 font-mono font-semibold transition cursor-pointer"
-            >
-              #{id}
-            </button>
-          ))}
-        </div>
+        {/* Live Recent Ticket IDs from Supabase */}
+        {recentTicketIds.length > 0 && (
+          <div className="flex flex-wrap items-center gap-1.5 text-xs text-slate-500">
+            <span className="font-medium">{language === 'hi' ? 'हालिया टिकट:' : 'Recent IDs:'}</span>
+            {recentTicketIds.map((id) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => void handleSearch(id)}
+                className="px-2.5 py-1 rounded-md bg-white hover:bg-civic-50 text-civic-800 border border-sand-200 font-mono font-semibold transition cursor-pointer"
+              >
+                #{id}
+              </button>
+            ))}
+          </div>
+        )}
 
         {notFound && (
           <div className="bg-white rounded-3xl p-8 border border-dashed border-sand-200 text-center shadow-card space-y-2">
@@ -325,11 +447,37 @@ export const TrackComplaint: React.FC = () => {
                   {/* Exact Coordinates Row */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 6, marginBottom: 10 }}>
                     <span style={{ fontSize: '0.75rem', fontWeight: 800, color: 'var(--theme-primary, #146C94)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><span className="material-symbols-rounded" style={{ fontSize: 14 }}>my_location</span>{language === 'hi' ? 'सटीक GPS स्थान' : 'Exact GPS Coordinates'}</span>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+                        <span className="material-symbols-rounded" style={{ fontSize: 14 }}>my_location</span>
+                        {language === 'hi' ? 'सटीक GPS स्थान' : 'Exact GPS Coordinates'}
+                        {trackedWard && (
+                          <span style={{ marginLeft: 6, background: '#146C94', color: '#fff', padding: '1px 7px', borderRadius: 999, fontSize: '0.68rem', textTransform: 'none' }}>
+                            Ward {trackedWard.ward_number} · {trackedWard.name}
+                          </span>
+                        )}
+                      </span>
                     </span>
                     <code style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--theme-primary, #146C94)', background: 'var(--theme-bg, #F6F1F1)', padding: '2px 8px', borderRadius: 4, border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
                       {complaint.latitude.toFixed(6)}, {complaint.longitude.toFixed(6)}
                     </code>
+                  </div>
+
+                  {/* Interactive OpenStreetMap Ward & Complaint Pin Preview */}
+                  <div style={{ marginBottom: 10 }}>
+                    <InteractiveWardComplaintMap
+                      wards={effectiveWards}
+                      complaints={[]}
+                      selectedWardId={trackedWard?.id || null}
+                      focusPoint={{
+                        lat: complaint.latitude,
+                        lng: complaint.longitude,
+                        label: `#${complaint.ticket_number}`,
+                      }}
+                      height={200}
+                      language={language}
+                      showLegend={false}
+                      showComplaintPins={false}
+                    />
                   </div>
 
                   {/* Navigation Action Buttons */}
@@ -357,6 +505,27 @@ export const TrackComplaint: React.FC = () => {
                     >
                       <Navigation size={15} />
                       {language === 'hi' ? 'दिशा-निर्देश पाएं' : 'Get Directions'}
+                    </a>
+                    <a
+                      href={`https://www.openstreetmap.org/?mlat=${complaint.latitude}&mlon=${complaint.longitude}#map=17/${complaint.latitude}/${complaint.longitude}`}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 6,
+                        padding: '10px 14px',
+                        borderRadius: 'var(--radius-sm)',
+                        background: '#eff6ff',
+                        color: '#146C94',
+                        fontWeight: 700,
+                        fontSize: '0.85rem',
+                        textDecoration: 'none',
+                        border: '1.5px solid #bfdbfe',
+                      }}
+                    >
+                      <Compass size={15} />
+                      OpenStreetMap
                     </a>
                     <a
                       href={`https://maps.google.com/?q=${complaint.latitude},${complaint.longitude}`}
@@ -388,8 +557,8 @@ export const TrackComplaint: React.FC = () => {
                 {new Date(complaint.created_at).toLocaleString('en-IN')}
               </p>
 
-              {/* ── Department Action Banner (Visible when pending / in_progress) ── */}
-              {(complaint.status === 'pending' || complaint.status === 'in_progress') && (
+              {/* ── Department Action Banner (Visible only to authorized department/admin staff when pending / in_progress) ── */}
+              {canStaffResolve && (complaint.status === 'pending' || complaint.status === 'in_progress') && (
                 <div
                   style={{
                     marginTop: 16,
@@ -515,66 +684,23 @@ export const TrackComplaint: React.FC = () => {
               )}
 
               {/* Status Timeline */}
-              <div
-                className="status-timeline"
-                style={{
-                  marginTop: 20,
-                  padding: '16px 18px',
-                  background: 'var(--gray-50)',
-                  borderRadius: 'var(--radius-md)',
-                  border: '1px solid var(--gray-200)',
-                }}
-              >
-                <h4 className="status-timeline-title" style={{ margin: '0 0 14px', fontSize: '0.88rem', color: 'var(--gray-800)', fontWeight: 800 }}>
-                  {language === 'hi' ? 'निराकरण समयरेखा' : 'Redressal Timeline'}
-                </h4>
-                <div className="status-timeline-steps">
-                  {(['pending', 'in_progress', 'resolved', 'verified'] as const).map((s, i) => {
-                    const statuses = ['pending', 'in_progress', 'resolved', 'verified'];
-                    const currentIdx = statuses.indexOf(complaint.status);
-                    const stepIdx = statuses.indexOf(s);
-                    const isDone = currentIdx >= stepIdx;
-                    return (
-                      <div
-                        key={s}
-                        className="status-timeline-step"
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: 12,
-                          marginBottom: i < 3 ? 10 : 0,
-                        }}
-                      >
-                        <div
-                          className="status-timeline-marker"
-                          style={{
-                            width: 24,
-                            height: 24,
-                            borderRadius: '50%',
-                            background: isDone ? 'var(--green-600)' : 'var(--gray-200)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            flexShrink: 0,
-                            color: '#fff',
-                            fontSize: 12,
-                            fontWeight: 700,
-                          }}
-                        >
-                          {isDone ? <span className="material-symbols-rounded" style={{ fontSize: 14, fontWeight: 'bold' }}>check</span> : i + 1}
-                        </div>
-                        <StatusBadge status={s} />
-                      </div>
-                    );
-                  })}
-                </div>
+              <div style={{ marginTop: 20 }}>
+                <ComplaintStatusTimeline
+                  status={complaint.status}
+                  createdAt={complaint.created_at}
+                  updatedAt={complaint.updated_at}
+                  assignedAt={complaint.assigned_at}
+                  resolvedAt={resolution?.resolved_at}
+                  resolutionNote={resolution?.admin_note}
+                  language={language}
+                />
               </div>
 
               {/* Verification Panel – when status is 'resolved' */}
               {complaint.status === 'resolved' && !verified && (
                 <div>
-                  {/* Case 1: Department Staff is viewing */}
-                  {isDeptStaff ? (
+                  {/* Case 1: Department / Municipal Staff is viewing (non-admin) */}
+                  {isStaffNonAdmin ? (
                     <div
                       style={{
                         marginTop: 20,
@@ -589,7 +715,7 @@ export const TrackComplaint: React.FC = () => {
                       </p>
                       <p style={{ margin: '6px 0 0', fontSize: '0.8rem', color: '#78350f', lineHeight: 1.5 }}>
                         {language === 'hi'
-                          ? 'विभाग ने कार्य समाधान प्रस्तुत कर दिया है। पारदर्शिता हेतु विभाग स्वयं अपने कार्य को सत्यापित नहीं कर सकता। सत्यापन केवल शिकायतकर्ता नागरिक या नगर निगम एडमिन द्वारा ही किया जाएगा।'
+                          ? 'विभाग ने कार्य समाधान प्रस्तुत कर दिया है। पारदर्दर्शिता हेतु विभाग स्वयं अपने कार्य को सत्यापित नहीं कर सकता। सत्यापन केवल शिकायतकर्ता नागरिक या नगर निगम एडमिन द्वारा ही किया जाएगा।'
                           : 'Department has submitted work resolution proof. For fairness, department staff cannot self-verify. Verification must be performed by the complaint citizen or an administrator.'}
                       </p>
                     </div>
@@ -657,8 +783,8 @@ export const TrackComplaint: React.FC = () => {
                         </button>
                       </div>
                     </div>
-                  ) : (
-                    /* Case 3: Complaint Citizen / User is viewing */
+                  ) : isReportingCitizen ? (
+                    /* Case 3: Complaint Citizen / Owner is viewing */
                     <div
                       style={{
                         marginTop: 20,
@@ -726,6 +852,59 @@ export const TrackComplaint: React.FC = () => {
                         </button>
                       </div>
                     </div>
+                  ) : (
+                    /* Case 4: Public guest or non-owner visitor */
+                    <div
+                      style={{
+                        marginTop: 20,
+                        padding: '16px 18px',
+                        background: '#faf9f6',
+                        border: '1.5px solid #e6e2d8',
+                        borderRadius: 'var(--radius-md)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: 12,
+                        flexWrap: 'wrap',
+                      }}
+                    >
+                      <div style={{ flex: 1, minWidth: 220 }}>
+                        <p style={{ margin: 0, fontWeight: 800, fontSize: '0.88rem', color: '#0f2531' }}>
+                          {language === 'hi'
+                            ? 'केवल शिकायतकर्ता नागरिक या एडमिन सत्यापन कर सकते हैं'
+                            : 'Verification Restricted to Reporting Citizen or Admin'}
+                        </p>
+                        <p style={{ margin: '5px 0 0', fontSize: '0.79rem', color: '#475569', lineHeight: 1.5 }}>
+                          {user
+                            ? language === 'hi'
+                              ? 'यह शिकायत किसी अन्य नागरिक द्वारा दर्ज की गई है। केवल शिकायतकर्ता या नगर निगम एडमिन ही समाधान को सत्यापित या पुनः खोल सकते हैं।'
+                              : 'This grievance belongs to another resident account. Only the reporting citizen or an administrator can verify or reopen this resolution.'
+                            : language === 'hi'
+                            ? 'यदि यह आपकी शिकायत है, तो समाधान की पुष्टि करने या पुनः खोलने के लिए अपने खाते में लॉगिन करें।'
+                            : 'If you filed this grievance, sign in with your citizen account to confirm the fix or request rework.'}
+                        </p>
+                      </div>
+                      {!user && (
+                        <Link
+                          to={`/auth?redirect=${encodeURIComponent(`/track?ticket=${complaint.ticket_number}`)}`}
+                          style={{
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: 6,
+                            padding: '9px 14px',
+                            borderRadius: 10,
+                            background: 'var(--theme-primary, #146C94)',
+                            color: '#fff',
+                            fontWeight: 800,
+                            fontSize: '0.82rem',
+                            textDecoration: 'none',
+                            whiteSpace: 'nowrap',
+                          }}
+                        >
+                          {language === 'hi' ? 'सत्यापन हेतु लॉगिन करें' : 'Sign in to Verify'}
+                        </Link>
+                      )}
+                    </div>
                   )}
                 </div>
               )}
@@ -753,7 +932,7 @@ export const TrackComplaint: React.FC = () => {
       </div>
 
       {/* ── Department Staff Resolution Modal on Track Page ── */}
-      {resolvingModal && complaint && (
+      {resolvingModal && canStaffResolve && complaint && (
         <div
           style={{
             position: 'fixed',

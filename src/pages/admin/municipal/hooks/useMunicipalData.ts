@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { supabase } from '../../../../lib/supabase';
 import type { StaffMember } from '../../../../lib/hierarchy';
 import type { Ward } from '../../../../lib/wardTypes';
+import { mergeWithOfficialBetulWards } from '../../../../data/betulWardBoundaries';
 import type { ComplaintRecord, DepartmentRow } from '../types';
 
 const PAGE_SIZE = 1000;
@@ -70,6 +71,7 @@ export const useMunicipalData = () => {
         fetchAllPages((from, to) => supabase
             .from('wards')
             .select('*')
+            .eq('is_active', true)
             .order('ward_number', { ascending: true })
             .range(from, to)),
       ]);
@@ -100,7 +102,8 @@ export const useMunicipalData = () => {
         }))
       );
       setStaff((people.data || []) as StaffMember[]);
-      setWards((wardData.data || []) as Ward[]);
+      const rawWards = (wardData.data || []) as Ward[];
+      setWards(rawWards.length > 0 ? mergeWithOfficialBetulWards(rawWards, false) : []);
     } catch (e) {
       const message = e instanceof Error ? e.message : 'Unexpected error while loading municipal data.';
       setError(message);

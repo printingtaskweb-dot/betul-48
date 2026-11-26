@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { getTier } from '../../../../lib/hierarchy';
 import type { StaffMember } from '../../../../lib/hierarchy';
-import type { Ward } from '../../../../lib/wardTypes';
+import { findWardForPoint, type Ward } from '../../../../lib/wardTypes';
 import type {
   ComplaintRecord,
   DepartmentRow,
@@ -137,14 +137,25 @@ export const useMunicipalMetrics = ({
         key = `ward-${ward.id}`;
         label = `Ward ${ward.ward_number} · ${ward.name}`;
       } else {
-        const m =
-          c.address?.match(/ward\s*(\d+)/i) || c.description.match(/ward\s*(\d+)/i);
-        if (m) {
-          const w = wards.find((x) => String(x.ward_number) === m[1]);
-          if (w) {
-            ward = w;
-            key = `ward-${w.id}`;
-            label = `Ward ${w.ward_number} · ${w.name}`;
+        const geoWard =
+          c.latitude != null && c.longitude != null
+            ? findWardForPoint(c.latitude, c.longitude, wards)
+            : null;
+        if (geoWard) {
+          ward = geoWard;
+          key = `ward-${ward.id}`;
+          label = `Ward ${ward.ward_number} · ${ward.name}`;
+        } else {
+          const m =
+            c.address?.match(/\bward\s*0*(\d+)\b/i) ||
+            c.description.match(/\bward\s*0*(\d+)\b/i);
+          if (m) {
+            const w = wards.find((x) => String(x.ward_number) === m[1]);
+            if (w) {
+              ward = w;
+              key = `ward-${w.id}`;
+              label = `Ward ${w.ward_number} · ${w.name}`;
+            }
           }
         }
       }

@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import {
   MapPin, Search, Filter, Navigation,
-  Briefcase, ChevronDown, Crosshair,
+  Briefcase, ChevronDown, Crosshair, Map as MapIcon,
 } from 'lucide-react';
 import {
   distanceMeters,
@@ -9,6 +9,12 @@ import {
   type Ward,
 } from '../../lib/wardTypes';
 import type { DeptComplaint } from '../../hooks/useDeptComplaints';
+import { isComplaintInWard } from '../../pages/admin/municipal/utils/complaintWard';
+import { mergeWithOfficialBetulWards } from '../../data/betulWardBoundaries';
+import {
+  InteractiveWardComplaintMap,
+  type MapComplaintItem,
+} from '../maps/InteractiveWardComplaintMap';
 
 const BORDER = '1.5px solid var(--theme-component-border, #bfbfbf)';
 const PRIMARY = 'var(--theme-primary, #146C94)';
@@ -74,10 +80,16 @@ export const LocationFilterPanel: React.FC<Props> = ({
   const [query, setQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [showFilters, setShowFilters] = useState(true);
+  const [showOsmMap, setShowOsmMap] = useState(true);
+
+  const effectiveWards = useMemo(
+    () => mergeWithOfficialBetulWards(wards, true),
+    [wards],
+  );
 
   const activeWard = useMemo(
-    () => wards.find((w) => w.id === selectedWardId) || null,
-    [wards, selectedWardId],
+    () => effectiveWards.find((w) => w.id === selectedWardId) || null,
+    [effectiveWards, selectedWardId],
   );
 
   const askGPS = () => {
@@ -110,23 +122,7 @@ export const LocationFilterPanel: React.FC<Props> = ({
     }
 
     if (mode === 'ward' && activeWard) {
-      list = list.filter((c) => {
-        if (c.ward_id === activeWard.id || c.area?.ward_id === activeWard.id) return true;
-        if (c.latitude == null || c.longitude == null) return false;
-        if (
-          activeWard.center_latitude == null ||
-          activeWard.center_longitude == null
-        )
-          return false;
-        const d = distanceMeters(
-          activeWard.center_latitude,
-          activeWard.center_longitude,
-          c.latitude,
-          c.longitude,
-        );
-        return d <= (activeWard.radius_meters || 2000);
-      });
-      return list;
+      return list.filter((c) => isComplaintInWard(c, activeWard));
     }
 
     if (mode === 'radius' && userLat != null && userLon != null) {
@@ -155,9 +151,13 @@ export const LocationFilterPanel: React.FC<Props> = ({
   }, [complaints, mode, activeWard, userLat, userLon, radiusKm, query, statusFilter]);
 
   // Auto-show ward name on results if matched
-  const wardNameFor = (c: DeptComplaint): string | null => {
+  const wardNameFor = (c: LocationComplaint): string | null => {
+    if (c.ward_id) {
+      const byId = effectiveWards.find((w) => w.id === c.ward_id);
+      if (byId) return `Ward ${byId.ward_number}`;
+    }
     if (c.latitude == null || c.longitude == null) return null;
-    const w = findWardForPoint(c.latitude, c.longitude, wards);
+    const w = findWardForPoint(c.latitude, c.longitude, effectiveWards);
     return w ? `Ward ${w.ward_number}` : null;
   };
 
@@ -228,7 +228,7 @@ export const LocationFilterPanel: React.FC<Props> = ({
                   style={{ ...field, marginTop: 4, cursor: 'pointer' }}
                 >
                   <option value="">{hi ? '— वार्ड चुनें —' : '— Choose a ward —'}</option>
-                  {wards.map((w) => (
+                  {effectiveWards.map((w) => (
                     <option key={w.id} value={w.id}>
                       Ward {w.ward_number} · {w.name}
                     </option>
@@ -319,6 +319,57 @@ export const LocationFilterPanel: React.FC<Props> = ({
         </div>
       )}
 
+      {/* Interactive OpenStreetMap Ward & Complaint Map */}
+      <div style={{ ...card, padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <MapIcon size={16} color={PRIMARY} />
+            <span style={{ fontSize: '0.88rem', fontWeight: 800, color: '#0f172a' }}>
+              {hi ? 'ओपनस्ट्रीटमैप वार्ड एवं शिकायत मानचित्र' : 'Interactive OpenStreetMap · Betul Wards & Complaints'}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowOsmMap((v) => !v)}
+            style={{
+              background: 'none', border: '1px solid #cbd5e1', borderRadius: 6,
+              padding: '4px 10px', cursor: 'pointer', fontSize: '0.74rem',
+              fontWeight: 700, color: PRIMARY,
+            }}
+          >
+            {showOsmMap ? (hi ? 'मानचित्र छिपाएं' : 'Hide Map') : (hi ? 'मानचित्र दिखाएं' : 'Show Map')}
+          </button>
+        </div>
+        {showOsmMap && (
+          <InteractiveWardComplaintMap
+            wards={effectiveWards}
+            complaints={results.map((c): MapComplaintItem => ({
+              id: c.id,
+              ticket_number: c.ticket_number,
+              description: c.description,
+              status: c.status,
+              address: c.address,
+              latitude: c.latitude,
+              longitude: c.longitude,
+              ward_id: (c as LocationComplaint).ward_id ?? null,
+              citizen_name: c.citizen_name,
+              created_at: c.created_at,
+            }))}
+            selectedWardId={mode === 'ward' && selectedWardId ? selectedWardId : null}
+            height={typeof window !== 'undefined' && window.innerWidth < 768 ? 300 : 380}
+            language={language}
+            onSelectWard={(w) => {
+              setMode('ward');
+              setSelectedWardId(w.id);
+            }}
+            onAllotComplaint={(mc) => {
+              const found = results.find((r) => r.id === mc.id);
+              if (found) onAllocate(found);
+            }}
+          />
+        )}
+      </div>
+
       {/* Results */}
       <div style={{ ...card, padding: '14px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -378,22 +429,38 @@ export const LocationFilterPanel: React.FC<Props> = ({
                       </p>
                     )}
                   </div>
-                  <div style={{ display: 'flex', gap: 6 }}>
+                  <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                     {c.latitude != null && c.longitude != null && (
-                      <a
-                        href={`https://www.google.com/maps/dir/?api=1&destination=${c.latitude},${c.longitude}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{
-                          background: '#dcfce7', color: '#166534',
-                          border: '1px solid #86efac', borderRadius: 6,
-                          padding: '6px 10px', fontSize: '0.72rem',
-                          fontWeight: 800, textDecoration: 'none',
-                          display: 'flex', alignItems: 'center', gap: 4,
-                        }}
-                      >
-                        <Navigation size={12} /> {hi ? 'रास्ता' : 'Navigate'}
-                      </a>
+                      <>
+                        <a
+                          href={`https://www.openstreetmap.org/?mlat=${c.latitude}&mlon=${c.longitude}#map=17/${c.latitude}/${c.longitude}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            background: '#eff6ff', color: '#146C94',
+                            border: '1px solid #bfdbfe', borderRadius: 6,
+                            padding: '6px 10px', fontSize: '0.72rem',
+                            fontWeight: 800, textDecoration: 'none',
+                            display: 'flex', alignItems: 'center', gap: 4,
+                          }}
+                        >
+                          <MapPin size={12} /> OSM
+                        </a>
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${c.latitude},${c.longitude}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            background: '#dcfce7', color: '#166534',
+                            border: '1px solid #86efac', borderRadius: 6,
+                            padding: '6px 10px', fontSize: '0.72rem',
+                            fontWeight: 800, textDecoration: 'none',
+                            display: 'flex', alignItems: 'center', gap: 4,
+                          }}
+                        >
+                          <Navigation size={12} /> {hi ? 'रास्ता' : 'Navigate'}
+                        </a>
+                      </>
                     )}
                     {c.status !== 'resolved' && c.status !== 'verified' && (
                       <button

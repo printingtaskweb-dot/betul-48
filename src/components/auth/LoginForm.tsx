@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
+import { isDesignatedAdminEmail } from '../../lib/adminConfig';
 import { useAuth } from '../../contexts/AuthContext';
 import { t } from '../../lib/i18n';
 import { FormInput } from './FormInput';
@@ -66,7 +67,7 @@ export const LoginForm: React.FC<Props> = ({ language }) => {
           profile?.is_admin === true ||
           (data.user.user_metadata as any)?.is_admin === true ||
           ['admin', 'municipal_administrator', 'platform_owner', 'super_admin'].includes(role) ||
-          cleanEmail === 'ouikey41@gmail.com';
+          isDesignatedAdminEmail(cleanEmail);
 
         if (isAdmin) {
           sessionStorage.setItem('imc_admin', '1');

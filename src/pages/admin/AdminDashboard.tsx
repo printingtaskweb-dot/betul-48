@@ -1832,7 +1832,7 @@ export const AdminDashboard: React.FC = () => {
               onRefreshStats={fetchLiveStats}
             />
           ) : activeTab === 'municipal' ? (
-            <MunicipalAdministratorDashboard />
+            <MunicipalAdministratorDashboard embedded />
           ) : activeTab === 'users' ? (
             <AdminUserDirectory />
           ) : activeTab === 'register' ? (

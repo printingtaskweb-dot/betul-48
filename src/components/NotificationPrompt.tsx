@@ -17,9 +17,44 @@ interface NewsItem {
 
 const APP_FEATURES_UPDATES = [
   {
-    version: 'v1.1.2 Production',
+    version: 'v1.1.3 Production',
     tag: 'Latest Release',
     date: 'Today',
+    features: [
+      {
+        icon: '🗺️',
+        titleEn: 'Official 33-Ward Betul Map & Geofencing',
+        titleHi: 'आधिकारिक 33-वार्ड बैतूल मानचित्र व जियोफेंस',
+        descEn: 'Updated official Betul Municipality 33-ward OpenStreetMap polygons with accurate ward-wise routing.',
+        descHi: 'बैतूल नगर पालिका के सभी 33 वार्डों के आधिकारिक ओपनस्ट्रीटमैप बॉर्डर और सटीक वार्ड रूटिंग।',
+      },
+      {
+        icon: '🔎',
+        titleEn: 'Live Ticket Tracker & Redressal Timeline',
+        titleHi: 'लाइव टिकट ट्रैकर व समाधान समयरेखा',
+        descEn: 'Real-time database ticket lookup from Home and Track with complete Rejected status timeline.',
+        descHi: 'होम व ट्रैक पेज से रीयल-टाइम शिकायत खोज और अस्वीकृत स्थिति सहित पूरी समयरेखा।',
+      },
+      {
+        icon: '🏛️',
+        titleEn: 'Betul 311 Municipal Executive UI',
+        titleHi: 'बैतूल 311 नगर पालिका डैशबोर्ड',
+        descEn: 'Harmonized Betul 311 executive workspace, department workload charts, and performance directory.',
+        descHi: 'एकीकृत बैतूल 311 डैशबोर्ड डिजाइन, विभागीय कार्यभार चार्ट और अधिकारी प्रदर्शन सूची।',
+      },
+      {
+        icon: '🔒',
+        titleEn: 'Hardened Role Guards & Deputy Access',
+        titleHi: 'सुरक्षित भूमिका गार्ड व उपायुक्त एक्सेस',
+        descEn: 'Fixed Deputy Commissioner console access and enforced strict role guards across staff portals.',
+        descHi: 'उपायुक्त डैशबोर्ड एक्सेस सुधार और सभी स्टाफ पोर्टल पर सख्त भूमिका-आधारित सुरक्षा।',
+      },
+    ],
+  },
+  {
+    version: 'v1.1.2',
+    tag: 'Previous Build',
+    date: '24 Nov',
     features: [
       {
         icon: '📊',

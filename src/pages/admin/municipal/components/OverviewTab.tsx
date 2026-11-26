@@ -2,12 +2,15 @@ import React, { useState } from 'react';
 import type { DeptMetric, AreaHotspot } from '../types';
 import {
   Building2,
+  MapPin,
   CheckCircle2,
   Clock,
   AlertTriangle,
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
+import { DepartmentServiceIcon } from '../../../../components/common/DepartmentServiceIcon';
+import { card } from '../styles';
 
 interface Props {
   deptMetrics: DeptMetric[];
@@ -61,27 +64,12 @@ export const OverviewTab: React.FC<Props> = ({
       >
         {/* Department Info */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
-          <div
-            style={{
-              width: 28,
-              height: 28,
-              borderRadius: 6,
-              background: '#f8fafc',
-              border: '1px solid #e2e8f0',
-              color: '#475569',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0,
-            }}
-          >
-            <Building2 size={14} />
-          </div>
+          <DepartmentServiceIcon slugOrName={m.dept.slug || m.dept.name} size={28} iconSize={14} />
           <span
             style={{
               fontSize: '0.82rem',
-              fontWeight: 600,
-              color: '#1e293b',
+              fontWeight: 700,
+              color: '#0f2531',
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'nowrap',
@@ -98,10 +86,10 @@ export const OverviewTab: React.FC<Props> = ({
             style={{
               position: 'relative',
               height: 10,
-              background: '#f1f5f9',
-              borderRadius: 5,
+              background: '#f3f1ec',
+              borderRadius: 999,
               overflow: 'hidden',
-              border: '1px solid #e2e8f0',
+              border: '1px solid #e6e2d8',
             }}
           >
             {m.total > 0 ? (
@@ -110,7 +98,7 @@ export const OverviewTab: React.FC<Props> = ({
                   display: 'flex',
                   height: '100%',
                   width: `${widthPct}%`,
-                  borderRadius: 4,
+                  borderRadius: 999,
                   overflow: 'hidden',
                   transition: 'width 0.4s ease',
                 }}
@@ -132,7 +120,7 @@ export const OverviewTab: React.FC<Props> = ({
                     style={{
                       height: '100%',
                       width: `${(m.inProgress / m.total) * 100}%`,
-                      background: '#0284c7',
+                      background: '#146C94',
                       borderRight: m.pending > 0 ? '1px solid #ffffff' : 'none',
                     }}
                   />
@@ -156,8 +144,8 @@ export const OverviewTab: React.FC<Props> = ({
         <span
           style={{
             fontSize: '0.84rem',
-            fontWeight: 700,
-            color: '#0f172a',
+            fontWeight: 800,
+            color: '#0f2531',
             textAlign: 'right',
             fontVariantNumeric: 'tabular-nums',
           }}
@@ -169,7 +157,7 @@ export const OverviewTab: React.FC<Props> = ({
         <span
           style={{
             fontSize: '0.8rem',
-            fontWeight: 600,
+            fontWeight: 700,
             color: m.resolved > 0 ? '#059669' : '#94a3b8',
             textAlign: 'right',
             fontVariantNumeric: 'tabular-nums',
@@ -182,8 +170,8 @@ export const OverviewTab: React.FC<Props> = ({
         <span
           style={{
             fontSize: '0.8rem',
-            fontWeight: 600,
-            color: m.pending > 0 ? '#d97706' : '#94a3b8',
+            fontWeight: 700,
+            color: m.pending > 0 ? '#b45309' : '#94a3b8',
             textAlign: 'right',
             fontVariantNumeric: 'tabular-nums',
           }}
@@ -203,9 +191,9 @@ export const OverviewTab: React.FC<Props> = ({
                 fontWeight: 700,
                 color: '#dc2626',
                 background: '#fef2f2',
-                border: '1px solid #fee2e2',
+                border: '1px solid #fecaca',
                 padding: '1px 6px',
-                borderRadius: 4,
+                borderRadius: 999,
               }}
             >
               <AlertTriangle size={11} /> {m.overdue}
@@ -222,11 +210,11 @@ export const OverviewTab: React.FC<Props> = ({
               fontSize: '0.72rem',
               fontWeight: 700,
               color:
-                m.rate >= 80 ? '#059669' : m.rate >= 50 ? '#0284c7' : m.total === 0 ? '#94a3b8' : '#d97706',
+                m.rate >= 80 ? '#059669' : m.rate >= 50 ? '#0369a1' : m.total === 0 ? '#64748b' : '#b45309',
               background:
-                m.rate >= 80 ? '#ecfdf5' : m.rate >= 50 ? '#f0f9ff' : m.total === 0 ? '#f8fafc' : '#fffbeb',
-              padding: '2px 6px',
-              borderRadius: 6,
+                m.rate >= 80 ? '#dcfce7' : m.rate >= 50 ? '#e0f2fe' : m.total === 0 ? '#f3f1ec' : '#fef3c7',
+              padding: '2px 7px',
+              borderRadius: 999,
               fontVariantNumeric: 'tabular-nums',
             }}
           >
@@ -241,7 +229,11 @@ export const OverviewTab: React.FC<Props> = ({
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
       <style>{`
         .workload-row:hover {
-          background: #f8fafc !important;
+          background: #faf9f6 !important;
+        }
+        .overview-hotspot-card:hover {
+          background: #f3f1ec !important;
+          border-color: #146C94 !important;
         }
         .workload-desktop-table {
           display: flex;
@@ -263,15 +255,7 @@ export const OverviewTab: React.FC<Props> = ({
       `}</style>
 
       {/* ── 1. Department Caseload & SLA Ledger ── */}
-      <div
-        style={{
-          background: '#ffffff',
-          borderRadius: 16,
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
-          padding: '20px 24px',
-        }}
-      >
+      <div style={{ ...card, padding: '20px 24px' }}>
         {/* Header with Title, Stats & Legend */}
         <div
           style={{
@@ -283,36 +267,54 @@ export const OverviewTab: React.FC<Props> = ({
             gap: 12,
           }}
         >
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              <h3
-                style={{
-                  margin: 0,
-                  fontSize: '1.05rem',
-                  fontWeight: 700,
-                  color: '#0f172a',
-                  letterSpacing: '-0.01em',
-                }}
-              >
-                Department Caseload & Resolution Velocity
-              </h3>
-              <span
-                style={{
-                  fontSize: '0.72rem',
-                  fontWeight: 700,
-                  color: '#0284c7',
-                  background: '#f0f9ff',
-                  border: '1px solid #e0f2fe',
-                  padding: '2px 8px',
-                  borderRadius: 999,
-                }}
-              >
-                {activeDepts.length} Active Divisions • {totalAllComplaints} Total Cases
-              </span>
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 11,
+                background: 'linear-gradient(135deg, #f0f7f9, #d9ecf1)',
+                border: '1px solid #b7dae4',
+                color: '#146C94',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+              }}
+            >
+              <Building2 size={19} />
             </div>
-            <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#64748b' }}>
-              Workload volume, progress distribution, and SLA resolution compliance across municipal departments.
-            </p>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <h3
+                  style={{
+                    margin: 0,
+                    fontSize: '1.05rem',
+                    fontWeight: 800,
+                    color: '#0f2531',
+                    letterSpacing: '-0.01em',
+                  }}
+                >
+                  Department Caseload & Resolution Velocity
+                </h3>
+                <span
+                  style={{
+                    fontSize: '0.7rem',
+                    fontWeight: 800,
+                    color: '#0369a1',
+                    background: '#e0f2fe',
+                    border: '1px solid #bae6fd',
+                    padding: '2px 8px',
+                    borderRadius: 999,
+                  }}
+                >
+                  {activeDepts.length} Active Divisions • {totalAllComplaints} Total Cases
+                </span>
+              </div>
+              <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#64748b' }}>
+                Workload volume, progress distribution, and SLA resolution compliance across municipal departments.
+              </p>
+            </div>
           </div>
 
           {/* Clean Legend */}
@@ -328,9 +330,9 @@ export const OverviewTab: React.FC<Props> = ({
             }}
           >
             <LegendItem color="#10b981" label="Resolved" />
-            <LegendItem color="#0284c7" label="In Progress" />
+            <LegendItem color="#146C94" label="In Progress" />
             <LegendItem color="#f59e0b" label="Pending" />
-            <LegendItem color="#ef4444" label="SLA Overdue" />
+            <LegendItem color="#dc2626" label="SLA Overdue" />
           </div>
         </div>
 
@@ -343,8 +345,9 @@ export const OverviewTab: React.FC<Props> = ({
               gridTemplateColumns: 'minmax(180px, 220px) 1fr 60px 60px 60px 80px 70px',
               gap: 16,
               padding: '8px 14px',
-              background: '#f8fafc',
-              borderRadius: 8,
+              background: '#faf9f6',
+              border: '1px solid #e6e2d8',
+              borderRadius: 10,
               fontSize: '0.68rem',
               fontWeight: 700,
               color: '#64748b',
@@ -357,7 +360,7 @@ export const OverviewTab: React.FC<Props> = ({
             <span>Volume Proportion & SLA Split</span>
             <span style={{ textAlign: 'right' }}>Total</span>
             <span style={{ textAlign: 'right', color: '#059669' }}>Resolved</span>
-            <span style={{ textAlign: 'right', color: '#d97706' }}>Pending</span>
+            <span style={{ textAlign: 'right', color: '#b45309' }}>Pending</span>
             <span style={{ textAlign: 'right', color: '#dc2626' }}>Overdue</span>
             <span style={{ textAlign: 'right' }}>Rate</span>
           </div>
@@ -381,14 +384,14 @@ export const OverviewTab: React.FC<Props> = ({
                   display: 'flex',
                   alignItems: 'center',
                   gap: 6,
-                  background: 'none',
-                  border: 'none',
-                  color: '#64748b',
+                  background: '#faf9f6',
+                  border: '1px solid #e6e2d8',
+                  color: '#475569',
                   fontSize: '0.74rem',
-                  fontWeight: 600,
+                  fontWeight: 700,
                   cursor: 'pointer',
-                  padding: '8px 14px',
-                  borderRadius: 6,
+                  padding: '6px 12px',
+                  borderRadius: 8,
                   transition: 'background 0.15s ease',
                 }}
               >
@@ -399,7 +402,7 @@ export const OverviewTab: React.FC<Props> = ({
               </button>
 
               {showIdleDepts && (
-                <div style={{ opacity: 0.65, marginTop: 4 }}>
+                <div style={{ opacity: 0.72, marginTop: 6 }}>
                   {idleDepts.map(renderDeptRow)}
                 </div>
               )}
@@ -419,8 +422,8 @@ export const OverviewTab: React.FC<Props> = ({
                   key={m.dept.id}
                   onClick={() => isDeputyOrHigher && onDeptClick(m.dept.id)}
                   style={{
-                    background: '#f8fafc',
-                    border: '1px solid #e2e8f0',
+                    background: '#faf9f6',
+                    border: '1px solid #e6e2d8',
                     borderRadius: 12,
                     padding: '12px 14px',
                     display: 'flex',
@@ -430,12 +433,12 @@ export const OverviewTab: React.FC<Props> = ({
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                      <Building2 size={15} color="#475569" />
-                      <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#0f172a' }}>
+                      <DepartmentServiceIcon slugOrName={m.dept.slug || m.dept.name} size={26} iconSize={13} />
+                      <span style={{ fontSize: '0.84rem', fontWeight: 700, color: '#0f2531' }}>
                         {m.dept.name}
                       </span>
                     </div>
-                    <span style={{ fontSize: '0.84rem', fontWeight: 800, color: '#0f172a' }}>
+                    <span style={{ fontSize: '0.84rem', fontWeight: 800, color: '#0f2531' }}>
                       {m.total} cases
                     </span>
                   </div>
@@ -444,8 +447,8 @@ export const OverviewTab: React.FC<Props> = ({
                   <div
                     style={{
                       height: 8,
-                      background: '#e2e8f0',
-                      borderRadius: 4,
+                      background: '#e6e2d8',
+                      borderRadius: 999,
                       overflow: 'hidden',
                     }}
                   >
@@ -455,7 +458,7 @@ export const OverviewTab: React.FC<Props> = ({
                           display: 'flex',
                           height: '100%',
                           width: `${widthPct}%`,
-                          borderRadius: 4,
+                          borderRadius: 999,
                           overflow: 'hidden',
                         }}
                       >
@@ -463,7 +466,7 @@ export const OverviewTab: React.FC<Props> = ({
                           <div style={{ width: `${(m.resolved / m.total) * 100}%`, background: '#10b981' }} />
                         )}
                         {m.inProgress > 0 && (
-                          <div style={{ width: `${(m.inProgress / m.total) * 100}%`, background: '#0284c7' }} />
+                          <div style={{ width: `${(m.inProgress / m.total) * 100}%`, background: '#146C94' }} />
                         )}
                         {m.pending > 0 && (
                           <div style={{ width: `${(m.pending / m.total) * 100}%`, background: '#f59e0b' }} />
@@ -485,11 +488,11 @@ export const OverviewTab: React.FC<Props> = ({
                   >
                     <div style={{ display: 'flex', gap: 10 }}>
                       <span style={{ color: '#059669' }}>✓ {m.resolved}</span>
-                      <span style={{ color: '#0284c7' }}>● {m.inProgress}</span>
-                      <span style={{ color: '#d97706' }}>⏳ {m.pending}</span>
-                      {m.overdue > 0 && <span style={{ color: '#dc2626' }}>⚠️ {m.overdue}</span>}
+                      <span style={{ color: '#146C94' }}>● {m.inProgress}</span>
+                      <span style={{ color: '#b45309' }}>⏳ {m.pending}</span>
+                      {m.overdue > 0 && <span style={{ color: '#dc2626' }}>▲ {m.overdue}</span>}
                     </div>
-                    <span style={{ color: '#0f172a', fontWeight: 700 }}>{m.rate}% rate</span>
+                    <span style={{ color: '#0f2531', fontWeight: 700 }}>{m.rate}% rate</span>
                   </div>
                 </div>
               );
@@ -498,30 +501,40 @@ export const OverviewTab: React.FC<Props> = ({
       </div>
 
       {/* ── 2. Area Hotspot Density Ranking ── */}
-      <div
-        style={{
-          background: '#ffffff',
-          borderRadius: 16,
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
-          padding: '20px 24px',
-        }}
-      >
-        <div style={{ marginBottom: 16 }}>
-          <h3
+      <div style={{ ...card, padding: '20px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
+          <div
             style={{
-              margin: 0,
-              fontSize: '1.05rem',
-              fontWeight: 700,
-              color: '#0f172a',
-              letterSpacing: '-0.01em',
+              width: 38,
+              height: 38,
+              borderRadius: 11,
+              background: 'linear-gradient(135deg, #f0f7f9, #d9ecf1)',
+              border: '1px solid #b7dae4',
+              color: '#146C94',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
             }}
           >
-            Ward Hotspot Density Ranking
-          </h3>
-          <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#64748b' }}>
-            Municipal wards and residential zones ranked by active complaint volume. Click any row to filter grievances.
-          </p>
+            <MapPin size={19} />
+          </div>
+          <div>
+            <h3
+              style={{
+                margin: 0,
+                fontSize: '1.05rem',
+                fontWeight: 800,
+                color: '#0f2531',
+                letterSpacing: '-0.01em',
+              }}
+            >
+              Ward Hotspot Density Ranking
+            </h3>
+            <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#64748b' }}>
+              Municipal wards and residential zones ranked by active complaint volume. Click any row to filter grievances.
+            </p>
+          </div>
         </div>
 
         <div
@@ -537,12 +550,13 @@ export const OverviewTab: React.FC<Props> = ({
             return (
               <div
                 key={a.key}
+                className="overview-hotspot-card"
                 onClick={() => isDeputyOrHigher && onAreaClick(a)}
                 style={{
                   padding: '14px 16px',
                   borderRadius: 12,
-                  border: '1px solid #e2e8f0',
-                  background: '#f8fafc',
+                  border: '1px solid #e6e2d8',
+                  background: '#faf9f6',
                   cursor: isDeputyOrHigher ? 'pointer' : 'default',
                   display: 'flex',
                   flexDirection: 'column',
@@ -554,7 +568,7 @@ export const OverviewTab: React.FC<Props> = ({
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                     <span
                       style={{
-                        background: '#0f172a',
+                        background: '#0f2531',
                         color: '#ffffff',
                         fontWeight: 700,
                         fontSize: '0.65rem',
@@ -565,7 +579,7 @@ export const OverviewTab: React.FC<Props> = ({
                     >
                       #{idx + 1}
                     </span>
-                    <span style={{ fontSize: '0.86rem', fontWeight: 700, color: '#0f172a' }}>
+                    <span style={{ fontSize: '0.86rem', fontWeight: 700, color: '#0f2531' }}>
                       {a.label}
                     </span>
                   </div>
@@ -573,7 +587,7 @@ export const OverviewTab: React.FC<Props> = ({
                     style={{
                       fontSize: '0.92rem',
                       fontWeight: 800,
-                      color: intensity > 0.66 ? '#dc2626' : intensity > 0.33 ? '#d97706' : '#0284c7',
+                      color: intensity > 0.66 ? '#dc2626' : intensity > 0.33 ? '#d97706' : '#146C94',
                       fontVariantNumeric: 'tabular-nums',
                     }}
                   >
@@ -582,13 +596,13 @@ export const OverviewTab: React.FC<Props> = ({
                 </div>
 
                 {/* Progress bar for area density */}
-                <div style={{ height: 6, background: '#e2e8f0', borderRadius: 3, overflow: 'hidden' }}>
+                <div style={{ height: 6, background: '#e6e2d8', borderRadius: 999, overflow: 'hidden' }}>
                   <div
                     style={{
                       height: '100%',
                       width: `${(a.total / maxAreaTotal) * 100}%`,
-                      background: intensity > 0.66 ? '#ef4444' : intensity > 0.33 ? '#f59e0b' : '#0284c7',
-                      borderRadius: 3,
+                      background: intensity > 0.66 ? '#dc2626' : intensity > 0.33 ? '#f59e0b' : '#146C94',
+                      borderRadius: 999,
                     }}
                   />
                 </div>
@@ -603,7 +617,7 @@ export const OverviewTab: React.FC<Props> = ({
                   }}
                 >
                   <span style={{ color: '#059669' }}>Resolved: {a.resolved}</span>
-                  <span style={{ color: '#d97706' }}>Pending: {a.pending}</span>
+                  <span style={{ color: '#b45309' }}>Pending: {a.pending}</span>
                 </div>
 
                 {a.topDepartment && (
@@ -611,11 +625,11 @@ export const OverviewTab: React.FC<Props> = ({
                     style={{
                       fontSize: '0.7rem',
                       color: '#475569',
-                      borderTop: '1px solid #e2e8f0',
+                      borderTop: '1px solid #e6e2d8',
                       paddingTop: 6,
                     }}
                   >
-                    Lead department: <span style={{ fontWeight: 600, color: '#0f172a' }}>{a.topDepartment}</span>
+                    Lead department: <span style={{ fontWeight: 700, color: '#0f2531' }}>{a.topDepartment}</span>
                   </div>
                 )}
               </div>
@@ -631,30 +645,40 @@ export const OverviewTab: React.FC<Props> = ({
       </div>
 
       {/* ── 3. Turnaround Timing & SLA Resolution Compliance ── */}
-      <div
-        style={{
-          background: '#ffffff',
-          borderRadius: 16,
-          border: '1px solid #e2e8f0',
-          boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
-          padding: '20px 24px',
-        }}
-      >
-        <div style={{ marginBottom: 16 }}>
-          <h3
+      <div style={{ ...card, padding: '20px 24px' }}>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12, marginBottom: 16 }}>
+          <div
             style={{
-              margin: 0,
-              fontSize: '1.05rem',
-              fontWeight: 700,
-              color: '#0f172a',
-              letterSpacing: '-0.01em',
+              width: 38,
+              height: 38,
+              borderRadius: 11,
+              background: 'linear-gradient(135deg, #f0f7f9, #d9ecf1)',
+              border: '1px solid #b7dae4',
+              color: '#146C94',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
             }}
           >
-            Turnaround Timing & SLA Resolution Compliance
-          </h3>
-          <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#64748b' }}>
-            Resolution dispatch speed tracked against Betul citizen charter benchmarks.
-          </p>
+            <Clock size={19} />
+          </div>
+          <div>
+            <h3
+              style={{
+                margin: 0,
+                fontSize: '1.05rem',
+                fontWeight: 800,
+                color: '#0f2531',
+                letterSpacing: '-0.01em',
+              }}
+            >
+              Turnaround Timing & SLA Resolution Compliance
+            </h3>
+            <p style={{ margin: '4px 0 0', fontSize: '0.78rem', color: '#64748b' }}>
+              Resolution dispatch speed tracked against Betul citizen charter benchmarks.
+            </p>
+          </div>
         </div>
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
@@ -676,7 +700,7 @@ export const OverviewTab: React.FC<Props> = ({
             title="Overdue / SLA Breached (> 72h)"
             value={slaMetrics.overdueCount}
             subtitle="Requires immediate administrative intervention"
-            statusColor="#ef4444"
+            statusColor="#dc2626"
             icon={<AlertTriangle size={16} />}
           />
         </div>
@@ -703,8 +727,8 @@ const SlaCard: React.FC<{
     style={{
       padding: '16px 18px',
       borderRadius: 12,
-      background: '#f8fafc',
-      border: '1px solid #e2e8f0',
+      background: '#faf9f6',
+      border: '1px solid #e6e2d8',
       borderTop: `3px solid ${statusColor}`,
       display: 'flex',
       flexDirection: 'column',
@@ -712,14 +736,14 @@ const SlaCard: React.FC<{
     }}
   >
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-      <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#334155' }}>{title}</span>
+      <span style={{ fontSize: '0.8rem', fontWeight: 700, color: '#0f2531' }}>{title}</span>
       <span style={{ color: statusColor }}>{icon}</span>
     </div>
     <div
       style={{
         fontSize: '1.6rem',
-        fontWeight: 800,
-        color: '#0f172a',
+        fontWeight: 900,
+        color: '#0f2531',
         fontVariantNumeric: 'tabular-nums',
         lineHeight: 1.1,
       }}

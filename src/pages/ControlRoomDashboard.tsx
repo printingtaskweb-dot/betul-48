@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { Briefcase, Building2, ClipboardList, PhoneCall, RefreshCw, Save, Search, Send, ShieldCheck, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { RoleGuard } from '../components/auth/RoleGuard';
 import { supabase } from '../lib/supabase';
 import type { StaffMember } from '../lib/hierarchy';
 import type { Ward } from '../lib/wardTypes';
@@ -73,7 +74,7 @@ const button: React.CSSProperties = {
   color: '#fff', background: 'var(--theme-primary, #146C94)', fontWeight: 800,
 };
 
-export default function ControlRoomDashboard() {
+function ControlRoomDashboardContent() {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('intake');
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -496,5 +497,26 @@ export default function ControlRoomDashboard() {
         />
       )}
     </main>
+  );
+}
+
+export default function ControlRoomDashboard() {
+  return (
+    <RoleGuard
+      allowedRoles={[
+        'control_room',
+        'admin',
+        'municipal_administrator',
+        'deputy_commissioner',
+        'platform_owner',
+        'super_admin',
+      ]}
+      allowAdminFlag
+      unauthenticatedRedirect="/dept/login"
+      unauthorizedRedirect="/"
+      loadingTitle="Control Room Workspace"
+    >
+      <ControlRoomDashboardContent />
+    </RoleGuard>
   );
 }

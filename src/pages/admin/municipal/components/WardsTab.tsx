@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
-import { MapPin, Layers, Eye, Navigation, Crosshair } from 'lucide-react';
+import { MapPin, Layers, Eye, Navigation, Crosshair, AlertTriangle } from 'lucide-react';
 import { card, outlineBtn, primaryBtn } from '../styles';
 import { BORDER, PRIMARY } from '../constants';
-import type { Ward } from '../../../../lib/wardTypes';
+import {
+  countBoundaryCorners,
+  getWardPolygons,
+  type Ward,
+} from '../../../../lib/wardTypes';
 import type { StaffMember } from '../../../../lib/hierarchy';
 import type { ComplaintRecord } from '../types';
 import type { DepartmentRow } from '../types';
 import { isComplaintInWard } from '../utils/complaintWard';
 import { WardAssignmentPanel } from './WardAssignmentPanel';
 import { WardPolygonMap } from '../../../../components/departments/WardPolygonMap';
+import type { MapComplaintItem } from '../../../../components/maps/InteractiveWardComplaintMap';
 
 interface WardMetric {
   ward: Ward;
@@ -45,22 +50,54 @@ export const WardsTab: React.FC<Props> = ({
     return scopedComplaints.filter((complaint) => isComplaintInWard(complaint, ward));
   };
 
+  const mapComplaints: MapComplaintItem[] = scopedComplaints.map((c) => ({
+    id: c.id,
+    ticket_number: c.ticket_number,
+    description: c.description,
+    status: c.status,
+    address: c.address,
+    latitude: c.latitude,
+    longitude: c.longitude,
+    ward_id: c.ward_id,
+    department_name: c.department?.name || null,
+    citizen_name: c.citizen_name,
+    created_at: c.created_at,
+  }));
+
   return (
     <div style={{ ...card, padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 10 }}>
-        <div>
-          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: 'var(--gray-900)' }}>
-            Registered Wards & Complaint Coverage
-          </h3>
-          <p style={{ margin: '3px 0 0', fontSize: '0.76rem', color: 'var(--gray-600)' }}>
-            Ward totals include explicitly registered complaints and GPS locations within each ward boundary.
-          </p>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, #f0f7f9, #d9ecf1)',
+              border: '1px solid #b7dae4',
+              color: '#146C94',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <MapPin size={20} />
+          </div>
+          <div>
+            <h3 style={{ margin: 0, fontSize: '1.08rem', fontWeight: 900, color: '#0f2531' }}>
+              Registered Wards & Complaint Coverage
+            </h3>
+            <p style={{ margin: '3px 0 0', fontSize: '0.76rem', color: '#64748b' }}>
+              Ward totals include explicitly registered complaints and GPS locations within each ward boundary.
+            </p>
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap' }}>
           <span style={{
-            fontSize: '0.78rem', fontWeight: 800, padding: '6px 12px', borderRadius: 20,
-            background: 'var(--theme-bg, #F6F1F1)', border: BORDER, color: PRIMARY,
+            fontSize: '0.76rem', fontWeight: 800, padding: '6px 12px', borderRadius: 999,
+            background: '#f0f7f9', border: '1px solid #b7dae4', color: PRIMARY,
           }}>
             {wards.length} ward{wards.length !== 1 ? 's' : ''} registered
           </span>
@@ -71,7 +108,12 @@ export const WardsTab: React.FC<Props> = ({
       </div>
 
       {/* Interactive OpenStreetMap Ward Boundary Polygon Map */}
-      <WardPolygonMap language="en" onWardSaved={onAssignmentSaved} />
+      <WardPolygonMap
+        language="en"
+        onWardSaved={onAssignmentSaved}
+        complaints={mapComplaints}
+        onViewWardTasks={onViewTasks}
+      />
 
       {canManageWardAssignments && (
         <WardAssignmentPanel
@@ -86,13 +128,13 @@ export const WardsTab: React.FC<Props> = ({
       {wards.length === 0 ? (
         <div style={{
           padding: '60px 20px', textAlign: 'center',
-          background: 'var(--theme-bg, #F6F1F1)',
-          borderRadius: 'var(--radius-lg)',
-          border: '1.5px dashed var(--theme-component-border, #bfbfbf)',
+          background: '#faf9f6',
+          borderRadius: 14,
+          border: '1.5px dashed #e6e2d8',
         }}>
-          <MapPin size={40} color="var(--gray-500)" style={{ margin: '0 auto 14px', display: 'block' }} />
-          <h3 style={{ margin: '0 0 6px', color: 'var(--gray-800)', fontWeight: 800 }}>No wards registered yet</h3>
-          <p style={{ margin: '0 0 14px', fontSize: '0.85rem', color: 'var(--gray-600)' }}>
+          <MapPin size={40} color="#64748b" style={{ margin: '0 auto 14px', display: 'block' }} />
+          <h3 style={{ margin: '0 0 6px', color: '#0f2531', fontWeight: 800 }}>No wards registered yet</h3>
+          <p style={{ margin: '0 0 14px', fontSize: '0.85rem', color: '#64748b' }}>
             Register your first municipal ward to start location-based filtering.
           </p>
           <button onClick={onManageWards} style={{ ...primaryBtn, justifyContent: 'center', margin: '0 auto' }}>
@@ -103,11 +145,15 @@ export const WardsTab: React.FC<Props> = ({
         <>
           {unassignedWardComplaints > 0 && (
             <div style={{
-              padding: '10px 14px', borderRadius: 8,
-              background: '#fef3c7', border: '1.5px solid #fde047',
-              fontSize: '0.8rem', color: '#854d0e', fontWeight: 700,
+              padding: '10px 14px', borderRadius: 10,
+              background: '#fef3c7', border: '1px solid #fde68a',
+              fontSize: '0.8rem', color: '#92400e', fontWeight: 700,
+              display: 'flex', alignItems: 'center', gap: 8,
             }}>
-              <span className="material-symbols-rounded" style={{ fontSize: 15, color: '#dc2626', verticalAlign: 'middle', marginRight: 4 }}>warning</span>{unassignedWardComplaints} complaint{unassignedWardComplaints !== 1 ? 's are' : ' is'} not linked to any registered ward yet.
+              <AlertTriangle size={15} color="#d97706" style={{ flexShrink: 0 }} />
+              <span>
+                {unassignedWardComplaints} complaint{unassignedWardComplaints !== 1 ? 's are' : ' is'} not linked to any registered ward yet.
+              </span>
             </div>
           )}
 
@@ -119,8 +165,8 @@ export const WardsTab: React.FC<Props> = ({
 
               return (
                 <div key={w.id} style={{
-                  padding: '14px 16px', borderRadius: 10,
-                  background: 'rgba(255,255,255,0.4)', border: BORDER,
+                  padding: '14px 16px', borderRadius: 12,
+                  background: '#faf9f6', border: BORDER,
                   display: 'flex', flexDirection: 'column', gap: 8,
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 }}>
@@ -130,24 +176,43 @@ export const WardsTab: React.FC<Props> = ({
                           background: PRIMARY, color: '#fff', fontSize: '0.72rem',
                           fontWeight: 900, padding: '2px 8px', borderRadius: 8,
                         }}>Ward {w.ward_number}</span>
-                        <b style={{ fontSize: '0.92rem', color: 'var(--gray-900)' }}>{w.name}</b>
+                        <b style={{ fontSize: '0.92rem', color: '#0f2531' }}>{w.name}</b>
                       </div>
                       {w.name_hindi && (
-                        <div style={{ fontSize: '0.75rem', color: 'var(--gray-600)', marginTop: 2 }}>{w.name_hindi}</div>
+                        <div style={{ fontSize: '0.75rem', color: '#64748b', marginTop: 2 }}>{w.name_hindi}</div>
                       )}
                     </div>
-                    <span style={{ fontSize: '0.72rem', fontWeight: 800, color: 'var(--gray-700)', whiteSpace: 'nowrap' }}>
+                    <span style={{ fontSize: '0.72rem', fontWeight: 800, color: '#334155', whiteSpace: 'nowrap' }}>
                       Total: {entry.total}
                     </span>
                   </div>
 
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.74rem', fontWeight: 700 }}>
-                    <span style={{ color: '#15803d' }}>Resolved: {entry.resolved}</span>
-                    <span style={{ color: 'var(--burgundy)' }}>In Progress: {entry.inProgress}</span>
-                    <span style={{ color: 'var(--status-pending)' }}>Pending: {entry.pending}</span>
+                    <span style={{ color: '#059669' }}>Resolved: {entry.resolved}</span>
+                    <span style={{ color: '#146C94' }}>In Progress: {entry.inProgress}</span>
+                    <span style={{ color: '#b45309' }}>Pending: {entry.pending}</span>
                   </div>
 
                   <div style={{ fontSize: '0.72rem', color: 'var(--gray-700)', marginTop: 4, display: 'flex', flexDirection: 'column', gap: 3 }}>
+                    {(() => {
+                      const cornersCount = countBoundaryCorners(w.boundary_coordinates);
+                      const piecesCount = getWardPolygons(w.boundary_coordinates).length;
+                      if (cornersCount > 0) {
+                        const areaSqM = w.area_sq_meters || 0;
+                        return (
+                          <span style={{ color: '#0f172a', fontWeight: 700 }}>
+                            <span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4, color: '#059669' }}>pentagon</span>
+                            {areaSqM > 0 ? `${(areaSqM / 10000).toFixed(2)} ha (${(areaSqM / 4046.856).toFixed(1)} ac) · ` : ''}
+                            {cornersCount} corners{piecesCount > 1 ? ` · ${piecesCount} zones` : ''}
+                          </span>
+                        );
+                      }
+                      return (
+                        <span style={{ color: '#b45309', fontWeight: 700, background: '#fef3c7', padding: '2px 7px', borderRadius: 6, alignSelf: 'flex-start' }}>
+                          Boundary pending survey
+                        </span>
+                      );
+                    })()}
                     {w.center_latitude != null && w.center_longitude != null && (
                       <span style={{ fontFamily: 'monospace', color: 'var(--gray-600)' }}>
                         <span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>location_on</span>{w.center_latitude.toFixed(4)}, {w.center_longitude.toFixed(4)} · <span className="material-symbols-rounded" style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }}>my_location</span>{w.radius_meters} m
@@ -174,24 +239,37 @@ export const WardsTab: React.FC<Props> = ({
                       <Eye size={12} /> View Tasks
                     </button>
                     {w.center_latitude != null && w.center_longitude != null && (
-                      <a
-                        href={`https://www.google.com/maps/dir/?api=1&destination=${w.center_latitude},${w.center_longitude}`}
-                        target="_blank"
-                        rel="noreferrer"
-                        style={{
-                          ...outlineBtn, padding: '5px 10px', fontSize: '0.72rem',
-                          flex: 1, justifyContent: 'center', textDecoration: 'none',
-                        }}
-                      >
-                        <Navigation size={12} /> Map
-                      </a>
+                      <>
+                        <a
+                          href={`https://www.openstreetmap.org/?mlat=${w.center_latitude}&mlon=${w.center_longitude}#map=16/${w.center_latitude}/${w.center_longitude}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            ...outlineBtn, padding: '5px 10px', fontSize: '0.72rem',
+                            justifyContent: 'center', textDecoration: 'none',
+                          }}
+                        >
+                          <MapPin size={12} /> OSM
+                        </a>
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${w.center_latitude},${w.center_longitude}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          style={{
+                            ...outlineBtn, padding: '5px 10px', fontSize: '0.72rem',
+                            flex: 1, justifyContent: 'center', textDecoration: 'none',
+                          }}
+                        >
+                          <Navigation size={12} /> Map
+                        </a>
+                      </>
                     )}
                   </div>
 
                   {isExpanded && (
                     <div style={{
-                      marginTop: 6, padding: 8, borderRadius: 8,
-                      background: 'var(--theme-bg, #F6F1F1)', border: BORDER,
+                      marginTop: 6, padding: 10, borderRadius: 10,
+                      background: '#ffffff', border: BORDER,
                       maxHeight: 180, overflowY: 'auto',
                       display: 'flex', flexDirection: 'column', gap: 6,
                     }}>

@@ -2,7 +2,11 @@ import { Capacitor } from '@capacitor/core';
 import { Geolocation, type Position } from '@capacitor/geolocation';
 import { LocalNotifications } from '@capacitor/local-notifications';
 import { supabase } from '../lib/supabase';
-import { isPointInPolygon } from '../lib/wardTypes';
+import {
+  getWardPolygons,
+  isPointInWardBoundary,
+  type WardBoundaryGeometry,
+} from '../lib/wardTypes';
 
 export interface WardArea {
   id: string;
@@ -10,7 +14,7 @@ export interface WardArea {
   centerLat: number;
   centerLng: number;
   radiusMeters: number; // e.g. 1500 meters (1.5 km)
-  boundaryCoords?: [number, number][] | null;
+  boundaryCoords?: WardBoundaryGeometry | null;
   departmentName?: string | null;
 }
 
@@ -105,13 +109,10 @@ async function handlePositionUpdate(pos: Position | GeolocationPosition, ward: W
   const distance = calculateDistanceMeters(lat, lng, ward.centerLat, ward.centerLng);
 
   // Check polygon boundary first if defined; otherwise fallback to circular radius
-  const hasPolygon =
-    ward.boundaryCoords &&
-    Array.isArray(ward.boundaryCoords) &&
-    ward.boundaryCoords.length >= 3;
+  const hasPolygon = getWardPolygons(ward.boundaryCoords).length > 0;
 
   const isOutside = hasPolygon
-    ? !isPointInPolygon([lat, lng], ward.boundaryCoords!)
+    ? !isPointInWardBoundary([lat, lng], ward.boundaryCoords)
     : distance > ward.radiusMeters;
 
   const previousOutside = currentTrackingState.isOutsideArea;

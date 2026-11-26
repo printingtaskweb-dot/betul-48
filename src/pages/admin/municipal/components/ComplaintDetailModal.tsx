@@ -1,13 +1,16 @@
-import React from 'react';
-import { X, Briefcase } from 'lucide-react';
+import React, { useMemo } from 'react';
+import { X, Briefcase, MapPin, Navigation } from 'lucide-react';
 import { card, field, primaryBtn } from '../styles';
 import { BORDER } from '../constants';
 import { isDone } from '../utils/statusStyle';
 import { canAllotComplaint } from '../../../../lib/hierarchy';
 import { maskPhoneNumber } from '../../../../lib/roleDefinitions';
 import type { StaffMember, Viewer } from '../../../../lib/hierarchy';
-import type { Ward } from '../../../../lib/wardTypes';
+import { findWardForPoint, type Ward } from '../../../../lib/wardTypes';
 import type { ComplaintRecord } from '../types';
+import { mergeWithOfficialBetulWards } from '../../../../data/betulWardBoundaries';
+import { InteractiveWardComplaintMap } from '../../../../components/maps/InteractiveWardComplaintMap';
+import { ComplaintStatusTimeline } from '../../../../components/common/ComplaintStatusTimeline';
 
 interface Props {
   detail: ComplaintRecord;
@@ -21,7 +24,15 @@ interface Props {
 export const ComplaintDetailModal: React.FC<Props> = ({
   detail, wards, staffById, viewer, onClose, onAllot,
 }) => {
-  const ward = detail.ward || wards.find((item) => item.id === detail.ward_id);
+  const effectiveWards = useMemo(
+    () => mergeWithOfficialBetulWards(wards, true),
+    [wards],
+  );
+  const geoWard =
+    detail.latitude != null && detail.longitude != null
+      ? findWardForPoint(detail.latitude, detail.longitude, effectiveWards)
+      : null;
+  const ward = detail.ward || effectiveWards.find((item) => item.id === detail.ward_id) || geoWard;
   const assignedStaff = detail.assignee || (detail.assigned_to ? staffById[detail.assigned_to] : null);
 
   return (
@@ -68,10 +79,21 @@ export const ComplaintDetailModal: React.FC<Props> = ({
           />
         )}
 
-        <div style={{ ...field, lineHeight: 1.5, background: 'var(--theme-bg, #F6F1F1)' }}>
+        <div style={{ ...field, lineHeight: 1.5, background: '#faf9f6' }}>
           <b>Description:</b>
           <div style={{ marginTop: 4 }}>{detail.description}</div>
         </div>
+
+        <ComplaintStatusTimeline
+          status={detail.status}
+          createdAt={detail.created_at}
+          updatedAt={detail.updated_at}
+          assignedAt={detail.assigned_at}
+          resolvedAt={detail.resolutions?.[0]?.resolved_at}
+          assigneeName={assignedStaff?.full_name}
+          resolutionNote={detail.resolutions?.[0]?.admin_note}
+          compact
+        />
 
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 8, fontSize: '0.8rem' }}>
           <div><b>Citizen:</b> {detail.citizen_name || 'Anonymous'}</div>
@@ -105,6 +127,48 @@ export const ComplaintDetailModal: React.FC<Props> = ({
             <b>Assigned at:</b> {detail.assigned_at ? new Date(detail.assigned_at).toLocaleString() : 'N/A'}
           </div>
         </div>
+
+        {detail.latitude != null && detail.longitude != null && (
+          <div style={{ ...field, background: '#faf9f6', padding: 12, display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 8 }}>
+              <span style={{ fontSize: '0.78rem', fontWeight: 800, color: '#0f172a', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                <MapPin size={14} color="#146C94" />
+                OpenStreetMap Location Preview{ward ? ` · Ward ${ward.ward_number} (${ward.name})` : ''}
+              </span>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                <a
+                  href={`https://www.openstreetmap.org/?mlat=${detail.latitude}&mlon=${detail.longitude}#map=17/${detail.latitude}/${detail.longitude}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ fontSize: '0.72rem', fontWeight: 700, color: '#146C94', textDecoration: 'none', padding: '4px 9px', borderRadius: 6, background: '#eff6ff', border: '1px solid #bfdbfe' }}
+                >
+                  View on OpenStreetMap ↗
+                </a>
+                <a
+                  href={`https://www.google.com/maps/dir/?api=1&destination=${detail.latitude},${detail.longitude}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ fontSize: '0.72rem', fontWeight: 700, color: '#15803d', textDecoration: 'none', padding: '4px 9px', borderRadius: 6, background: '#f0fdf4', border: '1px solid #bbf7d0', display: 'inline-flex', alignItems: 'center', gap: 4 }}
+                >
+                  <Navigation size={11} /> Directions (Google Maps)
+                </a>
+              </div>
+            </div>
+            <InteractiveWardComplaintMap
+              wards={effectiveWards}
+              complaints={[]}
+              selectedWardId={ward?.id || null}
+              focusPoint={{
+                lat: detail.latitude,
+                lng: detail.longitude,
+                label: `#${detail.ticket_number}`,
+              }}
+              height={220}
+              showLegend={false}
+              showComplaintPins={false}
+            />
+          </div>
+        )}
 
         {detail.assignment_notes && (
           <div style={{ ...field, lineHeight: 1.5 }}>
@@ -145,7 +209,7 @@ export const ComplaintDetailModal: React.FC<Props> = ({
 
         <details style={{ fontSize: '0.78rem' }}>
           <summary style={{ cursor: 'pointer', fontWeight: 800 }}>Full complaint record</summary>
-          <pre style={{ maxHeight: 260, overflow: 'auto', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', padding: 10, background: 'var(--theme-bg, #F6F1F1)', borderRadius: 6 }}>
+          <pre style={{ maxHeight: 260, overflow: 'auto', whiteSpace: 'pre-wrap', overflowWrap: 'anywhere', padding: 10, background: '#faf9f6', border: '1px solid #e6e2d8', borderRadius: 10 }}>
             {JSON.stringify(detail, null, 2)}
           </pre>
         </details>

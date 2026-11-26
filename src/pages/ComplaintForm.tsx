@@ -3,6 +3,10 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { t } from '../lib/i18n';
 import { useDepartments, useComplaints } from '../hooks/useComplaints';
+import { supabase } from '../lib/supabase';
+import { findWardForPoint, type Ward } from '../lib/wardTypes';
+import { isSyntheticSeedWardId, mergeWithOfficialBetulWards } from '../data/betulWardBoundaries';
+import { InteractiveWardComplaintMap } from '../components/maps/InteractiveWardComplaintMap';
 import { notifyComplaintActivity } from '../services/notificationBridge';
 import { useLocation } from '../hooks/useLocation';
 import { useStorage } from '../hooks/useStorage';
@@ -13,7 +17,7 @@ import { CivicHeader } from '../components/common/CivicHeader';
 import { watermarkPhoto } from '../lib/watermarkPhoto';
 import type { Department } from '../lib/supabase';
 import { isValidMobile, lettersAndSpaces, mobileDigits } from '../lib/inputValidation';
-import { CheckCircle2, ChevronDown, Search, X } from 'lucide-react';
+import { CheckCircle2, ChevronDown, MapPin, Search, X } from 'lucide-react';
 import { GoogleIcon } from '../components/common/GoogleIcon';
 import { ArcLoader } from '../components/common/ArcLoader';
 
@@ -46,6 +50,31 @@ export const ComplaintForm: React.FC = () => {
   const [deptQuery, setDeptQuery] = useState('');
   const deptBoxRef = useRef<HTMLDivElement>(null);
 
+  const [dbWards, setDbWards] = useState<Ward[]>([]);
+  const [selectedWardNo, setSelectedWardNo] = useState<number | null>(() => {
+    const q = searchParams.get('wardNo');
+    const n = q ? parseInt(q, 10) : NaN;
+    return Number.isFinite(n) ? n : null;
+  });
+  const [manualWardOverride, setManualWardOverride] = useState(() => Boolean(searchParams.get('wardNo')));
+  const [showWardMapPreview, setShowWardMapPreview] = useState(false);
+
+  useEffect(() => {
+    supabase
+      .from('wards')
+      .select('*')
+      .eq('is_active', true)
+      .order('ward_number', { ascending: true })
+      .then(({ data }) => {
+        if (data) setDbWards(data as Ward[]);
+      });
+  }, []);
+
+  const effectiveWards = useMemo(
+    () => mergeWithOfficialBetulWards(dbWards, true),
+    [dbWards]
+  );
+
     // Auto pre-fill citizen name and phone if logged in
   useEffect(() => {
     if (profile?.full_name && !citizenName) setCitizenName(profile.full_name);
@@ -53,6 +82,25 @@ export const ComplaintForm: React.FC = () => {
   }, [profile]);
 
   const locationReady = !!loc.latitude && !!loc.longitude;
+
+  const gpsDetectedWard = useMemo(() => {
+    if (!locationReady || loc.latitude == null || loc.longitude == null) return null;
+    return findWardForPoint(loc.latitude, loc.longitude, effectiveWards);
+  }, [locationReady, loc.latitude, loc.longitude, effectiveWards]);
+
+  useEffect(() => {
+    if (!manualWardOverride && gpsDetectedWard) {
+      setSelectedWardNo(gpsDetectedWard.ward_number);
+    }
+  }, [gpsDetectedWard, manualWardOverride]);
+
+  const activeWard = useMemo(
+    () =>
+      selectedWardNo != null
+        ? effectiveWards.find((w) => w.ward_number === selectedWardNo) || null
+        : gpsDetectedWard,
+    [selectedWardNo, effectiveWards, gpsDetectedWard]
+  );
 
   useEffect(() => {
     loc.detectLocation();
@@ -250,8 +298,17 @@ export const ComplaintForm: React.FC = () => {
         );
       }
 
+      const matchedDbWard = activeWard
+        ? dbWards.find((w) => w.ward_number === activeWard.ward_number)
+        : undefined;
+      const wardIdForInsert =
+        matchedDbWard && !isSyntheticSeedWardId(matchedDbWard.id)
+          ? matchedDbWard.id
+          : null;
+
       const complaint = await submitComplaint({
         department_id: selectedDept.id,
+        ward_id: wardIdForInsert,
         citizen_name: citizenName || null,
         citizen_phone: citizenPhone || null,
         description,
@@ -713,8 +770,8 @@ export const ComplaintForm: React.FC = () => {
             )}
           </div>
 
-          {/* Silent GPS indicator */}
-          <div style={{ marginBottom: 22 }}>
+          {/* Silent GPS indicator + Detected Betul Ward & OpenStreetMap Preview */}
+          <div style={{ marginBottom: 22, display: 'flex', flexDirection: 'column', gap: 10 }}>
             <LocationPicker
               latitude={loc.latitude}
               longitude={loc.longitude}
@@ -725,6 +782,89 @@ export const ComplaintForm: React.FC = () => {
               onDetect={loc.detectLocation}
               language={language}
             />
+
+            <div className="rounded-2xl border border-sand-200 bg-sand-50 p-3.5 space-y-3">
+              <div className="flex items-center justify-between gap-2 flex-wrap">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-civic-800 text-white">
+                    <MapPin className="w-3 h-3" />
+                    {activeWard
+                      ? `Ward ${String(activeWard.ward_number).padStart(2, '0')} · ${activeWard.name}`
+                      : language === 'hi'
+                      ? 'बैतूल वार्ड चुनें'
+                      : 'Select Betul Ward'}
+                  </span>
+                  {gpsDetectedWard && activeWard?.ward_number === gpsDetectedWard.ward_number && (
+                    <span className="text-[11px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                      {language === 'hi' ? 'GPS से स्वतः पहचाना गया' : 'Auto-detected via GPS'}
+                    </span>
+                  )}
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setShowWardMapPreview((v) => !v)}
+                  className="text-xs font-bold text-civic-700 hover:underline cursor-pointer"
+                >
+                  {showWardMapPreview
+                    ? language === 'hi'
+                      ? 'नक्शा छिपाएं'
+                      : 'Hide Map'
+                    : language === 'hi'
+                    ? 'ओपनस्ट्रीटमैप पर देखें'
+                    : 'Preview Ward Map'}
+                </button>
+              </div>
+
+              <div>
+                <label className="block text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-1">
+                  {language === 'hi' ? 'बैतूल नगर पालिका वार्ड (वैकल्पिक सुधार)' : 'Betul Municipality Ward (Optional Override)'}
+                </label>
+                <select
+                  value={selectedWardNo ?? ''}
+                  onChange={(e) => {
+                    const val = e.target.value ? Number(e.target.value) : null;
+                    setManualWardOverride(val != null);
+                    setSelectedWardNo(val);
+                  }}
+                  className="w-full px-3 py-2 text-xs font-semibold rounded-xl border border-sand-200 bg-white text-civic-950 focus:outline-none focus:border-civic-600"
+                >
+                  <option value="">
+                    {language === 'hi' ? '— GPS से स्वतः तय करें —' : '— Auto-detect from GPS —'}
+                  </option>
+                  {effectiveWards.map((w) => (
+                    <option key={w.id} value={w.ward_number}>
+                      Ward {String(w.ward_number).padStart(2, '0')} · {w.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {showWardMapPreview && (
+                <InteractiveWardComplaintMap
+                  wards={effectiveWards}
+                  complaints={[]}
+                  selectedWardId={activeWard?.id || null}
+                  focusPoint={
+                    locationReady && loc.latitude != null && loc.longitude != null
+                      ? {
+                          lat: loc.latitude,
+                          lng: loc.longitude,
+                          label: language === 'hi' ? 'आपका स्थान' : 'Your GPS',
+                        }
+                      : null
+                  }
+                  height={180}
+                  language={language}
+                  showLegend={false}
+                  showComplaintPins={false}
+                  onSelectWard={(w) => {
+                    setManualWardOverride(true);
+                    setSelectedWardNo(w.ward_number);
+                  }}
+                />
+              )}
+            </div>
           </div>
 
           {error && (

@@ -127,11 +127,11 @@ export const WardAssignmentPanel: React.FC<Props> = ({
   return (
     <section style={{ ...card, padding: '16px 18px', display: 'flex', flexDirection: 'column', gap: 10 }}>
       <div>
-        <h3 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 900, color: 'var(--gray-900)' }}>
+        <h3 style={{ margin: 0, fontSize: '0.98rem', fontWeight: 900, color: '#0f2531' }}>
           <MapPin size={15} style={{ display: 'inline', verticalAlign: 'middle', marginRight: 6, color: PRIMARY }} />
           Allocate Department Staff to a Ward
         </h3>
-        <p style={{ margin: '4px 0 0', fontSize: '0.76rem', color: 'var(--gray-600)' }}>
+        <p style={{ margin: '4px 0 0', fontSize: '0.76rem', color: '#64748b' }}>
           Choose a ward, search an area for reference, filter staff by department and role, then bulk-allocate. Only the ward is stored on the profile.
         </p>
       </div>
@@ -171,8 +171,8 @@ export const WardAssignmentPanel: React.FC<Props> = ({
 
       {searched && <>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 8, flexWrap: 'wrap', borderTop: BORDER, paddingTop: 10 }}>
-          <span style={{ fontSize: '0.78rem', color: 'var(--gray-700)' }}>{assignableStaff.length} matching staff · {selectedStaffIds.size} selected</span>
-          <button type="button" onClick={toggleAllVisible} style={{ ...primaryBtn, background: 'var(--theme-bg, #F6F1F1)', border: `1px solid ${PRIMARY}`, color: PRIMARY }}><Users size={14} />{allVisibleSelected ? 'Clear selection' : 'Select all results'}</button>
+          <span style={{ fontSize: '0.78rem', color: '#334155' }}>{assignableStaff.length} matching staff · {selectedStaffIds.size} selected</span>
+          <button type="button" onClick={toggleAllVisible} style={{ ...primaryBtn, background: '#f0f7f9', border: '1px solid #b7dae4', color: PRIMARY, boxShadow: 'none' }}><Users size={14} />{allVisibleSelected ? 'Clear selection' : 'Select all results'}</button>
         </div>
         {assignableStaff.map((person) => {
           const assignedWard = wards.find((ward) => ward.id === person.assigned_ward_id);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { isDesignatedAdminEmail } from '../../lib/adminConfig';
 import { supabase } from '../../lib/supabase';
 import { Lock, ShieldCheck, LogIn, AlertCircle } from 'lucide-react';
 import { CivicHeader } from '../../components/common/CivicHeader';
@@ -53,7 +54,7 @@ export const AdminLogin: React.FC = () => {
           prof?.is_admin === true ||
           (data.user.user_metadata as any)?.is_admin === true ||
           ['admin', 'municipal_administrator', 'platform_owner', 'super_admin'].includes(role) ||
-          cleanEmail === 'ouikey41@gmail.com';
+          isDesignatedAdminEmail(cleanEmail);
 
         if (!isUserAdmin) {
           setError(

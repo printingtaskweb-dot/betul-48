@@ -52,14 +52,14 @@ export const RadarPanel: React.FC<Props> = ({
     </div>
 
     {selectedWard && (
-      <div style={{ fontSize: '0.76rem', color: 'var(--gray-700)' }}>
+      <div style={{ fontSize: '0.76rem', color: '#475569' }}>
         Center: {selectedWard.center_latitude?.toFixed(4)}, {selectedWard.center_longitude?.toFixed(4)} · Radius:{' '}
         {selectedWard.radius_meters} m
       </div>
     )}
 
     {radarMsg && (
-      <div style={{ fontSize: '0.8rem', color: '#b45309', background: '#fef3c7', padding: '8px 12px', borderRadius: 6 }}>
+      <div style={{ fontSize: '0.8rem', color: '#92400e', background: '#fef3c7', border: '1px solid #fde68a', padding: '8px 12px', borderRadius: 8 }}>
         {radarMsg}
       </div>
     )}
@@ -70,9 +70,9 @@ export const RadarPanel: React.FC<Props> = ({
           <div key={n.id} style={{ ...field, padding: 10, fontSize: '0.8rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800 }}>
               <span style={{ color: PRIMARY }}>#{n.ticket_number}</span>
-              <span>{n.distance_meters} m</span>
+              <span style={{ color: '#0f2531' }}>{n.distance_meters} m</span>
             </div>
-            <div style={{ marginTop: 4 }}>{n.description}</div>
+            <div style={{ marginTop: 4, color: '#334155' }}>{n.description}</div>
           </div>
         ))}
       </div>

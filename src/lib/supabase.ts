@@ -64,6 +64,10 @@ export interface Complaint {
   status: ComplaintStatus;
   created_at: string;
   updated_at: string;
+  ward_id?: string | null;
+  created_by?: string | null;
+  assigned_to?: string | null;
+  assigned_at?: string | null;
   // joined
   department?: Department;
 }

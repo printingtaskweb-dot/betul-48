@@ -1,7 +1,8 @@
 import { ArcLoader } from '../../components/common/ArcLoader';
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { RoleGuard } from '../../components/auth/RoleGuard';
 import { useDeptComplaints } from '../../hooks/useDeptComplaints';
 import { AllotModal } from '../../components/dept/AllotModal';
 import type { AllotTarget } from '../../components/dept/AllotModal';
@@ -18,6 +19,8 @@ import {
   Layers,
   BarChart3,
   ChevronRight,
+  Landmark,
+  LogOut,
 } from 'lucide-react';
 
 import { useMunicipalData } from './municipal/hooks/useMunicipalData';
@@ -40,38 +43,27 @@ import { isComplaintInWard } from './municipal/utils/complaintWard';
 
 import type { AreaHotspot, ComplaintRecord, ViewTab } from './municipal/types';
 
-export const MunicipalAdministratorDashboard: React.FC = () => {
+interface MunicipalAdministratorDashboardProps {
+  embedded?: boolean;
+}
+
+const MunicipalAdministratorDashboardContent: React.FC<MunicipalAdministratorDashboardProps> = ({
+  embedded = false,
+}) => {
   const navigate = useNavigate();
-  const { user, profile, isAdmin, loading: authLoading } = useAuth();
+  const { user, profile, isAdmin, loading: authLoading, signOut } = useAuth();
   const { assignComplaint } = useDeptComplaints('all');
 
-  useEffect(() => {
-    if (!authLoading) {
-      if (!user) {
-        navigate('/admin', { replace: true });
-        return;
-      }
-      const isAuthorized = Boolean(
-        isAdmin ||
-        (profile?.role && [
-          'admin',
-          'municipal_administrator',
-          'platform_owner',
-          'super_admin',
-          'department_head',
-          'supervisor',
-          'operational_staff',
-          'field_employee',
-          'dept_staff',
-          'control_room',
-          'verification_officer',
-        ].includes(profile.role))
-      );
-      if (!isAuthorized) {
-        navigate('/', { replace: true });
-      }
-    }
-  }, [user, profile, isAdmin, authLoading, navigate]);
+  const canOpenAdminConsole = Boolean(
+    isAdmin ||
+    (profile?.role &&
+      ['admin', 'municipal_administrator', 'platform_owner', 'super_admin'].includes(profile.role))
+  );
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
 
   const { departments, complaints, staff, wards, loading, error: dataError, fetchData } = useMunicipalData();
 
@@ -103,7 +95,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
 
   const nearbyWardComplaintIds = useMemo(() => {
     const ward = wards.find((item) => item.id === wardFilter);
-    if (!ward || ward.center_latitude == null || ward.center_longitude == null) {
+    if (!ward) {
       return new Set<string>();
     }
 
@@ -226,21 +218,33 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
   }
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f8fafc' }}>
+    <div style={{ minHeight: embedded ? 'auto' : '100vh', background: '#faf9f6', display: 'flex', flexDirection: 'column' }}>
       <style>{`
         .municipal-desktop-view {
           display: flex;
           flex-direction: column;
           gap: 18px;
           max-width: 1440px;
+          width: 100%;
           margin: 0 auto;
-          padding: 20px 24px;
+          padding: 20px 24px 32px;
         }
         .municipal-mobile-view {
           display: none;
         }
         .municipal-mobile-dock {
           display: none;
+        }
+        .municipal-user-pill {
+          display: inline-flex;
+        }
+        @media (max-width: 640px) {
+          .municipal-user-pill {
+            display: none !important;
+          }
+          .municipal-header-brand-sub {
+            display: none !important;
+          }
         }
 
         @media (max-width: 768px) {
@@ -251,7 +255,7 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
             display: flex !important;
             flex-direction: column;
             gap: 8px;
-            padding: 8px 10px 58px;
+            padding: 8px 10px 62px;
           }
           .municipal-mobile-dock {
             display: flex !important;
@@ -259,45 +263,165 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
             bottom: 0 !important;
             left: 0 !important;
             right: 0 !important;
-            height: 48px !important;
-            background: rgba(255, 255, 255, 0.98) !important;
+            height: 52px !important;
+            background: rgba(255, 255, 255, 0.96) !important;
             backdrop-filter: blur(12px) !important;
             -webkit-backdrop-filter: blur(12px) !important;
-            border-top: 1px solid #e2e8f0 !important;
+            border-top: 1px solid #e6e2d8 !important;
             z-index: 1000 !important;
             justify-content: space-around !important;
             align-items: center !important;
-            box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.07) !important;
+            box-shadow: 0 -4px 18px rgba(15, 37, 49, 0.06) !important;
           }
         }
       `}</style>
 
-      {/* ══════════════════════════════════════════════════════════
-          1. DESKTOP RICH SINGLE-PAGE LAYOUT (as praised by user)
-         ══════════════════════════════════════════════════════════ */}
-      <div className="municipal-desktop-view">
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
-          <button
-            onClick={() => navigate('/admin/dashboard')}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 6,
-              background: '#ffffff',
-              border: '1px solid #cbd5e1',
-              color: '#334155',
-              borderRadius: 8,
-              padding: '6px 14px',
-              fontSize: '0.8rem',
-              fontWeight: 700,
-              cursor: 'pointer',
-              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-            }}
-          >
-            <ArrowLeft size={14} /> Admin Command Center
-          </button>
-        </div>
+      {/* ── Betul 311 Sticky Civic Top Header (Standalone) ── */}
+      {!embedded && (
+        <header
+          style={{
+            background: 'rgba(250, 249, 246, 0.96)',
+            backdropFilter: 'blur(12px)',
+            borderBottom: '1px solid #e6e2d8',
+            padding: '10px clamp(12px, 3vw, 24px)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: 10,
+            position: 'sticky',
+            top: 0,
+            zIndex: 40,
+          }}
+        >
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none', minWidth: 0 }}>
+            <div
+              style={{
+                width: 38,
+                height: 38,
+                borderRadius: 12,
+                background: 'linear-gradient(135deg, #146C94, #0E526F)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: '#ffffff',
+                boxShadow: '0 2px 8px rgba(20, 108, 148, 0.25)',
+                flexShrink: 0,
+              }}
+            >
+              <Landmark size={20} />
+            </div>
+            <div style={{ minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '1.05rem', fontWeight: 900, color: '#0f2531', letterSpacing: '-0.02em' }}>
+                  Betul 311
+                </span>
+                <span
+                  style={{
+                    fontSize: '0.65rem',
+                    fontWeight: 800,
+                    padding: '1px 7px',
+                    borderRadius: 6,
+                    background: '#e0f2fe',
+                    color: '#0369a1',
+                    border: '1px solid #bae6fd',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Municipal Console
+                </span>
+              </div>
+              <p className="municipal-header-brand-sub" style={{ margin: 0, fontSize: '0.68rem', color: '#64748b', fontWeight: 600 }}>
+                Nagar Palika Parishad Betul
+              </p>
+            </div>
+          </Link>
 
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <div
+              className="municipal-user-pill"
+              style={{
+                alignItems: 'center',
+                gap: 7,
+                background: '#ffffff',
+                border: '1px solid #e6e2d8',
+                borderRadius: 999,
+                padding: '4px 10px',
+                fontSize: '0.74rem',
+                color: '#334155',
+                fontWeight: 600,
+              }}
+            >
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }} />
+              <span>{profile?.full_name || user?.email || 'Municipal Officer'}</span>
+            </div>
+
+            {canOpenAdminConsole && (
+              <button
+                onClick={() => navigate('/admin/dashboard')}
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  padding: '6px 12px',
+                  borderRadius: 8,
+                  border: '1px solid #b7dae4',
+                  background: '#f0f7f9',
+                  color: '#146C94',
+                  fontWeight: 800,
+                  cursor: 'pointer',
+                  fontSize: '0.75rem',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                <ArrowLeft size={13} /> Admin Console
+              </button>
+            )}
+
+            <button
+              onClick={() => navigate('/')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                padding: '6px 11px',
+                borderRadius: 8,
+                border: '1px solid #e6e2d8',
+                background: '#ffffff',
+                color: '#475569',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontSize: '0.75rem',
+              }}
+            >
+              Exit
+            </button>
+
+            <button
+              onClick={handleLogout}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                padding: '6px 11px',
+                borderRadius: 8,
+                border: '1px solid #fecaca',
+                background: '#fef2f2',
+                color: '#dc2626',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontSize: '0.75rem',
+              }}
+            >
+              <LogOut size={13} /> Logout
+            </button>
+          </div>
+        </header>
+      )}
+
+      {/* ══════════════════════════════════════════════════════════
+          1. DESKTOP EDITORIAL LAYOUT
+         ══════════════════════════════════════════════════════════ */}
+      <div className="municipal-desktop-view" style={embedded ? { padding: 0 } : undefined}>
         <ExecutiveHeader myTier={myTier} loading={loading} onRefresh={fetchData} />
 
         {dataError && (
@@ -428,27 +552,6 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
         {activeTab === 'overview' ? (
           /* ── 2A. MOBILE HUB & SUMMARY VIEW ── */
           <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-              <button
-                onClick={() => navigate('/admin/dashboard')}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: 4,
-                  background: '#ffffff',
-                  border: '1px solid #cbd5e1',
-                  color: '#334155',
-                  borderRadius: 999,
-                  padding: '3px 9px',
-                  fontSize: '0.66rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                }}
-              >
-                <ArrowLeft size={11} /> Admin Command Center
-              </button>
-            </div>
-
             <ExecutiveHeader myTier={myTier} loading={loading} onRefresh={fetchData} />
 
             {dataError && (
@@ -497,24 +600,24 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
               onClick={() => setActiveTab('workload')}
               style={{
                 marginTop: 8,
-                padding: '7px 10px',
-                borderRadius: 10,
+                padding: '9px 12px',
+                borderRadius: 12,
                 background: '#ffffff',
-                border: '1px solid #e2e8f0',
+                border: '1px solid #e6e2d8',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
                 gap: 8,
                 cursor: 'pointer',
-                boxShadow: '0 1px 4px rgba(0,0,0,0.02)',
+                boxShadow: '0 1px 4px rgba(15, 37, 49, 0.04)',
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                <div style={{ width: 26, height: 26, borderRadius: 7, background: 'rgba(20, 108, 148, 0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#146C94', flexShrink: 0 }}>
+                <div style={{ width: 28, height: 28, borderRadius: 8, background: '#f0f7f9', border: '1px solid #b7dae4', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#146C94', flexShrink: 0 }}>
                   <BarChart3 size={14} />
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#0f172a' }}>
+                  <div style={{ fontSize: '0.75rem', fontWeight: 800, color: '#0f2531' }}>
                     Executive Resolution & SLA Charts
                   </div>
                   <div style={{ fontSize: '0.62rem', color: '#64748b' }}>
@@ -536,32 +639,32 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
                   display: 'inline-flex',
                   alignItems: 'center',
                   gap: 5,
-                  background: '#ffffff',
-                  border: '1.5px solid #146C94',
+                  background: '#f0f7f9',
+                  border: '1px solid #b7dae4',
                   color: '#146C94',
                   borderRadius: 999,
                   padding: '4px 11px',
                   fontSize: '0.72rem',
                   fontWeight: 800,
                   cursor: 'pointer',
-                  boxShadow: '0 1px 4px rgba(20, 108, 148, 0.12)',
+                  boxShadow: '0 1px 4px rgba(15, 37, 49, 0.04)',
                 }}
               >
                 <ArrowLeft size={13} /> Back to Hub
               </button>
 
-              <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.78rem', fontWeight: 800, color: '#0f172a' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: '0.78rem', fontWeight: 800, color: '#0f2531' }}>
                 <span style={{ color: '#146C94', display: 'flex', alignItems: 'center' }}>
                   {getTabIcon(activeTab)}
                 </span>
                 <span>{getTabLabel(activeTab)}</span>
                 {activeTab === 'complaints' && (
-                  <span style={{ background: '#7c3aed', color: '#fff', borderRadius: 999, padding: '1px 5px', fontSize: '0.6rem', fontWeight: 900 }}>
+                  <span style={{ background: '#146C94', color: '#fff', borderRadius: 999, padding: '1px 6px', fontSize: '0.6rem', fontWeight: 900 }}>
                     {filtered.length}
                   </span>
                 )}
                 {activeTab === 'wards' && (
-                  <span style={{ background: '#d97706', color: '#fff', borderRadius: 999, padding: '1px 5px', fontSize: '0.6rem', fontWeight: 900 }}>
+                  <span style={{ background: '#146C94', color: '#fff', borderRadius: 999, padding: '1px 6px', fontSize: '0.6rem', fontWeight: 900 }}>
                     {wards.length}
                   </span>
                 )}
@@ -687,15 +790,15 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: 1,
-            color: activeTab === 'overview' ? '#146C94' : '#94a3b8',
+            gap: 2,
+            color: activeTab === 'overview' ? '#146C94' : '#64748b',
             fontSize: '0.6rem',
-            fontWeight: activeTab === 'overview' ? 900 : 600,
+            fontWeight: activeTab === 'overview' ? 800 : 600,
             cursor: 'pointer',
             padding: '2px 6px',
           }}
         >
-          <LayoutDashboard size={16} color={activeTab === 'overview' ? '#146C94' : '#94a3b8'} />
+          <LayoutDashboard size={16} color={activeTab === 'overview' ? '#146C94' : '#64748b'} />
           <span>Hub</span>
         </button>
 
@@ -707,22 +810,22 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: 1,
+            gap: 2,
             position: 'relative',
-            color: activeTab === 'complaints' ? '#7c3aed' : '#94a3b8',
+            color: activeTab === 'complaints' ? '#146C94' : '#64748b',
             fontSize: '0.6rem',
-            fontWeight: activeTab === 'complaints' ? 900 : 600,
+            fontWeight: activeTab === 'complaints' ? 800 : 600,
             cursor: 'pointer',
             padding: '2px 6px',
           }}
         >
-          <Briefcase size={16} color={activeTab === 'complaints' ? '#7c3aed' : '#94a3b8'} />
+          <Briefcase size={16} color={activeTab === 'complaints' ? '#146C94' : '#64748b'} />
           <span>Tasks</span>
           {filtered.length > 0 && (
             <span
               style={{
                 position: 'absolute', top: 1, right: 10,
-                width: 5, height: 5, borderRadius: '50%', background: '#7c3aed',
+                width: 5, height: 5, borderRadius: '50%', background: '#146C94',
               }}
             />
           )}
@@ -736,15 +839,15 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: 1,
-            color: activeTab === 'wards' ? '#d97706' : '#94a3b8',
+            gap: 2,
+            color: activeTab === 'wards' ? '#146C94' : '#64748b',
             fontSize: '0.6rem',
-            fontWeight: activeTab === 'wards' ? 900 : 600,
+            fontWeight: activeTab === 'wards' ? 800 : 600,
             cursor: 'pointer',
             padding: '2px 6px',
           }}
         >
-          <MapPin size={16} color={activeTab === 'wards' ? '#d97706' : '#94a3b8'} />
+          <MapPin size={16} color={activeTab === 'wards' ? '#146C94' : '#64748b'} />
           <span>Wards</span>
         </button>
 
@@ -756,15 +859,15 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: 1,
-            color: activeTab === 'analytics' ? '#059669' : '#94a3b8',
+            gap: 2,
+            color: activeTab === 'analytics' ? '#146C94' : '#64748b',
             fontSize: '0.6rem',
-            fontWeight: activeTab === 'analytics' ? 900 : 600,
+            fontWeight: activeTab === 'analytics' ? 800 : 600,
             cursor: 'pointer',
             padding: '2px 6px',
           }}
         >
-          <TrendingUp size={16} color={activeTab === 'analytics' ? '#059669' : '#94a3b8'} />
+          <TrendingUp size={16} color={activeTab === 'analytics' ? '#146C94' : '#64748b'} />
           <span>Team</span>
         </button>
 
@@ -776,15 +879,15 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: 1,
-            color: activeTab === 'location-viewer' ? '#475569' : '#94a3b8',
+            gap: 2,
+            color: activeTab === 'location-viewer' ? '#146C94' : '#64748b',
             fontSize: '0.6rem',
-            fontWeight: activeTab === 'location-viewer' ? 900 : 600,
+            fontWeight: activeTab === 'location-viewer' ? 800 : 600,
             cursor: 'pointer',
             padding: '2px 6px',
           }}
         >
-          <Compass size={16} color={activeTab === 'location-viewer' ? '#475569' : '#94a3b8'} />
+          <Compass size={16} color={activeTab === 'location-viewer' ? '#146C94' : '#64748b'} />
           <span>Radar</span>
         </button>
       </nav>
@@ -837,6 +940,33 @@ export const MunicipalAdministratorDashboard: React.FC = () => {
         />
       )}
     </div>
+  );
+};
+
+export const MunicipalAdministratorDashboard: React.FC<MunicipalAdministratorDashboardProps> = ({
+  embedded = false,
+}) => {
+  if (embedded) {
+    return <MunicipalAdministratorDashboardContent embedded />;
+  }
+
+  return (
+    <RoleGuard
+      allowedRoles={[
+        'admin',
+        'municipal_administrator',
+        'municipal_commissioner',
+        'commissioner',
+        'deputy_commissioner',
+        'platform_owner',
+        'super_admin',
+      ]}
+      allowAdminFlag
+      unauthenticatedRedirect="/admin"
+      loadingTitle="Municipal Console"
+    >
+      <MunicipalAdministratorDashboardContent />
+    </RoleGuard>
   );
 };
 

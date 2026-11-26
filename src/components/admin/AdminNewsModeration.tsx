@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import type { LocalNews } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { isDesignatedAdminEmail } from '../../lib/adminConfig';
 import {
   Check,
   X,
@@ -29,7 +30,7 @@ export const AdminNewsModeration: React.FC = () => {
     isAdmin ||
     profile?.is_admin === true ||
     profile?.role === 'admin' ||
-    (user?.email && user.email.toLowerCase() === 'ouikey41@gmail.com') ||
+    isDesignatedAdminEmail(user?.email) ||
     sessionStorage.getItem('imc_admin') === '1'
   );
   const isMunicipalHead = Boolean(

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
+import { isDesignatedAdminEmail } from '../lib/adminConfig';
 import type { Session, User } from '@supabase/supabase-js';
 
 export interface UserProfile {
@@ -36,8 +37,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
-
-const DESIGNATED_ADMIN_EMAILS = ['ouikey41@gmail.com'];
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -132,7 +131,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       profile?.is_admin === true ||
       (user?.user_metadata as any)?.is_admin === true ||
       ['admin', 'municipal_administrator', 'platform_owner', 'super_admin'].includes(userRole) ||
-      (userEmail && DESIGNATED_ADMIN_EMAILS.includes(userEmail))
+      isDesignatedAdminEmail(userEmail)
     )
   );
 

@@ -35,6 +35,7 @@ export function useComplaints(departmentSlug?: string) {
 
   const submitComplaint = async (payload: {
     department_id: string;
+    ward_id?: string | null;
     citizen_name: string | null;
     citizen_phone: string | null;
     description: string;

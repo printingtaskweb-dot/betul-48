@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { Building2, Server, ShieldAlert, RefreshCw, Plus, CheckCircle2, AlertTriangle, Clock, Activity, Database, Lock } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
+import { RoleGuard } from '../../components/auth/RoleGuard';
 
 interface MunicipalityTenant {
   id: string;
@@ -35,7 +36,7 @@ interface FailedJob {
   created_at: string;
 }
 
-export const PlatformOwnerDashboard: React.FC = () => {
+const PlatformOwnerDashboardContent: React.FC = () => {
   const { user, profile } = useAuth();
   const [tenants, setTenants] = useState<MunicipalityTenant[]>([]);
   const [supportRequests, setSupportRequests] = useState<SupportAccessRequest[]>([]);
@@ -526,5 +527,17 @@ export const PlatformOwnerDashboard: React.FC = () => {
     </div>
   );
 };
+
+export const PlatformOwnerDashboard: React.FC = () => (
+  <RoleGuard
+    allowedRoles={['platform_owner', 'super_admin']}
+    allowAdminFlag={false}
+    unauthenticatedRedirect="/admin"
+    unauthorizedRedirect="/"
+    loadingTitle="Platform Owner Console"
+  >
+    <PlatformOwnerDashboardContent />
+  </RoleGuard>
+);
 
 export default PlatformOwnerDashboard;

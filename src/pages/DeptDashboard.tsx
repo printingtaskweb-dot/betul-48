@@ -15,7 +15,10 @@ import MunicipalAdministratorDashboard from './admin/MunicipalAdministratorDashb
 import ControlRoomDashboard from './ControlRoomDashboard';
 import VerifierDashboard from './VerifierDashboard';
 import type { Ward } from '../lib/wardTypes';
+import { countBoundaryCorners } from '../lib/wardTypes';
+import { mergeWithOfficialBetulWards } from '../data/betulWardBoundaries';
 import { isComplaintInWard } from './admin/municipal/utils/complaintWard';
+import { InteractiveWardComplaintMap } from '../components/maps/InteractiveWardComplaintMap';
 import {
   Building2, Search, Filter, CheckCircle, Clock,
   AlertCircle, XCircle, Camera,
@@ -696,6 +699,7 @@ export default function DeptDashboard() {
 
   // ── NEW: Ward registry ──
   const [wards, setWards] = useState<Ward[]>([]);
+  const [showAssignedWardMap, setShowAssignedWardMap] = useState(true);
 
   const { complaints, loading, error, fetchComplaints, assignComplaint, resolveComplaint } = useDeptComplaints(
     selectedDeptId
@@ -704,12 +708,24 @@ export default function DeptDashboard() {
   const myTier = getTier(profile?.role, profile?.hierarchy_code, profile?.authority_role);
   // Municipal Administrator & Deputy Commissioner have city-wide org purview
   const orgLevel = myTier <= 1;
-  const assignedWard = useMemo(
-    () => wards.find((ward) => ward.id === profile?.assigned_ward_id)
-      || wards.find((ward) => profile?.ward_number != null && String(ward.ward_number) === String(profile.ward_number))
-      || null,
-    [wards, profile?.assigned_ward_id, profile?.ward_number]
-  );
+  const assignedWard = useMemo(() => {
+    const directMatch =
+      wards.find((ward) => ward.id === profile?.assigned_ward_id) ||
+      wards.find(
+        (ward) =>
+          profile?.ward_number != null &&
+          String(ward.ward_number) === String(profile.ward_number),
+      );
+    if (directMatch) return directMatch;
+    if (profile?.ward_number != null) {
+      return (
+        mergeWithOfficialBetulWards(wards, true).find(
+          (w) => String(w.ward_number) === String(profile.ward_number),
+        ) || null
+      );
+    }
+    return null;
+  }, [wards, profile?.assigned_ward_id, profile?.ward_number]);
 
   const viewer: Viewer = useMemo(
     () => ({
@@ -815,9 +831,11 @@ export default function DeptDashboard() {
       const { data, error } = await supabase
         .from('wards')
         .select('*')
+        .eq('is_active', true)
         .order('ward_number', { ascending: true });
       if (error) throw error;
-      setWards((data || []) as Ward[]);
+      const rawWards = (data || []) as Ward[];
+      setWards(rawWards.length > 0 ? mergeWithOfficialBetulWards(rawWards, false) : []);
     } catch (e) {
       console.warn('Wards load failed (table may not exist yet):', e);
     }
@@ -1324,6 +1342,92 @@ export default function DeptDashboard() {
                 </button>
               </div>
             </div>
+          )}
+        </div>
+      )}
+
+      {assignedWard && (
+        <div
+          style={{
+            background: '#ffffff',
+            border: '1.5px solid #a7f3d0',
+            borderRadius: isMobile ? 14 : 'var(--radius-lg)',
+            padding: isMobile ? '10px 12px' : '14px 18px',
+            marginBottom: isMobile ? 12 : 18,
+            boxShadow: '0 2px 10px rgba(5, 150, 105, 0.08)',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: 8,
+              marginBottom: showAssignedWardMap ? 10 : 0,
+            }}
+          >
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+                <span style={{ background: '#059669', color: '#fff', fontSize: '0.68rem', fontWeight: 800, padding: '2px 8px', borderRadius: 999 }}>
+                  Ward {assignedWard.ward_number}
+                </span>
+                <span style={{ fontSize: isMobile ? '0.84rem' : '0.94rem', fontWeight: 900, color: '#064e3b' }}>
+                  {hi ? 'मेरा आवंटित वार्ड — ओपनस्ट्रीटमैप लाइव व्यू' : 'My Allocated Ward — OpenStreetMap Live View'}
+                </span>
+              </div>
+              <p style={{ margin: '2px 0 0', fontSize: '0.73rem', color: '#047857', fontWeight: 600 }}>
+                {assignedWard.name}
+                {assignedWard.area_sq_meters ? ` · ${(assignedWard.area_sq_meters / 10000).toFixed(2)} ha` : ''}
+                {countBoundaryCorners(assignedWard.boundary_coordinates) > 0
+                  ? ` · ${countBoundaryCorners(assignedWard.boundary_coordinates)} boundary corners`
+                  : ''}
+                {` · ${visibleComplaints.filter((c) => c.latitude != null && c.longitude != null).length} geo-tagged complaints`}
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setShowAssignedWardMap((v) => !v)}
+              style={{
+                background: '#ecfdf5',
+                border: '1px solid #6ee7b7',
+                color: '#065f46',
+                borderRadius: 8,
+                padding: '5px 10px',
+                fontSize: '0.74rem',
+                fontWeight: 800,
+                cursor: 'pointer',
+              }}
+            >
+              {showAssignedWardMap ? (hi ? 'नक्शा छिपाएं' : 'Hide Map') : (hi ? 'नक्शा दिखाएं' : 'Show Map')}
+            </button>
+          </div>
+          {showAssignedWardMap && (
+            <InteractiveWardComplaintMap
+              wards={wards}
+              complaints={visibleComplaints.map((c) => ({
+                id: c.id,
+                ticket_number: c.ticket_number,
+                description: c.description,
+                status: c.status,
+                address: c.address,
+                latitude: c.latitude,
+                longitude: c.longitude,
+                ward_id: c.ward_id ?? null,
+                citizen_name: c.citizen_name,
+                created_at: c.created_at,
+              }))}
+              highlightedWardId={assignedWard.id}
+              selectedWardId={assignedWard.id}
+              height={isMobile ? 250 : 320}
+              language={language}
+              onAllotComplaint={(mc) => {
+                const target = visibleComplaints.find((item) => item.id === mc.id);
+                if (target && canAllotComplaint(viewer, target.department_id)) {
+                  setAllotting(target);
+                }
+              }}
+            />
           )}
         </div>
       )}

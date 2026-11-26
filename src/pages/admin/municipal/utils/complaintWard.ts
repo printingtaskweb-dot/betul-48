@@ -1,4 +1,8 @@
-import type { Ward } from '../../../../lib/wardTypes';
+import {
+  getWardPolygons,
+  isPointInWardBoundary,
+  type Ward,
+} from '../../../../lib/wardTypes';
 import { haversineMeters } from './haversine';
 
 interface WardComplaint {
@@ -11,21 +15,37 @@ interface WardComplaint {
 }
 
 export function isComplaintInWard(complaint: WardComplaint, ward: Ward): boolean {
-  if (complaint.ward_id === ward.id || complaint.area?.ward_id === ward.id) return true;
+  if (complaint.ward_id) return complaint.ward_id === ward.id;
+  if (complaint.area?.ward_id) return complaint.area.ward_id === ward.id;
+  if (ward.is_active === false) return false;
 
-  const wardMatch = complaint.address?.match(/ward\s*(\d+)/i)
-    || complaint.description.match(/ward\s*(\d+)/i);
+  if (complaint.latitude != null && complaint.longitude != null) {
+    if (getWardPolygons(ward.boundary_coordinates).length > 0) {
+      return isPointInWardBoundary(
+        [complaint.latitude, complaint.longitude],
+        ward.boundary_coordinates,
+      );
+    }
+    if (
+      ward.area_sq_meters !== 0 &&
+      ward.center_latitude != null &&
+      ward.center_longitude != null
+    ) {
+      return (
+        haversineMeters(
+          ward.center_latitude,
+          ward.center_longitude,
+          complaint.latitude,
+          complaint.longitude,
+        ) <= (ward.radius_meters || 1000)
+      );
+    }
+  }
+
+  const wardMatch =
+    complaint.address?.match(/\bward\s*0*(\d+)\b/i) ||
+    complaint.description.match(/\bward\s*0*(\d+)\b/i);
   if (wardMatch && Number(wardMatch[1]) === ward.ward_number) return true;
 
-  if (
-    complaint.latitude == null || complaint.longitude == null ||
-    ward.center_latitude == null || ward.center_longitude == null
-  ) return false;
-
-  return haversineMeters(
-    ward.center_latitude,
-    ward.center_longitude,
-    complaint.latitude,
-    complaint.longitude,
-  ) <= (ward.radius_meters || 2000);
+  return false;
 }

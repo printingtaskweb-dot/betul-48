@@ -125,9 +125,10 @@ export const FilterBar: React.FC<Props> = ({
             onClick={onToggleRadar}
             style={{
               ...primaryBtn,
-              background: showRadar ? PRIMARY : 'var(--theme-bg, #F6F1F1)',
-              color: showRadar ? '#fff' : PRIMARY,
-              border: `1.5px solid ${PRIMARY}`,
+              background: showRadar ? 'linear-gradient(135deg, #146C94, #0E526F)' : '#f0f7f9',
+              color: showRadar ? '#ffffff' : PRIMARY,
+              border: `1px solid ${showRadar ? '#146C94' : '#b7dae4'}`,
+              boxShadow: showRadar ? '0 2px 8px rgba(20, 108, 148, 0.2)' : 'none',
             }}
           >
             <Compass size={14} />
@@ -167,9 +168,9 @@ export const FilterBar: React.FC<Props> = ({
             style={{
               height: 38,
               padding: '0 12px',
-              borderRadius: 'var(--radius-md, 8px)',
-              border: activeFilterCount > (query ? 1 : 0) ? `1.5px solid ${PRIMARY}` : '1.5px solid #cbd5e1',
-              background: activeFilterCount > (query ? 1 : 0) ? `${PRIMARY}15` : '#fff',
+              borderRadius: 10,
+              border: activeFilterCount > (query ? 1 : 0) ? `1.5px solid ${PRIMARY}` : '1px solid #e6e2d8',
+              background: activeFilterCount > (query ? 1 : 0) ? '#f0f7f9' : '#faf9f6',
               color: activeFilterCount > (query ? 1 : 0) ? PRIMARY : '#475569',
               fontWeight: 800,
               fontSize: '0.78rem',
@@ -203,9 +204,9 @@ export const FilterBar: React.FC<Props> = ({
             style={{
               width: 38,
               height: 38,
-              borderRadius: 'var(--radius-md, 8px)',
-              border: `1.5px solid ${PRIMARY}`,
-              background: showRadar ? PRIMARY : '#fff',
+              borderRadius: 10,
+              border: `1px solid ${showRadar ? '#146C94' : '#b7dae4'}`,
+              background: showRadar ? 'linear-gradient(135deg, #146C94, #0E526F)' : '#f0f7f9',
               color: showRadar ? '#fff' : PRIMARY,
               display: 'flex',
               alignItems: 'center',
@@ -225,7 +226,7 @@ export const FilterBar: React.FC<Props> = ({
             style={{
               paddingTop: 10,
               marginTop: 6,
-              borderTop: '1px dashed #cbd5e1',
+              borderTop: '1px dashed #e6e2d8',
               display: 'flex',
               flexDirection: 'column',
               gap: 8,

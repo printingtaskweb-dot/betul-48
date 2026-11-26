@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { AlertTriangle, CheckCircle2, ClipboardCheck, Clock3, RefreshCw, Send, ShieldCheck } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { RoleGuard } from '../components/auth/RoleGuard';
 import type { StaffMember } from '../lib/hierarchy';
 import { supabase } from '../lib/supabase';
 import type { Ward } from '../lib/wardTypes';
@@ -63,7 +64,7 @@ const typeLabel: Record<Request['request_type'], string> = {
   appeal: 'Citizen appeal',
 };
 
-export default function VerifierDashboard() {
+function VerifierDashboardContent() {
   const { user } = useAuth();
   const [requests, setRequests] = useState<Request[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
@@ -314,5 +315,28 @@ export default function VerifierDashboard() {
         ) : <section style={card}><CheckCircle2 size={22} color="var(--gray-500)" /><p style={{ marginBottom: 0, color: 'var(--gray-600)' }}>Select a case from the queue to review details and record a decision.</p></section>}
       </div>
     </main>
+  );
+}
+
+export default function VerifierDashboard() {
+  return (
+    <RoleGuard
+      allowedRoles={[
+        'verification_officer',
+        'verifier',
+        'appeals_officer',
+        'admin',
+        'municipal_administrator',
+        'deputy_commissioner',
+        'platform_owner',
+        'super_admin',
+      ]}
+      allowAdminFlag
+      unauthenticatedRedirect="/dept/login"
+      unauthorizedRedirect="/"
+      loadingTitle="Verification & Appeals Workspace"
+    >
+      <VerifierDashboardContent />
+    </RoleGuard>
   );
 }

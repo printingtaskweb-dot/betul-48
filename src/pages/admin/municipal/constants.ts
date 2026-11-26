@@ -1,2 +1,2 @@
-export const BORDER = '1.5px solid var(--theme-component-border, #bfbfbf)';
-export const PRIMARY = 'var(--theme-primary, #146C94)';
+export const BORDER = '1px solid #e6e2d8';
+export const PRIMARY = '#146C94';

@@ -1,5 +1,5 @@
-import { GoogleIcon } from '../../../../components/common/GoogleIcon';
 import React, { useMemo, useState } from 'react';
+import { Award, BadgeCheck, Phone } from 'lucide-react';
 import { card, field } from '../styles';
 import { BORDER, PRIMARY } from '../constants';
 import { TIER_LABEL } from '../../../../lib/hierarchy';
@@ -41,15 +41,39 @@ export const EmployeeLeaderboardTab: React.FC<Props> = ({ employees, departments
   }, [employees, roleFilter, deptFilter]);
 
   return (
-    <div style={{ ...card, padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+    <div style={{ ...card, padding: '20px 22px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <style>{`
+        .leaderboard-row:hover {
+          background: #faf9f6 !important;
+        }
+      `}</style>
+
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: 12 }}>
-        <div>
-          <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 900, color: 'var(--gray-900)' }}>
-            Employee Performance Leaderboard
-          </h3>
-          <p style={{ margin: '3px 0 0', fontSize: '0.76rem', color: 'var(--gray-600)' }}>
-            Every officer on the platform, ranked by resolved ticket count.
-          </p>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+          <div
+            style={{
+              width: 40,
+              height: 40,
+              borderRadius: 12,
+              background: 'linear-gradient(135deg, #f0f7f9, #d9ecf1)',
+              border: '1px solid #b7dae4',
+              color: '#146C94',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0,
+            }}
+          >
+            <Award size={20} />
+          </div>
+          <div>
+            <h3 style={{ margin: 0, fontSize: '1.08rem', fontWeight: 900, color: '#0f2531' }}>
+              Employee Performance Leaderboard
+            </h3>
+            <p style={{ margin: '3px 0 0', fontSize: '0.76rem', color: '#64748b' }}>
+              Every officer on the platform, ranked by resolved ticket count.
+            </p>
+          </div>
         </div>
 
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
@@ -66,7 +90,7 @@ export const EmployeeLeaderboardTab: React.FC<Props> = ({ employees, departments
       <div style={{ overflowX: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
           <thead>
-            <tr style={{ borderBottom: BORDER, textAlign: 'left', color: 'var(--gray-700)' }}>
+            <tr style={{ background: '#faf9f6', borderBottom: BORDER, borderTop: BORDER, textAlign: 'left', color: '#64748b', fontSize: '0.72rem', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
               <th style={{ padding: '10px 12px' }}>#</th>
               <th style={{ padding: '10px 12px' }}>Employee</th>
               <th style={{ padding: '10px 12px' }}>Role / Tier</th>
@@ -85,48 +109,64 @@ export const EmployeeLeaderboardTab: React.FC<Props> = ({ employees, departments
               const tierBadge = TIER_LABEL[emp.tier] || TIER_LABEL[5];
 
               return (
-                <tr key={emp.id} style={{ borderBottom: '1px solid var(--theme-component-border, #bfbfbf)', background: 'rgba(255,255,255,0.2)' }}>
-                  <td style={{ padding: '10px 12px', fontWeight: 900, color: PRIMARY }}>{idx + 1}</td>
-                  <td style={{ padding: '10px 12px', fontWeight: 800, color: 'var(--gray-900)' }}>
+                <tr key={emp.id} className="leaderboard-row" style={{ borderBottom: BORDER, background: '#ffffff', transition: 'background 0.15s ease' }}>
+                  <td style={{ padding: '10px 12px', fontWeight: 900, color: PRIMARY, fontVariantNumeric: 'tabular-nums' }}>{idx + 1}</td>
+                  <td style={{ padding: '10px 12px', fontWeight: 800, color: '#0f2531' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <GoogleIcon name={tierBadge.icon} size={16} />
+                      <BadgeCheck size={15} color={PRIMARY} />
                       <span>{emp.full_name || 'Staff Member'}</span>
                     </div>
                     {emp.staff_code && (
-                      <span style={{ fontSize: '0.68rem', color: 'var(--gray-500)', display: 'block' }}>{emp.staff_code}</span>
+                      <span style={{ fontSize: '0.68rem', color: '#64748b', display: 'block', marginLeft: 21 }}>{emp.staff_code}</span>
                     )}
                   </td>
                   <td style={{ padding: '10px 12px' }}>
                     <span style={{
-                      fontSize: '0.7rem', fontWeight: 800, padding: '3px 8px', borderRadius: 12,
-                      background: 'var(--theme-bg, #F6F1F1)', border: BORDER, color: tierBadge.badgeColor,
+                      fontSize: '0.7rem', fontWeight: 800, padding: '3px 8px', borderRadius: 999,
+                      background: '#f0f7f9', border: '1px solid #b7dae4', color: tierBadge.badgeColor || PRIMARY,
                     }}>{tierBadge.short}</span>
                   </td>
-                  <td style={{ padding: '10px 12px', color: 'var(--gray-800)' }}>{deptObj?.name || 'City-wide'}</td>
-                  <td style={{ padding: '10px 12px', color: 'var(--gray-700)' }}>
+                  <td style={{ padding: '10px 12px', color: '#334155', fontWeight: 600 }}>{deptObj?.name || 'City-wide'}</td>
+                  <td style={{ padding: '10px 12px', color: '#475569' }}>
                     {emp.ward_number ? `Ward ${emp.ward_number}` : 'All Wards'}
                   </td>
-                  <td style={{ padding: '10px 12px', fontWeight: 800 }}>{emp.assignedCount}</td>
-                  <td style={{ padding: '10px 12px', fontWeight: 800, color: '#15803d' }}>{emp.solvedCount}</td>
-                  <td style={{ padding: '10px 12px', fontWeight: 800, color: 'var(--status-pending)' }}>{emp.pendingCount}</td>
+                  <td style={{ padding: '10px 12px', fontWeight: 800, color: '#0f2531', fontVariantNumeric: 'tabular-nums' }}>{emp.assignedCount}</td>
+                  <td style={{ padding: '10px 12px', fontWeight: 800, color: '#059669', fontVariantNumeric: 'tabular-nums' }}>{emp.solvedCount}</td>
+                  <td style={{ padding: '10px 12px', fontWeight: 800, color: '#b45309', fontVariantNumeric: 'tabular-nums' }}>{emp.pendingCount}</td>
                   <td style={{ padding: '10px 12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                      <div style={{ width: 60, height: 6, borderRadius: 3, background: 'var(--theme-component-border, #bfbfbf)', overflow: 'hidden' }}>
+                      <div style={{ width: 60, height: 6, borderRadius: 999, background: '#e6e2d8', overflow: 'hidden' }}>
                         <div style={{
                           width: `${emp.rate}%`, height: '100%',
-                          background: emp.rate >= 75 ? '#15803d' : emp.rate >= 40 ? '#b45309' : '#991b1b',
+                          background: emp.rate >= 75 ? '#10b981' : emp.rate >= 40 ? '#146C94' : '#f59e0b',
                         }} />
                       </div>
-                      <span style={{ fontWeight: 800, fontSize: '0.74rem' }}>{emp.rate}%</span>
+                      <span style={{ fontWeight: 800, fontSize: '0.74rem', color: '#0f2531', fontVariantNumeric: 'tabular-nums' }}>{emp.rate}%</span>
                     </div>
                   </td>
                   <td style={{ padding: '10px 12px' }}>
                     {emp.phone ? (
-                      <a href={`tel:${emp.phone}`} style={{ color: PRIMARY, fontWeight: 700, textDecoration: 'none', fontSize: '0.76rem' }}>
-                        <span className="material-symbols-rounded" style={{ fontSize: 13, verticalAlign: 'middle', marginRight: 4 }}>call</span>{emp.phone}
+                      <a
+                        href={`tel:${emp.phone}`}
+                        style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: 4,
+                          color: PRIMARY,
+                          background: '#faf9f6',
+                          border: '1px solid #e6e2d8',
+                          borderRadius: 999,
+                          padding: '2px 8px',
+                          fontWeight: 700,
+                          textDecoration: 'none',
+                          fontSize: '0.72rem',
+                        }}
+                      >
+                        <Phone size={11} />
+                        <span>{emp.phone}</span>
                       </a>
                     ) : (
-                      <span style={{ color: 'var(--gray-400)' }}>N/A</span>
+                      <span style={{ color: '#94a3b8' }}>N/A</span>
                     )}
                   </td>
                 </tr>
@@ -134,7 +174,7 @@ export const EmployeeLeaderboardTab: React.FC<Props> = ({ employees, departments
             })}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={10} style={{ padding: 24, textAlign: 'center', color: 'var(--gray-500)' }}>
+                <td colSpan={10} style={{ padding: 24, textAlign: 'center', color: '#64748b' }}>
                   No employees match current filter.
                 </td>
               </tr>
