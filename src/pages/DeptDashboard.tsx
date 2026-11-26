@@ -1,6 +1,6 @@
 import { GoogleIcon } from '../components/common/GoogleIcon';
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useDeptComplaints, type DeptComplaint } from '../hooks/useDeptComplaints';
 import { useAuth } from '../contexts/AuthContext';
@@ -28,7 +28,7 @@ import {
   Inbox, CheckSquare, Plus, Layers, Briefcase,
   FileText, ShieldAlert,
   ArrowRight, Info, Users, Award, Mail, MapPin,
-  Navigation, ArrowLeft, LayoutDashboard, Compass, ChevronRight,
+  Navigation, ArrowLeft, LayoutDashboard, Compass, ChevronRight, Home as HomeIcon,
 } from 'lucide-react';
 import { DepartmentServiceIcon } from '../components/common/DepartmentServiceIcon';
 
@@ -679,11 +679,27 @@ export default function DeptDashboard() {
     hierarchy_code?: string | null;
   } | null>(null);
 
+  const [searchParams] = useSearchParams();
   const [profileLoading, setProfileLoading] = useState(true);
   const [noDept, setNoDept] = useState(false);
+  const requestedDeptTab = searchParams.get('tab') as
+    | 'overview'
+    | 'complaints'
+    | 'departments'
+    | 'staff_reports'
+    | 'wards'
+    | 'location_filter'
+    | null;
   const [activeTab, setActiveTab] = useState<
     'overview' | 'complaints' | 'departments' | 'staff_reports' | 'wards' | 'location_filter'
-  >(typeof window !== 'undefined' && window.innerWidth <= 768 ? 'overview' : 'complaints');
+  >(
+    requestedDeptTab &&
+      ['overview', 'complaints', 'departments', 'staff_reports', 'wards', 'location_filter'].includes(requestedDeptTab)
+      ? requestedDeptTab
+      : typeof window !== 'undefined' && window.innerWidth <= 768
+      ? 'overview'
+      : 'complaints'
+  );
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [statusFilter, setStatusFilter] = useState('all');
   const [unallottedOnly, setUnallottedOnly] = useState(false);
@@ -718,6 +734,33 @@ export default function DeptDashboard() {
   const myTier = getTier(profile?.role, profile?.hierarchy_code, profile?.authority_role);
   // Municipal Administrator & Deputy Commissioner have city-wide org purview
   const orgLevel = myTier <= 1;
+
+  useEffect(() => {
+    if (profileLoading) return;
+    if (activeTab === 'departments' && myTier > 2) {
+      setActiveTab('complaints');
+      return;
+    }
+    if (activeTab === 'staff_reports' && myTier > 3) {
+      setActiveTab('complaints');
+      return;
+    }
+    if (activeTab === 'wards' && !orgLevel) {
+      setActiveTab('complaints');
+      return;
+    }
+    if (!requestedDeptTab) return;
+    if (requestedDeptTab === 'departments' && myTier > 2) return;
+    if (requestedDeptTab === 'staff_reports' && myTier > 3) return;
+    if (requestedDeptTab === 'wards' && !orgLevel) return;
+    if (
+      ['overview', 'complaints', 'departments', 'staff_reports', 'wards', 'location_filter'].includes(
+        requestedDeptTab
+      )
+    ) {
+      setActiveTab(requestedDeptTab);
+    }
+  }, [profileLoading, activeTab, requestedDeptTab, myTier, orgLevel]);
   const assignedWard = useMemo(() => {
     const directMatch =
       wards.find((ward) => ward.id === profile?.assigned_ward_id) ||
@@ -2287,10 +2330,10 @@ export default function DeptDashboard() {
         boxShadow: '0 2px 14px rgba(0,0,0,0.25)',
       }}>
         <div style={{ maxWidth: 1200, margin: '0 auto', display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between', height: 64, gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+          justifyContent: 'space-between', minHeight: 64, padding: '8px 0', gap: 10, flexWrap: 'wrap' }}>
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: 12, textDecoration: 'none' }}>
             <div style={{ width: 38, height: 38, borderRadius: 10, background: 'rgba(255,255,255,0.18)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
               <Building2 size={20} color="#fff" />
             </div>
             <div>
@@ -2305,7 +2348,7 @@ export default function DeptDashboard() {
                 </h1>
               </div>
               <p style={{ margin: 0, fontSize: '0.72rem', color: 'rgba(255,255,255,0.8)' }}>
-                {profile?.full_name ? `${profile.full_name} • ` : ''}{roleLabel(profile?.role, language)}
+                {profile?.full_name ? `${profile.full_name} • ` : ''}{roleLabel(profile?.hierarchy_code || profile?.authority_role || profile?.role, language)}
               </p>
               {assignedWard && (
                 <p style={{ margin: '3px 0 0', fontSize: '0.68rem', color: 'rgba(255,255,255,0.88)' }}>
@@ -2313,9 +2356,9 @@ export default function DeptDashboard() {
                 </p>
               )}
             </div>
-          </div>
+          </Link>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
             {/* Quick department filter in header for org level */}
             {orgLevel && (
               <select
@@ -2336,11 +2379,27 @@ export default function DeptDashboard() {
                 ))}
               </select>
             )}
+            <Link
+              to="/"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 11px',
+                borderRadius: 'var(--radius-sm)', background: 'rgba(255,255,255,0.14)',
+                border: '1px solid rgba(255,255,255,0.28)', color: '#fff', fontWeight: 700, fontSize: '0.78rem', textDecoration: 'none' }}
+            >
+              <HomeIcon size={14} /> <span>{hi ? 'होम' : 'Home'}</span>
+            </Link>
+            <Link
+              to="/profile"
+              style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '7px 11px',
+                borderRadius: 'var(--radius-sm)', background: 'rgba(255,255,255,0.14)',
+                border: '1px solid rgba(255,255,255,0.28)', color: '#fff', fontWeight: 700, fontSize: '0.78rem', textDecoration: 'none' }}
+            >
+              <User size={14} /> <span>{hi ? 'प्रोफ़ाइल' : 'Profile'}</span>
+            </Link>
             <button
               onClick={handleLogout}
               style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '7px 14px',
-                borderRadius: 'var(--radius-sm)', background: 'rgba(255,255,255,0.15)',
-                border: '1px solid rgba(255,255,255,0.3)', color: '#fff', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
+                borderRadius: 'var(--radius-sm)', background: 'rgba(255,255,255,0.18)',
+                border: '1px solid rgba(255,255,255,0.32)', color: '#fff', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer' }}
             >
               <LogOut size={14} /> {hi ? 'लॉगआउट' : 'Logout'}
             </button>

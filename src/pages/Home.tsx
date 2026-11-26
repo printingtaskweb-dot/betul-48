@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Capacitor } from '@capacitor/core';
 import { PushNotifications } from '@capacitor/push-notifications';
 import { useAuth } from '../contexts/AuthContext';
+import { getStaffPortalNavMeta, mergeUserRoleProfile } from '../lib/roleDefinitions';
+import { StaffPortalNavButton } from '../components/common/StaffPortalButton';
 import { StatsSection } from '../components/StatsSection';
 import { ServicesGrid } from '../components/ServicesGrid';
 import { WardCoverageSection } from '../components/WardCoverageSection';
@@ -26,12 +28,19 @@ import {
   Truck,
   ArrowRight,
   X,
-  Building2,
 } from 'lucide-react';
 
 export const Home: React.FC = () => {
-  const { language, setLanguage, user, profile } = useAuth();
+  const { language, setLanguage, user, profile, isAdmin } = useAuth();
   const navigate = useNavigate();
+
+  const effectiveProfile = mergeUserRoleProfile(profile, user);
+  const portalMeta = user
+    ? isAdmin
+      ? getStaffPortalNavMeta({ role: 'admin', is_admin: true }, user.email)
+      : getStaffPortalNavMeta(effectiveProfile, user.email)
+    : null;
+  const staffDestination = portalMeta && portalMeta.kind !== 'citizen' ? portalMeta.route : null;
 
   // Search State
   const [searchQuery, setSearchQuery] = useState('');
@@ -164,17 +173,12 @@ export const Home: React.FC = () => {
             >
               {language === 'hi' ? 'स्थानीय समाचार' : 'Local News'}
             </Link>
-            <Link
-              to="/dept/login"
-              className="px-4 py-1.5 rounded-full text-sm font-medium text-civic-700 hover:text-civic-900 hover:bg-civic-50 transition text-decoration-none flex items-center gap-1"
-            >
-              <Building2 className="w-3.5 h-3.5" />
-              <span>{language === 'hi' ? 'विभाग पोर्टल' : 'Dept Portal'}</span>
-            </Link>
+            <StaffPortalNavButton variant="desktop-nav" />
           </nav>
 
-          {/* Right Controls: Translator (Icon Only) & Profile */}
+          {/* Right Controls: Dedicated Role Portal, Notifications, Translator & Profile */}
           <div className="flex items-center gap-2 shrink-0">
+            <StaffPortalNavButton variant="header-pill" />
             <button
               type="button"
               onClick={() => window.dispatchEvent(new CustomEvent('betul:open-notifications'))}
@@ -539,8 +543,17 @@ export const Home: React.FC = () => {
             <Link to="/department/green" className="hover:text-civic-800 text-decoration-none">
               {language === 'hi' ? 'हरित कचरा' : 'Green Waste'}
             </Link>
-            <Link to="/dept/login" className="text-civic-700 hover:text-civic-900 text-decoration-none font-bold">
-              {language === 'hi' ? 'स्टाफ पोर्टल' : 'Department Staff'}
+            <Link
+              to={staffDestination || '/dept/login'}
+              className="text-civic-700 hover:text-civic-900 text-decoration-none font-bold"
+            >
+              {portalMeta && staffDestination
+                ? language === 'hi'
+                  ? portalMeta.labelHi
+                  : portalMeta.labelEn
+                : language === 'hi'
+                ? 'स्टाफ पोर्टल'
+                : 'Department Staff'}
             </Link>
           </div>
         </div>

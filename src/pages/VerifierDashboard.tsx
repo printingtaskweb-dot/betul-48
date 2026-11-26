@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, CheckCircle2, ClipboardCheck, Clock3, RefreshCw, Send, ShieldCheck } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { AlertTriangle, CheckCircle2, ClipboardCheck, Clock3, Home, LogOut, RefreshCw, Send, ShieldCheck, User } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { RoleGuard } from '../components/auth/RoleGuard';
 import type { StaffMember } from '../lib/hierarchy';
@@ -65,7 +66,12 @@ const typeLabel: Record<Request['request_type'], string> = {
 };
 
 function VerifierDashboardContent() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
   const [requests, setRequests] = useState<Request[]>([]);
   const [departments, setDepartments] = useState<Department[]>([]);
   const [wards, setWards] = useState<Ward[]>([]);
@@ -256,7 +262,12 @@ function VerifierDashboardContent() {
           <ShieldCheck size={25} color="var(--theme-primary, #146C94)" />
           <div><h1 style={{ margin: 0, fontSize: '1.25rem' }}>Independent Verification & Appeals</h1><p style={{ margin: '4px 0 0', color: 'var(--gray-600)', fontSize: '0.82rem' }}>Review dissatisfaction, missed responses, and requested inspections</p></div>
         </div>
-        <button type="button" onClick={() => void load()} style={{ ...button, background: 'var(--theme-bg, #F6F1F1)', color: 'var(--theme-primary, #146C94)', border: '1px solid var(--theme-primary, #146C94)' }}><RefreshCw size={14} /> Refresh</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <button type="button" onClick={() => navigate('/')} style={{ ...button, background: '#fff', color: '#475569', border: '1px solid #cbd5e1' }}><Home size={14} /> Home</button>
+          <button type="button" onClick={() => navigate('/profile')} style={{ ...button, background: '#f0f7f9', color: 'var(--theme-primary, #146C94)', border: '1px solid #b7dae4' }}><User size={14} /> Profile</button>
+          <button type="button" onClick={() => void load()} style={{ ...button, background: 'var(--theme-bg, #F6F1F1)', color: 'var(--theme-primary, #146C94)', border: '1px solid var(--theme-primary, #146C94)' }}><RefreshCw size={14} /> Refresh</button>
+          <button type="button" onClick={() => void handleLogout()} style={{ ...button, background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}><LogOut size={14} /> Logout</button>
+        </div>
       </header>
 
       {error && <div role="alert" style={{ ...card, color: '#991b1b', borderColor: '#fca5a5' }}>{error}</div>}

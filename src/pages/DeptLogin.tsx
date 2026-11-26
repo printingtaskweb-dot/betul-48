@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
-import { getStaffHomeRoute } from '../lib/roleDefinitions';
+import { getStaffHomeRoute, mergeUserRoleProfile } from '../lib/roleDefinitions';
 import { Building2, ArrowRight, Clock, LogOut } from 'lucide-react';
 import { CivicHeader } from '../components/common/CivicHeader';
 import { FormInput } from '../components/auth/FormInput';
@@ -21,14 +21,14 @@ export default function DeptLogin() {
 
   const role = profile?.role;
   const isPending = role === 'pending_staff';
-  const staffDestination = getStaffHomeRoute(profile, user?.email);
-  const isStaff = staffDestination !== '/';
+  const staffDestination = getStaffHomeRoute(mergeUserRoleProfile(profile, user), user?.email);
+  const isStaff = Boolean(user && staffDestination !== '/');
 
   useEffect(() => {
-    if (user && profile && isStaff) {
+    if (user && isStaff) {
       navigate(staffDestination, { replace: true });
     }
-  }, [user, profile, isStaff, staffDestination, navigate]);
+  }, [user, isStaff, staffDestination, navigate]);
 
   const handleLogin = async () => {
     const idInput = identifier.trim();
@@ -64,7 +64,10 @@ export default function DeptLogin() {
           .select('role, authority_role, hierarchy_code, is_admin')
           .eq('id', signData.user.id)
           .maybeSingle();
-        const nextRoute = getStaffHomeRoute(signedProfile, mail);
+        const nextRoute = getStaffHomeRoute(
+          mergeUserRoleProfile(signedProfile, signData.user),
+          mail
+        );
         navigate(nextRoute !== '/' ? nextRoute : '/dept/dashboard', { replace: true });
       } else {
         navigate('/dept/dashboard', { replace: true });

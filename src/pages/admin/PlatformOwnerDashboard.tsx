@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { Building2, Server, ShieldAlert, RefreshCw, Plus, CheckCircle2, AlertTriangle, Clock, Activity, Database, Lock } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Building2, Server, ShieldAlert, RefreshCw, Plus, CheckCircle2, AlertTriangle, Clock, Activity, Database, Lock, Home as HomeIcon, User, LogOut, ShieldCheck } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
 import { useAuth } from '../../contexts/AuthContext';
 import { RoleGuard } from '../../components/auth/RoleGuard';
@@ -37,7 +38,8 @@ interface FailedJob {
 }
 
 const PlatformOwnerDashboardContent: React.FC = () => {
-  const { user, profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
   const [tenants, setTenants] = useState<MunicipalityTenant[]>([]);
   const [supportRequests, setSupportRequests] = useState<SupportAccessRequest[]>([]);
   const [failedJobs, setFailedJobs] = useState<FailedJob[]>([]);
@@ -148,15 +150,39 @@ const PlatformOwnerDashboardContent: React.FC = () => {
             <p style={{ margin: 0, fontSize: '0.8rem', color: '#94a3b8' }}>Tenant Onboarding, Scoped Support & System Diagnostics</p>
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
           <span style={{ fontSize: '0.8rem', background: '#334155', padding: '4px 10px', borderRadius: 12, color: '#e2e8f0' }}>
             {profile?.email || user?.email} (Platform Admin)
           </span>
+          <button
+            onClick={() => navigate('/admin/dashboard')}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: '#4f46e5', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700 }}
+          >
+            <ShieldCheck size={14} /> Admin Console
+          </button>
+          <button
+            onClick={() => navigate('/')}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: '#334155', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
+          >
+            <HomeIcon size={14} /> Home
+          </button>
+          <button
+            onClick={() => navigate('/profile')}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: '#334155', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
+          >
+            <User size={14} /> Profile
+          </button>
           <button
             onClick={fetchData}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#475569', color: '#fff', border: 'none', padding: '6px 14px', borderRadius: 6, cursor: 'pointer', fontSize: '0.8rem', fontWeight: 600 }}
           >
             <RefreshCw size={14} className={loading ? 'animate-spin' : ''} /> Refresh
+          </button>
+          <button
+            onClick={async () => { await signOut(); navigate('/'); }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 5, background: '#991b1b', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: 6, cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700 }}
+          >
+            <LogOut size={14} /> Logout
           </button>
         </div>
       </header>

@@ -2,6 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { Landmark, Globe, ArrowLeft } from 'lucide-react';
+import { StaffPortalNavButton } from './StaffPortalButton';
 
 interface CivicHeaderProps {
   title?: string;
@@ -109,6 +110,8 @@ export const CivicHeader: React.FC<CivicHeaderProps> = ({
               {language === 'hi' ? 'समाचार' : 'News'}
             </Link>
           </nav>
+
+          <StaffPortalNavButton variant="header-pill" />
 
           {actionButton}
 

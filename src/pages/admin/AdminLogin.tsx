@@ -3,12 +3,17 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { getStaffHomeRoute, isPlatformAdminProfile } from '../../lib/roleDefinitions';
 import { supabase } from '../../lib/supabase';
-import { Lock, ShieldCheck, LogIn, AlertCircle } from 'lucide-react';
+import { Lock, ShieldCheck, LogIn, AlertCircle, ArrowRight } from 'lucide-react';
 import { CivicHeader } from '../../components/common/CivicHeader';
+import { getStaffPortalNavMeta, mergeUserRoleProfile } from '../../lib/roleDefinitions';
 
 export const AdminLogin: React.FC = () => {
   const navigate = useNavigate();
-  const { user, isAdmin, loading, refreshProfile } = useAuth();
+  const { user, profile, isAdmin, loading, refreshProfile } = useAuth();
+  const signedInPortal =
+    user && !isAdmin
+      ? getStaffPortalNavMeta(mergeUserRoleProfile(profile, user), user.email)
+      : null;
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -115,6 +120,21 @@ export const AdminLogin: React.FC = () => {
           </div>
 
           <div className="p-6 sm:p-8 space-y-4">
+            {signedInPortal && signedInPortal.kind !== 'citizen' && (
+              <div className="p-3.5 rounded-2xl bg-civic-50 border border-civic-200 text-civic-900 text-xs font-semibold flex flex-col gap-2">
+                <span>
+                  You are signed in ({profile?.full_name || user?.email}). Open your dedicated workspace directly:
+                </span>
+                <Link
+                  to={signedInPortal.route}
+                  className="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-civic-700 hover:bg-civic-800 text-white font-bold text-xs text-decoration-none self-start transition"
+                >
+                  <span>{signedInPortal.labelEn}</span>
+                  <ArrowRight size={13} />
+                </Link>
+              </div>
+            )}
+
             {error && (
               <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 text-xs sm:text-sm font-semibold flex items-center gap-2">
                 <AlertCircle size={16} className="shrink-0" />

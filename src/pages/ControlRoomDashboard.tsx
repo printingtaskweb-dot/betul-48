@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Briefcase, Building2, ClipboardList, PhoneCall, RefreshCw, Save, Search, Send, ShieldCheck, Users } from 'lucide-react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Briefcase, Building2, ClipboardList, Home, LogOut, PhoneCall, RefreshCw, Save, Search, Send, ShieldCheck, User, Users } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { RoleGuard } from '../components/auth/RoleGuard';
 import { supabase } from '../lib/supabase';
@@ -74,9 +75,27 @@ const button: React.CSSProperties = {
   color: '#fff', background: 'var(--theme-primary, #146C94)', fontWeight: 800,
 };
 
+const CONTROL_ROOM_TABS: readonly Tab[] = ['intake', 'routing', 'callbacks', 'followups', 'ward-staff'];
+
 function ControlRoomDashboardContent() {
-  const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<Tab>('intake');
+  const { user, signOut } = useAuth();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const requestedTab = searchParams.get('tab') as Tab | null;
+  const [activeTab, setActiveTab] = useState<Tab>(
+    requestedTab && CONTROL_ROOM_TABS.includes(requestedTab) ? requestedTab : 'intake'
+  );
+
+  useEffect(() => {
+    if (requestedTab && CONTROL_ROOM_TABS.includes(requestedTab)) {
+      setActiveTab(requestedTab);
+    }
+  }, [requestedTab]);
+
+  const handleLogout = async () => {
+    await signOut();
+    navigate('/');
+  };
   const [departments, setDepartments] = useState<Department[]>([]);
   const [wards, setWards] = useState<Ward[]>([]);
   const [staff, setStaff] = useState<StaffMember[]>([]);
@@ -376,7 +395,12 @@ function ControlRoomDashboardContent() {
             <p style={{ margin: '4px 0 0', color: 'var(--gray-600)', fontSize: '0.82rem' }}>Citizen intake, routing support, callbacks, and external coordination</p>
           </div>
         </div>
-        <button type="button" onClick={() => void load()} style={{ ...button, background: 'var(--theme-bg, #F6F1F1)', color: 'var(--theme-primary, #146C94)', border: '1px solid var(--theme-primary, #146C94)' }}><RefreshCw size={14} /> Refresh</button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+          <Link to="/" style={{ ...button, textDecoration: 'none', background: '#fff', color: '#475569', border: '1px solid #cbd5e1' }}><Home size={14} /> Home</Link>
+          <Link to="/profile" style={{ ...button, textDecoration: 'none', background: '#f0f7f9', color: 'var(--theme-primary, #146C94)', border: '1px solid #b7dae4' }}><User size={14} /> Profile</Link>
+          <button type="button" onClick={() => void load()} style={{ ...button, background: 'var(--theme-bg, #F6F1F1)', color: 'var(--theme-primary, #146C94)', border: '1px solid var(--theme-primary, #146C94)' }}><RefreshCw size={14} /> Refresh</button>
+          <button type="button" onClick={() => void handleLogout()} style={{ ...button, background: '#fef2f2', color: '#dc2626', border: '1px solid #fecaca' }}><LogOut size={14} /> Logout</button>
+        </div>
       </header>
 
       {error && <div role="alert" style={{ ...panel, color: '#991b1b', borderColor: '#fca5a5' }}>{error}</div>}

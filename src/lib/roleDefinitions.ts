@@ -244,12 +244,30 @@ export interface RoleLookupLike {
   is_admin?: boolean | null;
 }
 
+export type PortalKind =
+  | 'admin'
+  | 'municipal'
+  | 'control_room'
+  | 'verifier'
+  | 'dept'
+  | 'citizen';
+
+export interface StaffPortalNavMeta {
+  kind: PortalKind;
+  route: string;
+  labelEn: string;
+  labelHi: string;
+  shortLabelEn: string;
+  shortLabelHi: string;
+}
+
 const PLATFORM_ADMIN_TOKENS = new Set(['admin', 'platform_owner', 'super_admin']);
 const MUNICIPAL_EXEC_TOKENS = new Set([
   'municipal_administrator',
   'municipal_commissioner',
   'commissioner',
   'deputy_commissioner',
+  'organisation_head',
 ]);
 const CONTROL_ROOM_TOKENS = new Set(['control_room', 'call_center']);
 const VERIFIER_TOKENS = new Set(['verification_officer', 'verifier', 'appeals_officer']);
@@ -258,6 +276,9 @@ const DEPT_STAFF_TOKENS = new Set([
   'department_head',
   'dept_head',
   'area_officer',
+  'zone_officer',
+  'ward_officer',
+  'area_inspector',
   'supervisor',
   'field_employee',
   'operational_staff',
@@ -271,6 +292,26 @@ function collectRoleTokens(profile?: RoleLookupLike | null): string[] {
   return [profile.role, profile.authority_role, profile.hierarchy_code]
     .map((v) => (v || '').toLowerCase().trim())
     .filter(Boolean);
+}
+
+/**
+ * Merges database `user_profiles` fields with auth `user_metadata` role claims so role routing
+ * remains consistent even before or alongside profile hydration.
+ */
+export function mergeUserRoleProfile(
+  profile?: RoleLookupLike | null,
+  user?: { user_metadata?: Record<string, unknown> | null } | null
+): RoleLookupLike | null {
+  const meta = user?.user_metadata || null;
+  const metaRole = typeof meta?.role === 'string' ? meta.role : undefined;
+  const metaIsAdmin = meta?.is_admin === true;
+  if (!profile && !metaRole && !metaIsAdmin) return null;
+  return {
+    role: profile?.role || metaRole || null,
+    authority_role: profile?.authority_role || null,
+    hierarchy_code: profile?.hierarchy_code || null,
+    is_admin: profile?.is_admin === true || metaIsAdmin,
+  };
 }
 
 /**
@@ -290,7 +331,30 @@ export function isPlatformAdminProfile(
  * Returns true for Municipal Commissioner & Deputy Commissioner executive profiles.
  */
 export function isMunicipalExecutiveProfile(profile?: RoleLookupLike | null): boolean {
-  return collectRoleTokens(profile).some((token) => MUNICIPAL_EXEC_TOKENS.has(token));
+  return collectRoleTokens(profile).some(
+    (token) => MUNICIPAL_EXEC_TOKENS.has(token) || token.includes('deputy_comm')
+  );
+}
+
+function hasControlRoomToken(tokens: string[]): boolean {
+  return tokens.some((token) => CONTROL_ROOM_TOKENS.has(token));
+}
+
+function hasVerifierToken(tokens: string[]): boolean {
+  return tokens.some((token) => VERIFIER_TOKENS.has(token));
+}
+
+function hasDeptStaffToken(tokens: string[]): boolean {
+  return tokens.some(
+    (token) =>
+      DEPT_STAFF_TOKENS.has(token) ||
+      token.includes('area_officer') ||
+      token.includes('zone_officer') ||
+      token.includes('ward_officer') ||
+      token.includes('supervisor') ||
+      token.includes('worker') ||
+      token.includes('crew')
+  );
 }
 
 /**
@@ -303,8 +367,71 @@ export function getStaffHomeRoute(
   if (isPlatformAdminProfile(profile, email)) return '/admin/dashboard';
   if (isMunicipalExecutiveProfile(profile)) return '/municipal/dashboard';
   const tokens = collectRoleTokens(profile);
-  if (tokens.some((token) => CONTROL_ROOM_TOKENS.has(token))) return '/control-room';
-  if (tokens.some((token) => VERIFIER_TOKENS.has(token))) return '/verifier';
-  if (tokens.some((token) => DEPT_STAFF_TOKENS.has(token))) return '/dept/dashboard';
+  if (hasControlRoomToken(tokens)) return '/control-room';
+  if (hasVerifierToken(tokens)) return '/verifier';
+  if (hasDeptStaffToken(tokens)) return '/dept/dashboard';
   return '/';
+}
+
+const PORTAL_NAV_META_BY_ROUTE: Record<string, StaffPortalNavMeta> = {
+  '/admin/dashboard': {
+    kind: 'admin',
+    route: '/admin/dashboard',
+    labelEn: 'Admin Portal',
+    labelHi: 'एडमिन पोर्टल',
+    shortLabelEn: 'Admin',
+    shortLabelHi: 'एडमिन',
+  },
+  '/municipal/dashboard': {
+    kind: 'municipal',
+    route: '/municipal/dashboard',
+    labelEn: 'Municipal Portal',
+    labelHi: 'नगर पोर्टल',
+    shortLabelEn: 'Municipal',
+    shortLabelHi: 'नगर',
+  },
+  '/control-room': {
+    kind: 'control_room',
+    route: '/control-room',
+    labelEn: 'Control Room',
+    labelHi: 'कंट्रोल रूम',
+    shortLabelEn: 'Control',
+    shortLabelHi: 'कंट्रोल',
+  },
+  '/verifier': {
+    kind: 'verifier',
+    route: '/verifier',
+    labelEn: 'Verification Portal',
+    labelHi: 'सत्यापन पोर्टल',
+    shortLabelEn: 'Verify',
+    shortLabelHi: 'सत्यापन',
+  },
+  '/dept/dashboard': {
+    kind: 'dept',
+    route: '/dept/dashboard',
+    labelEn: 'Dept Dashboard',
+    labelHi: 'विभाग डैशबोर्ड',
+    shortLabelEn: 'Dept',
+    shortLabelHi: 'विभाग',
+  },
+};
+
+const CITIZEN_PORTAL_META: StaffPortalNavMeta = {
+  kind: 'citizen',
+  route: '/',
+  labelEn: 'Citizen Portal',
+  labelHi: 'नागरिक पोर्टल',
+  shortLabelEn: 'Home',
+  shortLabelHi: 'होम',
+};
+
+/**
+ * Returns route and bilingual label metadata for navigating directly to the user's dedicated portal.
+ */
+export function getStaffPortalNavMeta(
+  profile?: RoleLookupLike | null,
+  email?: string | null
+): StaffPortalNavMeta {
+  const route = getStaffHomeRoute(profile, email);
+  return PORTAL_NAV_META_BY_ROUTE[route] || CITIZEN_PORTAL_META;
 }

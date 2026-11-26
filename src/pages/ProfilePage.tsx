@@ -27,8 +27,12 @@ import {
   Building2,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { getStaffHomeRoute, isMunicipalExecutiveProfile } from '../lib/roleDefinitions';
-import { roleLabel } from '../lib/hierarchy';
+import {
+  getStaffPortalNavMeta,
+  isMunicipalExecutiveProfile,
+  mergeUserRoleProfile,
+} from '../lib/roleDefinitions';
+import { getTier, roleLabel } from '../lib/hierarchy';
 import { supabase } from '../lib/supabase';
 import type { LocalNews } from '../lib/supabase';
 import { BottomNav } from '../components/BottomNav';
@@ -71,13 +75,31 @@ export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { permission, loading: fcmLoading, requestPermission } = useFCM(user?.id ?? null);
 
-  const staffDestination = user
+  const effectiveProfile = mergeUserRoleProfile(profile, user);
+  const portalMeta = user
     ? isAdmin
-      ? '/admin/dashboard'
-      : getStaffHomeRoute(profile, user.email)
-    : '/';
+      ? getStaffPortalNavMeta({ role: 'admin', is_admin: true }, user.email)
+      : getStaffPortalNavMeta(effectiveProfile, user.email)
+    : null;
+  const staffDestination = portalMeta?.route || '/';
+  const myTier = getTier(
+    effectiveProfile?.role,
+    effectiveProfile?.hierarchy_code,
+    effectiveProfile?.authority_role
+  );
+  const isPlatformOwner = Boolean(
+    user &&
+      ['platform_owner', 'super_admin'].includes(
+        (effectiveProfile?.hierarchy_code ||
+          effectiveProfile?.authority_role ||
+          effectiveProfile?.role ||
+          '')
+          .toLowerCase()
+          .trim()
+      )
+  );
   const isExecutiveMunicipal = Boolean(
-    user && !isAdmin && isMunicipalExecutiveProfile(profile)
+    user && !isAdmin && isMunicipalExecutiveProfile(effectiveProfile)
   );
   const isStaff = Boolean(
     user && !isAdmin && !isExecutiveMunicipal && staffDestination !== '/'
@@ -351,7 +373,12 @@ export const ProfilePage: React.FC = () => {
                     {isAdmin
                       ? (language === 'hi' ? 'प्लेटफ़ॉर्म एडमिन' : 'Platform Admin')
                       : staffDestination !== '/'
-                      ? roleLabel(profile?.hierarchy_code || profile?.authority_role || profile?.role, language)
+                      ? roleLabel(
+                          effectiveProfile?.hierarchy_code ||
+                            effectiveProfile?.authority_role ||
+                            effectiveProfile?.role,
+                          language
+                        )
                       : profile?.ward_number
                       ? `Ward ${profile.ward_number}`
                       : (language === 'hi' ? 'बेतूल नागरिक' : 'Citizen')}
@@ -423,79 +450,207 @@ export const ProfilePage: React.FC = () => {
                   <span>{language === 'hi' ? 'नगर पालिका डैशबोर्ड' : 'Municipal View'}</span>
                   <ArrowRight size={13} />
                 </Link>
+                {isPlatformOwner && (
+                  <Link
+                    to="/platform/dashboard"
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-amber-950/45 text-white border border-white/25 font-bold text-xs hover:bg-amber-950/65 active:scale-95 transition"
+                  >
+                    <span>{language === 'hi' ? 'प्लेटफ़ॉर्म कंसोल' : 'Platform Console'}</span>
+                    <ArrowRight size={13} />
+                  </Link>
+                )}
               </div>
             </div>
           )}
 
           {/* Municipal Executive Entry Card (Municipal Commissioner & Deputy Commissioner -> Municipal Dashboard ONLY) */}
           {user && isExecutiveMunicipal && (
-            <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-civic-700 via-civic-800 to-civic-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
-              <div className="flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center shrink-0">
-                  <Building2 className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-extrabold text-sm sm:text-base leading-tight">
-                      {language === 'hi' ? 'नगर पालिका कार्यकारी डैशबोर्ड' : 'Municipal Executive Dashboard'}
-                    </h3>
-                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white border border-white/20">
-                      {roleLabel(profile?.hierarchy_code || profile?.authority_role || profile?.role, language)}
-                    </span>
+            <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-civic-700 via-civic-800 to-civic-900 text-white flex flex-col gap-4 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center shrink-0">
+                    <Building2 className="w-6 h-6 text-white" />
                   </div>
-                  <p className="text-xs text-sky-100 mt-1">
-                    {language === 'hi'
-                      ? 'शहरव्यापी विभाग प्रदर्शन, वार्ड सीमाएं और शिकायत आवंटन'
-                      : 'City-wide departments, ward coverage, officer leaderboard & dispatch'}
-                  </p>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-extrabold text-sm sm:text-base leading-tight">
+                        {language === 'hi' ? 'नगर पालिका कार्यकारी डैशबोर्ड' : 'Municipal Executive Dashboard'}
+                      </h3>
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white border border-white/20">
+                        {roleLabel(effectiveProfile?.hierarchy_code || effectiveProfile?.authority_role || effectiveProfile?.role, language)}
+                      </span>
+                    </div>
+                    <p className="text-xs text-sky-100 mt-1">
+                      {language === 'hi'
+                        ? 'शहरव्यापी विभाग प्रदर्शन, वार्ड सीमाएं और शिकायत आवंटन'
+                        : 'City-wide departments, ward coverage, officer leaderboard & dispatch'}
+                    </p>
+                  </div>
                 </div>
+                <Link
+                  to="/municipal/dashboard"
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-civic-900 font-extrabold text-xs shadow-xs hover:bg-sky-50 active:scale-95 transition shrink-0"
+                >
+                  <span>{language === 'hi' ? 'डैशबोर्ड खोलें' : 'Open Municipal Dashboard'}</span>
+                  <ArrowRight size={14} />
+                </Link>
               </div>
-              <Link
-                to="/municipal/dashboard"
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-civic-900 font-extrabold text-xs shadow-xs hover:bg-sky-50 active:scale-95 transition shrink-0"
-              >
-                <span>{language === 'hi' ? 'डैशबोर्ड खोलें' : 'Open Municipal Dashboard'}</span>
-                <ArrowRight size={14} />
-              </Link>
+              <div className="flex items-center gap-2 flex-wrap pt-3 border-t border-white/15">
+                <Link
+                  to="/municipal/dashboard?tab=complaints"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs transition"
+                >
+                  <span>{language === 'hi' ? 'शिकायत आवंटन' : 'Grievance Dispatch'}</span>
+                  <ArrowRight size={12} />
+                </Link>
+                <Link
+                  to="/municipal/dashboard?tab=departments"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs transition"
+                >
+                  <span>{language === 'hi' ? 'विभाग प्रदर्शन' : 'Departments'}</span>
+                  <ArrowRight size={12} />
+                </Link>
+                {myTier === 0 && (
+                  <Link
+                    to="/municipal/dashboard?tab=ward-manager"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs transition"
+                  >
+                    <span>{language === 'hi' ? 'वार्ड पंजीकरण' : 'Ward Registration'}</span>
+                    <ArrowRight size={12} />
+                  </Link>
+                )}
+              </div>
             </div>
           )}
 
           {/* Department / Dedicated Staff Operations Link (Strictly isolated to role workspace) */}
           {user && isStaff && (
-            <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-civic-700 via-civic-800 to-slate-800 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
-              <div className="flex items-center gap-3.5">
-                <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center shrink-0">
-                  <Briefcase className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <h3 className="font-extrabold text-sm sm:text-base leading-tight">
-                      {staffDestination === '/control-room'
-                        ? (language === 'hi' ? 'नगर कंट्रोल रूम पोर्टल' : 'Municipal Control Room Portal')
-                        : staffDestination === '/verifier'
-                        ? (language === 'hi' ? 'सत्यापन एवं अपील पोर्टल' : 'Verification & Appeals Portal')
-                        : (language === 'hi' ? 'विभागीय कार्य निष्पादन पोर्टल' : 'Department Operations Portal')}
-                    </h3>
-                    {profile?.role && (
-                      <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white border border-white/20">
-                        {roleLabel(profile.hierarchy_code || profile.authority_role || profile.role, language)}
-                      </span>
-                    )}
+            <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-civic-700 via-civic-800 to-slate-800 text-white flex flex-col gap-4 shadow-sm">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center shrink-0">
+                    <Briefcase className="w-6 h-6 text-white" />
                   </div>
-                  <p className="text-xs text-sky-100 mt-1">
-                    {language === 'hi'
-                      ? 'आवंटित फील्ड कार्य, वार्ड शिकायतें एवं समाधान रिपोर्टिंग'
-                      : 'Role-scoped field tasks, ward complaints & SLA updates'}
-                  </p>
+                  <div>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-extrabold text-sm sm:text-base leading-tight">
+                        {staffDestination === '/control-room'
+                          ? (language === 'hi' ? 'नगर कंट्रोल रूम पोर्टल' : 'Municipal Control Room Portal')
+                          : staffDestination === '/verifier'
+                          ? (language === 'hi' ? 'सत्यापन एवं अपील पोर्टल' : 'Verification & Appeals Portal')
+                          : (language === 'hi' ? 'विभागीय कार्य निष्पादन पोर्टल' : 'Department Operations Portal')}
+                      </h3>
+                      {(effectiveProfile?.hierarchy_code || effectiveProfile?.authority_role || effectiveProfile?.role) && (
+                        <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white border border-white/20">
+                          {roleLabel(effectiveProfile.hierarchy_code || effectiveProfile.authority_role || effectiveProfile.role, language)}
+                        </span>
+                      )}
+                    </div>
+                    <p className="text-xs text-sky-100 mt-1">
+                      {staffDestination === '/control-room'
+                        ? (language === 'hi'
+                          ? 'फ़ोन/काउंटर शिकायत प्रविष्टि, रूटिंग एवं कॉलबैक समन्वय'
+                          : 'Telephone/counter intake, routing & citizen callback queue')
+                        : staffDestination === '/verifier'
+                        ? (language === 'hi'
+                          ? 'स्वतंत्र सत्यापन, अपील समीक्षा एवं पुनः कार्य जांच'
+                          : 'Independent case verification, citizen appeals & rework review')
+                        : myTier === 6
+                        ? (language === 'hi'
+                          ? 'अधिकृत वार्ड/विभाग की शिकायतों की केवल-पठन समीक्षा'
+                          : 'Read-only oversight of authorized wards & department SLA metrics')
+                        : (language === 'hi'
+                          ? 'आवंटित फील्ड कार्य, वार्ड शिकायतें एवं समाधान रिपोर्टिंग'
+                          : 'Role-scoped field tasks, ward complaints & SLA updates')}
+                    </p>
+                  </div>
                 </div>
+                <Link
+                  to={staffDestination}
+                  className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-civic-900 font-extrabold text-xs shadow-xs hover:bg-sky-50 active:scale-95 transition shrink-0"
+                >
+                  <span>
+                    {staffDestination === '/control-room'
+                      ? (language === 'hi' ? 'कंट्रोल रूम खोलें' : 'Open Control Room')
+                      : staffDestination === '/verifier'
+                      ? (language === 'hi' ? 'सत्यापन पोर्टल खोलें' : 'Open Verifier Portal')
+                      : (language === 'hi' ? 'कार्य पोर्टल खोलें' : 'Open Dept Dashboard')}
+                  </span>
+                  <ArrowRight size={14} />
+                </Link>
               </div>
-              <Link
-                to={staffDestination}
-                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-civic-900 font-extrabold text-xs shadow-xs hover:bg-sky-50 active:scale-95 transition shrink-0"
-              >
-                <span>{language === 'hi' ? 'कार्य पोर्टल खोलें' : 'Open Workspace'}</span>
-                <ArrowRight size={14} />
-              </Link>
+              <div className="flex items-center gap-2 flex-wrap pt-3 border-t border-white/15">
+                {staffDestination === '/control-room' && (
+                  <>
+                    <Link
+                      to="/control-room?tab=intake"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs transition"
+                    >
+                      <span>{language === 'hi' ? 'शिकायत प्रविष्टि' : 'Intake'}</span>
+                      <ArrowRight size={12} />
+                    </Link>
+                    <Link
+                      to="/control-room?tab=routing"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs transition"
+                    >
+                      <span>{language === 'hi' ? 'वार्ड/विभाग रूटिंग' : 'Routing'}</span>
+                      <ArrowRight size={12} />
+                    </Link>
+                    <Link
+                      to="/control-room?tab=callbacks"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs transition"
+                    >
+                      <span>{language === 'hi' ? 'कॉलबैक कतार' : 'Callbacks'}</span>
+                      <ArrowRight size={12} />
+                    </Link>
+                  </>
+                )}
+                {staffDestination === '/verifier' && (
+                  <Link
+                    to="/verifier"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs transition"
+                  >
+                    <span>{language === 'hi' ? 'सत्यापन कतार' : 'Verification Queue'}</span>
+                    <ArrowRight size={12} />
+                  </Link>
+                )}
+                {staffDestination === '/dept/dashboard' && (
+                  <>
+                    <Link
+                      to="/dept/dashboard?tab=complaints"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs transition"
+                    >
+                      <span>{language === 'hi' ? 'शिकायतें एवं कार्य' : 'Tasks & Complaints'}</span>
+                      <ArrowRight size={12} />
+                    </Link>
+                    {myTier <= 2 && (
+                      <Link
+                        to="/dept/dashboard?tab=departments"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs transition"
+                      >
+                        <span>{language === 'hi' ? 'विभाग एवं स्टाफ' : 'Departments & Staff'}</span>
+                        <ArrowRight size={12} />
+                      </Link>
+                    )}
+                    {myTier <= 3 && (
+                      <Link
+                        to="/dept/dashboard?tab=staff_reports"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs transition"
+                      >
+                        <span>{language === 'hi' ? 'स्टाफ रिपोर्ट' : 'Staff Reports'}</span>
+                        <ArrowRight size={12} />
+                      </Link>
+                    )}
+                    <Link
+                      to="/dept/dashboard?tab=location_filter"
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/20 font-bold text-xs transition"
+                    >
+                      <span>{language === 'hi' ? 'स्थान रडार व मैप' : 'Location Radar'}</span>
+                      <ArrowRight size={12} />
+                    </Link>
+                  </>
+                )}
+              </div>
             </div>
           )}
         </div>

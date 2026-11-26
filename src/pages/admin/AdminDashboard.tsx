@@ -1546,6 +1546,26 @@ export const AdminDashboard: React.FC = () => {
           </div>
 
           <button
+            onClick={() => navigate('/profile')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              padding: '6px 12px',
+              borderRadius: 8,
+              border: '1px solid #b7dae4',
+              background: '#f0f7f9',
+              color: '#146C94',
+              fontWeight: 700,
+              cursor: 'pointer',
+              fontSize: '0.76rem',
+              transition: 'all 0.15s',
+            }}
+          >
+            <User size={13} /> Profile
+          </button>
+
+          <button
             onClick={() => navigate('/')}
             style={{
               display: 'flex',

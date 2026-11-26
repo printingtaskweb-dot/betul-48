@@ -1,92 +1,34 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { getStaffHomeRoute } from '../lib/roleDefinitions';
-import { Home, Newspaper, Plus, Search, User, Briefcase, Building2, ShieldCheck, PhoneCall, ClipboardCheck } from 'lucide-react';
+import { getStaffPortalNavMeta, mergeUserRoleProfile } from '../lib/roleDefinitions';
+import { getPortalIcon } from './common/StaffPortalButton';
+import { Home, Newspaper, Plus, Search, User } from 'lucide-react';
 
 export const BottomNav: React.FC = () => {
   const { language, user, profile, isAdmin } = useAuth();
   const location = useLocation();
   const path = location.pathname;
 
-  const staffDestination = user
+  const effectiveProfile = mergeUserRoleProfile(profile, user);
+  const portalMeta = user
     ? isAdmin
-      ? '/admin/dashboard'
-      : getStaffHomeRoute(profile, user.email)
-    : '/';
+      ? getStaffPortalNavMeta({ role: 'admin', is_admin: true }, user.email)
+      : getStaffPortalNavMeta(effectiveProfile, user.email)
+    : null;
 
   const renderRoleNavSlot = () => {
-    if (staffDestination === '/admin/dashboard') {
-      const active = path.startsWith('/admin/dashboard');
+    if (portalMeta && portalMeta.kind !== 'citizen') {
+      const active = path.startsWith(portalMeta.route);
       return (
         <Link
-          to="/admin/dashboard"
+          to={portalMeta.route}
           className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
             active ? 'text-civic-700 bg-civic-50 font-bold' : 'text-slate-500 hover:text-civic-800 font-medium'
           }`}
         >
-          <ShieldCheck className="w-4 h-4 mb-0.5" />
-          <span>{language === 'hi' ? 'एडमिन' : 'Admin'}</span>
-        </Link>
-      );
-    }
-
-    if (staffDestination === '/municipal/dashboard') {
-      const active = path.startsWith('/municipal/dashboard');
-      return (
-        <Link
-          to="/municipal/dashboard"
-          className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
-            active ? 'text-civic-700 bg-civic-50 font-bold' : 'text-slate-500 hover:text-civic-800 font-medium'
-          }`}
-        >
-          <Building2 className="w-4 h-4 mb-0.5" />
-          <span>{language === 'hi' ? 'नगर' : 'Municipal'}</span>
-        </Link>
-      );
-    }
-
-    if (staffDestination === '/control-room') {
-      const active = path.startsWith('/control-room');
-      return (
-        <Link
-          to="/control-room"
-          className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
-            active ? 'text-civic-700 bg-civic-50 font-bold' : 'text-slate-500 hover:text-civic-800 font-medium'
-          }`}
-        >
-          <PhoneCall className="w-4 h-4 mb-0.5" />
-          <span>{language === 'hi' ? 'कंट्रोल' : 'Control'}</span>
-        </Link>
-      );
-    }
-
-    if (staffDestination === '/verifier') {
-      const active = path.startsWith('/verifier');
-      return (
-        <Link
-          to="/verifier"
-          className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
-            active ? 'text-civic-700 bg-civic-50 font-bold' : 'text-slate-500 hover:text-civic-800 font-medium'
-          }`}
-        >
-          <ClipboardCheck className="w-4 h-4 mb-0.5" />
-          <span>{language === 'hi' ? 'सत्यापन' : 'Verify'}</span>
-        </Link>
-      );
-    }
-
-    if (staffDestination === '/dept/dashboard') {
-      const active = path.startsWith('/dept/dashboard');
-      return (
-        <Link
-          to="/dept/dashboard"
-          className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
-            active ? 'text-civic-700 bg-civic-50 font-bold' : 'text-slate-500 hover:text-civic-800 font-medium'
-          }`}
-        >
-          <Briefcase className="w-4 h-4 mb-0.5" />
-          <span>{language === 'hi' ? 'कार्य' : 'Tasks'}</span>
+          {getPortalIcon(portalMeta.kind, 'w-4 h-4 mb-0.5')}
+          <span>{language === 'hi' ? portalMeta.shortLabelHi : portalMeta.shortLabelEn}</span>
         </Link>
       );
     }

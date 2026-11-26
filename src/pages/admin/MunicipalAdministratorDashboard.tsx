@@ -1,6 +1,6 @@
 import { ArcLoader } from '../../components/common/ArcLoader';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { RoleGuard } from '../../components/auth/RoleGuard';
 import { useDeptComplaints } from '../../hooks/useDeptComplaints';
@@ -21,6 +21,7 @@ import {
   ChevronRight,
   Landmark,
   LogOut,
+  User,
 } from 'lucide-react';
 
 import { useMunicipalData } from './municipal/hooks/useMunicipalData';
@@ -73,7 +74,37 @@ const MunicipalAdministratorDashboardContent: React.FC<MunicipalAdministratorDas
 
   const canManageWards = Boolean(isAdmin || profile?.is_admin === true || myTier === 0);
 
-  const [activeTab, setActiveTab] = useState<ViewTab>('overview');
+  const [searchParams] = useSearchParams();
+  const validMunicipalTabs: readonly ViewTab[] = [
+    'overview',
+    'workload',
+    'analytics',
+    'complaints',
+    'departments',
+    'wards',
+    'team',
+    'ward-manager',
+    'location-viewer',
+  ];
+  const requestedTab = searchParams.get('tab') as ViewTab | null;
+  const resolvedInitialTab: ViewTab =
+    requestedTab &&
+    validMunicipalTabs.includes(requestedTab) &&
+    (requestedTab !== 'ward-manager' || canManageWards)
+      ? requestedTab
+      : 'overview';
+
+  const [activeTab, setActiveTab] = useState<ViewTab>(resolvedInitialTab);
+
+  useEffect(() => {
+    if (
+      requestedTab &&
+      validMunicipalTabs.includes(requestedTab) &&
+      (requestedTab !== 'ward-manager' || canManageWards)
+    ) {
+      setActiveTab(requestedTab);
+    }
+  }, [requestedTab, canManageWards]);
   const [statusFilter, setStatusFilter] = useState('all');
   const [deptFilter, setDeptFilter] = useState('all');
   const [wardFilter, setWardFilter] = useState('all');
@@ -377,6 +408,25 @@ const MunicipalAdministratorDashboardContent: React.FC<MunicipalAdministratorDas
                 <ArrowLeft size={13} /> Admin Console
               </button>
             )}
+
+            <button
+              onClick={() => navigate('/profile')}
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 4,
+                padding: '6px 11px',
+                borderRadius: 8,
+                border: '1px solid #b7dae4',
+                background: '#f0f7f9',
+                color: '#146C94',
+                fontWeight: 700,
+                cursor: 'pointer',
+                fontSize: '0.75rem',
+              }}
+            >
+              <User size={13} /> Profile
+            </button>
 
             <button
               onClick={() => navigate('/')}
