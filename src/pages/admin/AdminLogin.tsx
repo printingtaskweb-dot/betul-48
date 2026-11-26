@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
-import { isDesignatedAdminEmail } from '../../lib/adminConfig';
+import { getStaffHomeRoute, isPlatformAdminProfile } from '../../lib/roleDefinitions';
 import { supabase } from '../../lib/supabase';
 import { Lock, ShieldCheck, LogIn, AlertCircle } from 'lucide-react';
 import { CivicHeader } from '../../components/common/CivicHeader';
@@ -42,23 +42,30 @@ export const AdminLogin: React.FC = () => {
       if (authErr) throw authErr;
 
       if (data.user) {
-        // Check admin role from profile
+        // Check Platform Admin role from profile (Municipal Commissioners use /dept/login)
         const { data: prof } = await supabase
           .from('user_profiles')
-          .select('id, role, is_admin')
+          .select('id, role, authority_role, hierarchy_code, is_admin')
           .eq('id', data.user.id)
           .maybeSingle();
 
-        const role = (prof?.role || (data.user.user_metadata as any)?.role || '')?.toLowerCase();
-        const isUserAdmin =
-          prof?.is_admin === true ||
-          (data.user.user_metadata as any)?.is_admin === true ||
-          ['admin', 'municipal_administrator', 'platform_owner', 'super_admin'].includes(role) ||
-          isDesignatedAdminEmail(cleanEmail);
+        const meta = (data.user.user_metadata as Record<string, unknown> | undefined) || {};
+        const effectiveProfile = {
+          role: prof?.role || (meta.role as string | undefined),
+          authority_role: prof?.authority_role,
+          hierarchy_code: prof?.hierarchy_code,
+          is_admin: prof?.is_admin === true || meta.is_admin === true,
+        };
+        const isUserAdmin = isPlatformAdminProfile(effectiveProfile, cleanEmail);
 
         if (!isUserAdmin) {
+          sessionStorage.removeItem('imc_admin');
+          localStorage.removeItem('imc_admin');
+          const staffHome = getStaffHomeRoute(effectiveProfile, cleanEmail);
           setError(
-            'Access Denied: This account is authenticated but does not have the Administrator role. Run the provided SQL update command in Supabase to grant is_admin = true.'
+            staffHome !== '/'
+              ? 'Platform Admin access required. Municipal Commissioners, Deputy Commissioners, and Department Staff must sign in via the Staff Login Portal below.'
+              : 'Access Denied: This account is authenticated but does not have the Platform Administrator role.'
           );
           return;
         }

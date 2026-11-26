@@ -32,6 +32,7 @@ interface Props {
   staff: StaffMember[];
   departments: DepartmentRow[];
   canManageWardAssignments: boolean;
+  canManageWards?: boolean;
   assignmentDepartmentId: string | null;
   onAssignmentSaved: () => void;
   onManageWards: () => void;
@@ -40,7 +41,7 @@ interface Props {
 
 export const WardsTab: React.FC<Props> = ({
   wards, wardMetrics, unassignedWardComplaints, scopedComplaints,
-  staff, departments, canManageWardAssignments, assignmentDepartmentId, onAssignmentSaved,
+  staff, departments, canManageWardAssignments, canManageWards = true, assignmentDepartmentId, onAssignmentSaved,
   onManageWards, onViewTasks,
 }) => {
   const [expandedWardId, setExpandedWardId] = useState<string | null>(null);
@@ -101,9 +102,11 @@ export const WardsTab: React.FC<Props> = ({
           }}>
             {wards.length} ward{wards.length !== 1 ? 's' : ''} registered
           </span>
-          <button onClick={onManageWards} style={primaryBtn}>
-            <Layers size={14} /> Manage Wards
-          </button>
+          {canManageWards && (
+            <button onClick={onManageWards} style={primaryBtn}>
+              <Layers size={14} /> Manage Wards
+            </button>
+          )}
         </div>
       </div>
 
@@ -137,9 +140,11 @@ export const WardsTab: React.FC<Props> = ({
           <p style={{ margin: '0 0 14px', fontSize: '0.85rem', color: '#64748b' }}>
             Register your first municipal ward to start location-based filtering.
           </p>
-          <button onClick={onManageWards} style={{ ...primaryBtn, justifyContent: 'center', margin: '0 auto' }}>
-            <Layers size={14} /> Register First Ward
-          </button>
+          {canManageWards && (
+            <button onClick={onManageWards} style={{ ...primaryBtn, justifyContent: 'center', margin: '0 auto' }}>
+              <Layers size={14} /> Register First Ward
+            </button>
+          )}
         </div>
       ) : (
         <>

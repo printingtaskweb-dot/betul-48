@@ -17,30 +17,39 @@ export const useViewerScope = (
     const isMunicipalHead =
       isAdmin ||
       profile?.role === 'admin' ||
+      profile?.role === 'platform_owner' ||
+      profile?.role === 'super_admin' ||
       profile?.role === 'municipal_administrator' ||
-      profile?.authority_role === 'municipal_commissioner';
+      profile?.role === 'municipal_commissioner' ||
+      profile?.role === 'commissioner' ||
+      profile?.authority_role === 'municipal_commissioner' ||
+      profile?.hierarchy_code === 'commissioner';
     const isDeputyCommissioner =
       profile?.role === 'deputy_commissioner' ||
-      profile?.authority_role === 'deputy_commissioner';
+      profile?.authority_role === 'deputy_commissioner' ||
+      profile?.hierarchy_code === 'deputy_commissioner';
     const hasCitywideRole = isMunicipalHead || isDeputyCommissioner;
     const isMunicipalAdmin =
       hasCitywideRole ||
-      !profile?.linked_department_id ||
-      profile?.authority_role === 'municipal_commissioner';
+      !profile?.linked_department_id;
 
     return {
       id: user?.id || '',
       role: hasCitywideRole
         ? isDeputyCommissioner && !isMunicipalHead
           ? 'deputy_commissioner'
-          : 'admin'
+          : profile?.role || 'municipal_administrator'
         : isMunicipalAdmin
           ? profile?.role || 'municipal_administrator'
           : profile?.role || 'dept_staff',
       linked_department_id: isMunicipalAdmin
         ? null
         : profile?.linked_department_id || null,
-      hierarchy_code: hasCitywideRole ? null : profile?.hierarchy_code || null,
+      hierarchy_code: hasCitywideRole
+        ? isDeputyCommissioner && !isMunicipalHead
+          ? 'deputy_commissioner'
+          : 'commissioner'
+        : profile?.hierarchy_code || null,
       authority_role: hasCitywideRole ? null : profile?.authority_role || null,
       is_admin: isAdmin,
     };

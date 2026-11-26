@@ -2,18 +2,12 @@ import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Mail } from 'lucide-react';
 import { supabase } from '../../lib/supabase';
-import { isDesignatedAdminEmail } from '../../lib/adminConfig';
+import { getStaffHomeRoute, isPlatformAdminProfile } from '../../lib/roleDefinitions';
 import { useAuth } from '../../contexts/AuthContext';
 import { t } from '../../lib/i18n';
 import { FormInput } from './FormInput';
 import { PasswordInput } from './PasswordInput';
 import { AlertBanner } from './AlertBanner';
-
-const STAFF_ROLES = [
-  'dept_staff', 'admin', 'department_head', 'supervisor', 'control_room',
-  'management_viewer', 'field_employee', 'municipal_administrator', 'verification_officer',
-  'deputy_commissioner', 'area_officer', 'operational_staff',
-];
 
 interface Props {
   language: 'en' | 'hi';
@@ -58,18 +52,19 @@ export const LoginForm: React.FC<Props> = ({ language }) => {
       if (data.user) {
         const { data: profile } = await supabase
           .from('user_profiles')
-          .select('role, is_admin')
+          .select('role, authority_role, hierarchy_code, is_admin')
           .eq('id', data.user.id)
           .maybeSingle();
 
-        const role = (profile?.role || (data.user.user_metadata as any)?.role || '')?.toLowerCase();
-        const isAdmin =
-          profile?.is_admin === true ||
-          (data.user.user_metadata as any)?.is_admin === true ||
-          ['admin', 'municipal_administrator', 'platform_owner', 'super_admin'].includes(role) ||
-          isDesignatedAdminEmail(cleanEmail);
+        const meta = (data.user.user_metadata as Record<string, unknown> | undefined) || {};
+        const effectiveProfile = {
+          role: profile?.role || (meta.role as string | undefined),
+          authority_role: profile?.authority_role,
+          hierarchy_code: profile?.hierarchy_code,
+          is_admin: profile?.is_admin === true || meta.is_admin === true,
+        };
 
-        if (isAdmin) {
+        if (isPlatformAdminProfile(effectiveProfile, cleanEmail)) {
           sessionStorage.setItem('imc_admin', '1');
           localStorage.setItem('imc_admin', '1');
           await refreshProfile();
@@ -78,8 +73,9 @@ export const LoginForm: React.FC<Props> = ({ language }) => {
           return;
         }
 
-        if (profile?.role && STAFF_ROLES.includes(profile.role)) {
-          navigate('/dept/dashboard', { replace: true });
+        const staffHome = getStaffHomeRoute(effectiveProfile, cleanEmail);
+        if (staffHome !== '/') {
+          navigate(staffHome, { replace: true });
           setLoading(false);
           return;
         }

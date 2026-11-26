@@ -24,8 +24,11 @@ import {
   Camera,
   ArrowRight,
   Briefcase,
+  Building2,
 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
+import { getStaffHomeRoute, isMunicipalExecutiveProfile } from '../lib/roleDefinitions';
+import { roleLabel } from '../lib/hierarchy';
 import { supabase } from '../lib/supabase';
 import type { LocalNews } from '../lib/supabase';
 import { BottomNav } from '../components/BottomNav';
@@ -68,17 +71,16 @@ export const ProfilePage: React.FC = () => {
   const navigate = useNavigate();
   const { permission, loading: fcmLoading, requestPermission } = useFCM(user?.id ?? null);
 
+  const staffDestination = user
+    ? isAdmin
+      ? '/admin/dashboard'
+      : getStaffHomeRoute(profile, user.email)
+    : '/';
+  const isExecutiveMunicipal = Boolean(
+    user && !isAdmin && isMunicipalExecutiveProfile(profile)
+  );
   const isStaff = Boolean(
-    user &&
-    profile?.role && [
-      'field_employee',
-      'supervisor',
-      'operational_staff',
-      'department_head',
-      'dept_staff',
-      'control_room',
-      'verification_officer',
-    ].includes(profile.role)
+    user && !isAdmin && !isExecutiveMunicipal && staffDestination !== '/'
   );
 
   /* navigation tabs */
@@ -346,8 +348,10 @@ export const ProfilePage: React.FC = () => {
                     {profile?.full_name || (language === 'hi' ? 'नागरिक' : 'Citizen')}
                   </h2>
                   <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-civic-50 text-civic-800 border border-civic-100 shrink-0">
-                    {profile?.role === 'admin'
-                      ? (language === 'hi' ? 'एडमिन' : 'Admin')
+                    {isAdmin
+                      ? (language === 'hi' ? 'प्लेटफ़ॉर्म एडमिन' : 'Platform Admin')
+                      : staffDestination !== '/'
+                      ? roleLabel(profile?.hierarchy_code || profile?.authority_role || profile?.role, language)
                       : profile?.ward_number
                       ? `Ward ${profile.ward_number}`
                       : (language === 'hi' ? 'बेतूल नागरिक' : 'Citizen')}
@@ -388,7 +392,7 @@ export const ProfilePage: React.FC = () => {
             </div>
           </div>
 
-          {/* Admin Dashboard Entry Card (Strictly visible ONLY to logged-in Admins on their Profile) */}
+          {/* Platform Admin Entry Card (Strictly visible ONLY to Platform Admins, never Municipal Commissioners) */}
           {user && isAdmin && (
             <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-amber-600 via-amber-500 to-orange-500 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
               <div className="flex items-center gap-3.5">
@@ -397,10 +401,10 @@ export const ProfilePage: React.FC = () => {
                 </div>
                 <div>
                   <h3 className="font-extrabold text-sm sm:text-base leading-tight">
-                    {language === 'hi' ? 'नगर पालिका एडमिन कंट्रोल रूम' : 'Municipal Administrator Console'}
+                    {language === 'hi' ? 'प्लेटफ़ॉर्म एडमिन कंट्रोल रूम' : 'Platform Admin Console'}
                   </h3>
                   <p className="text-xs text-amber-100 mt-1">
-                    {language === 'hi' ? 'वार्ड परिसीमन, अधिकारी नियंत्रण एवं शिकायत मॉनिटरिंग' : 'Ward boundaries, staff allocations & grievance governance'}
+                    {language === 'hi' ? 'स्टाफ पंजीकरण, समाचार मॉडरेशन एवं सिस्टम नियंत्रण' : 'Staff onboarding, moderation & platform governance'}
                   </p>
                 </div>
               </div>
@@ -416,14 +420,47 @@ export const ProfilePage: React.FC = () => {
                   to="/municipal/dashboard"
                   className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-amber-900/40 text-white border border-white/25 font-bold text-xs hover:bg-amber-900/60 active:scale-95 transition"
                 >
-                  <span>{language === 'hi' ? 'वार्ड कंट्रोल' : 'Ward Radar'}</span>
+                  <span>{language === 'hi' ? 'नगर पालिका डैशबोर्ड' : 'Municipal View'}</span>
                   <ArrowRight size={13} />
                 </Link>
               </div>
             </div>
           )}
 
-          {/* Department Staff Operations Link (Strictly visible ONLY to logged-in Department Staff on their Profile) */}
+          {/* Municipal Executive Entry Card (Municipal Commissioner & Deputy Commissioner -> Municipal Dashboard ONLY) */}
+          {user && isExecutiveMunicipal && (
+            <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-civic-700 via-civic-800 to-civic-900 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+              <div className="flex items-center gap-3.5">
+                <div className="w-11 h-11 rounded-xl bg-white/15 backdrop-blur-xs flex items-center justify-center shrink-0">
+                  <Building2 className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="font-extrabold text-sm sm:text-base leading-tight">
+                      {language === 'hi' ? 'नगर पालिका कार्यकारी डैशबोर्ड' : 'Municipal Executive Dashboard'}
+                    </h3>
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white border border-white/20">
+                      {roleLabel(profile?.hierarchy_code || profile?.authority_role || profile?.role, language)}
+                    </span>
+                  </div>
+                  <p className="text-xs text-sky-100 mt-1">
+                    {language === 'hi'
+                      ? 'शहरव्यापी विभाग प्रदर्शन, वार्ड सीमाएं और शिकायत आवंटन'
+                      : 'City-wide departments, ward coverage, officer leaderboard & dispatch'}
+                  </p>
+                </div>
+              </div>
+              <Link
+                to="/municipal/dashboard"
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-civic-900 font-extrabold text-xs shadow-xs hover:bg-sky-50 active:scale-95 transition shrink-0"
+              >
+                <span>{language === 'hi' ? 'डैशबोर्ड खोलें' : 'Open Municipal Dashboard'}</span>
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+          )}
+
+          {/* Department / Dedicated Staff Operations Link (Strictly isolated to role workspace) */}
           {user && isStaff && (
             <div className="mt-4 p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-civic-700 via-civic-800 to-slate-800 text-white flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
               <div className="flex items-center gap-3.5">
@@ -433,26 +470,30 @@ export const ProfilePage: React.FC = () => {
                 <div>
                   <div className="flex items-center gap-2 flex-wrap">
                     <h3 className="font-extrabold text-sm sm:text-base leading-tight">
-                      {language === 'hi' ? 'विभागीय कार्य निष्पादन पोर्टल' : 'Department Operations Portal'}
+                      {staffDestination === '/control-room'
+                        ? (language === 'hi' ? 'नगर कंट्रोल रूम पोर्टल' : 'Municipal Control Room Portal')
+                        : staffDestination === '/verifier'
+                        ? (language === 'hi' ? 'सत्यापन एवं अपील पोर्टल' : 'Verification & Appeals Portal')
+                        : (language === 'hi' ? 'विभागीय कार्य निष्पादन पोर्टल' : 'Department Operations Portal')}
                     </h3>
                     {profile?.role && (
                       <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/20 text-white border border-white/20">
-                        {profile.role.replace(/_/g, ' ').toUpperCase()}
+                        {roleLabel(profile.hierarchy_code || profile.authority_role || profile.role, language)}
                       </span>
                     )}
                   </div>
                   <p className="text-xs text-sky-100 mt-1">
                     {language === 'hi'
                       ? 'आवंटित फील्ड कार्य, वार्ड शिकायतें एवं समाधान रिपोर्टिंग'
-                      : 'Assigned field tasks, ward complaints & SLA verification updates'}
+                      : 'Role-scoped field tasks, ward complaints & SLA updates'}
                   </p>
                 </div>
               </div>
               <Link
-                to="/dept/dashboard"
+                to={staffDestination}
                 className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white text-civic-900 font-extrabold text-xs shadow-xs hover:bg-sky-50 active:scale-95 transition shrink-0"
               >
-                <span>{language === 'hi' ? 'कार्य पोर्टल खोलें' : 'Open Tasks Portal'}</span>
+                <span>{language === 'hi' ? 'कार्य पोर्टल खोलें' : 'Open Workspace'}</span>
                 <ArrowRight size={14} />
               </Link>
             </div>

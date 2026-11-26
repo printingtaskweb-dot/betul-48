@@ -2,17 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { getStaffHomeRoute } from '../lib/roleDefinitions';
 import { Building2, ArrowRight, Clock, LogOut } from 'lucide-react';
 import { CivicHeader } from '../components/common/CivicHeader';
 import { FormInput } from '../components/auth/FormInput';
 import { PasswordInput } from '../components/auth/PasswordInput';
 import { AlertBanner } from '../components/auth/AlertBanner';
-
-const STAFF_ROLES = [
-  'dept_staff', 'admin', 'department_head', 'supervisor', 'control_room',
-  'management_viewer', 'field_employee', 'municipal_administrator',
-  'deputy_commissioner', 'area_officer', 'operational_staff', 'verification_officer',
-];
 
 export default function DeptLogin() {
   const { user, profile, signOut, language: rawLang } = useAuth();
@@ -26,11 +21,14 @@ export default function DeptLogin() {
 
   const role = profile?.role;
   const isPending = role === 'pending_staff';
-  const isStaff = !!role && STAFF_ROLES.includes(role);
+  const staffDestination = getStaffHomeRoute(profile, user?.email);
+  const isStaff = staffDestination !== '/';
 
   useEffect(() => {
-    if (user && profile && isStaff) navigate('/dept/dashboard', { replace: true });
-  }, [user, profile, isStaff, navigate]);
+    if (user && profile && isStaff) {
+      navigate(staffDestination, { replace: true });
+    }
+  }, [user, profile, isStaff, staffDestination, navigate]);
 
   const handleLogin = async () => {
     const idInput = identifier.trim();
@@ -58,9 +56,19 @@ export default function DeptLogin() {
         mail = userProf.email.toLowerCase();
       }
 
-      const { error: signErr } = await supabase.auth.signInWithPassword({ email: mail, password });
+      const { data: signData, error: signErr } = await supabase.auth.signInWithPassword({ email: mail, password });
       if (signErr) throw signErr;
-      navigate('/dept/dashboard', { replace: true });
+      if (signData.user) {
+        const { data: signedProfile } = await supabase
+          .from('user_profiles')
+          .select('role, authority_role, hierarchy_code, is_admin')
+          .eq('id', signData.user.id)
+          .maybeSingle();
+        const nextRoute = getStaffHomeRoute(signedProfile, mail);
+        navigate(nextRoute !== '/' ? nextRoute : '/dept/dashboard', { replace: true });
+      } else {
+        navigate('/dept/dashboard', { replace: true });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not sign in');
     } finally { setLoading(false); }

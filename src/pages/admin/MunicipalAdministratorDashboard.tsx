@@ -56,8 +56,9 @@ const MunicipalAdministratorDashboardContent: React.FC<MunicipalAdministratorDas
 
   const canOpenAdminConsole = Boolean(
     isAdmin ||
+    profile?.is_admin === true ||
     (profile?.role &&
-      ['admin', 'municipal_administrator', 'platform_owner', 'super_admin'].includes(profile.role))
+      ['admin', 'platform_owner', 'super_admin'].includes(profile.role.toLowerCase()))
   );
 
   const handleLogout = async () => {
@@ -67,10 +68,10 @@ const MunicipalAdministratorDashboardContent: React.FC<MunicipalAdministratorDas
 
   const { departments, complaints, staff, wards, loading, error: dataError, fetchData } = useMunicipalData();
 
-
-
   const { viewer, myTier, isDeputyOrHigher, scopedComplaints, visibleDepartments } =
     useViewerScope(complaints, departments, wards);
+
+  const canManageWards = Boolean(isAdmin || profile?.is_admin === true || myTier === 0);
 
   const [activeTab, setActiveTab] = useState<ViewTab>('overview');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -447,6 +448,7 @@ const MunicipalAdministratorDashboardContent: React.FC<MunicipalAdministratorDas
           setActiveTab={setActiveTab}
           filteredCount={filtered.length}
           wardsCount={wards.length}
+          canManageWards={canManageWards}
           mode="desktop"
         />
 
@@ -516,6 +518,7 @@ const MunicipalAdministratorDashboardContent: React.FC<MunicipalAdministratorDas
             staff={staff}
             departments={departments}
             canManageWardAssignments={myTier <= 2}
+            canManageWards={canManageWards}
             assignmentDepartmentId={myTier <= 1 ? null : profile?.linked_department_id || null}
             onAssignmentSaved={fetchData}
             onManageWards={() => setActiveTab('ward-manager')}
@@ -533,7 +536,7 @@ const MunicipalAdministratorDashboardContent: React.FC<MunicipalAdministratorDas
           />
         )}
 
-        {activeTab === 'ward-manager' && <WardManager language="en" />}
+        {activeTab === 'ward-manager' && canManageWards && <WardManager language="en" />}
 
         {activeTab === 'location-viewer' && (
           <LocationFilterPanel
@@ -582,7 +585,7 @@ const MunicipalAdministratorDashboardContent: React.FC<MunicipalAdministratorDas
                 Municipal Features & Modules
               </span>
               <span style={{ fontSize: '0.66rem', fontWeight: 800, color: '#146C94' }}>
-                7 Modules
+                {canManageWards ? '7 Modules' : '6 Modules'}
               </span>
             </div>
 
@@ -592,6 +595,7 @@ const MunicipalAdministratorDashboardContent: React.FC<MunicipalAdministratorDas
               setActiveTab={setActiveTab}
               filteredCount={filtered.length}
               wardsCount={wards.length}
+              canManageWards={canManageWards}
               mode="mobile-hub"
             />
 
@@ -746,6 +750,7 @@ const MunicipalAdministratorDashboardContent: React.FC<MunicipalAdministratorDas
                   staff={staff}
                   departments={departments}
                   canManageWardAssignments={myTier <= 2}
+                  canManageWards={canManageWards}
                   assignmentDepartmentId={myTier <= 1 ? null : profile?.linked_department_id || null}
                   onAssignmentSaved={fetchData}
                   onManageWards={() => setActiveTab('ward-manager')}
@@ -763,7 +768,7 @@ const MunicipalAdministratorDashboardContent: React.FC<MunicipalAdministratorDas
                 />
               )}
 
-              {activeTab === 'ward-manager' && <WardManager language="en" />}
+              {activeTab === 'ward-manager' && canManageWards && <WardManager language="en" />}
 
               {activeTab === 'location-viewer' && (
                 <LocationFilterPanel
@@ -962,7 +967,7 @@ export const MunicipalAdministratorDashboard: React.FC<MunicipalAdministratorDas
         'super_admin',
       ]}
       allowAdminFlag
-      unauthenticatedRedirect="/admin"
+      unauthenticatedRedirect="/dept/login"
       loadingTitle="Municipal Console"
     >
       <MunicipalAdministratorDashboardContent />

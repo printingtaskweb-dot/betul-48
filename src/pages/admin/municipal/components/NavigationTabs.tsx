@@ -16,6 +16,7 @@ interface Props {
   setActiveTab: (t: ViewTab) => void;
   filteredCount: number;
   wardsCount: number;
+  canManageWards?: boolean;
   mode?: 'desktop' | 'mobile-hub' | 'mobile-pills' | 'auto';
 }
 
@@ -34,9 +35,10 @@ export const NavigationTabs: React.FC<Props> = ({
   setActiveTab,
   filteredCount,
   wardsCount,
+  canManageWards = true,
   mode = 'auto',
 }) => {
-  const desktopTabs: ServiceTabItem[] = [
+  const desktopTabs: ServiceTabItem[] = ([
     {
       id: 'overview',
       label: 'Executive Overview',
@@ -95,10 +97,10 @@ export const NavigationTabs: React.FC<Props> = ({
       gradient: 'linear-gradient(135deg, #475569, #64748b)',
       activeBorder: '#475569',
     },
-  ];
+  ] as ServiceTabItem[]).filter((tab) => canManageWards || tab.id !== 'ward-manager');
 
   // Mobile Hub Tiles: tapping "Executive Overview" routes to dedicated 'workload' page
-  const mobileHubTabs: ServiceTabItem[] = [
+  const mobileHubTabs: ServiceTabItem[] = ([
     {
       id: 'complaints',
       label: 'Task Allocation',
@@ -157,10 +159,10 @@ export const NavigationTabs: React.FC<Props> = ({
       gradient: 'linear-gradient(135deg, #475569, #64748b)',
       activeBorder: '#475569',
     },
-  ];
+  ] as ServiceTabItem[]).filter((tab) => canManageWards || tab.id !== 'ward-manager');
 
   // Quick Switcher Pills for inside dedicated pages
-  const mobilePillsTabs: ServiceTabItem[] = [
+  const mobilePillsTabs: ServiceTabItem[] = ([
     {
       id: 'overview',
       label: 'Hub',
@@ -219,7 +221,7 @@ export const NavigationTabs: React.FC<Props> = ({
       gradient: 'linear-gradient(135deg, #475569, #64748b)',
       activeBorder: '#475569',
     },
-  ];
+  ] as ServiceTabItem[]).filter((tab) => canManageWards || tab.id !== 'ward-manager');
 
   return (
     <>

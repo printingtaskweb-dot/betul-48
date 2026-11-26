@@ -8,6 +8,7 @@ import { AllotModal, HierarchyFlow } from '../components/dept/AllotModal';
 import {
   getTier, roleLabel, canViewComplaint, canAllotComplaint, canResolveComplaint, TIER_LABEL,
 } from '../lib/hierarchy';
+import { getStaffHomeRoute, maskPhoneNumber } from '../lib/roleDefinitions';
 import type { StaffMember, Viewer } from '../lib/hierarchy';
 import { WardManager } from '../components/departments/WardManager';
 import { LocationFilterPanel } from '../components/departments/LocationFilterPanel';
@@ -441,12 +442,13 @@ function CreateDeptModal({ language, onClose, onCreated }: CreateDeptModalProps)
 
 // ─── Complaint Detail Card ──────────────────────────────────────────────────
 function ComplaintDetailCard({
-  c, language, canAllot, canResolve, onResolve, onAllot,
+  c, language, canAllot, canResolve, maskPhone = false, onResolve, onAllot,
 }: {
   c: DeptComplaint;
   language: 'en' | 'hi';
   canAllot: boolean;
   canResolve: boolean;
+  maskPhone?: boolean;
   onResolve: () => void;
   onAllot: () => void;
 }) {
@@ -610,11 +612,19 @@ function ComplaintDetailCard({
               </span>
             )}
             {c.citizen_phone && (
-              <a href={`tel:${c.citizen_phone}`} style={{ display: 'flex', alignItems: 'center', gap: 5,
-                fontSize: '0.8rem', color: 'var(--theme-primary, #146C94)', background: 'var(--theme-bg, #F6F1F1)',
-                padding: '5px 10px', borderRadius: 20, textDecoration: 'none', border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
-                <Phone size={13} /> {c.citizen_phone}
-              </a>
+              maskPhone ? (
+                <span style={{ display: 'flex', alignItems: 'center', gap: 5,
+                  fontSize: '0.8rem', color: 'var(--gray-700)', background: 'var(--theme-bg, #F6F1F1)',
+                  padding: '5px 10px', borderRadius: 20, border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
+                  <Phone size={13} /> {maskPhoneNumber(c.citizen_phone)}
+                </span>
+              ) : (
+                <a href={`tel:${c.citizen_phone}`} style={{ display: 'flex', alignItems: 'center', gap: 5,
+                  fontSize: '0.8rem', color: 'var(--theme-primary, #146C94)', background: 'var(--theme-bg, #F6F1F1)',
+                  padding: '5px 10px', borderRadius: 20, textDecoration: 'none', border: '1px solid var(--theme-component-border, #bfbfbf)' }}>
+                  <Phone size={13} /> {c.citizen_phone}
+                </a>
+              )
             )}
           </div>
 
@@ -749,15 +759,23 @@ export default function DeptDashboard() {
         .eq('id', user.id)
         .single();
 
-      if (!data || !(data.is_admin || STAFF_ROLES.includes(data.role ?? ''))) {
+      const staffTarget = getStaffHomeRoute(data);
+      if (!data || (!data.is_admin && staffTarget === '/' && !STAFF_ROLES.includes(data.role ?? ''))) {
         await supabase.auth.signOut();
         navigate('/dept/login', { replace: true });
         return;
       }
 
       const myTierVal = getTier(data.role, data.hierarchy_code, data.authority_role);
-      const isDedicatedRole = data.role === 'control_room' || data.role === 'verification_officer';
-      const isOrg = Boolean(data.is_admin) || myTierVal <= 1 || isDedicatedRole || (!data.linked_department_id && (data.role === 'municipal_administrator' || data.role === 'admin' || data.role === 'deputy_commissioner'));
+      const isDedicatedRole =
+        staffTarget === '/control-room' || staffTarget === '/verifier';
+      const isViewerRole = myTierVal === 6;
+      const isOrg =
+        Boolean(data.is_admin) ||
+        myTierVal <= 1 ||
+        isDedicatedRole ||
+        staffTarget === '/admin/dashboard' ||
+        staffTarget === '/municipal/dashboard';
       const effectiveRole = isOrg ? (data.role || 'municipal_administrator') : (data.role || 'dept_staff');
       let dName: string | null = null;
       let dIcon: string | null = null;
@@ -771,7 +789,7 @@ export default function DeptDashboard() {
         if (dept) { dName = dept.name; dIcon = dept.icon || 'apartment'; }
       }
 
-      if (!isOrg && !data.linked_department_id) setNoDept(true);
+      if (!isOrg && !isViewerRole && !data.linked_department_id) setNoDept(true);
 
       setProfile({
         id: data.id,
@@ -786,8 +804,10 @@ export default function DeptDashboard() {
         hierarchy_code: data.hierarchy_code,
       });
 
-      // Strict department isolation: locked to their linked department
-      setSelectedDeptId(isOrg ? 'all' : (data.linked_department_id || 'none'));
+      // Strict department isolation: locked to their linked department (viewers without a dept get read-only overview)
+      setSelectedDeptId(
+        isOrg || isViewerRole ? (data.linked_department_id || 'all') : (data.linked_department_id || 'none')
+      );
       if (data.linked_department_id) {
         setSelectedDeptDetailId(data.linked_department_id);
       }
@@ -880,6 +900,14 @@ export default function DeptDashboard() {
   const visibleComplaints = useMemo(
     () => {
       if (!profile || noDept) return [];
+      if (myTier === 6) {
+        const deptFiltered = profile.linked_department_id
+          ? complaints.filter((complaint) => complaint.department_id === profile.linked_department_id)
+          : complaints;
+        return assignedWard
+          ? deptFiltered.filter((complaint) => isComplaintInWard(complaint, assignedWard))
+          : deptFiltered;
+      }
       const allowed = complaints.filter((complaint) => canViewComplaint(viewer, complaint));
       if ((myTier === 3 || myTier === 4) && !assignedWard) return [];
       return assignedWard
@@ -1038,8 +1066,9 @@ export default function DeptDashboard() {
     );
   }
 
-  if (profile?.role === 'control_room') return <ControlRoomDashboard />;
-  if (profile?.role === 'verification_officer') return <VerifierDashboard />;
+  const deptRoleTarget = profile ? getStaffHomeRoute(profile) : null;
+  if (profile?.role === 'control_room' || deptRoleTarget === '/control-room') return <ControlRoomDashboard />;
+  if (profile?.role === 'verification_officer' || deptRoleTarget === '/verifier') return <VerifierDashboard />;
 
   if (noDept) {
     return (
@@ -1081,6 +1110,8 @@ export default function DeptDashboard() {
       ? (hi ? 'क्षेत्र अधिकारी: आप अपने क्षेत्र/वार्ड में पर्यवेक्षकों को कार्य आवंटित कर सकते हैं।' : 'Area Officer: Allocate tasks to Supervisors within your designated area/ward.')
       : myTier === 4
       ? (hi ? 'पर्यवेक्षक: आप परिचालन कर्मचारियों को कार्य सौंप सकते हैं।' : 'Supervisor: Allocate field tasks to Operational Staff.')
+      : myTier === 6
+      ? (hi ? 'प्रबंधन दर्शक (Read-Only): आप अधिकृत वार्ड/विभाग की शिकायतों की केवल समीक्षा कर सकते हैं। कार्य आवंटन, संपादन और नागरिक फ़ोन नंबर छिपाए गए हैं।' : 'Management Viewer: Read-only oversight across authorized wards/departments. Task allocation, edits, and raw citizen phone numbers are hidden.')
       : (hi ? 'परिचालन कर्मचारी: केवल आपको सौंपे गए कार्य देखें। कार्य पूरा होने पर फोटो के साथ हल करें।' : 'Operational Staff: View your assigned tasks and resolve with photo proof.');
 
   const tabs = [
@@ -1452,7 +1483,7 @@ export default function DeptDashboard() {
                   {hi ? 'कोई शिकायत नहीं मिली' : 'No grievances found'}
                 </h3>
                 <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--gray-600)' }}>
-                  {myTier >= 4
+                  {myTier === 5
                     ? (hi ? 'आपको अभी कोई कार्य नहीं सौंपा गया है' : 'No tasks have been assigned to you yet')
                     : (hi ? 'फिल्टर बदलें' : 'Try selecting another status')}
                 </p>
@@ -1469,6 +1500,7 @@ export default function DeptDashboard() {
                     language={language}
                     canAllot={canAllotComplaint(viewer, c.department_id)}
                     canResolve={canResolveComplaint(viewer, c)}
+                    maskPhone={myTier === 6}
                     onResolve={() => setResolving(c)}
                     onAllot={() => setAllotting(c)}
                   />

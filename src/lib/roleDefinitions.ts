@@ -1,5 +1,6 @@
 // src/lib/roleDefinitions.ts
 // Comprehensive, production-grade definition and capability matrix for the 9 Municipal Roles.
+import { isDesignatedAdminEmail } from './adminConfig';
 
 export type MunicipalRole =
   | 'platform_owner'
@@ -234,4 +235,76 @@ export function canVerifyCase(
   if (complaint.assigned_by === verifierUserId) return false;
   if (complaint.supervisor_id === verifierUserId) return false;
   return true;
+}
+
+export interface RoleLookupLike {
+  role?: string | null;
+  authority_role?: string | null;
+  hierarchy_code?: string | null;
+  is_admin?: boolean | null;
+}
+
+const PLATFORM_ADMIN_TOKENS = new Set(['admin', 'platform_owner', 'super_admin']);
+const MUNICIPAL_EXEC_TOKENS = new Set([
+  'municipal_administrator',
+  'municipal_commissioner',
+  'commissioner',
+  'deputy_commissioner',
+]);
+const CONTROL_ROOM_TOKENS = new Set(['control_room', 'call_center']);
+const VERIFIER_TOKENS = new Set(['verification_officer', 'verifier', 'appeals_officer']);
+const DEPT_STAFF_TOKENS = new Set([
+  'dept_staff',
+  'department_head',
+  'dept_head',
+  'area_officer',
+  'supervisor',
+  'field_employee',
+  'operational_staff',
+  'management_viewer',
+  'viewer',
+  'observer',
+]);
+
+function collectRoleTokens(profile?: RoleLookupLike | null): string[] {
+  if (!profile) return [];
+  return [profile.role, profile.authority_role, profile.hierarchy_code]
+    .map((v) => (v || '').toLowerCase().trim())
+    .filter(Boolean);
+}
+
+/**
+ * Returns true strictly for Platform Admins / Owners (`is_admin`, `admin`, `platform_owner`, `super_admin`,
+ * or configured designated admin email). Municipal Commissioners and Deputy Commissioners do NOT qualify.
+ */
+export function isPlatformAdminProfile(
+  profile?: RoleLookupLike | null,
+  email?: string | null
+): boolean {
+  if (profile?.is_admin === true) return true;
+  if (isDesignatedAdminEmail(email)) return true;
+  return collectRoleTokens(profile).some((token) => PLATFORM_ADMIN_TOKENS.has(token));
+}
+
+/**
+ * Returns true for Municipal Commissioner & Deputy Commissioner executive profiles.
+ */
+export function isMunicipalExecutiveProfile(profile?: RoleLookupLike | null): boolean {
+  return collectRoleTokens(profile).some((token) => MUNICIPAL_EXEC_TOKENS.has(token));
+}
+
+/**
+ * Resolves the canonical home route for any authenticated municipal or staff role.
+ */
+export function getStaffHomeRoute(
+  profile?: RoleLookupLike | null,
+  email?: string | null
+): string {
+  if (isPlatformAdminProfile(profile, email)) return '/admin/dashboard';
+  if (isMunicipalExecutiveProfile(profile)) return '/municipal/dashboard';
+  const tokens = collectRoleTokens(profile);
+  if (tokens.some((token) => CONTROL_ROOM_TOKENS.has(token))) return '/control-room';
+  if (tokens.some((token) => VERIFIER_TOKENS.has(token))) return '/verifier';
+  if (tokens.some((token) => DEPT_STAFF_TOKENS.has(token))) return '/dept/dashboard';
+  return '/';
 }

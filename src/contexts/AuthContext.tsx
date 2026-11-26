@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
 import { supabase } from '../lib/supabase';
-import { isDesignatedAdminEmail } from '../lib/adminConfig';
+import { isPlatformAdminProfile } from '../lib/roleDefinitions';
 import type { Session, User } from '@supabase/supabase-js';
 
 export interface UserProfile {
@@ -56,8 +56,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         .maybeSingle();
       if (data) {
         setProfile(data);
-        const r = (data.role || '').toLowerCase();
-        if (data.is_admin || ['admin', 'municipal_administrator', 'platform_owner', 'super_admin'].includes(r)) {
+        if (isPlatformAdminProfile(data, data.email)) {
           sessionStorage.setItem('imc_admin', '1');
           localStorage.setItem('imc_admin', '1');
         } else {
@@ -124,15 +123,18 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     if (user) await fetchProfile(user.id);
   };
 
-  const userEmail = user?.email?.toLowerCase();
-  const userRole = (profile?.role || (user?.user_metadata as any)?.role || '')?.toLowerCase();
+  const meta = (user?.user_metadata as Record<string, unknown> | undefined) || {};
   const isAdmin = Boolean(
-    user && (
-      profile?.is_admin === true ||
-      (user?.user_metadata as any)?.is_admin === true ||
-      ['admin', 'municipal_administrator', 'platform_owner', 'super_admin'].includes(userRole) ||
-      isDesignatedAdminEmail(userEmail)
-    )
+    user &&
+      isPlatformAdminProfile(
+        {
+          role: profile?.role || (meta.role as string | undefined),
+          authority_role: profile?.authority_role,
+          hierarchy_code: profile?.hierarchy_code,
+          is_admin: profile?.is_admin === true || meta.is_admin === true,
+        },
+        user?.email
+      )
   );
 
   return (

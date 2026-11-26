@@ -1,25 +1,108 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { Home, Newspaper, Plus, Search, User, Briefcase } from 'lucide-react';
+import { getStaffHomeRoute } from '../lib/roleDefinitions';
+import { Home, Newspaper, Plus, Search, User, Briefcase, Building2, ShieldCheck, PhoneCall, ClipboardCheck } from 'lucide-react';
 
 export const BottomNav: React.FC = () => {
-  const { language, user, profile } = useAuth();
+  const { language, user, profile, isAdmin } = useAuth();
   const location = useLocation();
   const path = location.pathname;
 
-  const isStaff = Boolean(
-    user &&
-    profile?.role && [
-      'field_employee',
-      'supervisor',
-      'operational_staff',
-      'department_head',
-      'dept_staff',
-      'control_room',
-      'verification_officer'
-    ].includes(profile.role)
-  );
+  const staffDestination = user
+    ? isAdmin
+      ? '/admin/dashboard'
+      : getStaffHomeRoute(profile, user.email)
+    : '/';
+
+  const renderRoleNavSlot = () => {
+    if (staffDestination === '/admin/dashboard') {
+      const active = path.startsWith('/admin/dashboard');
+      return (
+        <Link
+          to="/admin/dashboard"
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
+            active ? 'text-civic-700 bg-civic-50 font-bold' : 'text-slate-500 hover:text-civic-800 font-medium'
+          }`}
+        >
+          <ShieldCheck className="w-4 h-4 mb-0.5" />
+          <span>{language === 'hi' ? 'एडमिन' : 'Admin'}</span>
+        </Link>
+      );
+    }
+
+    if (staffDestination === '/municipal/dashboard') {
+      const active = path.startsWith('/municipal/dashboard');
+      return (
+        <Link
+          to="/municipal/dashboard"
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
+            active ? 'text-civic-700 bg-civic-50 font-bold' : 'text-slate-500 hover:text-civic-800 font-medium'
+          }`}
+        >
+          <Building2 className="w-4 h-4 mb-0.5" />
+          <span>{language === 'hi' ? 'नगर' : 'Municipal'}</span>
+        </Link>
+      );
+    }
+
+    if (staffDestination === '/control-room') {
+      const active = path.startsWith('/control-room');
+      return (
+        <Link
+          to="/control-room"
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
+            active ? 'text-civic-700 bg-civic-50 font-bold' : 'text-slate-500 hover:text-civic-800 font-medium'
+          }`}
+        >
+          <PhoneCall className="w-4 h-4 mb-0.5" />
+          <span>{language === 'hi' ? 'कंट्रोल' : 'Control'}</span>
+        </Link>
+      );
+    }
+
+    if (staffDestination === '/verifier') {
+      const active = path.startsWith('/verifier');
+      return (
+        <Link
+          to="/verifier"
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
+            active ? 'text-civic-700 bg-civic-50 font-bold' : 'text-slate-500 hover:text-civic-800 font-medium'
+          }`}
+        >
+          <ClipboardCheck className="w-4 h-4 mb-0.5" />
+          <span>{language === 'hi' ? 'सत्यापन' : 'Verify'}</span>
+        </Link>
+      );
+    }
+
+    if (staffDestination === '/dept/dashboard') {
+      const active = path.startsWith('/dept/dashboard');
+      return (
+        <Link
+          to="/dept/dashboard"
+          className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
+            active ? 'text-civic-700 bg-civic-50 font-bold' : 'text-slate-500 hover:text-civic-800 font-medium'
+          }`}
+        >
+          <Briefcase className="w-4 h-4 mb-0.5" />
+          <span>{language === 'hi' ? 'कार्य' : 'Tasks'}</span>
+        </Link>
+      );
+    }
+
+    return (
+      <Link
+        to="/track"
+        className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
+          path === '/track' ? 'text-civic-700 bg-civic-50 font-bold' : 'text-slate-500 hover:text-civic-800 font-medium'
+        }`}
+      >
+        <Search className="w-4 h-4 mb-0.5" />
+        <span>{language === 'hi' ? 'ट्रैक' : 'Track'}</span>
+      </Link>
+    );
+  };
 
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bottom-nav-mask pt-4 pb-3 px-4 pointer-events-none">
@@ -59,31 +142,7 @@ export const BottomNav: React.FC = () => {
           </Link>
         </div>
 
-        {isStaff ? (
-          <Link
-            to="/dept/dashboard"
-            className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
-              path.startsWith('/dept/dashboard')
-                ? 'text-civic-700 bg-civic-50 font-bold'
-                : 'text-slate-500 hover:text-civic-800 font-medium'
-            }`}
-          >
-            <Briefcase className="w-4 h-4 mb-0.5" />
-            <span>{language === 'hi' ? 'कार्य' : 'Tasks'}</span>
-          </Link>
-        ) : (
-          <Link
-            to="/track"
-            className={`flex-1 flex flex-col items-center justify-center py-1.5 rounded-full text-[11px] transition ${
-              path === '/track'
-                ? 'text-civic-700 bg-civic-50 font-bold'
-                : 'text-slate-500 hover:text-civic-800 font-medium'
-            }`}
-          >
-            <Search className="w-4 h-4 mb-0.5" />
-            <span>{language === 'hi' ? 'ट्रैक' : 'Track'}</span>
-          </Link>
-        )}
+        {renderRoleNavSlot()}
 
         <Link
           to={user ? '/profile' : '/auth'}

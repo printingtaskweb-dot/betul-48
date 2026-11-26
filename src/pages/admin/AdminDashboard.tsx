@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
+import { getStaffHomeRoute, isPlatformAdminProfile } from '../../lib/roleDefinitions';
 import { useDepartments } from '../../hooks/useComplaints';
 import { ComplaintTable } from '../../components/admin/ComplaintTable';
 import AdminStaffRegistration from '../../components/admin/AdminStaffRegistration';
@@ -1292,23 +1293,21 @@ export const AdminDashboard: React.FC = () => {
   }, [mobileMenuOpen]);
 
   const isAuthorizedAdmin = Boolean(
-    user && (
-      isAdmin ||
-      (profile?.role && [
-        'admin',
-        'municipal_administrator',
-        'platform_owner',
-        'super_admin',
-      ].includes(profile.role))
-    )
+    user && (isAdmin || isPlatformAdminProfile(profile, user?.email))
   );
 
-  // Auth guard
+  // Auth guard: keep Platform Admin console strictly off-limits for Municipal Commissioners & Department Staff
   useEffect(() => {
-    if (!authLoading && (!user || !isAuthorizedAdmin)) {
+    if (authLoading) return;
+    if (!user) {
       navigate('/admin', { replace: true });
+      return;
     }
-  }, [user, isAuthorizedAdmin, authLoading, navigate]);
+    if (!isAuthorizedAdmin) {
+      const target = getStaffHomeRoute(profile, user?.email);
+      navigate(target !== '/' ? target : '/admin', { replace: true });
+    }
+  }, [user, profile, isAuthorizedAdmin, authLoading, navigate]);
 
   const handleLogout = async () => {
     await signOut();
